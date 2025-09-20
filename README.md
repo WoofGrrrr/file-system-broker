@@ -720,10 +720,12 @@ version.  Development releases might be available earlier in the
 
 ## How to install the latest versions of this Extension from GitHub (FUTURE):
 
-1. Download the .xpi file from GitHub:
-    1. MABXXX Go to this page in your browser: https://github.com/WoofGrrrr/file-system-broker/releases xxx
-    2. x
-    3. y
+1. Download the .zip file from GitHub:
+    1. Go to this page in your browser: https://github.com/WoofGrrrr/file-system-broker/releases
+    2. Click on the release you want 
+    3. Look for the file-system-broker.zip file
+    4. Use your browser to download it - usually you can just clicked on it
+    5. Place the file somewhere you will remember it
 2. Open Thunderbird's **Add-ons and Themes** Tab
   + Tools -> Add-ons and Themes
 3. Select the **Extensions** Tab on the left
