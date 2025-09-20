@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <script type="module" src="optionsUI.js" defer></script>
+    <link rel="stylesheet" type="text/css" href="./optionsUI.css"/>
+    <title data-l10n-id="options_fsbOptionsPageTitle">File System Broker</title>
+  </head>
+
+  <body>
+
+    <div id="fsbOptionsWrapper">
+
+      <div id="fsbExtensionOptionsTitlePanel" >
+        <div id="fsbExtensionOptionsTitle" class="title" data-l10n-id="options_fsbOptionsTitle">
+          options_fsbOptionsTitle
+        </div>
+
+        <div class="option-error" error-for="fsbExtensionOptionsTitle" error="false">
+          <span class="option-error-icon-large"><img src="../images/icons/forbidden_16x16.png"/></span>
+          <label class="option-error-text" error-for="fsbExtensionOptionsTitle"></label>
+        </div>
+      <div>
+
+      <div id="fsbExtensionOptionsPanel">
+
+        <div class="options-panel" id="fsbExtensionOptions">
+
+          <div id="fsbExtensionAccessControlEnabledCheckPanel" class="option-panel">
+            <input id="fsbExtensionAccessControlEnabled" class="fsbGeneralOption" type="checkbox"/>
+            <label for="fsbExtensionAccessControlEnabled" data-l10n-id="options_fsbExtensionAccessControlEnabledCheck.label">
+              options_fsbExtensionAccessControlEnabledCheck.label
+            </label>
+          </div>
+
+          <div id="fsbShowGrantExtensionAccessDialogCheckPanel" class="option-panel">
+            <input id="fsbShowGrantExtensionAccessDialog" class="fsbGeneralOption" type="checkbox"/>
+            <label for="fsbShowGrantExtensionAccessDialog" data-l10n-id="options_fsbShowGrantExtensionAccessDialogCheck.label">
+              options_fsbShowGrantExtensionAccessDialogdCheck.label
+            </label>
+          </div>
+
+          <div id="fsbExtensionOptionsButtonPanel" class="option">
+            <button id="fsbShowBackupManagerButton">
+              <label for="fsbShowBackupManagerButton"
+                     data-l10n-id="options_fsbExtensionOptionsButtonBackupManager.label"
+                     tooltip-l10n-id="options_fsbExtensionOptionsButtonBackupManager.tooltip">
+                options_fsbExtensionOptionsButtonBackupManager.label
+              </label>
+            </button>
+            <button id="fsbShowEventLogManagerButton">
+              <label for="fsbShowEventLogManagerButton"
+                     data-l10n-id="options_fsbExtensionOptionsButtonEventLogManager.label"
+                     tooltip-l10n-id="options_fsbExtensionOptionsButtonEventLogManager.tooltip">
+                options_fsbExtensionOptionsButtonEventLogManager.label
+              </label>
+            </button>
+          </div>
+
+          <div id="fsbLoggingOptionsPanel">
+            <div>
+              <input id="fsbShowLoggingOptions" type="checkbox" class="fsbGeneralOption open-close-check"/>
+              <label for="fsbShowLoggingOptions"></label>
+              <label for="fsbShowLoggingOptions" data-l10n-id="options_fsbLoggingOptionsTitle.label"></label>
+            </div>
+
+            <div class="options-open-close-panel" id="fsbLoggingOptions">
+              <div class="option-panel">
+                <input type="checkbox" id="fsbEnableAccessLogging" class="fsbGeneralOption"/>
+                <label for="fsbEnableAccessLogging" data-l10n-id="options_fsbEnableAccessLoggingCheck.label"></label>
+              </div>
+
+              <div class="option-panel">
+                <input type="checkbox" id="fsbEnableAccessDeniedLogging" class="fsbGeneralOption"/>
+                <label for="fsbEnableAccessDeniedLogging" data-l10n-id="options_fsbEnableAccessDeniedLoggingCheck.label"></label>
+              </div>
+
+              <div class="option-panel">
+                <input type="checkbox" id="fsbEnableInternalMessageLogging" class="fsbGeneralOption"/>
+                <label for="fsbEnableInternalMessageLogging" data-l10n-id="options_fsbEnableInternalMessageLoggingCheck.label"></label>
+              </div>
+
+              <div class="option-panel">
+                <input type="checkbox" id="fsbEnableInternalMessageResultLogging" class="fsbGeneralOption"/>
+                <label for="fsbEnableInternalMessageResultLogging" data-l10n-id="options_fsbEnableInternalMessageResultLoggingCheck.label"></label>
+              </div>
+
+              <div class="option-panel">
+                <input type="checkbox" id="fsbEnableExternalMessageLogging" class="fsbGeneralOption"/>
+                <label for="fsbEnableExternalMessageLogging" data-l10n-id="options_fsbEnableExternalMessageLoggingCheck.label"></label>
+              </div>
+
+              <div class="option-panel">
+                <input type="checkbox" id="fsbEnableExternalMessageResultLogging" class="fsbGeneralOption"/>
+                <label for="fsbEnableExternalMessageResultLogging" data-l10n-id="options_fsbEnableExternalMessageResultLoggingCheck.label"></label>
+              </div>
+
+              <div class="option-panel">
+                <input type="checkbox" id="fsbEnableInternalEventLogging" class="fsbGeneralOption"/>
+                <label for="fsbEnableInternalEventLogging" data-l10n-id="options_fsbEnableInternalEventLoggingCheck.label"></label>
+              </div>
+
+              <div class="option-panel">
+                <label for="fsbAutoLogPurgeDays" data-l10n-id="options_fsbAutoLogPurgeDaysSelect.label"></label>
+                <select id="fsbAutoLogPurgeDays" class="fsbGeneralOption"></select>
+              </div>
+
+            </div> <!-- END OF <div id="fsbLoggingOptions"> -->
+
+          </div> <!-- END OF <div id="fsbLoggingOptionsPanel"> -->
+
+        </div> <!-- END OF <div id="fsbExtensionOptions"> -->
+
+        <div id="fsbExtensionOptionsPanelSpacer"></div>
+
+      </div> <!-- END OF <div id="fsbExtensionOptionsPanel"> -->
+
+      <div id="fsbExtensionChooserOptionsWrapper">
+
+        <div id="fsbExtensionChooserOptions">
+
+          <div class="panel" id="fsbExtensionChooserControls">
+            <div id="fsbExtensionChooserTitle" class="subpanel-title">
+              <div class="title" data-l10n-id="options_fsbExtensionControlsTitle">options_fsbExtensionControlsTitle</div>
+            </div>
+
+            <div id="fsbExtensionChooserHintsPanel">
+              <div>
+                <input id="fsbShowOptionsHints" type="checkbox" class="fsbGeneralOption open-close-check"/>
+                <label for="fsbShowOptionsHints"></label>
+                <label for="fsbShowOptionsHints" data-l10n-id="options_fsbHints.label"></label>
+              </div>
+
+              <div class="options-open-close-panel" id="fsbHintsPanel">
+                <ul class="compact-list">
+                  <li><label class="hint" data-l10n-id="options_fsbExtensionList.hint1">options_fsbExtensionList.hint1</label></li>
+                  <li><label class="hint" data-l10n-id="options_fsbExtensionList.hint2">options_fsbExtensionList.hint2</label></li>
+                  <li><label class="hint" data-l10n-id="options_fsbExtensionList.hint3">options_fsbExtensionList.hint3</label></li>
+                  <li><label class="hint" data-l10n-id="options_fsbExtensionList.hint4">options_fsbExtensionList.hint4</label></li>
+                  <li><label class="hint" data-l10n-id="options_fsbExtensionList.hint5">options_fsbExtensionList.hint4</label></li>
+                  <li><label class="hint" data-l10n-id="options_fsbExtensionList.hint6">options_fsbExtensionList.hint6</label></li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="options-panel" id="fsbExtensionListControlsPanel">
+
+              <table class="grid-button-panel">
+                <tr class="grid-button-panel-row" id="fsbExtensionListControlsTitlePanel">
+                  <td colspan="2">
+                    <div class="subpanel-title">
+                      <input id="fsbShowOptionsActions" type="checkbox" class="fsbGeneralOption open-close-check"/>
+                      <label for="fsbShowOptionsActions"></label>
+                      <label for="fsbShowOptionsActions" data-l10n-id="options_fsbExtensionListButtonsTitle">options_fsbExtensionListButtonsTitle</label>
+                    </div>
+                  </td>
+                  <td>
+                    <button class="grid-button-panel-button" id="fsbRefreshListButton" class="fsbButton">
+                      <label id="fsbRefreshListButtonLabel" data-l10n-id="options_fsbRefreshListButton.label" tooltip-l10n-id="options_fsbRefreshListButton.tooltip">
+                        options_fsbRefreshListButton.label
+                      </label>
+                    </button>
+                  </td>
+                </tr>
+
+                <tr class="grid-button-panel-row option-action" id="fsbAllowDisallowAllControlsPanel">
+                  <td>
+                    <label class="grid-button-panel-label" id="fsbAllowDisallowAllButtonsLabel" data-l10n-id="options_fsbAllowDisallowAllButtonsLabel">
+                      options_fsbAllowDisallowAllButtonsLabel
+                    </label
+                  </td>
+                  <td>
+                    <button class="grid-button-panel-button" id="fsbAllowAllButton" class="fsbButton">
+                      <label id="fsbAllowAllButtonLabel" data-l10n-id="options_fsbAllowAllButton.label" tooltip-l10n-id="options_fsbAllowAllButton.tooltip">
+                        options_fsbAllowAllButton.label
+                      </label>
+                    </button>
+                  </td>
+                  <td>
+                    <button class="grid-button-panel-button" id="fsbDisallowAllButton" class="fsbButton">
+                      <label id="fsbDisallowAllButtonLabel" data-l10n-id="options_fsbDisallowAllButton.label" tooltip-l10n-id="options_fsbDisallowAllButton.tooltip">
+                        options_fsbDisallowAllButton.label
+                      </label>
+                    </button>
+                  </td>
+                </tr>
+
+                <tr class="grid-button-panel-row option-action" id="fsbAllowDisallowSelectedControlsPanel">
+                  <td>
+                    <label class="grid-button-panel-label" id="fsbAllowDisallowSelectedButtonsLabel" data-l10n-id="options_fsbAllowDisallowSelectedButtonsLabel">
+                      options_fsbAllowDisallowSelectedButtonsLabel
+                    </label
+                  </td>
+                  <td>
+                    <button class="grid-button-panel-button" id="fsbAllowSelectedButton" class="fsbButton" disabled="true">
+                      <label id="fsbAllowSelectedButtonLabel" data-l10n-id="options_fsbAllowSelectedButton.label" tooltip-l10n-id="options_fsbAllowSelectedButton.tooltip">
+                        options_fsbAllowSelectedButton.label
+                      </label>
+                    </button>
+                  </td>
+                  <td>
+                    <button class="grid-button-panel-button" id="fsbDisallowSelectedButton" class="fsbButton" disabled="true">
+                      <label id="fsbDisallowSelectedButtonLabel" data-l10n-id="options_fsbDisallowSelectedButton.label" tooltip-l10n-id="options_fsbDisallowSelectedButton.tooltip">
+                        options_fsbDisallowSelectedButton.label
+                      </label>
+                    </button>
+                  </td>
+                </tr>
+
+                <tr class="grid-button-panel-row option-action" id="fsbDeleteSelectedButtonPanel">
+                  <td>
+                    <label class="grid-button-panel-label" id="fsbDeleteSelectedButtonsLabel" data-l10n-id="options_fsbDeleteSelectedButtonsLabel">
+                      options_fsbDeleteSelectedButtonsLabel
+                    </label
+                  </td>
+                  <td>
+                    <button class="grid-button-panel-button" id="fsbDeleteSelectedButton" class="fsbButton" disabled="true">
+                      <label id="fsbDeleteSelectedButtonLabel"
+                             data-l10n-id="options_fsbDeleteSelectedButton.label"
+                             tooltip-l10n-id="options_fsbDeleteSelectedButton.tooltip">
+                        options_fsbDeleteSelectedButton.label
+                      </label>
+                    </button>
+                  </td>
+                  <td></td>
+                </tr>
+
+                <tr class="grid-button-panel-row option-action" id="fsbAddNewExtensionButtonPanel">
+                  <td>
+                    <label class="grid-button-panel-label" id="fsbAddNewExtensionButtonsLabel" data-l10n-id="options_fsbAddNewExtensionButtonsLabel">
+                      options_fsbAddNewExtensionButtonsLabel
+                    </label
+                  </td>
+                  <td>
+                    <button class="grid-button-panel-button" id="fsbAddNewExtensionButton" class="fsbButton">
+                      <label id="fsbAddNewExtensionButtonLabel"
+                             data-l10n-id="options_fsbAddNewExtensionButton.label"
+                             tooltip-l10n-id="options_fsbAddNewExtensionButton.tooltip">
+                        options_fsbAddNewExtensionButton.label
+                      </label>
+                    </button>
+                  </td>
+                  <td></td>
+                </tr>
+
+                <tr class="grid-button-panel-row option-action" id="fsbAddInstalledExtensionsButtonPanel">
+                  <td>
+                    <label class="grid-button-panel-label" id="fsbAddInstalledExtensionsButtonsLabel" data-l10n-id="options_fsbAddInstalledExtensionsButtonsLabel">
+                      options_fsbAddInstalledExtensionsButtonsLabel
+                    </label
+                  </td>
+                  <td>
+                    <button class="grid-button-panel-button" id="fsbAddInstalledExtensionsButton" class="fsbButton">
+                      <label id="fsbAddInstalledExtensionsButtonLabel"
+                             data-l10n-id="options_fsbAddInstalledExtensionsButton.label"
+                             tooltip-l10n-id="options_fsbAddInstalledExtensionsButton.tooltip">
+                        options_fsbAddInstalledExtensionsButton.label
+                      </label>
+                    </button>
+                  </td>
+                  <td></td>
+                </tr>
+              </table>
+
+            </div> <!-- END OF div <class="options-panel" id="fsbExtensionListButtonPanel"> -->
+
+            <div id="fsbExtensionChooserControlsSpacer"></div>
+
+          </div> <!-- END OF <div id="fsbExtensionChooserControls"> -->
+
+          <div id="fsbExtensionChooserOptionsSpacer"></div>
+
+
+
+          <div id="fsbExtensionListWrapper">
+
+            <table id="fsbExtensionList" class="">
+
+<!-- EXAMPLE extension-list-item <TR> classes 'access-disallowed', 'selected', and 'extension-locked' are optional:
+              <tr class="extension-list-item access-disallowed selected locked" extensionId="extension-name@yyy.com" extensionName="Extension Name">
+                <td class="extension-list-controls-left">
+                  <input type="checkbox" class="extension-list-check allow-access-check" extensionId="extension-name@yyy.com"/>
+                </td>
+
+                <td class="extension-list-data extension-list-name">
+                  Extension Name
+                </td>
+
+                <td class="extension-list-data extension-list-id">
+                  extension-name@yyy.com
+                </td>
+
+                <td class="extension-list-controls-right">
+                  <div class="extension-controls-panel edit-controls">
+                    <button class="extension-list-button edit-extension-id" extensionId="extension-name@yyy.com"></button>
+                    <button class="extension-list-button delete-extension-id" extensionId="extension-name@yyy.com"></button>
+                  </div>
+                </td>
+              </tr>
+-- END OF EXAMPLE extension-list-item <TR> -->
+
+            </table>
+
+            <div id="fsbExtensionListWrapperSpacer"></div>
+
+          </div> <!-- END OF <div id="fsbExtensionListWrapper"> -->
+
+        </div> <!-- END OF <div id="fsbExtensionChooserOptions"> -->
+
+        </div id="fsbChooserOptionsWrapperSpacer"></div>
+
+      </div> <!-- END OF <div id="fsbExtenionsIdChooserOptionsWrapper"> -->
+
+    </div> <!-- END OF <div id="fsbOptionsWrapper"> -->
+
+  </body>
+</html>

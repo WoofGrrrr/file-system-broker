@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html language="en">
+
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <title data-l10n-id="fsbEventLogViewer_pageTitle">Identity Viewer Plus</title>
+    <link rel="stylesheet" href="./eventLogViewer.css" type="text/css" >
+    <script type="module" src="./eventLogViewer.js" defer></script>
+  </head>
+
+  <body>
+    <div id="fsbEventLogViewer">
+      <div id="fsbEventLogViewerTitlePanel" data-l10n-id="fsbEventLogViewer_title">
+        Log Viewer
+      </div>
+
+      <div id="fsbEventLogViewerFileInfoPanel">
+        <table id="fsbEventLogViewerFileInfo">
+          <tr>
+            <th><label data-l10n-id="fsbEventLogViewerFileName.label"></label></th>
+            <td><label id="fsbEventLogViewerFileName"></label></td>
+          </tr>
+          <tr>
+            <th><label data-l10n-id="fsbEventLogViewerFileCreationTime.label"></label></th>
+            <td><label id="fsbEventLogViewerFileCreationTime"></label></td>
+          </tr>
+          <tr>
+            <th><label data-l10n-id="fsbEventLogViewerFileLastModifiedTime.label"></label></th>
+            <td><label id="fsbEventLogViewerFileLastModifiedTime"></label></td>
+          </tr>
+          <tr>
+            <th><label data-l10n-id="fsbEventLogViewerFileSize.label"></label></th>
+            <td><label id="fsbEventLogViewerFileSize"></label></td>
+          </tr>
+        </table>
+      </div>
+
+      <div id="fsbEventLogViewerInstructionsPanel">
+        <div id="fsbEventLogViewerInstructions" >
+          <ul>
+<!--        <li><label data-l10n-id="fsbEventLogViewer_instructions_1">Click on a Log File to Select it - it will be highlighted</label></li> -->
+<!--        <li><label data-l10n-id="fsbEventLogViewer_instructions_2">Click again to De-select it</label></li> -->
+<!--        <li><label data-l10n-id="fsbEventLogViewer_instructions_3">Click the Restore Button Restore Options from the selected file</label></li> -->
+<!--        <li><label data-l10n-i d="fsbEventLogViewer_instructions_4">Click the Create Log button to log the current options</label></li>          -->
+            <li><label data-l10n-id="fsbEventLogViewer_instructions_5">Click the Delete button to delete the log file</label></li>
+          <ul>
+        </div>
+        <div class="log-error" error-for="fsbEventLogViewerInstructions" error="false">
+          <span class="log-error-icon-large"><img src="../images/icons/forbidden_16x16.png"/></span>
+          <label class="log-error-text" error-for="fsbEventLogViewerInstructions"></label>
+        </div>
+      </div>
+
+      <div id="fsbEventLogViewerFileDataWrapper">
+        <div id="fsbEventLogViewerFiltersPanel">
+          <table id="fsbEventLogViewerFilters">
+            <tr>
+              <td class="filters-title" rowspan="2">
+                <label  data-l10n-id="fsbEventLogViewer_filtersTitle"></label>
+              </td>
+              <td class="filter-label">
+                <label  data-l10n-id="fsbEventLogViewer_filterByTime.label"></label>
+              </td>
+              <td class="xxx" colspan="7">
+                <table>
+                  <tr>
+<!--                <td>
+                      <label  data-l10n-id="fsbEventLogViewer_filterByStartTimeSelect.label"></label>
+                    </td>
+-->                 <td class="filter-item">
+                      <select id="fsbEventLogViewer_filterByStartTimeHourSelect">
+                      </select>
+                    </td>
+                    <td class="filter-time-hhmmss_separator">
+                      <label  data-l10n-id="fsbEventLogViewer_timeHHMMSS_separator"></label>
+                    </td>
+                    <td class="filter-item">
+                      <select id="fsbEventLogViewer_filterByStartTimeMinuteSelect">
+                      </select>
+                    </td>
+                    <td class="filter-times-separator">
+                      <label  data-l10n-id="fsbEventLogViewer_filterByEndTimeSelect.label"></label>
+                    </td>
+                    <td class="filter-item">
+                      <select id="fsbEventLogViewer_filterByEndTimeHourSelect">
+                      </select>
+                    </td>
+                    <td class="filter-hhmmss_separator">
+                      <label  data-l10n-id="fsbEventLogViewer_timeHHMMSS_separator"></label>
+                    </td>
+                    <td class="filter-item">
+                      <select id="fsbEventLogViewer_filterByEndTimeMinuteSelect">
+                      </select>
+                    </td>
+                    <td>
+                      <button id="fsbEventLogViewer_filterByTimeResetButton">
+                        <label for="fsbEventLogViewer_filterByTimeResetButton" data-l10n-id="fsbEventLogViewer_filterByTimeResetButton.label" ></label>
+                      </button>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+                
+
+            <tr>
+              <td class="filter-label">
+                <label  data-l10n-id="fsbEventLogViewer_filterBySenderSelect.label"></label>
+              </td>
+              <td class="filter-item">
+                <select id="fsbEventLogViewer_filterBySenderSelect">
+                </select>
+              </td>
+              <td>
+                <button id="fsbEventLogViewer_filterBySenderResetButton">
+                  <label for="fsbEventLogViewer_filterBySenderResetButton" data-l10n-id="fsbEventLogViewer_filterBySenderResetButton.label" ></label>
+                </button>
+              </td>
+
+              <td class="filter-label">
+                <label  data-l10n-id="fsbEventLogViewer_filterByTypeSelect.label"></label>
+              </td>
+              <td class="filter-item">
+                <select id="fsbEventLogViewer_filterByTypeSelect">
+                </select>
+              </td>
+              <td>
+                <button id="fsbEventLogViewer_filterByTypeResetButton">
+                  <label for="fsbEventLogViewer_filterByTypeResetButton" data-l10n-id="fsbEventLogViewer_filterByTypeResetButton.label" ></label>
+                </button>
+              </td>
+
+              <td class="filter-label">
+                <label  data-l10n-id="fsbEventLogViewer_filterByCommandSelect.label"></label>
+              </td>
+              <td class="filter-item">
+                <select id="fsbEventLogViewer_filterByCommandSelect">
+                </select>
+              </td>
+              <td>
+                <button id="fsbEventLogViewer_filterByCommandResetButton">
+                  <label for="fsbEventLogViewer_filterByCommandResetButton" data-l10n-id="fsbEventLogViewer_filterByCommandResetButton.label" ></label>
+                </button>
+              </td>
+
+              <td class="filter-label">
+                <label  data-l10n-id="fsbEventLogViewer_filterByStatusSelect.label"></label>
+              </td>
+              <td class="filter-item">
+                <select id="fsbEventLogViewer_filterByStatusSelect">
+                </select>
+              </td>
+              <td>
+                <button id="fsbEventLogViewer_filterByStatusResetButton">
+                  <label for="fsbEventLogViewer_filterByStatusResetButton" data-l10n-id="fsbEventLogViewer_filterByStatusResetButton.label" ></label>
+                </button>
+              </td>
+
+            </tr>
+            <tr>
+              <td></td>
+
+              <td>
+                <button id="fsbEventLogViewer_filterResetAllButton">
+                  <label for="fsbEventLogViewer_filterResetAllButton" data-l10n-id="fsbEventLogViewer_filterResetAllButton.label" ></label>
+                </button>
+              </td>
+            </tr>
+
+            <tr>
+              <td></td>
+              <td colspan="4">
+                <div id="fsbEventLogViewerFiltersPanelInfo">
+<!--              <div id="fsbEventLogViewerFiltersPanelHint1" data-l10n-id="fsbEventLogViewerFiltersPanel.hint1">
+                    fsbEventLogViewerFiltersPanel.hint1
+                  </div> -->
+                  <span id="fsbEventLogViewerFiltersPanelMessages"></span>
+                </div>
+              </td>
+            </tr>
+          </table> <!-- END OF <div id="fsbEventLogViewerFiltersPanel"> -->
+        </div> <!-- END OF <div id="fsbEventLogViewerFiltersPanel"> -->
+
+        <table id="fsbEventLogViewerFileData">
+        </table>
+      </div> <!-- END OF <div id="fsbEventLogViewerFileDataWrapper"> -->
+
+      <div id="fsbEventLogViewerControlsPanel">
+        <div id="fsbEventLogViewerControlsButtonPanel">
+          <button id="fsbEventLogViewerDeleteButton" data-l10n-id="fsbEventLogViewer_deleteButton">Restore</button>
+          <button id="fsbEventLogViewerDoneButton" data-l10n-id="fsbEventLogViewer_doneButton">Done</button>
+        </div>
+        <div id="fsbEventLogViewerControlsPanelSpacerRight"></div>
+      </div>
+
+      <div id="fsbEventLogViewerLeftSpacer"></div>
+      <div id="fsbEventLogViewerRightSpacer"></div>
+      <div id="fsbEventLogViewerBottomSpacer"></div>
+    </div>
+  </body>
+
+</html>

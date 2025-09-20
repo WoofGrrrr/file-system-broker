@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html language="en">
+
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <title data-l10n-id="fsbBackupManager_pageTitle">Identity Manager Plus</title>
+    <link rel="stylesheet" href="./backupManager.css" type="text/css" >
+    <script type="module" src="./backupManager.js" defer></script>
+  </head>
+
+  <body>
+    <div id="fsbBackupManager">
+      <div id="fsbBackupManagerTitlePanel" data-l10n-id="fsbBackupManager_title">
+        Backup Manager
+      </div>
+
+      <div class="backup-error" error-for="fsbBackupManagerTitlePanel" error="false">
+        <span class="backup-error-icon-large"><img src="../images/icons/forbidden_16x16.png"/></span>
+        <label class="backup-error-text" error-for="fsbBackupManagerTitlePanel"></label>
+      </div>
+
+      <div id="fsbBackupManagerInstructionsPanel">
+        <div>
+          <input id="fsbShowBackupManagerInstructions" type="checkbox" class="fsbGeneralOption open-close-check">
+          <label for="fsbShowBackupManagerInstructions"></label>
+          <label for="fsbShowBackupManagerInstructions" data-l10n-id="fsbBackupManagerInstructions.label"></label>
+        </div>
+
+        <div id="fsbBackupManagerInstructions" class="options-open-close-panel">
+          <ul class="compact-list">
+            <li><label data-l10n-id="fsbBackupManager_instructions_1">Click on a Backup File to Select it - it will be highlighted</label></li>
+            <li><label data-l10n-id="fsbBackupManager_instructions_2">Click again to De-select it</label></li>
+            <li><label data-l10n-id="fsbBackupManager_instructions_3">Click the Restore Button Restore Options from the selected file</label></li>
+            <li><label data-l10n-id="fsbBackupManager_instructions_4">Click the Create Backup button to backup the current options</label></li>
+            <li><label data-l10n-id="fsbBackupManager_instructions_5">Click the Delete button to delete the selected backup files</label></li>
+            <li>
+              <label data-l10n-id="fsbBackupFilesDirectoryPathName.label"></label>
+              <div id="fsbBackupFilesDirectoryPathName"></div>
+            </li>
+          <ul>
+        </div>
+        <div class="backup-error" error-for="fsbBackupManagerInstructions" error="false">
+          <span class="backup-error-icon-large"><img src="../images/icons/forbidden_16x16.png"/></span>
+          <label class="backup-error-text" error-for="fsbBackupManagerInstructions"></label>
+        </div>
+      </div>
+
+      <div id="fsbBackupManagerFileNameListWrapper">
+        <table id="fsbBackupManagerFileNameList">
+        </table>
+      </div>
+
+      <div id="fsbBackupManagerControlsPanel">
+        <div id="fsbBackupManagerControlsButtonPanel">
+          <button id="fsbBackupManagerBackupButton" data-l10n-id="fsbBackupManager_backupButton">Backup</button>
+          <button id="fsbBackupManagerRestoreButton" data-l10n-id="fsbBackupManager_restoreButton">Restore</button>
+          <button id="fsbBackupManagerDeleteButton" data-l10n-id="fsbBackupManager_deleteButton">Restore</button>
+          <button id="fsbBackupManagerDoneButton" data-l10n-id="fsbBackupManager_doneButton">Done</button>
+        </div>
+        <div id="fsbBackupManagerControlsPanelSpacerRight"></div>
+      </div>
+
+      <div id="fsbBackupManagerLeftSpacer"></div>
+      <div id="fsbBackupManagerRightSpacer"></div>
+      <div id="fsbBackupManagerBottomSpacer"></div>
+    </div>
+  </body>
+
+</html>

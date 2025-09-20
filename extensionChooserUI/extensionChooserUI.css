@@ -1,0 +1,448 @@
+/* Extension Chooser styles */
+
+@import url("../styles/theming.css");
+
+html, body {
+  background-color: var(--page-background-color);
+  color:            var(--page-color);
+  font:             var(--page-font);
+  font-size:        var(--page-font-size);
+  height:           100%;
+  padding:          8px;
+
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select:    none; /* Firefox */
+  -ms-user-select:     none; /* IE10+/Edge */
+  user-select:         none; /* Standard */
+}
+
+body {
+  background-color: var(--body-background-color);
+  height:           100%;
+}
+
+.compact-list {
+  margin:  0px;
+  padding: 0px 0px 0px 1.0em;
+}
+
+.compact-list > li {
+}
+
+input[type="checkbox"].open-close-check {
+  display: none;
+}
+
+input[type="checkbox"].open-close-check + label {
+  background-repeat: no-repeat;
+  border:            NONE;                    
+  cursor:            pointer !important;
+  height:            10px;
+  width:             10px;
+  display:           inline-block;
+  padding:           0px;;
+}
+
+input[type="checkbox"].open-close-check:checked + label {
+  background-image:  url("../images/icons/light-gray-triangle-outline-down_10x10.png") !important;
+}
+
+input[type="checkbox"].open-close-check:not(checked) + label {
+  background-image:  url("../images/icons/light-gray-triangle-outline-right_10x10.png") !important;
+}
+
+.options-open-close-panel {
+/*background-color: var(--panel-background-color);*/
+/*border:           1px solid var(--panel-border-color);*/
+/*border-radius:    5px;*/
+  margin-left:      12px;
+/*padding:          4px;*/
+}
+
+
+#fsbExtensionChooserPopup {
+  height: 100%;
+  margin: 0.8em auto;
+  width:  100%;
+
+  /* grid layout */
+
+  display:    grid;
+  column-gap: 2px;
+  row-gap:    0px;
+  grid-template-areas:
+    "title           title"
+    "instructions    instructions"
+    "list-wrapper    right-spacer"
+    "controls-panel  right-spacer"
+    "bottom-spacer   bottom-spacer";
+
+  grid-template-columns: max-content auto;
+  grid-template-rows:    min-content min-content auto min-content min-content;
+
+  & #fsbExtensionChooserPopupTitlePanel {
+    grid-area: title;
+  }
+
+  & #fsbExtensionChooserPopupInstructionsPanel {
+    grid-area: instructions;
+  }
+
+  & #fsbExtensionChooserExtensionListWrapper {
+    grid-area: list-wrapper;
+  }
+
+  & #fsbExtensionChooserPopupControlsPanel {
+    grid-area: controls-panel
+  }
+
+  & #fsbExtensionChooserPopupRightSpacer {
+    grid-area: right-spacer;
+  }
+
+  & #fsbExtensionChooserPopupBottomSpacer {
+    grid-area:  bottom-spacer;
+  }
+}
+
+#fsbExtensionChooserPopupTitlePanel {
+  background-color: var(--title-background-color);
+  border:           1px solid var(--title-border-color);
+  border-radius:    var(--title-border-radius);
+  color:            var(--title-color);
+  font-size:        var(--title-font-size);
+  font-weight:      var(--title-font-weight);
+  line-height:      var(--title-line-height);
+  padding:          0.25em 1.0em;
+  text-align:       left;
+}
+
+#fsbExtensionChooserPopupInstructionsPanel {
+  margin-top:       0.0em;
+  margin-left:      2.0em;
+}
+
+#fsbExtensionChooserPopupInstructions {
+  background-color: var(--instructions-background-color);
+  border:           1px solid var(--instructions-border-color);
+  border-radius:    var(--instructions-border-radius);
+  color:            var(--instructions-color);
+  font-size:        var(--instructions-font-size);
+  font-weight:      var(--instructions-font-weight);
+}
+
+
+
+#fsbExtensionChooserExtensionListWrapper { /* this is a <DIV> */
+  background-color: var(--panel-background-color);
+  border:           1px solid var(--panel-border-color);
+  border-radius:    10px;
+  margin:           12px;
+  overflow-x:       hidden;
+  overflow-y:       auto;
+  padding:          0.5em 1.0em 0.5em 1.0em;
+}
+
+#fsbExtensionChooserExtensionList { /* this is a <TABLE> */
+  border-radius:    10px;
+  border-spacing:   1px 0.5em;
+  margin-right:     20px;
+  overflow-x:       hidden;
+  overflow-y:       auto;
+  -moz-appearance:  none;
+}
+
+.extension-data-error {
+  display: NONE;
+}
+
+.extension-data-error[error="true"] {
+  display:        flex;
+  flex-direction: row;
+}
+
+.extension-data-error-icon-large {
+  height:         16px;
+  max-height:     16px;
+  max-width:      16px;
+  vertical-align: middle;
+  width:          16px;
+}
+
+.extension-data-error-icon {
+  height:         8px;
+  max-height:     8px;
+  max-width:      8px;
+  vertical-align: middle;
+  width:          8px;
+}
+
+.extension-data-error-text {
+  color:       RED !important;
+  margin-left: 0.25em;
+}
+
+
+.extension-list-item { /* this is a <TR> */
+  background-color: transparent !important;
+
+  border:           none !important;
+
+  font:             var(--extension-font);
+  font-size:        var(--extension-font-size);
+  padding:          0.75em 1.1em;
+  text-align:       left;
+  text-decoration:  NONE;
+  text-shadow:      none;
+  white-space:      nowrap;
+  width:            100%;
+  -moz-appearance:  none;
+}
+
+.extension-list-item > :first-child {
+  border-bottom-left-radius: 5px;
+  border-left:               1px solid; /* var(--extension-border-color) !important; */
+  border-top-left-radius:    5px;
+}
+
+.extension-list-item > :last-child {
+  border-bottom-right-radius: 5px;
+  border-right:               1px solid; /* var(--extension-border-color) !important; */
+  border-top-right-radius:    5px;
+}
+
+.extension-list-item-data { /* this is a <TD> */
+  background-color: var(--extension-background-color);
+  border-bottom:    1px solid;
+  border-top:       1px solid;
+  border-color:     var(--extension-border-color) !important;
+  color:            var(--extension-color);
+  margin:           0 0.5em;
+  padding:          0.1em 0.25em;
+  text-decoration:  var(--extension-text-decoration);
+  white-space:      nowrap;
+  -moz-appearance:  none;
+}
+
+/* colors for disabled extensions */
+tr.extension-list-item.extension-disabled > td.extension-list-item-data {
+  background-color: var(--extension-disabled-background-color);
+  border-color:     var(--extension-disabled-border-color);
+  color:            var(--extension-disabled-color);
+  text-shadow:      1px 1px var(--extension-disabled-text-shadow-color);
+}
+
+/* colors for extensions (already) Configured */
+tr.extension-list-item.extension-configured > td.extension-list-item-data {
+  background-color: var(--extension-configured-background-color);
+  border-color:     var(--extension-configured-border-color);
+  color:            var(--extension-configured-color);
+}
+
+tr.extension-list-item > td.extension-list-item-status { /* this is a <TD> */
+  max-width:        16px;
+  width:            16px;
+}
+
+tr.extension-list-item > td.extension-list-item-status > .extension-list-item-status-dot { /* this is a <SPAN> */
+  background-color: transparent;
+  border:           1px solid transparent;
+  border-radius:    50%;
+  display:          inline-block;
+  height:           10px;
+/*margin-right:     0.1em;*/
+  width:            10px;
+}
+
+tr.extension-list-item:not(.extension-configured) > td.extension-list-item-status > .extension-list-item-status-dot {
+  background-color: var(--extension-not-configured-status-dot-color);
+  border-color:     var(--extension-not-configured-status-dot-border-color);
+}
+tr.extension-list-item.extension-configured > td.extension-list-item-status > .extension-list-item-status-dot {
+  background-color: var(--extension-configured-status-dot-color);
+  border-color:     var(--extension-configured-status-dot-border-color);
+}
+
+.extension-list-item-name { /* .extensions-list-item > .extensions-list-item-name - this is a <TD> */
+  width: 100%;
+}
+
+.extension-list-item-id { /* .extensions-list-item > .extensions-list-item-id - this is a <TD> */
+  width: 100%;
+}
+
+tr.extension-list-item.selected:not(.extension-configured) > td.extension-list-item-data {
+  background-color: var(--extension-selected-background-color);
+  border-color:     var(--extension-selected-border-color);
+}
+
+tr.extension-list-item.selected:not(.extension-disabled, .extension-configured) > td.extension-list-item-data {
+  color:            var(--extension-selected-color);
+  text-shadow:      1px 1px var(--extension-selected-text-shadow-color);
+}
+
+tr.extension-list-item:not(.selected, .extension-configured):hover > td.extension-list-item-data {
+  background-color: var(--extension-hover-background-color);
+}
+tr.extension-list-item:not(.extension-configured):hover > td.extension-list-item-data {
+  background-image: var(--extension-hover-background-image);
+  border-color:     var(--extension-hover-border-color);
+}
+
+tr.extension-list-item:not(.extension-disabled, .extension-configured):hover > td.extension-list-item-data {
+  color:            var(--extension-hover-color);
+  text-shadow:      1px 1px var(--extension-hover-text-shadow-color);
+}
+
+
+
+/* the status dot is sufficient *
+tr.extension-list-item.extension-configured > td.extension-list-item-data { /-* configured *-/
+  text-decoration:  var(--extension-configured-text-decoration);
+}
+*/
+
+/* the status dot is sufficient *
+tr.extension-list-item:not(.extension-configured) > td.extension-list-item-data { /-* not configured *-/
+  text-decoration:  var(--extension-not-configured-text-decoration);
+}
+*/
+
+tr.extension-list-item.selected:not(.extension-configured) > td.extension-list-item-data { /* selected & not configured */
+  text-decoration:  var(--extension-selected-text-decoration);
+}
+
+/* color change and border are sufficient *
+tr.extension-list-item:not(.extension-configured):hover > td.extension-list-item-data { /-* hover & not configured *-/
+  text-decoration:  var(--extension-hover-text-decoration);
+}
+*/
+
+tr.extension-list-item.extension-disabled:not(.selected) > td.extension-list-item-data { /* disabled & not selected */
+  text-decoration:  var(--extension-disabled-text-decoration);
+}
+
+tr.extension-list-item.selected.extension-disabled {
+  text-decoration:  var(--extension-selected-text-decoration);
+  & > td.extension-list-item-data { /* disabled & selected */
+    text-decoration:  var(--extension-disabled-text-decoration);
+  }
+}
+
+
+
+#fsbExtensionChooserPopupControlsPanel {
+  margin-top:   2px;
+
+  /* grid layout */
+
+  display:               grid;
+  column-gap:            4px;
+/*row-gap:               0px; */
+  grid-template-areas:   "button-panel right-spacer";
+  grid-template-columns: max-content auto;
+
+  & #fsbExtensionChooserPopupControlsButtonPanel {
+    grid-area: button-panel;
+  }
+  & #fsbExtensionChooserPopupControlsPanelSpacerRight {
+    grid-area: right-spacer;
+  }
+}
+
+#fsbExtensionChooserPopupControlsPanel {
+  margin-top:   5px;
+  margin-left:  20px;
+  margin-right: 20px;
+}
+
+#fsbExtensionChooserPopupControlsButtonPanel {
+}
+
+#fsbExtensionChooserPopupBottomSpacer {
+  height:     40px;
+  min-height: 40px;
+}
+
+
+
+/* Anything done with non-specific selectors can be influenced
+ * by outsiders, e.g. userChrome.css, userContent.css
+ */
+#fsbExtensionChooserPopup button {
+  background-image: NONE !important;
+  border:           1px solid transparent;
+  border-radius:    0.5em;
+  cursor:           pointer;
+  font:             var(--menu-font);
+  font-size:        var(--menu-font-size);
+  font-size:        1em;
+  height:           1.5em;
+  margin:           0;
+  padding:          0.8em 1.1em;
+  text-align:       left;
+  text-decoration:  none;
+  text-shadow:      none;
+  -moz-appearance:  none;
+}
+
+#fsbExtensionChooserPopup button:not([disabled]) {
+  background-color: var(--button-background-color);
+  border-color:     var(--button-border-color);
+  color:            var(--button-color);
+}
+
+#fsbExtensionChooserPopup button[disabled] {
+  background-color: var(--button-disabled-background-color);
+  border-color:     var(--button-disabled-border-color);
+  color:            var(--button-disabled-color);
+}
+
+#fsbExtensionChooserPopup button:not([disabled]):hover {
+  background-color: var(--button-hover-background-color);
+  background-image: NONE !important;
+  border-color:     var(--button-hover-border-color);
+  color:            var(--button-hover-color);
+  text-shadow:      1px 1px var(--button-hover-text-shadow-color);
+}
+
+button#fsbExtensionChooserPopupControlsCancelButton:not([disabled]) {
+  background-color: var(--button-cancel-background-color);
+  color:            var(--button-cancel-color);
+}
+
+button#fsbExtensionChooserPopupControlsCancelButton[disabled] {
+  background-color: var(--button-cancel-disabled-background-color);
+  color:            var(--button-cancel-disabled-color);
+}
+
+button#fsbExtensionChooserPopupControlsCancelButton:not([disabled]):hover {
+  background-color: var(--button-cancel-hover-background-color);
+  background-image: NONE !important;
+  border-color:     var(--button-cancel-hover-color);
+  color:            var(--button-cancel-hover-color);
+}
+
+button#fsbExtensionChooserPopupControlsAddButton:not([disabled]) {
+  background-color: var(--button-save-background-color);
+  color:            var(--button-save-color);
+}
+
+button#fsbExtensionChooserPopupControlsAddButton[disabled] {
+  background-color: var(--button-save-disabled-background-color);
+  color:            var(--button-save-disabled-color);
+}
+
+button#fsbExtensionChooserPopupControlsAddButton:not([disabled]):hover {
+  background-color: var(--button-save-hover-background-color);
+  background-image: NONE !important;
+  border-color:     var(--button-save-hover-color);
+  color:            var(--button-sav e-hover-color);
+}
+
+#fsbExtensionChooserPopup button:-moz-window-inactive,
+.extension-list-item:-moz-window-inactive,
+.label:-moz-window-inactive
+{
+  opacity: 0.8;
+}

@@ -1,0 +1,893 @@
+@import url("../styles/theming.css");
+
+html {
+  background-color: var(--page-background-color);
+  color:            var(--page-color);
+  font:             var(--page-font);
+  font-size:        var(--page-font-size);
+  padding:          10px;
+
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select:    none; /* Firefox */
+  -ms-user-select:     none; /* IE10+/Edge */
+  user-select:         none; /* Standard */
+}
+
+body {
+  background-color: var(--body-background-color);
+}
+
+
+
+/* GENERIC */
+
+.display-none {
+  display: none;
+}
+
+.panel {
+  padding: 0 0.5em;
+}
+
+.button-panel  {
+  margin-top: 0.5em;
+  text-align: center;
+}
+
+.grid-button-panel  {
+}
+
+.grid-button-panel-row  {
+  margin-bottom: 0.5em;
+}
+
+.grid-button-panel-label  {
+  text-align: right;
+}
+
+.grid-button-panel-button  {
+  text-align: center;
+  width:      100%;
+}
+
+.options-panel {
+  background-color: var(--panel-background-color);
+/*border:           1px solid var(--panel-border-color); */
+  border-radius:    5px;
+  padding:          0.5em;
+}
+
+.title {
+  color:            var(--title-color);
+  font-size:        var(--title-font-size);
+  font-weight:      var(--title-font-weight);
+}
+
+.panel-title {
+  color:            var(--subtitle-color);
+  font-size:        var(--subtitle-font-size);
+  font-weight:      var(--subtitle-font-weight);
+  margin-bottom:    2px;
+}
+
+.subpanel-title {
+  color:            var(--subtitle-color);
+/*font-size:        var(--subtitle-font-size);*/
+  font-weight:      var(--subtitle-font-weight);
+/*margin-bottom:    2px;*/
+}
+
+.hint {
+}
+
+.compact-list {
+  margin: 0;
+  padding: 0px 0px 0px 1.0em;
+}
+
+.compact-list > li {
+}
+
+input[type="checkbox"].open-close-check {
+  display: none;
+}
+
+input[type="checkbox"].open-close-check + label {
+  background-repeat: no-repeat;
+  border:            NONE;                    
+  cursor:            pointer !important;
+  height:            10px;
+  width:             10px;
+  display:           inline-block;
+  padding:           0px;;
+}
+
+input[type="checkbox"].open-close-check:checked + label {
+  background-image:  url("../images/icons/light-gray-triangle-outline-down_10x10.png") !important;
+}
+
+input[type="checkbox"].open-close-check:not(checked) + label {
+  background-image:  url("../images/icons/light-gray-triangle-outline-right_10x10.png") !important;
+}
+
+.options-open-close-panel {
+/*background-color:  var(--panel-background-color);*/
+/*border:            1px solid var(--panel-border-color);*/
+/*border-radius:     5px;*/
+  margin-left:       12px;
+/*padding:           4px;*/
+}
+
+.option-error {
+  display: NONE;
+}
+
+.option-error[error="true"] {
+  display:        flex;
+  flex-direction: row;
+}
+
+.option-error-icon-large {
+  height:         16px;
+  max-height:     16px;
+  max-width:      16px;
+  vertical-align: middle;
+  width:          16px;
+}
+
+.option-error-icon {
+  height:         8px;
+  max-height:     8px;
+  max-width:      8px;
+  vertical-align: middle;
+  width:          8px;
+}
+
+.option-error-text {
+  color:       RED !important;
+  margin-left: 0.25em;
+}
+
+
+
+/* FULL PAGE */
+#fsbOptionsWrapper :is(button, input, th, tr, td, table, select, input ~ label):-moz-window-inactive {
+  opacity: 0.8;
+}
+
+#fsbOptionsWrapper {
+  padding:             1em;
+
+  /* grid layout */
+  display:             grid;
+
+  grid-row-gap:        1em;
+  grid-template-areas: "title"
+                       "extension-options"
+                       "chooser-options";
+  grid-template-rows:  min-content min-content auto;
+
+  #fsbExtensionOptionsTitlePanel {
+    grid-area: title;
+  }
+
+  #fsbExtensionOptionsPanel {
+    grid-area: extension-options;
+  }
+  #fsbExtensionChooserOptionsWrapper {
+    grid-area: chooser-options;
+  }
+}
+
+#fsbExtensionOptionsTitlePanel {
+  margin-bottom: 1.0em;
+}
+
+
+
+#fsbExtensionOptionsPanel {
+
+  /* grid layout */
+  display:               grid;
+
+  grid-template-areas:   "options spacer";
+  grid-template-columns: max-content auto;
+/*grid-template-rows:    min-content min-content; */
+
+  #fsbExtensionOptions {
+    grid-area: options;
+  }
+  #fsbExtensionOptionsPanelSpacer {
+    grid-area: spacer;
+  }
+}
+
+#fsbLoggingOptionsPanel {
+  margin-top: 0.5em;
+}
+
+.dev-option-panel {
+  border:  1px solid transparent;
+  padding: 0.1 0.25em 0 0.25em;
+}
+
+.dev-button-panel {
+  display:         flex;
+  justify-content: space-evenly;
+}
+
+#fsbExtensionOptions {
+}
+
+#fsbDeveloperOptions {
+  border:     1px solid red;
+  margin-top: 0.5em;
+  padding:    0.25em 0.25em;
+}
+
+
+#fsbDevButtonPanel {
+}
+
+
+
+#fsbExtensionChooserOptionsWrapper {
+  margin-top: 2.0em;    
+
+  /* grid layout */
+  display:               grid;
+
+  grid-template-areas:   "chooser-options spacer";
+  grid-template-columns: max-content auto;
+
+  #fsbExtensionChooserOptions {
+    grid-area: chooser-options;
+  }
+  #fsbChooserOptionsWrapperSpacer {
+    grid-area: spacer;
+  }
+}
+
+
+
+#fsbExtensionChooserOptions {
+  border:        1px solid var(--panel-border-color);
+  border-radius: 5px;
+  padding:       0 1em 1em 1em;
+
+  /* grid layout */
+  display:               grid;
+  grid-row-gap:          1em;
+
+  grid-template-areas:   "controls spacer"
+                         "list     list";
+  grid-template-columns: max-content auto;
+
+  #fsbExtensionChooserControls {
+    grid-area: controls;
+  }
+  #fsbExtensionChooserOptionsSpacer {
+    grid-area: spacer;
+  }
+  #fsbExtensionListWrapper {
+    grid-area: list;
+  }
+}
+
+
+
+#fsbExtensionChooserControls {
+
+  /* grid layout */
+  display:               grid;
+
+  grid-row-gap:          0.5em;
+  grid-template-areas:   "chooser-description spacer"
+                         "hints               spacer"
+                         "controls-panel      spacer";
+  grid-template-columns: max-content auto;
+  grid-template-rows:    auto auto auto;
+
+  #fsbExtensionChooserDescription {
+    grid-area: chooser-description;
+  }
+  #fsbExtensionChooserHintsPanel {
+    grid-area: hints;
+  }
+  #fsbExtensionListControlsPanel {
+    grid-area: controls-panel;
+  }
+  #fsbExtensionChooserControlsSpacer{
+    grid-area: spacer;
+  }
+}
+
+#fsbExtensionChooserDescription {
+  margin-left: -1em;
+}
+
+#fsbExtensionListControlsDescription {
+  margin-left: -1em;
+}
+
+#fsbExtensionListControlsPanel {
+}
+
+#fsbExtensionListControlsTitlePanel {
+}
+
+#fsbAllowDisallowAllControlsPanel {
+}
+
+#fsbAllowDisallowSelectedControlsPanel {
+}
+
+#fsbDeleteSelectedButtonPanel {
+}
+
+#fsbAddExtensionButtonPanel {
+}
+
+
+
+#fsbExtensionListWrapper {
+
+  /* grid layout */
+  display:               grid;
+
+  grid-template-areas:   "list spacer";
+  grid-template-columns: auto min-content;
+
+  #fsbExtensionList   {
+    grid-area: list;
+  }
+  #fsbExtensionListWrapperSpacer {
+    grid-area: spacer;
+  }
+}
+
+#fsbExtensionListWrapper {
+}
+
+#fsbExtensionList { /*  <TABLE> Extension list */
+  background-color: var(--panel-background-color);
+  border:           1px solid var(--panel-border-color);
+  border-radius:    10px;
+  border-spacing:   1px 0.5em;
+  padding:          0.5em 1em 0.5em 0.5em;
+  -moz-appearance:  none;
+}
+
+#fsbExtensionList   {
+  overflow-y: auto;
+}
+
+
+
+.extension-list-item { /* <TR>  Extension List Row */
+  border:           none;
+  color:            var(--extension-color);
+  cursor:           default;
+  font:             var(--extension-font);
+  font-size:        var(--extension-font-size);
+  padding:          0.5rem 1.1rem;
+  text-align:       left;
+  text-decoration:  none;
+  text-shadow:      none;
+  white-space:      nowrap;
+  width:            100%;
+  -moz-appearance:  none;
+}
+
+.extension-head-controls-left, /* .extension-head-item > .extension-head-controls-left */
+.extension-list-controls-left  /* .extension-list-item > .extension-list-controls-left */
+{
+  height:        100%;
+  padding:       0;
+/*padding-right: 0.15em; */
+}
+
+.extension-list-check:not([disabled]) {
+  cursor: pointer;
+}
+
+/* those items that show actual Extension data: ID, Name */
+.extension-list-data {
+  background-color: var(--extension-background-color);
+
+  border-bottom:    1px solid;
+  border-top:       1px solid;
+  border-color:     var(--extension-border-color); /* MUST BE AFTER border-bottom and border-top as they revert color */
+
+  color:            var(--extension-color);
+  padding:          0.1em 0.5em;
+  white-space:      nowrap;
+  -moz-appearance:  none;
+}
+
+.extension-list-item > :nth-child(2) { /* .extension-list-item:nth-child(2) hopefully the first extension-list-data */
+  /* hopefully the first extension-list-data: rounded left corners */
+  border-bottom-left-radius: 5px;
+  border-left-style:         solid;
+  border-left-width:         1px;
+  border-top-left-radius:    5px;
+}
+
+.extension-list-item > :nth-last-child(2) { /* .extension-list-item:nth-last-child(2) hopefully the last extension-list-data */
+  /* hopefully the last extension-list-data: rounded right corners */
+  border-bottom-right-radius: 5px;
+  border-right-style:         solid;
+  border-right-width:         1px;
+  border-top-right-radius:    5px;
+}
+
+/* colors for disabled extensions */
+.extension-list-item.extension-disabled > .extension-list-data {
+  background-color: var(--extension-disabled-background-color);
+  border-color:     var(--extension-disabled-border-color);
+}
+
+/* colors for access-disallowed extensions */
+.extension-list-item.access-disallowed > .extension-list-data {
+  background-color: var(--extension-access-disallowed-background-color);
+  border-color:     var(--extension-access-disallowed-border-color);
+}
+
+.extension-list-id { /* .extension-list-item > .extension-list-id */
+  width:      auto;
+  text-align: left;
+}
+
+.extension-list-name { /* .extension-list-item > .extension-list-name */
+  width:      auto;
+  text-align: left;
+}
+
+#fsbExtensionList:not(.edit-mode) > .extension-list-item:hover:not(.extension-locked) > .extension-list-data {
+  background-color: var(--extension-hover-background-color);
+  background-image: var(--extension-hover-background-image);
+  border-color:     var(--extension-hover-border-color);
+  text-shadow:      1px 1px var(--extension-hover-text-shadow-color);
+}
+
+#fsbExtensionList:not(.edit-mode) > .extension-list-item:hover:not(.extension-locked, .extension-disabled) > .extension-list-data {
+  color:            var(--extension-hover-color);
+}
+
+#fsbExtensionList:not(.edit-mode) > .extension-list-item.selected:not(.extension-locked) > .extension-list-data { /* and when :hover??? */
+  background-color: var(--extension-selected-background-color);
+  border-color:     var(--extension-selected-border-color);
+  text-shadow:      1px 1px var(--extension-selected-text-shadow-color);
+}
+
+#fsbExtensionList:not(.edit-mode) > .extension-list-item.selected:not(.extension-locked, .extension-disabled) > .extension-list-data {
+  color:            var(--extension-selected-color);
+}
+
+/* color for disabled extensions */
+#fsbExtensionList > .extension-list-item.extension-disabled > .extension-list-data {
+  color:            var(--extension-disabled-color);
+}
+
+/* color for access-disallowed extensions */
+#fsbExtensionList > .extension-list-item.access-disallowed > .extension-list-data {
+  color:            var(--extension-access-disallowed-color);
+}
+
+.extension-list-item.extension-disabled:not(.selected) > .extension-list-data {
+  text-decoration:  var(--extension-disabled-text-decoration);
+}
+
+.extension-list-item.selected:not(.extension-disabled) > .extension-list-data {
+  text-decoration:  var(--extension-selected-text-decoration);
+}
+
+.extension-list-item.selected.extension-disabled {
+  text-decoration:  var(--extension-selected-text-decoration);
+  & > .extension-list-data {
+    text-decoration:  var(--extension-disabled-text-decoration);
+  }
+}
+
+#fsbExtensionList:not(.edit-mode) > .extension-list-item.disallow-access:not(.extension-locked):hover > .extension-list-data { /* and when selected??? */
+  background-color: color-mix(in srgb, var(--extension-disallow-access-background-color) 90%, #FFFFFF);
+/*border-color:     var(--extension-disallow-access-border-color); */
+/*color:            var(--extension-disallow-access-color); */
+  text-shadow:      1px 1px var(--extension-hover-text-shadow-color);
+}
+
+.extension-head-controls-right, /* .extension-head-item > .extension-head-controls-left */
+.extension-list-controls-right  /* .extension-list-item > .extension-list-controls-left */
+{
+  height:       100%;
+  padding:      0;
+  padding-left: 0.5em;
+
+  /* grid layout */
+  display:               grid;
+
+  grid-column-gap:       4px;
+  grid-template-areas:   "edit";
+  grid-template-columns: min-content;
+  .edit-controls {
+    grid-area: edit;
+  }
+}
+
+
+
+.extension-head-item { /* <TH>  Extension List Header Row */
+  background-color: var(--extension-background-color);
+  border:           none;
+  color:            var(--extension-color);
+  cursor:           default;
+  font:             var(--extension-font);
+  font-size:        var(--extension-font-size);
+  font-weight:      bold;
+  padding:          0.5rem 1.1rem;
+  text-align:       left;
+  text-decoration:  none;
+  text-shadow:      none;
+  white-space:      nowrap;
+  width:            100%;
+  -moz-appearance:  none;
+}
+
+.extension-head-data { /* <TD>  Extension List Header Row Data */
+  padding:          0 0.5rem;
+}
+
+
+
+.extension-edit-title-item, /* <TR>  Extension List Editor Title Row */
+.extension-edit-item,       /* <TR>  Extension List Editor Edit  Row */
+.extension-edit-error-item  /* <TR>  Extension List Editor Error Row */
+{
+  background-color: rgb( 130, 130, 180 );                       /* MABXXX MOVE TO theming.css */
+}
+
+.extension-edit-title-item { /* <TR>  Extension List Editor Title Row */
+  color:            var(--extension-color);                     /* MABXXX MOVE TO theming.css */
+  cursor:           default;
+  font:             var(--extension-font);                      /* MABXXX MOVE TO theming.css */
+  font-size:        var(--extension-font-size);                 /* MABXXX MOVE TO theming.css */
+  font-weight:      bold;
+  padding:          0.5rem 1.1rem;
+  text-align:       left;
+  text-decoration:  none;
+  text-shadow:      1px 1px black;                              /* MABXXX MOVE TO theming.css */
+  white-space:      nowrap;
+  width:            100%;
+  -moz-appearance:  none;
+}
+
+.extension-edit-title-data {
+  padding:          0.1em 0.5em;
+}
+
+.extension-edit-item { /* <TR>  Extension List Editor Row */
+/*border:           none;*/
+  color:            var(--extension-color);                     /* MABXXX MOVE TO theming.css */
+  cursor:           default;
+  font:             var(--extension-font);                      /* MABXXX MOVE TO theming.css */
+  font-size:        var(--extension-font-size);                 /* MABXXX MOVE TO theming.css */
+  padding:          0.5rem 1.1rem;
+  text-align:       left;
+  text-decoration:  none;
+  text-shadow:      none;
+  white-space:      nowrap;
+  width:            100%;
+  -moz-appearance:  none;
+}
+
+.extension-edit-controls-left { /* .extension-edit-item > .extension-edit-controls-left */
+  height:           100%;
+  padding:          0;
+  padding-right:    0.25em;
+}
+
+.extension-edit-check { /* any checkbox */
+  cursor:           pointer !important;
+}
+
+input.extension-edit-text { /* any input type="text" */
+  color:            black;                                      /* MABXXX MOVE TO theming.css */
+  cursor:           text;
+  margin-right:     1.5em;
+  text-shadow:      none;
+  width:            100%;
+}
+
+/* those items that show actual Extension data: ID, Name */
+.extension-edit-data {
+/*background-color: var(--extension-background-color); */
+
+  border-bottom:    1px solid;
+  border-top:       1px solid;
+  border-color:     var(--extension-border-color); /* MUST BE AFTER border-bottom and border-top as they revert color */
+
+  color:            var(--extension-color);                     /* MABXXX MOVE TO theming.css */
+  padding:          0.1em 0.5em;
+  white-space:      nowrap;
+  -moz-appearance:  none;
+}
+
+.extension-edit-item > :nth-child(2) { /* .extension-edit-item:nth-child(2) hopefully the first extension-edit-data */
+  /* hopefully the first extension-edit-data: rounded left corners */
+/*border-bottom-left-radius: 5px; */
+  border-left-style:         solid;
+  border-left-width:         1px;
+ /*order-top-left-radius:    5px; */
+}
+
+.extension-edit-item > :nth-last-child(2) { /* .extension-edit-item:nth-last-child(2) hopefully the last extension-edit-data */
+  /* hopefully the last extension-edit-data: rounded right corners */
+/*border-bottom-right-radius: 5px; */
+  border-right-style:         solid;
+  border-right-width:         1px;
+/*border-top-right-radius:    5px; */
+}
+
+/* colors for access-disallowed extensions */
+.extension-edit-item.access-disallowed > .extension-edit-data {
+  background-color: var(--extension-access-disallowed-background-color);
+  border-color:     var(--extension-access-disallowed-border-color);
+  color:            var(--extension-access-disallowed-color);
+}
+
+.extension-edit-id { /* .extension-edit-item > .extension-edit-id */
+  width:      auto;
+  text-align: left;
+}
+
+.extension-edit-name { /* .extension-edit-item > .extension-edit-name */
+  width:      auto;
+  text-align: left;
+}
+
+.extension-edit-item:hover > .extension-edit-data {
+  background-color: var(--extension-hover-background-color);          /* MABXXX MOVE TO theming.css */
+  border-color:     var(--extension-hover-border-color);              /* MABXXX MOVE TO theming.css */
+  color:            var(--extension-hover-color);                     /* MABXXX MOVE TO theming.css */
+  text-shadow:      1px 1px var(--extension-hover-text-shadow-color); /* MABXXX MOVE TO theming.css */
+}
+
+.extension-edit-controls-right {
+  height:       100%;
+  padding:      0;
+  padding-left: 0.5em;
+
+  /* grid layout */
+  display:               grid;
+
+  grid-column-gap:       4px;
+  grid-template-areas:   "edit";
+  grid-template-columns: min-content;
+  .extension-edit-controls {
+    grid-area: edit;
+  }
+}
+
+.extension-edit-error-item { /* <TR>  Extension List Editor Error Row */
+  color:            rgb(175, 0, 0);                             /* MABXXX MOVE TO theming.css */
+  cursor:           default;
+  font:             var(--extension-font);                      /* MABXXX MOVE TO theming.css */
+  font-size:        var(--extension-font-size);                 /* MABXXX MOVE TO theming.css */
+  font-weight:      bold;
+  padding:          0.5rem 1.1rem;
+  text-align:       left;
+  text-decoration:  none;
+/*text-shadow:      1px 1px black; */                           /* MABXXX MOVE TO theming.css */
+  white-space:      nowrap;
+  width:            100%;
+  -moz-appearance:  none;
+}
+
+.extension-edit-error-left-icons {
+  padding:          0.1em 0.5em;
+  text-align:       center;
+}
+
+.extension-edit-error-icon {
+}
+
+.extension-edit-error-data {
+  padding:          0.1em 0.5em;
+  vertical-align:   top;
+}
+
+.extension-edit-error-label {
+  vertical-align:   top;
+}
+
+
+
+/*** EXTENSON ITEM CHECKBOXES ***/
+
+.extension-controls-panel {
+  cursor:         default !important;
+  margin:         0;
+  padding:        0;
+}
+
+.edit-controls {
+  display:        flex;
+  flex-direction: row;
+  vertical-align: middle;
+}
+
+
+
+/* BUTTONS IN GENERAL */
+
+#fsbOptionsWrapper button.extension-icon-button {
+  background-color:    transparent !important;
+  background-position: center;
+  background-repeat:   no-repeat;
+  background-size:     cover;
+  border:              1px solid transparent;
+  cursor:              pointer;
+  display:             block;
+  height:              10px;
+  min-height:          10px;
+  margin:              2px 0px 0px 0px;
+  padding:             0;
+  width:               10px;
+  min-width:           10px;
+  -moz-appearance:     none;
+}
+
+
+
+/* ICON BUTTONS IN GENERAL */
+#fsbOptionsWrapper button.extension-icon-button {
+  height:     24px;
+  min-height: 24px;
+  min-width:  24px;
+  width:      24px;
+}
+
+/* ICON BUTTONS WHEN DISABLED */
+#fsbOptionsWrapper button.add-extension[disabled] {
+  background-image: url("../images/icons/create_medium_gray_32x32.png") !important;
+  cursor:           var(--cursor-disabled);
+}
+#fsbOptionsWrapper button.edit-extension[disabled] {
+  background-image: url("../images/icons/edit_medium_gray_32x32.png") !important;
+  cursor:           var(--cursor-disabled);
+}
+#fsbOptionsWrapper button.delete-extension[disabled] {
+  background-image: url("../images/icons/trashcan-gray-24x24.png") !important;
+  cursor:           var(--cursor-disabled);
+}
+#fsbOptionsWrapper button#extensionEditCancelButton[disabled] {
+  background-image: url("../images/icons/cancel-icon-medium-gray-24x24.png") !important;
+  cursor:           var(--cursor-disabled);
+}
+#fsbOptionsWrapper button#extensionEditSaveButton[disabled] {
+  background-image: url("../images/icons/save-medium-gray-24px.png") !important;
+  cursor:           var(--cursor-disabled);
+}
+
+/* ICON BUTTONS WHEN NOT DISABLED */
+#fsbOptionsWrapper button.add-extension:not([disabled]) {
+  background-image: url("../images/icons/create_light_gray_32x32.png") !important;
+}
+#fsbOptionsWrapper button.edit-extension:not([disabled]) {
+  background-image: url("../images/icons/edit_light_gray_32x32.png") !important;
+}
+#fsbOptionsWrapper button.delete-extension:not([disabled]) {
+  background-image: url("../images/icons/trashcan-red-24x24.png") !important;
+}
+#fsbOptionsWrapper button#extensionEditCancelButton:not([disabled]) {
+  background-image: url("../images/icons/cancel-icon-red-24x24.png") !important;
+}
+#fsbOptionsWrapper button#extensionEditSaveButton:not([disabled]) {
+  background-image: url("../images/icons/save-light-gray-24px.png") !important;
+}
+
+/* ICON BUTTONS WHEN HOVERING */
+/*
+#fsbOptionsWrapper button.extension-icon-button:not([disabled]):hover {
+  border-color:        var(--button-hover-border-color);
+}
+*/
+#fsbOptionsWrapper button.add-extension:not([disabled]):hover {
+  background-image: url("../images/icons/create_white_32x32.png") !important;
+}
+#fsbOptionsWrapper button.edit-extension:not([disabled]):hover {
+  background-image: url("../images/icons/edit_white_32x32.png") !important;
+}
+#fsbOptionsWrapper button.delete-extension:not([disabled]):hover {
+  background-image: url("../images/icons/trashcan-red-lighter-24x24.png") !important;
+}
+#fsbOptionsWrapper button#extensionEditCancelButton:not([disabled]):hover {
+  background-image: url("../images/icons/cancel-icon-light-red-24x24.png") !important;
+}
+#fsbOptionsWrapper button#extensionEditSaveButton:not([disabled]):hover {
+  background-image: url("../images/icons/save-white-24px.png") !important;
+}
+
+#fsbOptionsWrapper button:is(.extension-list-button, .extension-edit-button)[disabled]:not(.extension-icon-button) { /* not for buttons that use their own icons */
+  opacity: 0.6; /* MABXXX SHOULD USE A DIFFERENT backgrond-image INSTEAD */
+}
+
+
+#fsbOptionsWrapper input:is([type="checkbox"], [type="radio"]):not([disabled]) { /* any checkbox or radio button */
+  cursor: pointer;
+  & ~ label[for] {
+    cursor: pointer;
+  }
+}
+#fsbOptionsWrapper input:is([type="checkbox"], [type="radio"])[disabled] { /* any checkbox or radio button */
+  cursor: var(--cursor-disabled);
+}
+
+#fsbOptionsWrapper td:has(input:is([type="text"], [type="number"])) { /* any text or number field inside a <td> */
+  padding-right:    1.0em;
+}
+#fsbOptionsWrapper input:is([type="text"], [type="number"]):not([disabled]) { /* any text or number field */
+  color:            black;       /* MABXXX MOVE TO theming.css */
+  text-shadow:      none;
+}
+#fsbOptionsWrapper input:is[type="number"]:not([disabled]) { /* any number field */
+  cursor:           pointer;
+}
+#fsbOptionsWrapper input:is([type="text"], [type="number"])[disabled] { /* any disabled text or number field */
+}
+
+
+
+/* Anything done with non-specific selectors can be influenced
+ * by outsiders, e.g. userChrome.css
+ */
+
+/* BACICALLY ALMOST NONE OF THIS BUTTON CRAP EVEN WORKS - THANKS FOR WASING MY TIME, !important */
+/* I could not get ANY variables to work, not from themes.css, AND not locally */
+#fsbOptionsWrapper button:not(.extension-icon-button) {
+  background-image: NONE !important;
+  border:           1px solid transparent;
+  border-radius:    0.5em;
+  cursor:           pointer;
+  font:             var(--button-font);
+  font-size:        var(--button-font-size);
+  height:           1.5rem;
+  margin:           0 ;
+  padding:          0.8rem 1.1rem;
+  text-align:       left;
+  text-decoration:  none;
+  text-shadow:      none;
+  -moz-appearance:  none;
+  appearance:       none;
+
+  & > label {
+    cursor:         inherit;
+  }
+}
+
+#fsbOptionsWrapper button:not(.extension-icon-button, [disabled]) {
+  background-color: rgb(110, 110, 114);
+  border-color:     rgb(200, 200, 200);
+  color:            rgb(250, 250, 250);
+  color:            BLACK; /* yeah, this does NOT work */
+}
+
+#fsbOptionsWrapper button:not(.extension-icon-button)[disabled] {
+/*background-color: rgb(75, 75, 75);*/
+/*border-color:     rgb(90, 90, 90);*/
+/*color:            rgb(120, 120, 120); /* does even THIS work? NO. */
+  cursor:           var(--cursor-disabled);
+  opacity:          0.6;
+}
+
+#fsbOptionsWrapper button:not(.extension-icon-button, [disabled]):hover {
+  background-color: rgb(60, 160, 165);
+  background-image: NONE !important;
+  border-color:     rgb(240, 240, 240);
+  color:            rgb(255, 255, 255);
+  text-shadow:      1px 1px rgb(20, 20, 20);
+}
+
+#fsbOptionsWrapper button:not(.extension-icon-button):-moz-window-inactive {
+  opacity: 0.8;
+}

@@ -1,0 +1,442 @@
+/* Event Log Viewer styles */
+
+
+@import url("../styles/theming.css");
+
+html, body {
+  background-color: var(--page-background-color);
+  color:            var(--page-color);
+  font:             var(--page-font);
+  font-size:        var(--page-font-size);
+  height:           100%;
+
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select:    none; /* Firefox */
+  -ms-user-select:     none; /* IE10+/Edge */
+  user-select:         none; /* Standard */
+}
+
+body {
+  background-color: var(--body-background-color);
+  height:           100%;
+}
+
+option {
+}
+
+#fsbEventLogViewer {
+  height: 100%;
+  margin: 0.8em auto;
+  width:  100%;
+
+  /* grid layout */
+
+  display:    grid;
+  column-gap: 2px;
+  row-gap:    0px;
+  grid-template-areas:
+    "title          title           title"
+    "file-info      file-info       file-info"
+    "instructions   instructions    instructions"
+    "left-spacer    filters         right-spacer"
+    "left-spacer    data-wrapper    right-spacer"
+    "left-spacer    controls-panel  right-spacer"
+    "bottom-spacer  bottom-spacer   bottom-spacer";
+
+  grid-template-columns: auto max-content auto;
+  grid-template-rows:    min-content min-content auto min-content min-content;
+
+  & #fsbEventLogViewerTitlePanel {
+    grid-area: title;
+  }
+
+  & #fsbEventLogViewerFileInfoPanel {
+    grid-area: file-info;
+  }
+
+  & #fsbEventLogViewerInstructionsPanel {
+    grid-area: instructions;
+  }
+
+  & #fsbEventLogViewerFiltersPanel {
+    grid-area: filters;
+  }
+
+  & #fsbEventLogViewerFileDataWrapper {
+    grid-area: data-wrapper;
+  }
+
+  & #fsbEventLogViewerControlsPanel {
+    grid-area: controls-panel
+  }
+
+  & #fsbEventLogViewerLeftSpacer {
+    grid-area: left-spacer;
+  }
+
+  & #fsbEventLogViewerRightSpacer {
+    grid-area: right-spacer;
+  }
+
+  & #fsbEventLogViewerBottomSpacer {
+    grid-area:  bottom-spacer;
+  }
+}
+
+#fsbEventLogViewerTitlePanel {
+  background-color: var(--title-background-color);
+  border:           1px solid var(--title-border-color);
+  border-radius:    var(--title-border-radius);
+  color:            var(--title-color);
+  font-size:        var(--title-font-size);
+  font-weight:      var(--title-font-weight);
+  line-height:      var(--title-line-height);
+  padding:          1.0rem;
+  text-align:       left;
+}
+
+#fsbEventLogViewerFileInfoPanel {
+}
+
+#fsbEventLogViewerFileInfo {
+  & th {
+    color:       var(--heading-color);
+    font-size:   var(--heading-font-size);
+    font-weight: var(--heading-font-weight);
+    line-height: var(--heading-line-height);
+
+    text-align:  right;
+  }
+}
+
+#fsbEventLogViewerInstructions {
+  background-color: var(--instructions-background-color);
+  border:           1px solid var(--instructions-border-color);
+  border-radius:    var(--instructions-border-radius);
+  color:            var(--instructions-color);
+  font-size:        var(--instructions-font-size);
+  font-weight:      var(--instructions-font-weight);
+  margin-top:       1.0rem;
+  margin-left:      1.0rem;
+}
+
+
+#fsbEventLogViewerFiltersPanel { /* this is a <DIV> */
+}
+
+.filter-label {
+  padding-left: 1.0em;
+}
+
+.filter-hhmmss-separator {
+  padding: NONE;
+}
+
+.filter-times-separator {
+  padding: NONE;
+}
+
+.filter-item {
+}
+
+.filter-panel-message {
+  background-color: var(--message-text-background-color);
+  border:           var(--message-text-border);
+  color:            var(--message-text-color);
+  font:             var(--message-text-font);
+  font-size:        var(--message-text-font-size);
+  font-weight:      var(--message-text-font-weight);
+  margin-left:      2.0em;
+  margin-top:       0.20em;
+  padding:          0em 0.25em;
+  width:            fit-content;
+}
+
+#fsbEventLogViewerFileDataWrapper { /* this is a <DIV> */
+  background-color: var(--panel-background-color);
+  border:           1px solid var(--panel-border-color);
+  border-radius:    10px;
+  margin:           12px;
+  overflow-x:       hidden;
+  overflow-y:       auto;
+  padding:          0.5em 1.0em 0.5em 1.0em;
+}
+
+#fsbEventLogViewerFileData { /* this is a <TABLE> */
+  border-radius:    10px;
+  border-collapse:  separate;
+  border-spacing:   2px 0px;
+  margin-right:     20px;
+  overflow-x:       hidden;
+  overflow-y:       auto;
+  -moz-appearance:  none;
+}
+
+
+
+.file-header-item {
+}
+
+.file-header-data {
+  background-color: var(--list-header-item-background-color);
+  border:           none;
+  color:            var(--list-header-item-color);
+  cursor:           default;
+  font:             var(--list-header-item-font);
+  font-size:        var(--list-header-item-font-size);
+  font-weight:      var(--list-header-item-font-weight);
+  padding:          0.5rem 1.1rem;
+  text-align:       center;
+  text-decoration:  none;
+  text-shadow:      1px 1px var(--list-header-item-shadow-color);
+  white-space:      nowrap;
+  width:            100%;
+  -moz-appearance:  none;
+}
+
+.file-header-time {
+}
+
+.file-header-sender {
+}
+
+.file-header-type {
+}
+
+.file-header-command {
+}
+
+.file-header-parameters {
+  text-align:       left;
+}
+
+.file-header-result {
+  text-align:       left;
+}
+
+
+
+.file-line-item {
+  background-color: transparent !important;
+  border:           none !important;
+  display:          table-row;
+  font:             var(--list-item-font);
+  font-size:        var(--list-item-font-size);
+  padding:          0.75rem 1.1rem;
+  text-align:       left;
+  text-decoration:  NONE;
+  text-shadow:      none;
+  white-space:      nowrap;
+  width:            100%;
+  -moz-appearance:  none;
+}
+
+.file-line-item:is(.filter-by-time, .filter-by-sender, .filter-by-type, .filter-by-command, .filter-by-status) {
+  display:          NONE;
+}
+
+
+.file-line-item > :first-child {
+  border-bottom-left-radius: 5px;
+  border-left:               1px solid; /* var(--list-item-border-color) !important; */
+  border-top-left-radius:    5px;
+}
+
+.file-line-item > :last-child {
+  border-bottom-right-radius: 5px;
+  border-right:               1px solid; /* var(--list-item-border-color) !important; */
+  border-top-right-radius:    5px;
+}
+
+.file-line-data {
+  background-color: var(--list-item-background-color);
+  border-bottom:    1px solid;
+  border-top:       1px solid;
+  border-color:     var(--list-item-border-color) !important;
+  color:            var(--list-item-color);
+  margin:           0 0.5em;
+  padding:          0.1em 0.5em;
+  text-decoration:  var(--list-item-text-decoration);
+  white-space:      nowrap;
+  -moz-appearance:  none;
+}
+
+.file-line-time {
+}
+
+.file-line-sender {
+}
+
+.file-line-type {
+}
+
+.file-line-command {
+}
+
+.file-line-parameters {
+}
+
+.file-line-result {
+}
+
+
+
+.log-error {
+  display: NONE;
+}
+
+.log-error[error="true"] {
+  display:        flex;
+  flex-direction: row;
+}
+
+.log-error-icon-large {
+  height:         16px;
+  max-height:     16px;
+  max-width:      16px;
+  vertical-align: middle;
+  width:          16px;
+}
+
+.log-error-icon {
+  height:         8px;
+  max-height:     8px;
+  max-width:      8px;
+  vertical-align: middle;
+  width:          8px;
+}
+
+.log-error-text {
+  color:       RED !important;
+  margin-left: 0.25em;
+}
+
+
+
+#fsbEventLogViewerControlsPanel {
+  margin-top:   2px;
+
+  /* grid layout */
+
+  display:               grid;
+  column-gap:            4px;
+/*row-gap:               0px; */
+  grid-template-areas:   "button-panel right-spacer";
+  grid-template-columns: max-content auto;
+
+  & #fsbEventLogViewerControlsButtonPanel {
+    grid-area: button-panel;
+  }
+  & #fsbEventLogViewerControlsPanelSpacerRight {
+    grid-area: right-spacer;
+  }
+}
+
+#fsbEventLogViewerControlsPanel {
+  margin-top:   5px;
+  margin-left:  20px;
+  margin-right: 20px;
+}
+
+#fsbEventLogViewerControlsButtonPanel {
+}
+
+#fsbEventLogViewerBottomSpacer {
+  height:     40px;
+  min-height: 40px;
+}
+
+
+
+
+/* Anything done with non-specific selectors can be influenced
+ * by outsiders, e.g. userChrome.css, userContent.css
+ */
+#fsbEventLogViewer button {
+  background-image: NONE !important;
+  border:           1px solid transparent;
+  border-radius:    0.5em;
+  cursor:           pointer;
+  font:             var(--menu-font);
+  font-size:        var(--menu-font-size);
+  font-size:        1rem;
+  height:           1.5rem;
+  margin:           0;
+  padding:          0.8rem 1.1rem;
+  text-align:       left;
+  text-decoration:  none;
+  text-shadow:      none;
+  -moz-appearance:  none;
+}
+
+#fsbEventLogViewer button:not([disabled]) {
+  background-color: var(--button-background-color);
+  border-color:     var(--button-border-color);
+  color:            var(--button-color);
+}
+
+#fsbEventLogViewer button[disabled] {
+  background-color: var(--button-disabled-background-color);
+  border-color:     var(--button-disabled-border-color);
+  color:            var(--button-disabled-color);
+  cursor:           var(--cursor-disabled);
+}
+
+#fsbEventLogViewer button:not([disabled]):hover {
+  background-color: var(--button-hover-background-color);
+  background-image: NONE !important;
+  border-color:     var(--button-hover-border-color);
+  color:            var(--button-hover-color);
+  text-shadow:      1px 1px var(--button-hover-text-shadow-color);
+}
+
+button#fsbEventLogViewerDoneButton:not([disabled]) {
+  background-color: var(--button-cancel-background-color);
+  color:            var(--button-cancel-color);
+}
+
+button#fsbEventLogViewerDoneButton[disabled] {
+  background-color: var(--button-cancel-disabled-background-color);
+  color:            var(--button-cancel-disabled-color);
+}
+
+button#fsbEventLogViewerDoneButton:not([disabled]):hover {
+  background-color: var(--button-cancel-hover-background-color);
+  background-image: NONE !important;
+  border-color:     var(--button-cancel-hover-color);
+  color:            var(--button-cancel-hover-color);
+}
+
+button#fsbEventLogViewerDeleteButton:not([disabled]) {
+  background-color: var(--button-save-background-color);
+  color:            var(--button-save-color);
+}
+
+button#fsbEventLogViewerDeleteButton[disabled] {
+  background-color: var(--button-save-disabled-background-color);
+  color:            var(--button-save-disabled-color);
+}
+
+button#fsbEventLogViewerDeleteButton:not([disabled]):hover {
+  background-color: var(--button-save-hover-background-color);
+  background-image: NONE !important;
+  border-color:     var(--button-save-hover-color);
+  color:            var(--button-save-hover-color);
+}
+
+
+input:is([type="checkbox"], [type="radio"]):not([disabled]) { /* any checkbox */
+  cursor: pointer;
+  & ~ label[for] {
+    cursor: pointer;
+  }
+}
+input:disabled {
+  cursor:           var(--cursor-disabled);
+}
+
+#fsbEventLogViewer button:-moz-window-inactive,
+.label:-moz-window-inactive
+{
+  opacity: 0.8;
+}

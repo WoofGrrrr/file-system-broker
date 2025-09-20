@@ -1,0 +1,45 @@
+{
+  "manifest_version": 2,
+  "name": "__MSG_extensionName__",
+  "description": "__MSG_extensionDescription__",
+  "version": "0.1",
+  "author": "WoofGrrrr",
+  "default_locale": "en",
+  "applications": {
+    "gecko": {
+      "id": "file-system-broker@localmotive.com",
+      "strict_min_version": "115.0"
+    }
+  },
+  "experiment_apis": {
+    "BrokerFileSystem": {
+      "schema": "apis/BrokerFileSystem/schema.json",
+      "parent": {
+        "scopes": ["addon_parent"],
+        "paths": [["BrokerFileSystem"]],
+        "script": "apis/BrokerFileSystem/implementation.js"
+      }
+    }
+  },
+  "permissions": [
+    "management",
+    "storage"
+  ],
+  "background": {
+    "page": "background.html"
+  },
+   "options_ui": {
+    "page": "optionsUI/optionsUI.html",
+    "browser_style": false,
+    "open_in_tab": true
+  },
+  "content_scripts": [
+    {
+      "matches": [ "https://*/*" ],
+      "js": [
+        "./ical.js",
+        "./utilities.js"
+      ]
+    }
+  ]
+}

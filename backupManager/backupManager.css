@@ -1,0 +1,461 @@
+/* Backup Manager styles */
+
+@import url("../styles/theming.css");
+
+html, body {
+  background-color: var(--page-background-color);
+  color:            var(--page-color);
+  font:             var(--page-font);
+  font-size:        var(--page-font-size);
+  height:           100%;
+  padding:          8px;
+
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select:    none; /* Firefox */
+  -ms-user-select:     none; /* IE10+/Edge */
+  user-select:         none; /* Standard */
+}
+
+body {
+  background-color: var(--body-background-color);
+  height:           100%;
+}
+
+.compact-list {
+  margin: 0;
+  padding: 0px 0px 0px 1.0em;
+}
+
+.compact-list > li {
+}
+
+input[type="checkbox"].open-close-check {
+  display: none;
+}
+
+input[type="checkbox"].open-close-check + label {
+  background-repeat: no-repeat;
+  border:            NONE;                    
+  cursor:            pointer !important;
+  height:            10px;
+  width:             10px;
+  display:           inline-block;
+  padding:           0px;;
+}
+
+input[type="checkbox"].open-close-check:checked + label {
+  background-image:  url("../images/icons/light-gray-triangle-outline-down_10x10.png") !important;
+}
+
+input[type="checkbox"].open-close-check:not(checked) + label {
+  background-image:  url("../images/icons/light-gray-triangle-outline-right_10x10.png") !important;
+}
+
+.options-open-close-panel {
+/*background-color: var(--panel-background-color);*/
+/*border:           1px solid var(--panel-border-color);*/
+/*border-radius:    5px;*/
+  margin-left:      12px;
+/*padding:          4px;*/
+}
+
+#fsbBackupManager {
+  height: 100%;
+  margin: 0.8em auto;
+  width:  100%;
+
+  /* grid layout */
+
+  display:    grid;
+  column-gap: 2px;
+  row-gap:    0px;
+  grid-template-areas:
+    "title          title           title"
+    "instructions   instructions    instructions"
+    "left-spacer    list-wrapper    right-spacer"
+    "left-spacer    controls-panel  right-spacer"
+    "bottom-spacer  bottom-spacer   bottom-spacer";
+
+  grid-template-columns: auto max-content auto;
+  grid-template-rows:    min-content min-content auto min-content min-content;
+
+  & #fsbBackupManagerTitlePanel {
+    grid-area: title;
+  }
+
+  & #fsbBackupManagerInstructionsPanel {
+    grid-area: instructions;
+  }
+
+  & #fsbBackupManagerFileNameListWrapper {
+    grid-area: list-wrapper;
+  }
+
+  & #fsbBackupManagerControlsPanel {
+    grid-area: controls-panel
+  }
+
+  & #fsbBackupManagerLeftSpacer {
+    grid-area: left-spacer;
+  }
+
+  & #fsbBackupManagerRightSpacer {
+    grid-area: right-spacer;
+  }
+
+  & #fsbBackupManagerBottomSpacer {
+    grid-area:  bottom-spacer;
+  }
+}
+
+#fsbBackupManagerTitlePanel {
+  background-color: var(--title-background-color);
+  border:           1px solid var(--title-border-color);
+  border-radius:    var(--title-border-radius);
+  color:            var(--title-color);
+  font-size:        var(--title-font-size);
+  font-weight:      var(--title-font-weight);
+  line-height:      var(--title-line-height);
+  padding:          0.25em 1.0em;
+  text-align:       left;
+}
+
+#fsbBackupManagerInstructionsPanel {
+  margin-top:       0.0em;
+  margin-left:      2.0em;
+}
+
+#fsbBackupManagerInstructions {
+  background-color: var(--instructions-background-color);
+  border:           1px solid var(--instructions-border-color);
+  border-radius:    var(--instructions-border-radius);
+  color:            var(--instructions-color);
+  font-size:        var(--instructions-font-size);
+  font-weight:      var(--instructions-font-weight);
+  margin-left:      1.0em;
+}
+
+
+
+#fsbBackupManagerFileNameListWrapper { /* this is a <DIV> */
+  background-color: var(--panel-background-color);
+  border:           1px solid var(--panel-border-color);
+  border-radius:    10px;
+  margin:           12px;
+  overflow-x:       hidden;
+  overflow-y:       auto;
+  padding:          0.5em 1.0em 0.5em 1.0em;
+}
+
+#fsbBackupManagerFileNameList { /* this is a <TABLE> */
+  border-radius:    10px;
+  border-collapse:  separate;
+  border-spacing:   2px 0px;
+  margin-right:     20px;
+  overflow-x:       hidden;
+  overflow-y:       auto;
+  -moz-appearance:  none;
+}
+
+.backup-error {
+  display: NONE;
+}
+
+.backup-error[error="true"] {
+  display:        flex;
+  flex-direction: row;
+}
+
+.backup-error-icon-large {
+  height:         16px;
+  max-height:     16px;
+  max-width:      16px;
+  vertical-align: middle;
+  width:          16px;
+}
+
+.backup-error-icon {
+  height:         8px;
+  max-height:     8px;
+  max-width:      8px;
+  vertical-align: middle;
+  width:          8px;
+}
+
+.backup-error-text {
+  color:       RED !important;
+  margin-left: 0.25em;
+}
+
+
+
+.filename-list-header { /* <TH>  FileName List Header Row */
+  background-color: var(--list-header-item-background-color);
+  border:           none;
+  color:            var(--list-header-item-color);
+  cursor:           default;
+  font:             var(--list-header-item-font);
+  font-size:        var(--list-header-item-font-size);
+  font-weight:      var(--list-header-item-font-weight);
+  padding:          0.5em 1.1em;
+  text-align:       center;
+  text-decoration:  none;
+  text-shadow:      1px 1px var(--list-header-item-shadow-color);
+  white-space:      nowrap;
+  width:            100%;
+  -moz-appearance:  none;
+}
+
+.filename-list-header-data { /* <TH>  FileName List Header Row */
+}
+.filename-list-header-filename { /* <TH>  FileName List Header Row */
+}
+.filename-list-header-time-created { /* <TH>  FileName List Header Row */
+}
+.filename-list-header-time-last-modified { /* <TH>  FileName List Header Row */
+}
+.filename-list-header-time-soze { /* <TH>  FileName List Header Row */
+}
+
+
+.filename-list-item { /* this is a <TR> */
+  background-color: transparent !important;
+
+  border:           none !important;
+
+  font:             var(--list-item-font);
+  font-size:        var(--list-item-font-size);
+  padding:          0.75em 1.1em;
+  text-align:       left;
+  text-decoration:  NONE;
+  text-shadow:      none;
+  white-space:      nowrap;
+  width:            100%;
+  -moz-appearance:  none;
+}
+
+.filename-list-item > :first-child {
+  border-bottom-left-radius: 5px;
+  border-left:               1px solid; /* var(--list-item-border-color) !important; */
+  border-top-left-radius:    5px;
+}
+
+.filename-list-item > :last-child {
+  border-bottom-right-radius: 5px;
+  border-right:               1px solid; /* var(--list-item-border-color) !important; */
+  border-top-right-radius:    5px;
+}
+
+.filename-list-item-data { /* this is a <TD> */
+  background-color: var(--list-item-background-color);
+  border-bottom:    1px solid;
+  border-top:       1px solid;
+  border-color:     var(--list-item-border-color) !important;
+  color:            var(--list-item-color);
+  margin:           0 0.5em;
+  padding:          0.1em 0.5em;
+  text-decoration:  var(--list-item-text-decoration);
+  white-space:      nowrap;
+  -moz-appearance:  none;
+}
+
+.filename-list-item-filename { /* .filename-list-item > .filename-list-item-filename - this is a <TD> */
+  min-width: 10em;
+  width:     auto;
+}
+
+.filename-list-item-time-creation { /* .filename-list-item > .filename-list-item-time-creation - this is a <TD> */
+  min-width: 12em;
+  width:     auto;
+}
+
+.filename-list-item-filesize { /* .filename-list-item > .filename-list-item-filesize - this is a <TD> */
+  min-width:  5em;
+  text-align: right;
+  width:      auto;
+}
+
+tr.filename-list-item.selected > td.filename-list-item-data {
+  background-color: var(--list-item-selected-background-color);
+  border-color:     var(--list-item-selected-border-color);
+  color:            var(--list-item-selected-color);
+  text-shadow:      1px 1px var(--list-item-selected-text-shadow-color);
+}
+
+tr.filename-list-item:hover > td.filename-list-item-data {
+  background-color: var(--list-item-hover-background-color);
+  background-image: var(--list-item-hover-background-image);
+  border-color:     var(--list-item-hover-border-color);
+  color:            var(--list-item-hover-color);
+  text-shadow:      1px 1px var(--list-item-hover-text-shadow-color);
+}
+
+
+
+tr.filename-list-item.selected > td.filename-list-item-data { /* selected & not configured */
+  text-decoration:  var(--list-item-selected-text-decoration);
+}
+
+
+
+#fsbBackupManagerControlsPanel {
+  margin-top:   2px;
+
+  /* grid layout */
+
+  display:               grid;
+  column-gap:            4px;
+/*row-gap:               0px; */
+  grid-template-areas:   "button-panel right-spacer";
+  grid-template-columns: max-content auto;
+
+  & #fsbBackupManagerControlsButtonPanel {
+    grid-area: button-panel;
+  }
+  & #fsbBackupManagerControlsPanelSpacerRight {
+    grid-area: right-spacer;
+  }
+}
+
+#fsbBackupManagerControlsPanel {
+  margin-top:   5px;
+  margin-left:  20px;
+  margin-right: 20px;
+}
+
+#fsbBackupManagerControlsButtonPanel {
+}
+
+#fsbBackupManagerBottomSpacer {
+  height:     40px;
+  min-height: 40px;
+}
+
+
+
+/* Anything done with non-specific selectors can be influenced
+ * by outsiders, e.g. userChrome.css, userContent.css
+ */
+#fsbBackupManager button {
+  background-image: NONE !important;
+  border:           1px solid transparent;
+  border-radius:    0.5em;
+  cursor:           pointer;
+  font:             var(--menu-font);
+  font-size:        var(--menu-font-size);
+  font-size:        1em;
+  height:           1.5em;
+  margin:           0;
+  padding:          0.8em 1.1em;
+  text-align:       left;
+  text-decoration:  none;
+  text-shadow:      none;
+  -moz-appearance:  none;
+}
+
+#fsbBackupManager button:not([disabled]) {
+  background-color: var(--button-background-color);
+  border-color:     var(--button-border-color);
+  color:            var(--button-color);
+}
+
+#fsbBackupManager button[disabled] {
+  background-color: var(--button-disabled-background-color);
+  border-color:     var(--button-disabled-border-color);
+  color:            var(--button-disabled-color);
+  cursor:           var(--cursor-disabled);
+}
+
+#fsbBackupManager button:not([disabled]):hover {
+  background-color: var(--button-hover-background-color);
+  background-image: NONE !important;
+  border-color:     var(--button-hover-border-color);
+  color:            var(--button-hover-color);
+  text-shadow:      1px 1px var(--button-hover-text-shadow-color);
+}
+
+button#fsbBackupManagerDoneButton:not([disabled]) {
+  background-color: var(--button-cancel-background-color);
+  color:            var(--button-cancel-color);
+}
+
+button#fsbBackupManagerDoneButton[disabled] {
+  background-color: var(--button-cancel-disabled-background-color);
+  color:            var(--button-cancel-disabled-color);
+}
+
+button#fsbBackupManagerDoneButton:not([disabled]):hover {
+  background-color: var(--button-cancel-hover-background-color);
+  background-image: NONE !important;
+  border-color:     var(--button-cancel-hover-color);
+  color:            var(--button-cancel-hover-color);
+}
+
+button#fsbBackupManagerBackupButton:not([disabled]) {
+  background-color: var(--button-save-background-color);
+  color:            var(--button-save-color);
+}
+
+button#fsbBackupManagerBackupButton[disabled] {
+  background-color: var(--button-save-disabled-background-color);
+  color:            var(--button-save-disabled-color);
+}
+
+button#fsbBackupManagerBackupButton:not([disabled]):hover {
+  background-color: var(--button-save-hover-background-color);
+  background-image: NONE !important;
+  border-color:     var(--button-save-hover-color);
+  color:            var(--button-sav e-hover-color);
+}
+
+button#fsbBackupManagerRestoreButton:not([disabled]) {
+  background-color: var(--button-save-background-color);
+  color:            var(--button-save-color);
+}
+
+button#fsbBackupManagerRestoreButton[disabled] {
+  background-color: var(--button-save-disabled-background-color);
+  color:            var(--button-save-disabled-color);
+}
+
+button#fsbBackupManagerRestoreButton:not([disabled]):hover {
+  background-color: var(--button-save-hover-background-color);
+  background-image: NONE !important;
+  border-color:     var(--button-save-hover-color);
+  color:            var(--button-sav e-hover-color);
+}
+
+button#fsbBackupManagerDeleteButton:not([disabled]) {
+  background-color: var(--button-save-background-color);
+  color:            var(--button-save-color);
+}
+
+button#fsbBackupManagerDeleteButton[disabled] {
+  background-color: var(--button-save-disabled-background-color);
+  color:            var(--button-save-disabled-color);
+}
+
+button#fsbBackupManagerDeleteButton:not([disabled]):hover {
+  background-color: var(--button-save-hover-background-color);
+  background-image: NONE !important;
+  border-color:     var(--button-save-hover-color);
+  color:            var(--button-save-hover-color);
+}
+
+
+input:is([type="checkbox"], [type="radio"]):not([disabled]) { /* any checkbox */
+  cursor: pointer;
+  & ~ label[for] {
+    cursor: pointer;
+  }
+}
+input:disabled {
+  cursor:           var(--cursor-disabled);
+}
+
+#fsbBackupManager button:-moz-window-inactive,
+.filename-list-item:-moz-window-inactive,
+.label:-moz-window-inactive
+{
+  opacity: 0.8;
+}

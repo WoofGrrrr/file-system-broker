@@ -1,0 +1,683 @@
+{
+  "extensionName": {
+    "message": "FileSystemBroker"
+  },
+  "extensionDescription": {
+    "message": "FileSystemBroker uses the Experiments API to provide limited access to the system file system. Its purpose is to make it so that other Web Extensions can write an read files without having to use the Experiments API directly. Access to the file system is limited to only a specific directory in the user's Profile Folder. It can write, read, check the existence, get file properties, get a list of files, etc"
+  },
+  "fsbConfirmDialogPageTitle": {
+    "message": "Confirmation"
+  },
+  "fsbConfirmDialogGrantExtensionTitle": {
+    "message": "FileSystemBroker Access Control"
+  },
+  "fsbConfirmDialogGrantExtensionMessage1": {
+    "message": "The following Extension has attempted to use FileSystemBroker:"
+  },
+  "fsbConfirmDialogGrantExtensionMessage2": {
+    "message": "If you Grant or Deny access, it will be recorded, and you will NOT be asked again."
+  },
+  "fsbConfirmDialogGrantExtensionMessage3": {
+    "message": "Do you want to Grant or Deny access to it?"
+  },
+  "options_fsbOptionsPageTitle": {
+    "message": "FileSystemBroker Settings"
+  },
+  "options_fsbOptionsTitle": {
+    "message": "FileSystemBroker Settings"
+  },
+  "options_fsbExtensionAccessControlEnabledCheck.label": {
+    "message": "Grant only select Extensions access to FileSystemBroker (otherwise all have access)"
+  },
+  "options_fsbShowGrantExtensionAccessDialogCheck.label": {
+    "message": "When an Extension requests access and is not granted, display a dialog where you can grant or deny it"
+  },
+  "options_fsbExtensionControlsTitle": {
+    "message": "Extension Access Controls"
+  },
+  "options_fsbExtensionsLoadingMessage": {
+    "message": "...Loading Extensions..."
+  },
+  "options_fsbExtensionListButtonsTitle": {
+    "message": "Actions"
+  },
+  "options_fsbHints.label": {
+    "message": "Hints"
+  },
+  "options_fsbExtensionList.hint1": {
+    "message": "To Grant an Extension access to FileSystemBroker, check the checkbox to the left of it"
+  },
+  "options_fsbExtensionList.hint2": {
+    "message": "To Deny an Extension access to FileSystemBroker, un-check the checkbox to the left of it"
+  },
+  "options_fsbExtensionList.hint3": {
+    "message": "Click on an Extension to Select it - it will be Highlighted (more than one may be selected)"
+  },
+  "options_fsbExtensionList.hint4": {
+    "message": "Click on the Extension again to De-select it"
+  },
+  "options_fsbExtensionList.hint5": {
+    "message": "You can Double-Click on an Extension to Edit it"
+  },
+  "options_fsbExtensionList.hint6": {
+    "message": "Disabled Extensions have Red Text with Strike-Through"
+  },
+  "options_fsbExtensionOptionsButtonBackupManager.label": {
+    "message": "Manage Backups"
+  },
+  "options_fsbExtensionOptionsButtonBackupManager.tooltip": {
+    "message": "Display the Backup Manager to List, Create, Delete, or Restore from Options Backup Files"
+  },
+  "options_fsbExtensionOptionsButtonEventLogManager.label": {
+    "message": "Manage Event Logs"
+  },
+  "options_fsbExtensionOptionsButtonEventLogManager.tooltip": {
+    "message": "Display the Event Log Manager to List, View, or Delete Event Logs"
+  },
+  "options_fsbRefreshListButton.label": {
+    "message": "Refresh List"
+  },
+  "options_fsbAllowDisallowAllButtonsLabel": {
+    "message": "Grant or Deny ALL listed Extensions access to FileSystemBroker"
+  },
+  "options_fsbAllowAllButton.label": {
+    "message": "Grant All"
+  },
+  "options_fsbDisallowAllButton.label": {
+    "message": "Deny All"
+  },
+  "options_fsbAllowDisallowSelectedButtonsLabel": {
+    "message": "Grant or Deny SELECTED listed Extensions access to FileSystemBroker"
+  },
+  "options_fsbAllowSelectedButton.label": {
+    "message": "Grant Selected"
+  },
+  "options_fsbDisallowSelectedButton.label": {
+    "message": "Deny Selected"
+  },
+  "options_fsbDeleteSelectedButtonsLabel": {
+    "message": "Delete the SELECTED Extensions"
+  },
+  "options_fsbDeleteSelectedButton.label": {
+    "message": "Delete Selected"
+  },
+  "options_fsbAddNewExtensionButtonsLabel": {
+    "message": "Add a NEW Extension to the list"
+  },
+  "options_fsbAddNewExtensionButton.label": {
+    "message": "Add New"
+  },
+  "options_fsbAddInstalledExtensionsButtonsLabel": {
+    "message": "Open a window to Select INSTALLED Extensions to add"
+  },
+  "options_fsbAddInstalledExtensionsButton.label": {
+    "message": "Installed Extensions"
+  },
+  "options_fsbExtensionListHeaderTextId.label": {
+    "message": "Extension ID"
+  },
+  "options_fsbExtensionListHeaderTextName.label": {
+    "message": "Extension Name"
+  },
+  "options_fsbRefreshListButton.tooltip": {
+    "message": "Refresh the Extension List"
+  },
+  "options_fsbAllowAllButton.tooltip": {
+    "message": "Check ALL the checkboxes to Grant ALL listed Extensions access to FileSystemBroker"
+  },
+  "options_fsbDisallowAllButton.tooltip": {
+    "message": "Un-Check ALL the checkboxes to Deny ALL listed Extensions access to FileSystemBroker"
+  },
+  "options_fsbAllowSelectedButton.tooltip": {
+    "message": "Check the checkboxes to Grant the SELECTED Extensions access to FileSystemBroker"
+  },
+  "options_fsbDisallowSelectedButton.tooltip": {
+    "message": "Un-Check the checkboxes to Deny the SELECTED Extensions access to FileSystemBroker"
+  },
+  "options_fsbDeleteSelectedButton.tooltip": {
+    "message": "Delete the SELECTED Extensions from the list"
+  },
+  "options_fsbAddNewExtensionButton.tooltip": {
+    "message": "Add a NEW Extension to the list"
+  },
+  "options_fsbAddInstalledExtensionsButton.tooltip": {
+    "message": "Display a window that lists ALL Currently Installed Extensions that can be Selected to be Added to the list"
+  },
+  "options_check_allowAccess.tooltip": {
+    "message": "Check here to Grant the Extension with this ID access to FileSystemBroker, Un-Check to Deny it"
+  },
+  "options_button_addExtension.tooltip": {
+    "message": "Add a NEW Extension to the list"
+  },
+  "options_button_editExtension.tooltip": {
+    "message": "Edit the information for this Extension"
+  },
+  "options_button_deleteExtension.tooltip": {
+    "message": "Delete this Extension from the list"
+  },
+  "options_fsbExtensionEditTitleAddMode": {
+    "message": "Add New Extension Information"
+  },
+  "options_fsbExtensionEditTitleEditMode": {
+    "message": "Edit Extension Information"
+  },
+  "options_fsbExtensionEditSaveButton.label": {
+    "message": "Save"
+  },
+  "options_fsbExtensionEditAddButton.label": {
+    "message": "Add"
+  },
+  "options_fsbExtensionEditCancelButton.label": {
+    "message": "Cancel"
+  },
+  "options_fsbExtensionEditSaveButton.tooltip": {
+    "message": "Save the Extension information to the List"
+  },
+  "options_fsbExtensionEditAddButton.tooltip": {
+    "message": "Add the Extension information to the List"
+  },
+  "options_fsbExtensionEditErrorExtensionIdEmpty": {
+    "message": "ID Required"
+  },
+  "options_fsbExtensionEditErrorExtensionIdInvalid": {
+    "message": "Invalid ID"
+  },
+  "options_fsbExtensionEditErrorExtensionIdExists": {
+    "message": "ID Already Exists"
+  },
+  "options_fsbExtensionEditErrorExtensionNameEmpty": {
+    "message": "Name Required"
+  },
+  "options_fsbExtensionEditErrorExtensionNameInvalid": {
+    "message": "Invalid Name"
+  },
+  "options_fsbExtensionEditErrorAddFailed": {
+    "message": "Add Failed"
+  },
+  "options_fsbExtensionEditErrorUpdateFailed": {
+    "message": "Update Failed"
+  },
+  "options_fsbExtensionEditCancelButton.tooltip": {
+    "message": "Cancel the changes and Clear the Extension Information"
+  },
+  "options_fsbLoggingOptionsTitle.label": {
+    "message": "Event Logging Options"
+  },
+  "options_fsbEnableAccessLoggingCheck.label": {
+    "message": "Log Access Events"
+  },
+  "options_fsbEnableAccessDeniedLoggingCheck.label": {
+    "message": "Log Access Denied Events"
+  },
+  "options_fsbEnableInternalMessageLoggingCheck.label": {
+    "message": "Log Internal Command Requests"
+  },
+  "options_fsbEnableInternalMessageResultLoggingCheck.label": {
+    "message": "Log Internal Command Results"
+  },
+  "options_fsbEnableExternalMessageLoggingCheck.label": {
+    "message": "Log External Command Requests"
+  },
+  "options_fsbEnableInternalEventLoggingCheck.label": {
+    "message": "Log Internal Events"
+  },
+  "options_fsbAutoLogPurgeDaysSelect.label": {
+    "message": "Automatically delete Event Logs older than"
+  },
+  "options_fsbAutoLogPurgeDaysSelect_optionNone": {
+    "message": "disabled"
+  },
+  "options_fsbAutoLogPurgeDaysSelect_2Days": {
+    "message": "2 days"
+  },
+  "options_fsbAutoLogPurgeDaysSelect_3Days": {
+    "message": "3 days"
+  },
+  "options_fsbAutoLogPurgeDaysSelect_4Days": {
+    "message": "4 days"
+  },
+  "options_fsbAutoLogPurgeDaysSelect_5Days": {
+    "message": "5 days"
+  },
+  "options_fsbAutoLogPurgeDaysSelect_6Days": {
+    "message": "6 days"
+  },
+  "options_fsbAutoLogPurgeDaysSelect_7Days": {
+    "message": "1 week"
+  },
+  "options_fsbAutoLogPurgeDaysSelect_10Days": {
+    "message": "10 days"
+  },
+  "options_fsbAutoLogPurgeDaysSelect_12Days": {
+    "message": "12 days"
+  },
+  "options_fsbAutoLogPurgeDaysSelect_14Days": {
+    "message": "2 weeks"
+  },
+  "options_fsbAutoLogPurgeDaysSelect_21Days": {
+    "message": "3 weeks"
+  },
+  "options_fsbAutoLogPurgeDaysSelect_30Days": {
+    "message": "30 days"
+  },
+  "options_fsbEnableExternalMessageResultLoggingCheck.label": {
+    "message": "Log External Command Results"
+  },
+  "options_fsbDevOptionsTitle.label": {
+    "message": "Developer Options"
+  },
+  "options_fsbDevSkipOnboardingCheck.label": {
+    "message": "Do not show the \"Welcome\" Screen when this Extension is updated or re-installed"
+  },
+  "options_fsbDevShowOptionsWindowOnStartupCheck.label": {
+    "message": "Display the Extension Options in a Window when this Extension is started, updated, or re-installed"
+  },
+  "options_fsbDevResetOptionsButton.label": {
+    "message": "Reset All Options"
+  },
+  "options_fsbDevSelfTestButton.label": {
+    "message": "Run Self Test"
+  },
+  "options_fsbDevDeleteOldEventLogsButton.label": {
+    "message": "Delete Old Event Logs"
+  },
+  "options_fsbDevDisplayOptionsAsPopupButton.label": {
+    "message": "Display Options as Popup"
+  },
+  "options_fsbExtensionChooserTitle": {
+    "message": "Add Installed Extensions"
+  },
+  "options_message_error_noExtensionList": {
+    "message": "Internal Error - Failed to find Extension List"
+  },
+  "options_message_error_editorModeNotSet": {
+    "message": "Internal Error - Editor Mode is not set"
+  },
+  "options_message_error_extensionDeleteFailed": {
+    "message": "Internal Error - Extension Delete Failed"
+  },
+  "options_message_error_": {
+    "message": ""
+  },
+  "fsbConfirmDialogTitle": {
+    "message": "Please Confirm"
+  },
+  "fsbConfirmDialog_okButton.label": {
+    "message": "OK"
+  },
+  "fsbConfirmDialog_cancelButton.label": {
+    "message": "Cancel"
+  },
+  "fsbConfirmDialog_yesButton.label": {
+    "message": "Yes"
+  },
+  "fsbConfirmDialog_noButton.label": {
+    "message": "No"
+  },
+  "fsbConfirmDialog_grantButton.label": {
+    "message": "Grant"
+  },
+  "fsbConfirmDialog_denyButton.label": {
+    "message": "Deny"
+  },
+  "fsbExtensionChooserPopup_title": {
+    "message": "Add Installed Extensions"
+  },
+  "fsbExtensionChooserInstructionsCheck.label": {
+    "message": "Hints"
+  },
+  "fsbExtensionChooserPopup_instructions_1": {
+    "message": "Click on an Extension to Select it - it will be Highlighted (more than one may be selected)"
+  },
+  "fsbExtensionChooserPopup_instructions_2": {
+    "message": "Click on the Extension again to De-select it"
+  },
+  "fsbExtensionChooserPopup_instructions_3": {
+    "message": "Click the Add Button to Add the selected Extensions to the list"
+  },
+  "fsbExtensionChooserPopup_instructions_4": {
+    "message": "Extensions that have already been added (blue marker) cannot be selected"
+  },
+  "fsbExtensionChooserPopup_instructions_5": {
+    "message": "Disabled Extensions (red text with strike-through) can still be selected"
+  },
+  "fsbExtensionChooserPopup_cancelButton": {
+    "message": "Cancel"
+  },
+  "fsbExtensionChooserPopup_addButton": {
+    "message": "Add"
+  },
+  "fsbBackupManager_pageTitle": {
+    "message": "Backup Manager"
+  },
+  "fsbBackupManager_title": {
+    "message": "Backup Manager"
+  },
+  "fsbBackupManagerInstructions.label": {
+    "message": "Hints"
+  },
+  "fsbBackupManager_instructions_1": {
+    "message": "Click on a Backup File to Select it - it will be highlighted (more than one may be selected)"
+  },
+  "fsbBackupManager_instructions_1": {
+    "message": "Click on a Backup File to Select it - it will be highlighted"
+  },
+  "fsbBackupManager_instructions_2": {
+    "message": "Click on the Backup File again to De-select it"
+  },
+  "fsbBackupManager_instructions_3": {
+    "message": "Click the Restore button to restore options from the (one) selected backup file"
+  },
+  "fsbBackupManager_instructions_4": {
+    "message": "Click the Backup button to backup the current options"
+  },
+  "fsbBackupManager_instructions_5": {
+    "message": "Click the Delete button to delete one or more selected backup files"
+  },
+  "fsbBackupFilesDirectoryPathName.label": {
+    "message": "Backup Files are placed in this Directory:"
+  },
+  "fsbBackupManager_message_fileNamesLoading": {
+    "message": "...loading backup filenames..."
+  },
+  "fsbBackupManager_doneButton": {
+    "message": "Done"
+  },
+  "fsbBackupManager_restoreButton": {
+    "message": "Restore"
+  },
+  "fsbBackupManager_backupButton": {
+    "message": "Backup"
+  },
+  "fsbBackupManager_archiveButton": {
+    "message": "Archive"
+  },
+  "fsbBackupManager_deleteButton": {
+    "message": "Delete"
+  },
+  "fsbBackupManager_listHeader_fileName": {
+    "message": "File Name"
+  },
+  "fsbBackupManager_listHeader_fileTimeCreated": {
+    "message": "Time Created"
+  },
+  "fsbBackupManager_listHeader_fileTimeLastModified": {
+    "message": "Time Last Modified"
+  },
+  "fsbBackupManager_listHeader_fileSize": {
+    "message": "Size (bytes)"
+  },
+  "fsbBackupManager_message_error_restoreFailed": {
+    "message": "Failed to restore options from backup file"
+  },
+  "fsbBackupManager_message_error_responseMessageFailed": {
+    "message": "Failed to send response message to Options UI - Close the UI and Re-Open it"
+  },
+  "fsbEventLogManager_pageTitle": {
+    "message": "Event Log Manager"
+  },
+  "fsbEventLogManager_title": {
+    "message": "Event Log Manager"
+  },
+  "fsbEventLogManagerInstructions.label": {
+    "message": "Hints"
+  },
+  "fsbEventLogManager_instructions_1": {
+    "message": "Click on an Event Log to Select it - it will be highlighted (one or more may be selected)"
+  },
+  "fsbEventLogManager_instructions_2": {
+    "message": "Click on the Event Log again to De-select it"
+  },
+  "fsbEventLogManager_instructions_3": {
+    "message": "Click the View Button to view the selected Event Log (only one must be selected)"
+  },
+  "fsbEventLogManager_instructions_4": {
+    "message": "or Double-Click on an Event Log to view it"
+  },
+  "fsbEventLogManager_instructions_5": {
+    "message": "Click the Archive button to archive the selected Event Logs (one or more may be selected)"
+  },
+  "fsbEventLogManager_instructions_6": {
+    "message": "Click the Delete button to delete the selected Event Logs (one or more may be selected)"
+  },
+  "fsbEventLogsDirectoryPathName.label": {
+    "message": "Event Logs are placed in this Directory:"
+  },
+  "fsbEventLogManager_title_listMode_archives.label": {
+    "message": "Archived Event Logs"
+  },
+  "fsbEventLogManager_title_listMode_logs.label": {
+    "message": "Event Logs"
+  },
+  "fsbEventLogManager_button_listMode_archives.label": {
+    "message": "List Archived Event Logs"
+  },
+  "fsbEventLogManager_button_listMode_logs.label": {
+    "message": "List Event Logs"
+  },
+  "fsbEventLogManager_message_fileNamesLoading": {
+    "message": "...loading log filenames..."
+  },
+  "fsbEventLogManager_message_noFileInfo": {
+    "message": "Unable to get Event Log List"
+  },
+  "fsbEventLogManager_message_noEventLogs": {
+    "message": "No Event Logs"
+  },
+  "fsbEventLogManager_message_noArchiveFiles": {
+    "message": "No Archived Event Logs"
+  },
+  "fsbEventLogManager_viewButton": {
+    "message": "View"
+  },
+  "fsbEventLogManager_doneButton": {
+    "message": "Done"
+  },
+  "fsbEventLogManager_archiveButton": {
+    "message": "Archive"
+  },
+  "fsbEventLogManager_deleteButton": {
+    "message": "Delete"
+  },
+  "fsbEventLogManager_listHeader_fileName": {
+    "message": "File Name"
+  },
+  "fsbEventLogManager_listHeader_fileTimeCreated": {
+    "message": "Time Created"
+  },
+  "fsbEventLogManager_listHeader_fileTimeLastModified": {
+    "message": "Time Last Modified"
+  },
+  "fsbEventLogManager_listHeader_fileSize": {
+    "message": "Size (bytes)"
+  },
+  "fsbEventLogManager_message_error_responseMessageFailed": {
+    "message": "Failed to send response message to Options UI"
+  },
+  "fsbEventLogManager_message_error_deleteFailed": {
+    "message": "Failed to delete Event Log"
+  },
+  "fsbEventLogManager_message_error_archiveFailed": {
+    "message": "Failed to archive Event Log"
+  },
+  "fsbEventLogViewer_pageTitle": {
+    "message": "Event Log iewer"
+  },
+  "fsbEventLogViewer_title": {
+    "message": "Event Log Viewer"
+  },
+  "fsbEventLogViewerFileName.label": {
+    "message": "File Name:"
+  },
+  "fsbEventLogViewerFileCreationTime.label": {
+    "message": "Created:"
+  },
+  "fsbEventLogViewerFileLastModifiedTime.label": {
+    "message": "Last Modified:"
+  },
+  "fsbEventLogViewerFileSize.label": {
+    "message": "Size (bytes):"
+  },
+  "fsbEventLogViewer_instructions_1": {
+    "message": "XXX"
+  },
+  "fsbEventLogViewer_instructions_2": {
+    "message": "XXX"
+  },
+  "fsbEventLogViewer_instructions_3": {
+    "message": "XXX"
+  },
+  "fsbEventLogViewer_instructions_4": {
+    "message": "XXX"
+  },
+  "fsbEventLogViewer_instructions_5": {
+    "message": "Click the Delete button to delete the Event Log"
+  },
+  "fsbEventLogsDirectoryPathName.label": {
+    "message": "Event Logs are placed in this Directory:"
+  },
+  "fsbEventLogViewer_message_fileDataLoading": {
+    "message": "...loading log file..."
+  },
+  "fsbEventLogViewer_filtersTitle": {
+    "message": "Filter:"
+  },
+  "fsbEventLogViewer_filterByTime.label": {
+    "message": "by Time:"
+  },
+  "fsbEventLogViewer_filterByStartTimeSelect.label": {
+    "message": "x"
+  },
+  "fsbEventLogViewer_timeHHMMSS_separator": {
+    "message": ":"
+  },
+  "fsbEventLogViewer_filterByEndTimeSelect.label": {
+    "message": "-"
+  },
+  "fsbEventLogViewer_filterByTimeHourSelect_optionNone": {
+    "message": "--"
+  },
+  "fsbEventLogViewer_filterByTimeMinuteSelect_optionNone": {
+    "message": "--"
+  },
+  "fsbEventLogViewer_filterByTimeResetButton.label": {
+    "message": "Reset"
+  },
+  "fsbEventLogViewer_filterBySenderSelect.label": {
+    "message": "by Requestor:"
+  },
+  "fsbEventLogViewer_filterBySenderSelect_optionNone": {
+    "message": "---any--"
+  },
+  "fsbEventLogViewer_filterBySenderSelect_optionBlank": {
+    "message": "(blank)"
+  },
+  "fsbEventLogViewer_filterBySenderResetButton.label": {
+    "message": "Reset"
+  },
+  "fsbEventLogViewer_filterByTypeSelect.label": {
+    "message": "by Type:"
+  },
+  "fsbEventLogViewer_filterByTypeSelect_optionNone": {
+    "message": "---any--"
+  },
+  "fsbEventLogViewer_filterByTypeSelect_optionBlank": {
+    "message": "(blank)"
+  },
+  "fsbEventLogViewer_filterByTypeResetButton.label": {
+    "message": "Reset"
+  },
+  "fsbEventLogViewer_filterByCommandSelect.label": {
+    "message": "by Command:"
+  },
+  "fsbEventLogViewer_filterByCommandSelect_optionNone": {
+    "message": "---any--"
+  },
+  "fsbEventLogViewer_filterByCommandSelect_optionBlank": {
+    "message": "(blank)"
+  },
+  "fsbEventLogViewer_filterByCommandResetButton.label": {
+    "message": "Reset"
+  },
+  "fsbEventLogViewer_filterByStatusSelect.label": {
+    "message": "by Status:"
+  },
+  "fsbEventLogViewer_filterByStatusSelect_optionNone": {
+    "message": "---any--"
+  },
+  "fsbEventLogViewer_filterByStatusSelect_optionBlank": {
+    "message": "(blank)"
+  },
+  "fsbEventLogViewer_filterByStatusResetButton.label": {
+    "message": "Reset"
+  },
+  "fsbEventLogViewer_filterResetAllButton.label": {
+    "message": "Reset All"
+  },
+  "fsbEventLogViewer_message_filter_startTimeAfterEndTime": {
+    "message": "The after time is later than the before time"
+  },
+  "fsbEventLogViewer_message_filter_noMatch": {
+    "message": "No Logged Events match the selected filters"
+  },
+  "fsbEventLogViewer_doneButton": {
+    "message": "Done"
+  },
+  "fsbEventLogViewer_deleteButton": {
+    "message": "Delete"
+  },
+  "fsbEventLogViewer_listHeader_timstamp": {
+    "message": "TIME"
+  },
+  "fsbEventLogViewer_listHeader_sender": {
+    "message": "REQUSTED BY"
+  },
+  "fsbEventLogViewer_listHeader_type": {
+    "message": "TYPE"
+  },
+  "fsbEventLogViewer_listHeader_command": {
+    "message": "COMMAND"
+  },
+  "fsbEventLogViewer_listHeader_status": {
+    "message": "STATUS"
+  },
+  "fsbEventLogViewer_listHeader_parameters": {
+    "message": "PARAMETERS"
+  },
+  "fsbEventLogViewer_listHeader_result": {
+    "message": "RESULT"
+  },
+  "fsbEventLogViewer_error_noFileName": {
+    "message": "Internal Error - Event Log FileName was not provided"
+  },
+  "fsbEventLogViewer_error_noFileInfo": {
+    "message": "Internal Error - Failed to get FileInfo for Event Log"
+  },
+  "fsbEventLogViewer_error_internal": {
+    "message": "Internal Error"
+  },
+  "fsbEventLogViewer_error_noEventLogData_response": {
+    "message": "Internal Error - Failed to get Event Log Data - No Response Returned"
+  },
+  "fsbEventLogViewer_error_noEventLogData_invalid": {
+    "message": "Internal Error - Failed to get Event Log Data - Invalid Request"
+  },
+  "fsbEventLogViewer_error_noEventLogData_error": {
+    "message": "Internal Error - Failed to getEvent Log Data - FileSystem Error"
+  },
+  "fsbEventLogViewer_error_noEventLogData_noFileName": {
+    "message": "Internal Error - Failed to get Event Log Data - No FileName Returned"
+  },
+  "fsbEventLogViewer_error_noEventLogData_noData": {
+    "message": "Internal Error - Failed to get Event Log Data - No File Data Returned"
+  },
+  "fsbEventLogViewer_error_noEventLogData_noLineData": {
+    "message": "Internal Error - Failed to get Event Log Data - No Event Data Returned"
+  },
+  "fsbEventLogViewer_message_error_deleteFailed": {
+    "message": "Failed to delete Event Log"
+  },
+  "fsbEventLogViewer_message_error_responseMessageFailed": {
+    "message": "Internal Error - Failed to send response message to Event Log Manager UI"
+  }
+}

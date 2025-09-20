@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html language="en">
+
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <title data-l10n-id="fsbEventLogManager_pageTitle">Identity Manager Plus</title>
+    <link rel="stylesheet" href="./eventLogManager.css" type="text/css" >
+    <script type="module" src="./eventLogManager.js" defer></script>
+  </head>
+
+  <body>
+    <div id="fsbEventLogManager">
+      <div id="fsbEventLogManagerTitlePanel" data-l10n-id="fsbEventLogManager_title">
+        Log Manager
+      </div>
+
+      <div id="fsbEventLogManagerInstructionsPanel">
+        <div>
+          <input id="fsbShowEventLogManagerInstructions" type="checkbox" class="fsbGeneralOption open-close-check">
+          <label for="fsbShowEventLogManagerInstructions"></label>
+          <label for="fsbShowEventLogManagerInstructions" data-l10n-id="fsbEventLogManagerInstructions.label"></label>
+        </div>
+
+        <div id="fsbEventLogManagerInstructions" class="options-open-close-panel">
+          <ul class="compact-list">
+            <li>
+              <label data-l10n-id="fsbEventLogManager_instructions_1">
+                Click on a Log File to Select it - it will be highlighted (one or more may be selected)
+              </label>
+            </li>
+            <li>
+              <label data-l10n-id="fsbEventLogManager_instructions_2">
+                Click on the Log File again to De-select it
+              </label>
+            </li>
+            <li>
+              <label data-l10n-id="fsbEventLogManager_instructions_3">
+                Click the View Button to view the selected Log File (only one must be selected)
+              </label>
+            </li>
+            <li>
+              <label data-l10n-id="fsbEventLogManager_instructions_4">
+                or Double-Click on a Log File to view it
+              </label>
+            </li>
+            <li id="fsbEventLogManagerInstructions_archive">
+              <label data-l10n-id="fsbEventLogManager_instructions_5">
+                Click the Archive button to archive the selected log files (one or more may be selected)
+              </label>
+            </li>
+            <li>
+              <label data-l10n-id="fsbEventLogManager_instructions_6">
+                Click the Delete button to delete the selected log files (one or more may be selected)
+              </label>
+            </li>
+            <li>
+              <label data-l10n-id="fsbEventLogsDirectoryPathName.label"></label>
+              <div id="fsbEventLogsDirectoryPathName"></div>
+            </li>
+          <ul>
+        </div>
+        <div class="log-error" error-for="fsbEventLogManagerInstructions" error="false">
+          <span class="log-error-icon-large"><img src="../images/icons/forbidden_16x16.png"/></span>
+          <label class="log-error-text" error-for="fsbEventLogManagerInstructions"></label>
+        </div>
+      </div>
+
+      <div id="fsbEventLogManagerFileNameListTitlePanel" class="subtitle-panel"></label>
+        <label id="fsbEventLogManagerFileNameListTitle" class="subtitle" data-l10n-id="fsbEventLogManager_title_listMode_logs.label">Log Files</label>
+<!--    <div> -->
+          <button id="fsbEventLogManagerListModeButton">
+            <label id="fsbEventLogManagerListModeButtonLabel" 
+                   for="fsbEventLogManagerListModeButton"
+                   data-l10n-id="fsbEventLogManager_button_listMode_archives.label">
+              List Archived Log Files
+            </label>
+          </button>
+<!--    </div> -->
+      </div>
+
+      <div id="fsbEventLogManagerFileNameListWrapper">
+        <table id="fsbEventLogManagerFileNameList">
+        </table>
+      </div>
+
+      <div id="fsbEventLogManagerControlsPanel">
+        <div id="fsbEventLogManagerControlsButtonPanel">
+          <button id="fsbEventLogManagerViewButton" data-l10n-id="fsbEventLogManager_viewButton">View</button>
+          <button id="fsbEventLogManagerArchiveButton" data-l10n-id="fsbEventLogManager_archiveButton">Archive</button>
+          <button id="fsbEventLogManagerDeleteButton" data-l10n-id="fsbEventLogManager_deleteButton">Restore</button>
+          <button id="fsbEventLogManagerDoneButton" data-l10n-id="fsbEventLogManager_doneButton">Done</button>
+        </div>
+        <div id="fsbEventLogManagerControlsPanelSpacerRight"></div>
+      </div>
+
+      <div id="fsbEventLogManagerRightSpacer"></div>
+      <div id="fsbEventLogManagerBottomSpacer"></div>
+    </div>
+  </body>
+
+</html>

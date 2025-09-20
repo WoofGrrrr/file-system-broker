@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html language="en">
+
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <title data-l10n-id="fsbExtensionChooserPopup_title">Installed Extension Chooser</title>
+    <link rel="stylesheet" href="./extensionChooserUI.css" type="text/css" >
+    <script type="module" src="./extensionChooserUI.js" defer></script>
+  </head>
+
+  <body>
+    <div id="fsbExtensionChooserPopup">
+      <div id="fsbExtensionChooserPopupTitlePanel" data-l10n-id="options_fsbExtensionChooserTitle">
+        Add Installed Extensions
+      </div>
+
+      <div id="fsbExtensionChooserPopupInstructionsPanel">
+       <div>
+          <input id="fsbShowExtensionChooserInstructions" type="checkbox" class="fsbGeneralOption open-close-check">
+          <label for="fsbShowExtensionChooserInstructions"></label>
+          <label for="fsbShowExtensionChooserInstructions" data-l10n-id="fsbExtensionChooserInstructionsCheck.label"></label>
+        </div>
+
+        <div id="fsbExtensionChooserPopupInstructions" class="options-open-close-panel">
+          <ul class="compact-list">
+            <li><label data-l10n-id="fsbExtensionChooserPopup_instructions_1">Click on an Extension to Select it - it will be highlighted</label></li>
+            <li><label data-l10n-id="fsbExtensionChooserPopup_instructions_2">Click again to De-select it</label></li>
+            <li><label data-l10n-id="fsbExtensionChooserPopup_instructions_3">Click the Add Button to add the selected Extensions</label></li>
+            <li><label data-l10n-id="fsbExtensionChooserPopup_instructions_4">Extensions that have already been added (blue marker) cannot be selected</label></li>
+            <li><label data-l10n-id="fsbExtensionChooserPopup_instructions_5">Disabled Extensions (red text with strike-through) can still be selected</label></li>
+          <ul>
+        </div>
+        <div class="extension-data-error" error-for="fsbExtensionChooserPopupInstructions" error="false">
+          <span class="extension-data-error-icon-large"><img src="../images/icons/forbidden_16x16.png"/></span>
+          <label class="extension-data-error-text" error-for="fsbExtensionChooserPopupInstructions"></label>
+        </div>
+      </div>
+
+      <div id="fsbExtensionChooserExtensionListWrapper">
+        <table id="fsbExtensionChooserExtensionList">
+        </table>
+      </div>
+
+      <div id="fsbExtensionChooserPopupControlsPanel">
+        <div id="fsbExtensionChooserPopupControlsButtonPanel">
+          <button id="fsbExtensionChooserPopupControlsCancelButton" data-l10n-id="fsbExtensionChooserPopup_cancelButton">Cancel</button>
+          <button id="fsbExtensionChooserPopupControlsAddButton" data-l10n-id="fsbExtensionChooserPopup_addButton">Add</button>
+        </div>
+        <div id="fsbExtensionChooserPopupControlsPanelSpacerRight"></div>
+      </div>
+
+      <div id="fsbExtensionChooserPopupRightSpacer"></div>
+      <div id="fsbExtensionChooserPopupBottomSpacer"></div>
+    </div>
+  </body>
+
+</html>

@@ -103,30 +103,36 @@ The message is a command, which is an object of the form:
 
 <br>
 
+In addition to the responses listed with each command above, a command may return the following responses:
+
   + Commands may return { "invalid": reason } if the command received invalid parameters, where "reason" is a String that describes the problem.
 
   + Commands may return { "error": reason } if there was an error processing the command, where "reason" is a String that describes the problem.
 
   + Commands may return { "error": reason, "code": code } if there was an error processing the command, where "reason" is a String that describes the problem and "code" is an error code.
-    + "400" means that the request to FileSystemBroker is malformed.
-    + "403" means access has been forbidden.
-    + "404" means that the request to FileSystemBroker is unknown.
-    + "500" means that there was some error that the system does not know how to handle.
-    + "503" means that communcation with FileSystemBroker failed, probably because FileSystemBroker is not installed or is not running.
+    + code "400" means that the request to FileSystemBroker is malformed.
+    + code "403" means access has been denied.
+    + code "404" means that the request to FileSystemBroker is unknown.
+    + code "500" means that there was some error that the system does not know how to handle.
+    + code "503" means that communcation with FileSystemBroker failed, probably because FileSystemBroker is not installed or is not running.
 
 <br>
 
 ### Details:
 
-    As stated earlier, to request that a command be performed, an extension sends a message to this extension.  The message is in the
-    form of a JavaScript object with a specific structure, i.e. a "command". Each command also returns a JavaScript object.  To make
+    As stated earlier, to request that a command be performed, an extension sends a message
+    to this extension.  The message is in the form of a JavaScript object with a specific
+    structure, i.e. a "command". Each command also returns a JavaScript object.  To make
     things easier, the API can handle this messaging for you.
 
-    Each command operates on files in a sub-drectory of the BrokerFileSystem directory inside the user's Thunderbird Profile Folder.
-    The name of this sub-directory is the Extension ID of the extension that has sent the message requesting that a command be performed.
-    When an extension sends a message, that extension's Extension ID is made available to the the message receiver, i.e. this extension.
-    This way we try to restrict the Sender to accessing only files specifically for that Sender. (There might be ways to hack the
-    Extension ID of the Sender - I don't know.  Hey, these are just Web Extensions.)
+    Each command operates on files in a sub-drectory of the BrokerFileSystem directory inside
+    the user's Thunderbird Profile Folder.  The name of this sub-directory is the Extension ID
+    of the extension that has sent the message requesting that a command be performed.
+
+    When an extension sends a message, that extension's Extension ID is made available to the
+    message receiver, i.e. this extension.  This way we try to restrict the Sender to accessing
+    only files specifically for that Sender. (There might be ways to hack the Extension ID of
+    the Sender - I don't know.  Hey, these are just Web Extensions.)
 
     Sub-Directories are not supported as this time.
 
@@ -737,4 +743,4 @@ MABXXX
 
 This addon uses code from other projects:
 
-  * Internally, this extension uses an enhancement of this extension: \[Thunderbird webext-support\]: https://github.com/thunderbird/webext-support/tree/master/experiments
+  * Internally, this extension uses an enhancement of this extension: \[webext-support FileSystem API\]: https://github.com/thunderbird/webext-support/tree/master/experiments/FileSystem
