@@ -85,6 +85,10 @@ directory would be something like this:
 > C:\Users\user1\AppData\Roaming\Thunderbird\Profiles\4x4rl22v.default-release\FileSystemExp\aaa.bbb@xxx.com
 
 <br>
+
+__Sub-directories are not currently supported.__
+
+<br>
 <br>
 
 ## The API provides these functions:
@@ -155,8 +159,7 @@ directory would be something like this:
     or if the directory's full pathName > 255 characters,
     or if there is an operating system error.
 
-    Sub-directories are currently not supported, thus a
-    directoryName parameter is not currently supported.
+    Sub-directories are currently not supported.
 
 
 ### hasFiles( [directoryName] )
@@ -176,8 +179,7 @@ directory would be something like this:
     of if the file does not exist or is not a Directory,
     or if there is an operating system error.
 
-    Sub-directories are currently not supported, thus a
-    directoryName parameter is not currently supported.
+    Sub-directories are currently not supported.
 
 
 ### getFileCount( [directoryName] )
@@ -197,8 +199,7 @@ directory would be something like this:
     of if the file does not exist or is not a Directory,
     or if there is an operating system error.
 
-    Sub-directories are currently not supported, thus a
-    directoryName parameter is not currently supported.
+    Sub-directories are currently not supported.
 
 
 ### readFile(fileName)
@@ -368,8 +369,7 @@ directory would be something like this:
     Also throws if the directory is not empty and recursive
     is not true.
 
-    Sub-directories are currently not supported, thus the
-    directoryName parameter is not currently supported.
+    Sub-directories are currently not supported.
 
 
 ###  makeDirectory()

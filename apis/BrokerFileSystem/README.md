@@ -2,7 +2,7 @@
 
 ## Objective
 
-Use this API to access files in the user Thunderbirdprofile folder.
+Use this API to access files in the user Thunderbird profile directory.
 
 Until Mozilla has made a final decision about including the
 [Chrome FileSystem API](https://web.dev/file-system-access/),
@@ -30,7 +30,8 @@ This enhancement also provides a number of additional functions.
 
 ## Usage
 
-MABXXX FIX THIS: Add the [FileSystem API](https://github.com/thunderbird/webext-support/tree/master/experiments/FileSystem) to your add-on.
+MABXXX FIX THIS: Add the [FileSystem API](https://github.com/XXX) to your add-on.
+
 Your `manifest.json` needs an entry like this:
 
 ```json
@@ -46,14 +47,18 @@ Your `manifest.json` needs an entry like this:
   },
 ```
 
-The API uses the following folder for file access:
+The API uses the following directory for file access:
 
 ```
-<profile-folder>/BrokerFileSystem/<extension-id>/
+<profile-directory>/BrokerFileSystem/<extension-id>/
 ```
 Where:
-  + \<profile-folder\> is the user's profile folder
+  + \<profile-directory\> is the user's profile directory
   + \<extension-id\> is the given Extension ID
+
+<br>
+
+__Sub-directories are currently not supported.__
 
 
 
@@ -125,8 +130,7 @@ Where:
     or if the directory's full pathName > 255 characters,
     or if there is an operating system error.
 
-    Sub-directories are currently not supported, thus a
-    directoryName parameter is not currently supported.
+    Sub-directories are currently not supported.
 
 
 ### hasFiles(extensionId [, directoryName])
@@ -146,8 +150,7 @@ Where:
     of if the file does not exist or is not a Directory,
     or if there is an operating system error.
 
-    Sub-directories are currently not supported, thus a
-    directoryName parameter is not currently supported.
+    Sub-directories are currently not supported.
 
 
 ### getFileCount(extensionId [, directoryName])
@@ -167,8 +170,7 @@ Where:
     of if the file does not exist or is not a Directory,
     or if there is an operating system error.
 
-    Sub-directories are currently not supported, thus a
-    directoryName parameter is not currently supported.
+    Sub-directories are currently not supported.
 
 
 ### readFile(extensionId, fileName)
@@ -338,8 +340,7 @@ Where:
     Also throws if the directory is not empty and recursive
     is not true.
 
-    Sub-directories are currently not supported, thus the
-    directoryName parameter is not currently supported.
+    Sub-directories are currently not supported.
 
 
 ###  makeDirectory(extensionId)

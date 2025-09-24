@@ -9,19 +9,37 @@ file system is limited to only a specific directory in the user's Profile Folder
 It can get a list of files, write, read, check the existence of, get properties
 of, rename, and delete files, etc, in *only* that directory.
 
-On a Windows system, for example, the files accessible to an extension with the
-ID "aaa.bbb@xxx.com" might be:
+On a Windows system, for example, for a user with User ID "user1", the files
+accessible to an extension with the ID "aaa.bbb@xxx.com" might be in this
+directory:
 
          C:\Users\user1\AppData\Roaming\Thunderbird\Profiles\4x4rl22v.default-release\FileSystemBroker\aaa.bbb@xxx.com
 
-Access to FileSystemBroker is granted to all extensions by default, but you
-can enable access controls and grant access to only select extensions.
+<br>
 
-To use the FileSystemBroker, an extension can use the API to be found in;
+__NOTE: Sub-directories are not supported at this time (there is no method to create one.)__
+
+<br>
+<br>
+
+## Access Control
+
+Access to FileSystemBroker is granted to all extensions by default, but you
+can enable access controls and grant access to only select extensions. See
+below for details.
+
+<br>
+<br>
+
+## How to Use FileSystemBroker
+
+To use the FileSystemBroker, an extension can use the FileSystemBrokder API to be found in;
 
          modules/FileSystemBroker/filesystem_broker_api.js
 
-(information about how to use this API can be found below.)
+Information about how to use this API can be found below in the README file in modules/FileSystemBroker
+
+<br>
 
 ALTERNATIVELY, an extension can  use FileSystemBroker directly by sending a
 command message to this extension by calling the Web Extension function:
@@ -61,6 +79,9 @@ command message to this extension by calling the Web Extension function:
   + isValidFileName - is a fileName valid?
   + isValidDirectoryName - is a directoryName valid?
 
+<br>
+<br>
+
 The FileSystemBroker API provides a function for each of these operations.  See the API's README file for details.
 
 The FileSystemBroker API can be found in;
@@ -83,19 +104,19 @@ To use it in your extension
           }
         ]
 ```
-3. Then add something like the following to you JavaScript code:
+3. Then add something like the following to your JavaScript code:
 ```
         import { FileSystemBrokerAPI } from '../modules/FileSystemBroker/filesystem_broker_api.js';
           .
           .
           .
           .
-        const fsbApi = new FileSysemBrokerApi();
+        const fsbApi = new FileSystemBrokerApi();
 ```
 
 <br>
 
-## In addition to using the FileSystemBroker API, an extension can directly send Command Messages to this extension and wait for the responses.
+## In addition to using the FileSystemBroker API, an extension can directly send Command Messages to this extension and await the responses.
 
 <br>
 
@@ -161,9 +182,9 @@ In addition to the responses listed with each command above, a command may retur
     As stated earlier, to request that a command be performed, an extension sends a message
     to this extension.  The message is in the form of a JavaScript object with a specific
     structure, i.e. a "Command". Each Command also returns a JavaScript object as a Response.
-    To make things easier, the API can handle this messaging for you.
+    To make things easier, the FileSystemBroker API can handle this messaging for you.
 
-    Each command operates on files in a sub-drectory of the BrokerFileSystem directory inside
+    Each command operates on files in a sub-directory of the BrokerFileSystem directory inside
     the user's Thunderbird Profile Folder.  The name of this sub-directory is the Extension ID
     of the extension that has sent the message requesting that a command be performed.
 
@@ -172,14 +193,12 @@ In addition to the responses listed with each command above, a command may retur
     only files specifically for that Sender. (There might be ways to hack the Extension ID of
     the Sender - I don't know.  Hey, these are just Web Extensions.)
 
-    Sub-Directories are not supported as this time.
-
 <br>
 
 ### The fileNames and directoryNames must be a String with at least one character.
 
 #### ILLEGAL CHARS:
-A
+
 They must not contain the following characters:
    
       < (less-than)
@@ -206,7 +225,7 @@ They must not contain the following characters:
 
 + IN ADDITION, THE FOLLOWING DIRECTORY NAMES CANNOT BE USED:
 
-      .. (two dots or periods)
+      .. (two dots or periods, if you're not American, full-stops)
    
 #### MAXIMUM LENGTH:
 
@@ -222,6 +241,7 @@ The length of the pathName *does* depend on where Thunderbird
 places the user's profile directory on the given system.  Keep that
 in mind.
 
+<br>
 <br>
 
 ## These Are The Commands And Their Responses:
@@ -247,7 +267,7 @@ in mind.
                      caller-specific directory (named like the caller's Extension
                      ID) will be tested for existence.
 
-    response:        { "Command": { "fileName": string, "exists": boolean }
+    response:        { "fileName": string, "exists": boolean }
 
                      If fileName parameter not specified, the extension ID of
                      the calling extension will be returned as the "fileName"
@@ -318,6 +338,8 @@ in mind.
     Returns an "error" response if the directory's full pathName is > 255 characters
     or if the operating system had a problem processing the command.
 
+    Sub-directories are not supported at this time (there is no method to create one.)
+
 <br>
 
 
@@ -342,6 +364,8 @@ in mind.
     Returns an "error" response if the directory's full pathName is > 255 characters
     or if the operating system had a problem processing the command.
 
+    Sub-directories are not supported at this time (there is no method to create one.)
+
 <br>
 
 
@@ -356,7 +380,7 @@ in mind.
     Returns an "error" response if the directory's full pathName is > 255 characters,
     or if the operating system had a problem processing the command.
 
-    Sub-Directories are not supported as this time, thus a directoryName parameter is not supported.
+    Sub-directories are not supported at this time, thus a directoryName parameter is not provided.
 
 <br>
 
@@ -512,7 +536,7 @@ in mind.
                      FileInfo for the caller-specific directory (named like
                      the caller's Extension ID) will be returned.
 
-    response:        { "Command": { "fileName": string, "fileInfo": FileInfo or undefined  }
+    response:        { "fileName": string, "fileInfo": FileInfo or undefined  }
 
                      If fileName parameter not specified, the extension ID of
                      the calling extension will be returned as the "fileName"
@@ -577,9 +601,8 @@ in mind.
 
                      The directoryName parameter is optional. If not specified,
                      the caller-specific directory (named like the caller's
-                     Extension ID) will be deleted. (directoryName is NOT
-                     SUPPORTED at this time. Sub-Directories are not supported
-                     as this time.)
+                     Extension ID) will be deleted. (Sub-directories are not
+                     supported at this time.)
 
                      The recursive parameter is optional.  The default is false.
                      If recursive is true, delete the directory and all its
@@ -601,8 +624,7 @@ in mind.
     Returns an "error" response if the directory's full pathName is > 255 characters,
     or if the operating system had a problem processing the command.
 
-    Sub-Directories are not supported as this time, thus the directoryName parameter is not supported.
-    at this time.
+    Sub-directories are not supported at this time (there is no method to create one.)
 
 <br>
 
@@ -619,7 +641,8 @@ in mind.
     Returns an "error" response if the directory's full pathName is > 255 characters,
     or if the operating system had a problem processing the command.
 
-    Sub-Directories are not supported as this time, thus a directoryName parameter is not supported.
+    Sub-directories are not supported at this time (there is no method to create one,)
+    thus a directoryName parameter is not provided.
 
 <br>
 
@@ -646,7 +669,8 @@ in mind.
     Returns an "error" response if the directory's full pathName is > 255 characters,
     or if the operating system had a problem processing the command.
 
-    Sub-Directories are not supported as this time, thus a directoryName parameter is not supported.
+    Sub-directories are not supported at this time (there is no method to create one,)
+    thus a directoryName parameter is not provided.
 
 <br>
 
@@ -663,7 +687,8 @@ in mind.
     Returns an "error" response if the directory's full pathName is > 255 characters,
     or if the operating system had a problem processing the command.
 
-    Sub-Directories are not supported as this time, thus a directoryName parameter is not supported.
+    Sub-directories are not supported at this time (there is no method to create one,)
+    thus a directoryName parameter is not provided.
 
 <br>
 
@@ -690,7 +715,8 @@ in mind.
     Returns an "error" response if the directory's full pathName is > 255 characters,
     or if the operating system had a problem processing the command.
 
-    Sub-Directories are not supported as this time, thus a directoryName parameter is not supported.
+    Sub-directories are not supported at this time (there is no method to create one,)
+    thus a directoryName parameter is not provided.
 
 <br>
 

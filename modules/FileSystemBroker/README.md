@@ -62,9 +62,11 @@ Windows system, for a user with user ID "user1", and with the extension with ID
 
 
 
-## Usage
+## How to Use
 
 Add the [FileSystemBroker API](https://github.com/WoofGrrrr/file-system-broker/tree/main/modules/FileSystemBroker) to your add-on.
+
+
 Your `manifest.json` needs an entry like this:
 
 ```json
@@ -248,6 +250,8 @@ Use something like the following code in your JavaScript:
     is > 255 characters or if the operating system had a problem
     processing the function.
 
+    sub-directories are not supported at this time.  There is no method to create one.
+
 
 ### hasFiles( [ directoryName] )
 
@@ -273,6 +277,8 @@ Use something like the following code in your JavaScript:
     Returns an "error" response if the directory's full pathName
     is > 255 characters or if the operating system had a problem
     processing the function.
+
+    sub-directories are not supported at this time.  There is no method to create one.
 
 
 ### getFileCount( [directoryName] )
@@ -301,6 +307,8 @@ Use something like the following code in your JavaScript:
     Returns an "error" response if the directory's full pathName
     is > 255 characters or if the operating system had a problem
     processing the function.
+
+    sub-directories are not supported at this time.  There is no method to create one.
 
 
 ### readFile(fileName)
@@ -502,6 +510,8 @@ Use something like the following code in your JavaScript:
     is > 255 characters, or if the operating system had a problem
     processing the function.
 
+    sub-directories are not supported at this time.  There is no method to create one.
+
 
 ###  makeDirectory()
 
@@ -514,6 +524,8 @@ Use something like the following code in your JavaScript:
     Returns an "error" response if the directory's full pathName
     is > 255 characters, or if the operating system had a problem
     processing the function.
+
+    sub-directories are not supported at this time.  There is no method to create one.
 
 
 ###  getFileInfo( [fileName] )
@@ -592,6 +604,8 @@ Use something like the following code in your JavaScript:
     is > 255 characters, or if the operating system had a problem
     processing the function.
 
+    sub-directories are not supported at this time.  There is no method to create one.
+
 
 ###  listFileInfo( [matchGLOB] )
 
@@ -627,6 +641,8 @@ Use something like the following code in your JavaScript:
     - lastModified: milliseconds since 1970-01-01T00:00:00.000Z
     - permissions:  expressed as a UNIX file mode (for Windows, the 'user', 'group', and 'other' parts will always be identical)
 
+    sub-directories are not supported at this time.  There is no method to create one.
+
 
 ###  list( [ matchGLOB] )
 
@@ -651,6 +667,8 @@ Use something like the following code in your JavaScript:
     Returns an "error" response if the directory's full pathName
     is > 255 characters, or if the operating system had a problem
     processing the function.
+
+    sub-directories are not supported at this time.  There is no method to create one.
 
 
 ###  listInfo( [ matchGLOB] )
@@ -686,6 +704,8 @@ Use something like the following code in your JavaScript:
     - lastAccessed: milliseconds since 1970-01-01T00:00:00.000Z
     - lastModified: milliseconds since 1970-01-01T00:00:00.000Z
     - permissions:  expressed as a UNIX file mode (for Windows, the 'user', 'group', and 'other' parts will always be identical)
+
+    sub-directories are not supported at this time.  There is no method to create one.
 
 
 ###  getFullPathName( [fileName] )
