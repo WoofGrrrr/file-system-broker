@@ -30,10 +30,10 @@
  *   . readJSONFIle
  *   . readObjectFromJSONFIle
  *   . getFileInfo
- *   . renameFile
  *   . deleteFile
- *   . deleteDirectory - Can delete ONLY the directory for the extensionId. (Cannot make sub-directtories, and FileNames cannot contain path separator characters.)
- *   . makeDirectory - Can make only the directory for the extensionId.  Cannot make sub-directories.
+ *   . renameFile
+ *   . deleteDirectory - Can delete ONLY the directory for the Extension. (Cannot make sub-directtories, and FileNames cannot contain path separator characters.)
+ *   . makeDirectory - Can make only the directory for the Extension.  Cannot make sub-directories.
  *   . listFiles - with optional fileName match GLOB
  *   . list - with optional fileName match GLOB
  *   . getFullPathName
@@ -60,6 +60,8 @@
  *      - nul
  *      - com0 - com9
  *      - lpt0 - lpt9
+ * ** In addition, a directoryName may not be any of these reserved names:
+ *      - ..
  *
  * ** A fileName may not be longer than 64 characters
  *
@@ -102,55 +104,49 @@ var { ExtensionError } = ExtensionUtils;
 
 Cu.importGlobalProperties(["IOUtils", "PathUtils"]);
 
-var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
+var FileSystemExp  = class extends ExtensionCommon.ExtensionAPI {
   getAPI(context) {
     return {
 
-      BrokerFileSystem: {
+      FileSystemExp : {
 
         // returns boolean
-        async exists(extensionId, fileName) {
-          if (! checkExtensionId(extensionId)) {
-            debug(`exists -- extensionId is invalid: "${extensionId}"`);
-            throw new ExtensionError(`BrokerFileSystem.exists -- extensionId is invalid: "${extensionId}"`);
-          }
-
+        async exists(fileName) {
           if (fileName && ! checkFileName(fileName)) { // fileName is optional
-            throw new ExtensionError(`BrokerFileSystem.exists -- fileName is invalid: "${fileName}"`);
+            debug(`exists -- fileName is invalid: "${fileName}"`);
+            throw new ExtensionError(`FileSystemExp.exists -- fileName is invalid: "${fileName}"`);
           }
 
-          const filePath = buildPathName(context, extensionId, fileName);
+          const filePath = buildPathName(context, fileName);
           if (! checkFilePath(filePath)) {
-            throw new ExtensionError(`BrokerFileSystem.exists -- filePath is invalid: "${filePath}"`);
+            debug(`exists -- filePath is invalid: "${filePath}"`);
+            throw new ExtensionError(`FileSystemExp.exists -- filePath is invalid: "${filePath}"`);
           }
 
           try {
+            debug(`exists -- calling IOUtils.exists - filePath="${filePath}"`);
             const exists = await IOUtils.exists(filePath); // returns Promise<boolean>
+            debug(`exists -- filePath="${filePath}" exists=${exists}`);
             return exists;
           } catch (error) {
             caught(error, "exists -- FILE SYSTEM ERROR", `checking existence of File "${fileName}" at "${filePath}"`);
-            throw new ExtensionError(`BrokerFileSystem.exist -- Error checking existence of File "${fileName}" at "${filePath}"`);
+            throw new ExtensionError(`FileSystemExp.exist -- Error checking existence of File "${fileName}" at "${filePath}"`);
           }
         },
 
 
 
         // returns boolean
-        async isRegularFile(extensionId, fileName) {
-          if (! checkExtensionId(extensionId)) {
-            debug(`isRegularFile -- extensionId is invalid: "${extensionId}"`);
-            throw new ExtensionError(`BrokerFileSystem.isRegularFile -- extensionId is invalid: "${extensionId}"`);
-          }
-
+        async isRegularFile(fileName) {
           if (fileName && ! checkFileName(fileName)) { // fileName is optional
             debug(`isRegularFile -- fileName is invalid: "${fileName}"`);
-            throw new ExtensionError(`BrokerFileSystem.isRegularFile -- fileName is invalid: "${fileName}"`);
+            throw new ExtensionError(`FileSystemExp.isRegularFile -- fileName is invalid: "${fileName}"`);
           }
 
-          const filePath = buildPathName(context, extensionId, fileName);
+          const filePath = buildPathName(context, fileName);
           if (! checkFilePath(filePath)) {
             debug(`isRegularFile -- filePath is invalid: "${filePath}"`);
-            throw new ExtensionError(`BrokerFileSystem.isRegularFile -- filePath is invalid: "${filePath}"`);
+            throw new ExtensionError(`FileSystemExp.isRegularFile -- filePath is invalid: "${filePath}"`);
           }
 
           let fileInfo;
@@ -165,12 +161,12 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
           } catch (error) { // sometimes stat() throws even though exists() returns true.  I don't know why.  Bugzilla #1962918
             if (error.name !== 'NotFoundError') {
               caught(error, "isRegularFile -- FILE SYSTEM ERROR", `Checking if File "${fileName}" at "${filePath}" is a Regular File`);
-              throw new ExtensionError(`BrokerFileSystem.isRegularFile -- Error checking if File "${fileName}" at "${filePath}" is a Regular File`);
+              throw new ExtensionError(`FileSystemExp.isRegularFile -- Error checking if File "${fileName}" at "${filePath}" is a Regular File`);
             }
           }
           if (! fileInfo) {
             debug(`isRegularFile --  Unable to get file type for File "${fileName}" at "${filePath}" - is it a Regular File?`);
-            throw new ExtensionError(`BrokerFileSystem.isRegularFile -- Unable to get file type for File "${fileName}" at "${filePath}" - is it a Regular File?`);
+            throw new ExtensionError(`FileSystemExp.isRegularFile -- Unable to get file type for File "${fileName}" at "${filePath}" - is it a Regular File?`);
           }
 
           return (fileInfo.type === 'regular'); // enum FileType { "regular", "directory", "other" };
@@ -179,21 +175,16 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
 
 
         // returns boolean
-        async isDirectory(extensionId, directoryName) {
-          if (! checkExtensionId(extensionId)) {
-            debug(`isDirectory -- extensionId is invalid: "${extensionId}"`);
-            throw new ExtensionError(`BrokerFileSystem.isDirectory -- extensionId is invalid: "${extensionId}"`);
-          }
-
+        async isDirectory(directoryName) {
           if (directoryName && ! checkDirectoryName(directoryName)) { // directoryName is optional
             debug(`isDirectory -- directoryName is invalid: "${directoryName}"`);
-            throw new ExtensionError(`BrokerFileSystem.isDirectory -- directoryName is invalid: "${directoryName}"`);
+            throw new ExtensionError(`FileSystemExp.isDirectory -- directoryName is invalid: "${directoryName}"`);
           }
 
-          const dirPath = buildPathName(context, extensionId, directoryName);
+          const dirPath = buildPathName(context, directoryName);
           if (! checkFilePath(dirPath)) {
             debug(`isDirectory -- dirPath is invalid: "${dirPath}"`);
-            throw new ExtensionError(`BrokerFileSystem.isDirectory -- dirPath is invalid: "${dirPath}"`);
+            throw new ExtensionError(`FileSystemExp.isDirectory -- dirPath is invalid: "${dirPath}"`);
           }
 
           let fileInfo;
@@ -208,12 +199,12 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
           } catch (error) { // sometimes stat() throws even though exists() returns true.  I don't know why.  Bugzilla #1962918
             if (error.name !== 'NotFoundError') {
               caught(error, "isDirectory -- FILE SYSTEM ERROR", `checking if File "${directoryName}" at "${dirPath}" is a Directory`);
-              throw new ExtensionError(`BrokerFileSystem.isDirectory -- Error checking if File "${directoryName}" at "${dirPath}" is a Directory`);
+              throw new ExtensionError(`FileSystemExp.isDirectory -- Error checking if File "${directoryName}" at "${dirPath}" is a Directory`);
             }
           }
           if (! fileInfo) {
             debug(`isDirectory --  Unable to get file type for File "${directoryName}" at "${dirPath}" - is it a Directory?`);
-            throw new ExtensionError(`BrokerFileSystem.isDirectory -- Unable to get file type for File "${directoryName}" at "${dirPath}" - is it a Directory?`);
+            throw new ExtensionError(`FileSystemExp.isDirectory -- Unable to get file type for File "${directoryName}" at "${dirPath}" - is it a Directory?`);
           }
 
           return (fileInfo.type === 'directory'); // enum FileType { "regular", "directory", "other" };
@@ -222,21 +213,16 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
 
 
         // returns boolean
-        async hasFiles(extensionId, directoryName) {
-          if (! checkExtensionId(extensionId)) {
-            debug(`hasFiles -- extensionId is invalid: "${extensionId}"`);
-            throw new ExtensionError(`BrokerFileSystem.hasFiles -- extensionId is invalid: "${extensionId}"`);
-          }
-
+        async hasFiles(directoryName) {
           if (directoryName && ! checkDirectoryName(directoryName)) { // directoryName is optional
             debug(`hasFiles -- directoryName is invalid: "${directoryName}"`);
-            throw new ExtensionError(`BrokerFileSystem.hasFiles -- directoryName is invalid: "${directoryName}"`);
+            throw new ExtensionError(`FileSystemExp.hasFiles -- directoryName is invalid: "${directoryName}"`);
           }
 
-          const dirPath = buildPathName(context, extensionId, directoryName);
+          const dirPath = buildPathName(context, directoryName);
           if (! checkFilePath(dirPath)) {
             debug(`hasFiles -- dirPath is invalid: "${dirPath}"`);
-            throw new ExtensionError(`BrokerFileSystem.hasFiles -- dirPath is invalid: "${dirPath}"`);
+            throw new ExtensionError(`FileSystemExp.hasFiles -- dirPath is invalid: "${dirPath}"`);
           }
 
           let exists;
@@ -245,10 +231,10 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
             exists = await IOUtils.exists(dirPath); // returns Promise<boolean>
           } catch (error) {
             caught(error, "hasFiles -- FILE SYSTEM ERROR", `checking if file "${directoryName}" at "${dirPath}" exists`);
-            throw new ExtensionError(`BrokerFileSystem.hasFiles -- Error checking if file "${directoryName}" at "${dirPath}" exists`);
+            throw new ExtensionError(`FileSystemExp.hasFiles -- Error checking if file "${directoryName}" at "${dirPath}" exists`);
           }
           if (! exists) {
-            throw new ExtensionError(`BrokerFileSystem.hasFiles -- File "${directoryName}" at "${dirPath}" does not exist`);
+            throw new ExtensionError(`FileSystemExp.hasFiles -- File "${directoryName}" at "${dirPath}" does not exist`);
           }
 
           let fileInfo;
@@ -259,16 +245,16 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
           } catch (error) { // sometimes stat() throws even though exists() returns true.  I don't know why.  Bugzilla #1962918
             if (error.name !== 'NotFoundError') {
               caught(error, "hasFiles -- FILE SYSTEM ERROR", `checking if file "${directoryName}" at "${dirPath}" is a Directory`);
-              throw new ExtensionError(`BrokerFileSystem.hasFiles -- Error checking if file "${directoryName}" at "${dirPath}" is a Directory`);
+              throw new ExtensionError(`FileSystemExp.hasFiles -- Error checking if file "${directoryName}" at "${dirPath}" is a Directory`);
             }
           }
           if (! fileInfo) {
             debug(`hasFiles --  Unable to get file type for File "${directoryName}" at "${dirPath}" - is it a Directory?`);
-            throw new ExtensionError(`BrokerFileSystem.hasFiles -- Unable to get file type for File "${directoryName}" at "${dirPath}" - is it a Directory?`);
+            throw new ExtensionError(`FileSystemExp.hasFiles -- Unable to get file type for File "${directoryName}" at "${dirPath}" - is it a Directory?`);
           }
 
           if (fileInfo.type !== 'directory') { // enum FileType { "regular", "directory", "other" };
-            throw new ExtensionError(`BrokerFileSystem.hasFiles -- File "${directoryName}" at "${dirPath}" is not a Directory`);
+            throw new ExtensionError(`FileSystemExp.hasFiles -- File "${directoryName}" at "${dirPath}" is not a Directory`);
           }
 
           try {
@@ -278,28 +264,23 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
             return hasChildren;
           } catch (error) {
             debug(`hasFiles --  Unable to get hasChildren for Directory "${directoryName}" at "${dirPath}"`);
-            throw new ExtensionError(`BrokerFileSystem.hasFiles -- Unable to check if Directory "${directoryName}" has files at "${dirPath}"`);
+            throw new ExtensionError(`FileSystemExp.hasFiles -- Unable to check if Directory "${directoryName}" has files at "${dirPath}"`);
           }
         },
 
 
 
         // returns integer
-        async getFileCount(extensionId, directoryName) {
-          if (! checkExtensionId(extensionId)) {
-            debug(`getFileCount -- extensionId is invalid: "${extensionId}"`);
-            throw new ExtensionError(`BrokerFileSystem.getFileCount -- extensionId is invalid: "${extensionId}"`);
-          }
-
+        async getFileCount(directoryName) {
           if (directoryName && ! checkDirectoryName(directoryName)) { // directoryName is optional
             debug(`getFileCount -- directoryName is invalid: "${directoryName}"`);
-            throw new ExtensionError(`BrokerFileSystem.getFileCount -- directoryName is invalid: "${directoryName}"`);
+            throw new ExtensionError(`FileSystemExp.getFileCount -- directoryName is invalid: "${directoryName}"`);
           }
 
-          const dirPath = buildPathName(context, extensionId, directoryName);
+          const dirPath = buildPathName(context, directoryName);
           if (! checkFilePath(dirPath)) {
             debug(`getFileCount -- dirPath is invalid: "${dirPath}"`);
-            throw new ExtensionError(`BrokerFileSystem.getFileCount -- dirPath is invalid: "${dirPath}"`);
+            throw new ExtensionError(`FileSystemExp.getFileCount -- dirPath is invalid: "${dirPath}"`);
           }
 
           let exists;
@@ -308,10 +289,10 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
             exists = await IOUtils.exists(dirPath); // returns Promise<boolean>
           } catch (error) {
             caught(error, "getFileCount -- FILE SYSTEM ERROR", `checking if file "${directoryName}" at "${dirPath}" exists`);
-            throw new ExtensionError(`BrokerFileSystem.getFileCount -- Error checking if file "${directoryName}" at "${dirPath}" exists`);
+            throw new ExtensionError(`FileSystemExp.getFileCount -- Error checking if file "${directoryName}" at "${dirPath}" exists`);
           }
           if (! exists) {
-            throw new ExtensionError(`BrokerFileSystem.getFileCount -- File "${directoryName}" at "${dirPath}" does not exist`);
+            throw new ExtensionError(`FileSystemExp.getFileCount -- File "${directoryName}" at "${dirPath}" does not exist`);
           }
 
           let fileInfo;
@@ -321,16 +302,16 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
           } catch (error) { // sometimes stat() throws even though exists() returns true.  I don't know why.  Bugzilla #1962918
             if (error.name !== 'NotFoundError') {
               caught(error, "getFileCount -- FILE SYSTEM ERROR", `checking if file "${directoryName}" at "${dirPath}" is a Directory`);
-              throw new ExtensionError(`BrokerFileSystem.getFileCount -- Error checking if file "${directoryName}" at "${dirPath}" is a Directory`);
+              throw new ExtensionError(`FileSystemExp.getFileCount -- Error checking if file "${directoryName}" at "${dirPath}" is a Directory`);
             }
           }
           if (! fileInfo) {
             debug(`getFileCount --  Unable to get file type for File "${directoryName}" at "${dirPath}" - is it a Directory?`);
-            throw new ExtensionError(`BrokerFileSystem.getFileCount -- Unable to get file type for File "${directoryName}" at "${dirPath}" - is it a Directory?`);
+            throw new ExtensionError(`FileSystemExp.getFileCount -- Unable to get file type for File "${directoryName}" at "${dirPath}" - is it a Directory?`);
           }
 
           if (fileInfo.type !== 'directory') { // enum FileType { "regular", "directory", "other" };
-            throw new ExtensionError(`BrokerFileSystem.getFileCount -- File "${directoryName}" at "${dirPath}" is not a Directory`);
+            throw new ExtensionError(`FileSystemExp.getFileCount -- File "${directoryName}" at "${dirPath}" is not a Directory`);
           }
 
           try {
@@ -345,28 +326,23 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
             }
           } catch (error) {
             debug(`getFileCount --  Unable to get shildren for Directory "${directoryName}" at "${dirPath}"`);
-            throw new ExtensionError(`BrokerFileSystem.getFileCount -- Unable to get file count for Directory "${directoryName}" at "${dirPath}"`);
+            throw new ExtensionError(`FileSystemExp.getFileCount -- Unable to get file count for Directory "${directoryName}" at "${dirPath}"`);
           }
         },
 
 
 
         // returns UTF8String
-        async readFile(extensionId, fileName) {
-          if (! checkExtensionId(extensionId)) {
-            debug(`readFile -- extensionId is invalid: "${extensionId}"`);
-            throw new ExtensionError(`BrokerFileSystem.readFile -- extensionId is invalid: "${extensionId}"`);
-          }
-
+        async readFile(fileName) {
           if (! checkFileName(fileName)) {
             debug(`readFile -- fileName is invalid: "${fileName}"`);
-            throw new ExtensionError(`BrokerFileSystem.readFile -- fileName is invalid: "${fileName}"`);
+            throw new ExtensionError(`FileSystemExp.readFile -- fileName is invalid: "${fileName}"`);
           }
 
-          const filePath = buildPathName(context, extensionId, fileName);
+          const filePath = buildPathName(context, fileName);
           if (! checkFilePath(filePath)) {
             debug(`readFile -- filePath is invalid: "${filePath}"`);
-            throw new ExtensionError(`BrokerFileSystem.readFile -- filePath is invalid: "${filePath}"`);
+            throw new ExtensionError(`FileSystemExp.readFile -- filePath is invalid: "${filePath}"`);
           }
 
           try {
@@ -380,30 +356,25 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
 
           } catch (error) {
             caught(error, "readFile -- FILE SYSTEM ERROR", `reading File "${fileName}" at "${filePath}"`);
-            throw new ExtensionError(`BrokerFileSystem.readFile -- Error reading File "${fileName}" at "${filePath}"`);
+            throw new ExtensionError(`FileSystemExp.readFile -- Error reading File "${fileName}" at "${filePath}"`);
           }
 
-          throw new ExtensionError(`BrokerFileSystem.readFile -- File "${fileName}" at "${filePath}" does not exist`);
+          throw new ExtensionError(`FileSystemExp.readFile -- File "${fileName}" at "${filePath}" does not exist`);
         },
 
 
 
         // returns UTF8String
-        async readJSONFile(extensionId, fileName) {
-          if (! checkExtensionId(extensionId)) {
-            debug(`readJSONFile -- extensionId is invalid: "${extensionId}"`);
-            throw new ExtensionError(`BrokerFileSystem.readJSONFile -- extensionId is invalid: "${extensionId}"`);
-          }
-
+        async readJSONFile(fileName) {
           if (! checkFileName(fileName)) {
             debug(`readJSONFile -- fileName is invalid: "${fileName}"`);
-            throw new ExtensionError(`BrokerFileSystem.readJSONFile -- fileName is invalid: "${fileName}"`);
+            throw new ExtensionError(`FileSystemExp.readJSONFile -- fileName is invalid: "${fileName}"`);
           }
 
-          const filePath = buildPathName(context, extensionId, fileName);
+          const filePath = buildPathName(context, fileName);
           if (! checkFilePath(filePath)) {
             debug(`readJSONFile -- filePath is invalid: "${filePath}"`);
-            throw new ExtensionError(`BrokerFileSystem.readJSONFile -- filePath is invalid: "${filePath}"`);
+            throw new ExtensionError(`FileSystemExp.readJSONFile -- filePath is invalid: "${filePath}"`);
           }
 
           try {
@@ -417,88 +388,64 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
 
           } catch (error) {
             caught(error, "readJSONFile -- FILE SYSTEM ERROR", `reading File "${fileName}" at "${filePath}"`);
-            throw new ExtensionError(`BrokerFileSystem.readJSONFile -- Error reading File "${fileName}" at "${filePath}"`);
+            throw new ExtensionError(`FileSystemExp.readJSONFile -- Error reading File "${fileName}" at "${filePath}"`);
           }
 
-          throw new ExtensionError(`BrokerFileSystem.readFile -- File "${fileName}" at "${filePath}" does not exist`);
+          throw new ExtensionError(`FileSystemExp.readFile -- File "${fileName}" at "${filePath}" does not exist`);
         },
 
 
 
         // returns object
-        async readObjectFromJSONFile(extensionId, fileName) {
-          debug(`readObjectFromJSONFile -- extensionId="${extensionId}" fileName="${fileName}" `);
-          if (! checkExtensionId(extensionId)) {
-            debug(`readObjectFromJSONFile -- extensionId is invalid: "${extensionId}"`);
-            throw new ExtensionError(`BrokerFileSystem.readObjectFromJSONFile -- extensionId is invalid: "${extensionId}"`);
-          }
-
+        async readObjectFromJSONFile(fileName) {
           if (! checkFileName(fileName)) {
             debug(`readObjectFromJSONFile -- fileName is invalid: "${fileName}"`);
-            throw new ExtensionError(`BrokerFileSystem.readObjectFromJSONFile -- fileName is invalid: "${fileName}"`);
+            throw new ExtensionError(`FileSystemExp.readObjectFromJSONFile -- fileName is invalid: "${fileName}"`);
           }
 
-          const filePath = buildPathName(context, extensionId, fileName);
+          const filePath = buildPathName(context, fileName);
           if (! checkFilePath(filePath)) {
             debug(`readObjectFromJSONFile -- filePath is invalid: "${filePath}"`);
-            throw new ExtensionError(`BrokerFileSystem.readObjectFromJSONFile -- filePath is invalid: "${filePath}"`);
+            throw new ExtensionError(`FileSystemExp.readObjectFromJSONFile -- filePath is invalid: "${filePath}"`);
           }
 
           try {
             debug(`readObjectFromJSONFile -- calling IOUtils.exists - filePath="${filePath}"`);
             const exists = await IOUtils.exists(filePath); // returns Promise<boolean>
-            if (! exists) {
-              throw new ExtensionError(`BrokerFileSystem.readObjectFromJSONFile -- File "${fileName}" at "${filePath}" does not exist`);
-            } else {
+            if (exists) {
               debug(`readObjectFromJSONFile -- calling IOUtils.readJSON - filePath="${filePath}"`);
               const json = await IOUtils.readJSON(filePath); // returns Promise<any>
-              debug(`readObjectFromJSONFile -- returned from IOUtils.readJSON - filePath="${filePath}"`);
 
               try {
-                debug(`readObjectFromJSONFile -- parsing JSON - filePath="${filePath}"`);
-                const obj = JSON.parse(json);
-                debug(`readObjectFromJSONFile -- parsed JSON - returning obj - filePath="${filePath}" (typeof obj)=${typeof obj}`);
-                return obj;
-
+                const object = JSON.parse(json);
+                return object;
               } catch (error) {
                 caught(error, `readObjectFromJSONFile -- JSON.parse() failed: "${filePath}"`);
-                throw new ExtensionError(`BrokerFileSystem.readObjectFromJSONFile -- Failed to parse JSON: "${filePath}"`);
+                throw new ExtensionError(`FileSystemExp.readObjectFromJSONFile -- Failed to parse JSON: "${filePath}"`);
               }
             }
 
           } catch (error) {
             caught(error, "readObjectFromJSONFile -- FILE SYSTEM ERROR", `reading File "${fileName}" at "${filePath}"`);
-            throw new ExtensionError(`BrokerFileSystem.readObjectFromJSONFile -- Error reading File "${fileName}" at "${filePath}"`);
+            throw new ExtensionError(`FileSystemExp.readObjectFromJSONFile -- Error reading File "${fileName}" at "${filePath}"`);
           }
 
-          // Until recently, all other paths except the "else" part of "if (exists)" had a return or a throw, so only "not exists" would get to here.
-          // But I just changed to "if (! exists) {} else {}".  Nothing should get to here.
-          throw new ExtensionError(`BrokerFileSystem.readObjectFromJSONFile -- File "${fileName}" at "${filePath}" does not exist`);
+          throw new ExtensionError(`FileSystemExp.readObjectFromJSONFile -- File "${fileName}" at "${filePath}" does not exist`);
         },
 
 
 
         // returns unsigned long long
-        async writeFile(extensionId, fileName, data, writeMode) {
-          if (! checkExtensionId(extensionId)) {
-            debug(`writeFile -- extensionId is invalid: "${extensionId}"`);
-            throw new ExtensionError(`BrokerFileSystem.writeFile -- extensionId is invalid: "${extensionId}"`);
-          }
-
+        async writeFile(fileName, data, writeMode) {
           if (! checkFileName(fileName)) {
             debug(`writeFile -- fileName is invalid: "${fileName}"`);
-            throw new ExtensionError(`BrokerFileSystem.writeFile -- fileName is invalid: "${fileName}"`);
+            throw new ExtensionError(`FileSystemExp.writeFile -- fileName is invalid: "${fileName}"`);
           }
 
-          if (typeof data !== 'string') {
-            debug(`writeFile -- data parameter is not a String: (typeof data)='${(typeof data)}'`);
-            throw new ExtensionError(`BrokerFileSystem.writeFile -- data parameter is not a String: (typeof data)='${(typeof data)}'`);
-          }
-
-          const filePath = buildPathName(context, extensionId, fileName);
+          const filePath = buildPathName(context, fileName);
           if (! checkFilePath(filePath)) {
             debug(`writeFile -- filePath is invalid: "${filePath}"`);
-            throw new ExtensionError(`BrokerFileSystem.writeFile -- filePath is invalid: "${filePath}"`);
+            throw new ExtensionError(`FileSystemExp.writeFile -- filePath is invalid: "${filePath}"`);
           }
 
           if (! writeMode) {
@@ -507,7 +454,7 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
             writeMode = 'overwrite';
           } else if (! checkWriteMode(writeMode)) {
             debug(`writeFile -- Invalid 'writeMode' parameter': "${writeMode}"`);
-            throw new ExtensionError(`BrokerFileSystem.writeFile -- Invalid 'writeMode' parameter: "${writeMode}"`);
+            throw new ExtensionError(`FileSystemExp.writeFile -- Invalid 'writeMode' parameter: "${writeMode}"`);
           }
 
           switch (writeMode) {
@@ -515,7 +462,7 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
               const exists = await IOUtils.exists(filePath); // returns Promise<boolean> // not catching
               if (! exists) {
                 debug(`writeFile -- writeMode="${writeMode}" - file does not exist: "${fileName}"`);
-                throw new ExtensionError(`BrokerFileSystem.writeFile -- writeMode="${writeMode}" - file does not exist: "${fileName}"`);
+                throw new ExtensionError(`FileSystemExp.writeFile -- writeMode="${writeMode}" - file does not exist: "${fileName}"`);
               }
               break;
             }
@@ -523,13 +470,13 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
               const exists = await IOUtils.exists(filePath); // returns Promise<boolean> // not catching
               if (exists) {
                 debug(`writeFile -- writeMode="${writeMode}" - file already exists: "${fileName}"`);
-                throw new ExtensionError(`BrokerFileSystem.writeFile: writeMode="${writeMode}" - file already exists: "${fileName}"`);
+                throw new ExtensionError(`FileSystemExp.writeFile: writeMode="${writeMode}" - file already exists: "${fileName}"`);
               }
               break;
             }
           }
 
-          const writeOptions = { "mode": writeMode };
+          const writeOptions = {"mode": writeMode};
 
           try {
             debug(`writeFile -- calling IOUtils.writeUTF8 - filePath="${filePath}"`);
@@ -538,36 +485,26 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
 
           } catch (error) {
             caught(error, "writeFile -- FILE SYSTEM ERROR", `writing File "${fileName}" at "${filePath}"`);
-            throw new ExtensionError(`BrokerFileSystem.writeFile -- Error writing File "${fileName}" at "${filePath}"`);
+            throw new ExtensionError(`FileSystemExp.writeFile -- Error writing File "${fileName}" at "${filePath}"`);
           }
         },
 
 
 
         // returns unsigned long long
-        async replaceFile(extensionId, fileName, data) {
-          if (! checkExtensionId(extensionId)) {
-            debug(`replaceFile -- extensionId is invalid: "${extensionId}"`);
-            throw new ExtensionError(`BrokerFileSystem.replaceFile -- extensionId is invalid: "${extensionId}"`);
-          }
-
+        async replaceFile(fileName, data) {
           if (! checkFileName(fileName)) {
             debug(`replaceFile -- fileName is invalid: "${fileName}"`);
-            throw new ExtensionError(`BrokerFileSystem.replaceFile -- fileName is invalid: "${fileName}"`);
+            throw new ExtensionError(`FileSystemExp.replaceFile -- fileName is invalid: "${fileName}"`);
           }
 
-          if (typeof data !== 'string') {
-            debug(`replaceFile -- data parameter is not a String: (typeof data)='${(typeof data)}'`);
-            throw new ExtensionError(`BrokerFileSystem.replaceFile -- data parameter is not a String: (typeof data)='${(typeof data)}'`);
-          }
-
-          const filePath = buildPathName(context, extensionId, fileName);
+          const filePath = buildPathName(context, fileName);
           if (! checkFilePath(filePath)) {
             debug(`replaceFile -- filePath is invalid: "${filePath}"`);
-            throw new ExtensionError(`BrokerFileSystem.replaceFile -- filePath is invalid: "${filePath}"`);
+            throw new ExtensionError(`FileSystemExp.replaceFile -- filePath is invalid: "${filePath}"`);
           }
 
-          const writeOptions = { "mode": 'overwrite' };
+          const writeOptions = {"mode": 'overwrite'};
 
           try {
             debug(`replaceFile -- calling IOUtils.writeUTF8 - filePath="${filePath}"`);
@@ -576,36 +513,26 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
 
           } catch (error) {
             caught(error, "replaceFile -- FILE SYSTEM ERROR", `writing File "${fileName}" at "${filePath}"`);
-            throw new ExtensionError(`BrokerFileSystem.replaceFile -- Error writing File "${fileName}" at "${filePath}"`);
+            throw new ExtensionError(`FileSystemExp.replaceFile -- Error writing File "${fileName}" at "${filePath}"`);
           }
         },
 
 
 
         // returns unsigned long long
-        async appendToFile(extensionId, fileName, data) {
-          if (! checkExtensionId(extensionId)) {
-            debug(`appendToFile -- extensionId is invalid: "${extensionId}"`);
-            throw new ExtensionError(`BrokerFileSystem.appendToFile -- extensionId is invalid: "${extensionId}"`);
-          }
-
+        async appendToFile(fileName, data) {
           if (! checkFileName(fileName)) {
             debug(`appendToFile -- fileName is invalid: "${fileName}"`);
-            throw new ExtensionError(`BrokerFileSystem.appendToFile -- fileName is invalid: "${fileName}"`);
+            throw new ExtensionError(`FileSystemExp.appendToFile -- fileName is invalid: "${fileName}"`);
           }
 
-          if (typeof data !== 'string') {
-            debug(`appendToFile -- data parameter is not a String: (typeof data)='${(typeof data)}'`);
-            throw new ExtensionError(`BrokerFileSystem.appendToFile -- data parameter is not a String: (typeof data)='${(typeof data)}'`);
-          }
-
-          const filePath = buildPathName(context, extensionId, fileName);
+          const filePath = buildPathName(context, fileName);
           if (! checkFilePath(filePath)) {
             debug(`appendToFile -- filePath is invalid: "${filePath}"`);
-            throw new ExtensionError(`BrokerFileSystem.appendToFile -- filePath is invalid: "${filePath}"`);
+            throw new ExtensionError(`FileSystemExp.appendToFile -- filePath is invalid: "${filePath}"`);
           }
 
-          const writeOptions = { "mode": 'appendOrCreate' };
+          const writeOptions = {"mode": 'appendOrCreate'};
 
           try {
             debug(`appendToFile -- calling IOUtils.writeUTF8 - filePath="${filePath}"`);
@@ -614,33 +541,28 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
 
           } catch (error) {
             caught(error, "appendToFile -- FILE SYSTEM ERROR", `writing File "${fileName}" at "${filePath}"`);
-            throw new ExtensionError(`BrokerFileSystem.appendToFile -- Error writing File "${fileName}" at "${filePath}"`);
+            throw new ExtensionError(`FileSystemExp.appendToFile -- Error writing File "${fileName}" at "${filePath}"`);
           }
         },
 
 
 
         // returns unsigned long long
-        async writeJSONFile(extensionId, fileName, json, writeMode) {
-          if (! checkExtensionId(extensionId)) {
-            debug(`writeJSONFile -- extensionId is invalid: "${extensionId}"`);
-            throw new ExtensionError(`BrokerFileSystem.writeJSONFile -- extensionId is invalid: "${extensionId}"`);
-          }
-
+        async writeJSONFile(fileName, json, writeMode) {
           if (! checkFileName(fileName)) {
             debug(`writeJSONFile -- fileName is invalid: "${fileName}"`);
-            throw new ExtensionError(`BrokerFileSystem.writeJSONFile -- fileName is invalid: "${fileName}"`);
+            throw new ExtensionError(`FileSystemExp.writeJSONFile -- fileName is invalid: "${fileName}"`);
           }
 
           if (typeof json !== 'string') {
-            debug(`writeJSONFile -- json parameter is not a String: "${typeof json}"`);
-            throw new ExtensionError(`BrokerFileSystem.writeJSONFile -- json parameter is not a String: "${typeof json}"`);
+            debug(`writeJSONFile -- json parameter is not a string: "${typeof json}"`);
+            throw new ExtensionError(`FileSystemExp.writeJSONFile -- json parameter is not an string: "${typeof json}"`);
           }
 
-          const filePath = buildPathName(context, extensionId, fileName);
+          const filePath = buildPathName(context, fileName);
           if (! checkFilePath(filePath)) {
             debug(`writeJSONFile -- filePath is invalid: "${filePath}"`);
-            throw new ExtensionError(`BrokerFileSystem.writeJSONFile -- filePath is invalid: "${filePath}"`);
+            throw new ExtensionError(`FileSystemExp.writeJSONFile -- filePath is invalid: "${filePath}"`);
           }
 
           if (! writeMode) {
@@ -649,25 +571,25 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
             writeMode = 'overwrite';
           } else if (! checkWriteMode(writeMode)) {
             debug(`writeJSONFile -- Invalid 'writeMode' parameter': "${writeMode}"`);
-            throw new ExtensionError(`BrokerFileSystem.writeJSONFile -- Invalid 'writeMode' parameter: "${writeMode}"`);
+            throw new ExtensionError(`FileSystemExp.writeJSONFile -- Invalid 'writeMode' parameter: "${writeMode}"`);
           }
 
           switch (writeMode) {
             case 'append':
             case 'appendOrCreate':
               debug(`writeJSONFile -- Unsupported 'writeMode' parameter' for JSON: "${writeMode}"`);
-              throw new ExtensionError(`BrokerFileSystem.writeJSONFile -- Unsupported 'writeMode' parameter for JSON: "${writeMode}"`);
+              throw new ExtensionError(`FileSystemExp.writeJSONFile -- Unsupported 'writeMode' parameter for JSON: "${writeMode}"`);
             case 'create': { // write would fail if the file DOES exist
               const exists = await IOUtils.exists(filePath); // returns Promise<boolean> // not catching
               if (exists) {
                 debug(`writeJSONFile -- writeMode="${writeMode}" - file already exists: "${fileName}"`);
-                throw new ExtensionError(`BrokerFileSystem.writeJSONFile: writeMode="${writeMode}" - file already exists: "${fileName}"`);
+                throw new ExtensionError(`FileSystemExp.writeJSONFile: writeMode="${writeMode}" - file already exists: "${fileName}"`);
               }
               break;
             }
           }
 
-          const writeOptions = { "mode": writeMode };
+          const writeOptions = {"mode": writeMode};
 
           try {
             debug(`writeJSONFile -- calling IOUtils.writeJSON - filePath="${filePath}"`);
@@ -676,33 +598,28 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
 
           } catch (error) {
             caught(error, "writeJSONFile -- FILE SYSTEM ERROR", `writing File "${fileName}" at "${filePath}"`);
-            throw new ExtensionError(`BrokerFileSystem.writeJSONFile -- Error writing File "${fileName}" at "${filePath}"`);
+            throw new ExtensionError(`FileSystemExp.writeJSONFile -- Error writing File "${fileName}" at "${filePath}"`);
           }
         },
 
 
 
         // returns unsigned long long
-        async writeObjectToJSONFile(extensionId, fileName, object, writeMode) {
-          if (! checkExtensionId(extensionId)) {
-            debug(`writeObjectToJSONFile -- extensionId is invalid: "${extensionId}"`);
-            throw new ExtensionError(`BrokerFileSystem.writeObjectToJSONFile -- extensionId is invalid: "${extensionId}"`);
-          }
-
+        async writeObjectToJSONFile(fileName, object, writeMode) {
           if (! checkFileName(fileName)) {
             debug(`writeObjectToJSONFile -- fileName is invalid: "${fileName}"`);
-            throw new ExtensionError(`BrokerFileSystem.writeObjectToJSONFile -- fileName is invalid: "${fileName}"`);
+            throw new ExtensionError(`FileSystemExp.writeObjectToJSONFile -- fileName is invalid: "${fileName}"`);
           }
 
           if (typeof object !== 'object') {
             debug(`writeObjectToJSONFile -- object parameter is not an object: "${typeof object}"`);
-            throw new ExtensionError(`BrokerFileSystem.writeObjectToJSONFile -- object parameter is not an object: "${typeof object}"`);
+            throw new ExtensionError(`FileSystemExp.writeObjectToJSONFile -- object parameter is not an object: "${typeof object}"`);
           }
 
-          const filePath = buildPathName(context, extensionId, fileName);
+          const filePath = buildPathName(context, fileName);
           if (! checkFilePath(filePath)) {
             debug(`writeObjectToJSONFile -- filePath is invalid: "${filePath}"`);
-            throw new ExtensionError(`BrokerFileSystem.writeObjectToJSONFile -- filePath is invalid: "${filePath}"`);
+            throw new ExtensionError(`FileSystemExp.writeObjectToJSONFile -- filePath is invalid: "${filePath}"`);
           }
 
           if (! writeMode) {
@@ -711,19 +628,19 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
             writeMode = 'overwrite';
           } else if (! checkWriteMode(writeMode)) {
             debug(`writeObjectToJSONFile -- Invalid 'writeMode' parameter': "${writeMode}"`);
-            throw new ExtensionError(`BrokerFileSystem.writeObjectToJSONFile -- Invalid 'writeMode' parameter: "${writeMode}"`);
+            throw new ExtensionError(`FileSystemExp.writeObjectToJSONFile -- Invalid 'writeMode' parameter: "${writeMode}"`);
           }
 
           switch (writeMode) {
             case 'append':
             case 'appendOrCreate':
               debug(`writeObjectToJSONFile -- Unsupported 'writeMode' parameter' for JSON: "${writeMode}"`);
-              throw new ExtensionError(`BrokerFileSystem.writeObjectToJSONFile -- Unsupported 'writeMode' parameter for JSON: "${writeMode}"`);
+              throw new ExtensionError(`FileSystemExp.writeObjectToJSONFile -- Unsupported 'writeMode' parameter for JSON: "${writeMode}"`);
             case 'create': { // write would fail if the file DOES exist
               const exists = await IOUtils.exists(filePath); // returns Promise<boolean> // not catching
               if (exists) {
                 debug(`writeObjectToJSONFile -- writeMode="${writeMode}" - file already exists: "${fileName}"`);
-                throw new ExtensionError(`BrokerFileSystem.writeObjectToJSONFile: writeMode="${writeMode}" - file already exists: "${fileName}"`);
+                throw new ExtensionError(`FileSystemExp.writeObjectToJSONFile: writeMode="${writeMode}" - file already exists: "${fileName}"`);
               }
               break;
             }
@@ -734,10 +651,10 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
             json = JSON.stringify(object);
           } catch (error) {
             caught(error, `writeObjectToJSONFile -- Converting data object to JSON String for "${fileName}":`);
-            throw new ExtensionError(`BrokerFileSystem.writeObjectToJSONFile: Error Converting data object to JSON String for "${fileName}"`);
+            throw new ExtensionError(`FileSystemExp.writeObjectToJSONFile: Error Converting data object to JSON String for "${fileName}"`);
           }
 
-          const writeOptions = { "mode": writeMode };
+          const writeOptions = {"mode": writeMode};
 
           try {
             debug(`writeObjectToJSONFile -- calling IOUtils.writeObjectToJSON - filePath="${filePath}"`);
@@ -746,28 +663,23 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
 
           } catch (error) {
             caught(error, "writeObjectToJSONFile -- FILE SYSTEM ERROR", `writing File "${fileName}" at "${filePath}"`);
-            throw new ExtensionError(`BrokerFileSystem.writeObjectToJSONFile -- Error writing File "${fileName}" at "${filePath}"`);
+            throw new ExtensionError(`FileSystemExp.writeObjectToJSONFile -- Error writing File "${fileName}" at "${filePath}"`);
           }
         },
 
 
 
         // returns boolean
-        async deleteFile(extensionId, fileName) { /* MUST BE A REGULAR FILE */
-          if (! checkExtensionId(extensionId)) {
-            debug(`deleteFile -- extensionId is invalid: "${extensionId}"`);
-            throw new ExtensionError(`BrokerFileSystem.deleteFile -- extensionId is invalid: "${extensionId}"`);
-          }
-
+        async deleteFile(fileName) { /* MUST BE A REGULAR FILE */
           if (! checkFileName(fileName)) {
             debug(`deleteFile -- fileName is invalid: "${fileName}"`);
-            throw new ExtensionError(`BrokerFileSystem.deleteFile -- fileName is invalid: "${fileName}"`);
+            throw new ExtensionError(`FileSystemExp.deleteFile -- fileName is invalid: "${fileName}"`);
           }
 
-          const filePath = buildPathName(context, extensionId, fileName);
+          const filePath = buildPathName(context, fileName);
           if (! checkFilePath(filePath)) {
             debug(`deleteFile -- filePath is invalid: "${filePath}"`);
-            throw new ExtensionError(`BrokerFileSystem.deleteFile -- filePath is invalid: "${filePath}"`);
+            throw new ExtensionError(`FileSystemExp.deleteFile -- filePath is invalid: "${filePath}"`);
           }
 
           debug(`deleteFile -- calling IOUtils.exists - filePath="${filePath}"`);
@@ -780,16 +692,16 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
               fileInfo = await IOUtils.stat(filePath); // returns Promise<FileInfo>
             } catch (error) { // sometimes stat() throws even though exists() returns true.  I don't know why.  Bugzilla #1962918
               if (error.name !== 'NotFoundError') {
-                throw new ExtensionError(`BrokerFileSystem.deleteFile -- Error getting FileInfo for File "${fileName}" at "${filePath}"`);
+                throw new ExtensionError(`FileSystemExp.deleteFile -- Error getting FileInfo for File "${fileName}" at "${filePath}"`);
               }
             }
 
             if (! fileInfo) {
               debug(`deleteFile --  Unable to get file type for File "${fileName}" at "${filePath}" - is it a Regular File?`);
-              throw new ExtensionError(`BrokerFileSystem.deleteFile -- Unable to get file type for File "${fileName}" at "${filePath}" - is it a Regular File?`);
+              throw new ExtensionError(`FileSystemExp.deleteFile -- Unable to get file type for File "${fileName}" at "${filePath}" - is it a Regular File?`);
 
             } else if (fileInfo.type !== 'regular') { // enum FileType { "regular", "directory", "other" };
-              throw new ExtensionError(`BrokerFileSystem.deleteFile -- File "${fileName}" at "${filePath}" is not a Regular File`);
+              throw new ExtensionError(`FileSystemExp.deleteFile -- File "${fileName}" at "${filePath}" is not a Regular File`);
 
             } else {
               try {
@@ -800,7 +712,7 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
 
               } catch (error) {
                 caught(error, "deleteFile -- FILE SYSTEM ERROR", `deleting File "${fileName}" at "${filePath}"`);
-                throw new ExtensionError(`BrokerFileSystem.deleteFile -- Error deleting File "${fileName}" at "${filePath}"`);
+                throw new ExtensionError(`FileSystemExp.deleteFile -- Error deleting File "${fileName}" at "${filePath}"`);
               }
             }
           }
@@ -811,28 +723,23 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
 
 
         // returns boolean
-        async deleteDirectory(extensionId, directoryName, recursive) { /* MUST BE A DIRECTORY */
-          if (! checkExtensionId(extensionId)) {
-            debug(`deleteDirectory -- extensionId is invalid: "${extensionId}"`);
-            throw new ExtensionError(`BrokerFileSystem.deleteDirectory -- extensionId is invalid: "${extensionId}"`);
-          }
-
+        async deleteDirectory(directoryName, recursive) { /* MUST BE A DIRECTORY */
           if (directoryName && ! checkDirectoryName(directoryName)) { // directoryName is optional
             debug(`deleteDirectory -- directoryName is invalid: "${directoryName}"`);
-            throw new ExtensionError(`BrokerFileSystem.deleteDirectory -- directoryName is invalid: "${directoryName}"`);
+            throw new ExtensionError(`FileSystemExp.deleteDirectory -- directoryName is invalid: "${directoryName}"`);
           }
 
           if (typeof recursive === 'undefined') {
             recursive = false;
           } else if (typeof recursive !== 'boolean') {
             debug(`deleteDirectory -- 'recursive' parameter is not 'boolean': "${typeof recursive}"`);
-            throw new ExtensionError(`BrokerFileSystem.deleteDirectory -- 'recursive' parameter is not 'boolean': "${typeof recursive}"`);
+            throw new ExtensionError(`FileSystemExp.deleteDirectory -- 'recursive' parameter is not 'boolean': "${typeof recursive}"`);
           }
 
-          const dirPath = buildPathName(context, extensionId, directoryName);
+          const dirPath = buildPathName(context, directoryName);
           if (! checkFilePath(dirPath)) {
             debug(`deleteDirectory -- dirPath is invalid: "${dirPath}"`);
-            throw new ExtensionError(`BrokerFileSystem.deleteDirectory -- dirPath is invalid: "${dirPath}"`);
+            throw new ExtensionError(`FileSystemExp.deleteDirectory -- dirPath is invalid: "${dirPath}"`);
           }
 
           debug(`deleteDirectory -- calling IOUtils.exists - dirPath="${dirPath}"`);
@@ -845,16 +752,16 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
               fileInfo = await IOUtils.stat(dirPath); // returns Promise<FileInfo>
             } catch (error) { // sometimes stat() throws even though exists() returns true.  I don't know why.  Bugzilla #1962918
               if (error.name !== 'NotFoundError') {
-                throw new ExtensionError(`BrokerFileSystem.deleteDirectory -- Error getting FileInfo for File "${directoryName}" at "${dirPath}"`);
+                throw new ExtensionError(`FileSystemExp.deleteDirectory -- Error getting FileInfo for File "${directoryName}" at "${dirPath}"`);
               }
             }
 
             if (! fileInfo) {
               debug(`deleteDirectory --  Unable to get file type for File "${directoryName}" at "${dirPath}" - is it a Directory?`);
-              throw new ExtensionError(`BrokerFileSystem.deleteDirectory -- Unable to get file type for File "${directoryName}" at "${dirPath}" - is it a Directory?`);
+              throw new ExtensionError(`FileSystemExp.deleteDirectory -- Unable to get file type for File "${directoryName}" at "${dirPath}" - is it a Directory?`);
 
             } else if (fileInfo.type !== 'directory') { // enum FileType { "regular", "directory", "other" };
-              throw new ExtensionError(`BrokerFileSystem.deleteDirectory -- File "${directoryName}" at "${dirPath}" is not a Directory`);
+              throw new ExtensionError(`FileSystemExp.deleteDirectory -- File "${directoryName}" at "${dirPath}" is not a Directory`);
 
             } else {
               if (! recursive) {
@@ -864,12 +771,12 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
                   hasChildren = await IOUtils.hasChildren(dirPath, {"ignoreAbsent": true}); // returns Promise<sequence<DOMString>> // NOTE: ignoreAbsent
                 } catch (error) {
                   debug(`deleteDirectory --  Unable to get hasChildren for Directory "${directoryName}" at "${dirPath}"`);
-                  throw new ExtensionError(`BrokerFileSystem.deleteDirectory -- Unable to check if Directory has files at "${dirPath}"`);
+                  throw new ExtensionError(`FileSystemExp.deleteDirectory -- Unable to check if Directory has files at "${dirPath}"`);
                 }
 
                 if (hasChildren) {
                   debug(`deleteDirectory --  Cannot delete Directory "${directoryName}" at "${dirPath}" - it has files`);
-                  throw new ExtensionError(`BrokerFileSystem.deleteDirectory -- Cannot delete Directory "${directoryName}" at "${dirPath}" - it  has files`);
+                  throw new ExtensionError(`FileSystemExp.deleteDirectory -- Cannot delete Directory "${directoryName}" at "${dirPath}" - it  has files`);
                 }
               }
 
@@ -882,7 +789,7 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
 
               } catch (error) {
                 caught(error, "deleteDirectory -- FILE SYSTEM ERROR", `deleting Directory "${directoryName}" at "${dirPath}"`);
-                throw new ExtensionError(`BrokerFileSystem.deleteDirectory -- Error deleting Directory "${directoryName}" at "${dirPath}"`);
+                throw new ExtensionError(`FileSystemExp.deleteDirectory -- Error deleting Directory "${directoryName}" at "${dirPath}"`);
               }
             }
           }
@@ -893,16 +800,11 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
 
 
         // returns boolean
-        async makeDirectory(extensionId) {
-          if (! checkExtensionId(extensionId)) {
-            debug(`makeDirectory -- extensionId is invalid: "${extensionId}"`);
-            throw new ExtensionError(`BrokerFileSystem.makeDirectory -- extensionId is invalid: "${extensionId}"`);
-          }
-
-          const dirPath = buildPathName(context, extensionId);
+        async makeDirectory() {
+          const dirPath = buildPathName(context);
           if (! checkFilePath(dirPath)) {
             debug(`makeDirectory -- dirPath is invalid: "${dirPath}"`);
-            throw new ExtensionError(`BrokerFileSystem.makeDirectory -- dirPath is invalid: "${dirPath}"`);
+            throw new ExtensionError(`FileSystemExp.makeDirectory -- dirPath is invalid: "${dirPath}"`);
           }
 
           debug(`makeDirectory -- calling IOUtils.exists - dirPath="${dirPath}"`);
@@ -914,12 +816,12 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
               fileInfo = await IOUtils.stat(dirPath); // returns Promise<FileInfo>
             } catch (error) { // sometimes stat() throws even though exists() returns true.  I don't know why.  Bugzilla #1962918
               if (error.name !== 'NotFoundError') {
-                throw new ExtensionError(`BrokerFileSystem.makeDirectory -- Error getting FileInfo for File "${extensionId}" at "${dirPath}"`);
+                throw new ExtensionError(`FileSystemExp.makeDirectory -- Error getting FileInfo for File at "${dirPath}"`);
               }
             }
             if (! fileInfo) {
-              debug(`makeDirectory --  Unable to get file type for File "${extensionId}" at "${dirPath}"`);
-              throw new ExtensionError(`BrokerFileSystem.makeDirectory-- Unable to get file type for File "${extensionId}" at "${dirPath}"`);
+              debug(`makeDirectory --  Unable to get file type for File at "${dirPath}"`);
+              throw new ExtensionError(`FileSystemExp.makeDirectory-- Unable to get file type for File at "${dirPath}"`);
             }
 
             // MABXXX SHOULD THESE BE VALIDATON ERRORS INSTEAD???????????????
@@ -940,8 +842,8 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
               return true;
 
             } catch (error) {
-              caught(error, "makeDirectory -- FILE SYSTEM ERROR", `Failed to create Directory "${extensionId}" at "${dirPath}"`);
-              throw new ExtensionError(`BrokerFileSystem.makeDirectory Failed to create Directory "${extensionId}" at "${dirPath}"`);
+              caught(error, "makeDirectory -- FILE SYSTEM ERROR", `Failed to create Directory at "${dirPath}"`);
+              throw new ExtensionError(`FileSystemExp.makeDirectory Failed to create Directory at "${dirPath}"`);
             }
           }
         },
@@ -951,21 +853,16 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
         // returns an IOUtils.FileInfo or undefined if the file does not exist
         // (MABXXX maybe exception actually WOULD be better than undefined?)
         // (MABXXX maybe list the definition of FileInfo here)
-        async getFileInfo(extensionId, fileName) {
-          if (! checkExtensionId(extensionId)) { // if fileName were optional could get FileInfo for the extensionID directory
-            debug(`getFileInfo -- extensionId is invalid: "${extensionId}"`);
-            throw new ExtensionError(`BrokerFileSystem.getFileInfo -- extensionId is invalid: "${extensionId}"`);
-          }
-
+        async getFileInfo(fileName) {
           if (fileName && ! checkFileName(fileName)) { // fileName is optional
             debug(`getFileInfo -- fileName is invalid: "${fileName}"`);
-            throw new ExtensionError(`BrokerFileSystem.getFileInfo -- fileName is invalid: "${fileName}"`);
+            throw new ExtensionError(`FileSystemExp.getFileInfo -- fileName is invalid: "${fileName}"`);
           }
 
-          const filePath = buildPathName(context, extensionId, fileName);
+          const filePath = buildPathName(context, fileName);
           if (! checkFilePath(filePath)) {
             debug(`getFileInfo -- filePath is invalid: "${filePath}"`);
-            throw new ExtensionError(`BrokerFileSystem.getFileInfo -- filePath is invalid: "${filePath}"`);
+            throw new ExtensionError(`FileSystemExp.getFileInfo -- filePath is invalid: "${filePath}"`);
           }
 
           debug(`getFileInfo -- calling IOUtils.exists - filePath="${filePath}"`);
@@ -978,13 +875,13 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
               if (fileName) {
                 fileInfo.fileName = fileName;
               } else {
-                fileInfo.fileName = extensionId;
+                fileInfo.fileName = context.extension.id;
               }
               return fileInfo;
 
             } catch (error) { // sometimes stat() throws even though exists() returns true.  I don't know why.  Bugzilla #1962918
               if (error.name !== 'NotFoundError') { // sometimes stat() throws NotFoundError even though exists() returns true
-                throw new ExtensionError(`BrokerFileSystem.getFileInfo -- Error getting FileInfo for File "${fileName}" at "${filePath}"`);
+                throw new ExtensionError(`FileSystemExp.getFileInfo -- Error getting FileInfo for File "${fileName}" at "${filePath}"`);
               }
             }
           }
@@ -995,38 +892,33 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
 
 
         // Renames a file
-        async renameFile(extensionId, fromFileName, toFileName, overwrite) {
-          if (! checkExtensionId(extensionId)) {
-            debug(`renameFile -- extensionId is invalid: "${extensionId}"`);
-            throw new ExtensionError(`BrokerFileSystem.renameFile -- extensionId is invalid: "${extensionId}"`);
-          }
-
+        async renameFile(fromFileName, toFileName, overwrite) {
           if (! checkFileName(fromFileName)) {
             debug(`renameFile -- fromFileName is invalid: "${fromFileName}"`);
-            throw new ExtensionError(`BrokerFileSystem.renameFile -- fromFileName is invalid: "${fromFileName}"`);
+            throw new ExtensionError(`FileSystemExp.renameFile -- fromFileName is invalid: "${fromFileName}"`);
           }
 
           if (! checkFileName(toFileName)) {
             debug(`renameFile -- toFileName is invalid: "${toFileName}"`);
-            throw new ExtensionError(`BrokerFileSystem.renameFile -- toFileName is invalid: "${toFileName}"`);
+            throw new ExtensionError(`FileSystemExp.renameFile -- toFileName is invalid: "${toFileName}"`);
           }
 
-          const fromFilePath = buildPathName(context, extensionId, fromFileName);
+          const fromFilePath = buildPathName(context, fromFileName);
           if (! checkFilePath(fromFilePath)) {
             debug(`renameFile -- fromFilePath is invalid: "${fromFilePath}"`);
-            throw new ExtensionError(`BrokerFileSystem.renameFile -- fromFilePath is invalid: "${fromFilePath}"`);
+            throw new ExtensionError(`FileSystemExp.renameFile -- fromFilePath is invalid: "${fromFilePath}"`);
           }
 
-          const toFilePath = buildPathName(context, extensionId, toFileName);
+          const toFilePath = buildPathName(context, toFileName);
           if (! checkFilePath(toFilePath)) {
             debug(`renameFile -- toFilePath is invalid: "${toFilePath}"`);
-            throw new ExtensionError(`BrokerFileSystem.renameFile -- toFilePath is invalid: "${toFilePath}"`);
+            throw new ExtensionError(`FileSystemExp.renameFile -- toFilePath is invalid: "${toFilePath}"`);
           }
 
           debug(`renameFile -- calling IOUtils.exists - fromFilePath="${fromFilePath}"`);
           const fromFileExists = await IOUtils.exists(fromFilePath); // returns Promise<boolean> // not catching
           if (! fromFileExists) {
-            throw new ExtensionError(`BrokerFileSystem.renameFile -- fromFile does not exist: "${fromFileName}" at "${fromFilePath}"`);
+            throw new ExtensionError(`FileSystemExp.renameFile -- fromFile does not exist: "${fromFileName}" at "${fromFilePath}"`);
           }
           
           try {
@@ -1034,11 +926,11 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
             // sometimes stat() throws even though exists() returns true.  I don't know why.  Bugzilla #1962918
             const fromFileInfo = await IOUtils.stat(fromFilePath); // returns Promise<FileInfo>
             if (fromFileInfo.type !== 'regular') {
-              throw new ExtensionError(`BrokerFileSystem.renameFile -- rename fromFile is not a Regular File: "${fromFileName}" at "${fromFilePath}"`);
+              throw new ExtensionError(`FileSystemExp.renameFile -- rename fromFile is not a Regular File: "${fromFileName}" at "${fromFilePath}"`);
             }
           } catch (error) { // sometimes stat() throws even though exists() returns true.  I don't know why.  Bugzilla #1962918
             if (error.name !== 'NotFoundError') { // sometimes stat() throws NotFoundError even though exists() returns true
-              throw new ExtensionError(`BrokerFileSystem.renameFile -- Error getting FileInfo for rename fromFile "${fromFileName}" at "${fromFilePath}"`);
+              throw new ExtensionError(`FileSystemExp.renameFile -- Error getting FileInfo for rename fromFile "${fromFileName}" at "${fromFilePath}"`);
             }
           }
 
@@ -1053,11 +945,11 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
               // sometimes stat() throws even though exists() returns true.  I don't know why.  Bugzilla #1962918
               const toFileExists = await IOUtils.exists(toFilePath);
               if (toFileExists) {
-                throw new ExtensionError(`BrokerFileSystem.renameFile -- rename toFile already exists: "${toFileName}" at "${toFilePath}"`);
+                throw new ExtensionError(`FileSystemExp.renameFile -- rename toFile already exists: "${toFileName}" at "${toFilePath}"`);
               }
             } catch (error) { // sometimes stat() throws even though exists() returns true.  I don't know why.  Bugzilla #1962918
               if (error.name !== 'NotFoundError') { // sometimes stat() throws NotFoundError even though exists() returns true
-                throw new ExtensionError(`BrokerFileSystem.renameFile -- Error checking if rename toFile exists: "${toFileName}" at "${toFilePath}"`);
+                throw new ExtensionError(`FileSystemExp.renameFile -- Error checking if rename toFile exists: "${toFileName}" at "${toFilePath}"`);
               }
             }
           }
@@ -1066,7 +958,7 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
             await IOUtils.move(fromFilePath, toFilePath, { 'overwrite': toFileOverwrite } );
             return true;
           } catch (error) {
-            throw new ExtensionError(`BrokerFileSystem.renameFile -- Error renaming file: "${fromFileName}" at "${fromFilePath}" to "${toFileName}" at "${toFilePath}" `);
+            throw new ExtensionError(`FileSystemExp.renameFile -- Error renaming file: "${fromFileName}" at "${fromFilePath}" to "${toFileName}" at "${toFilePath}" `);
           }
 
           return false;
@@ -1077,19 +969,14 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
         // returns array of DOMString, the base names (last components in the paths) of only the (matching) Regular files
         // optional matchGLOB must be a String
         // NOTE: If the extension directory does not exist, create it MABXXX BUT WHY???
-        async listFiles(extensionId, matchGLOB) {
-          if (! checkExtensionId(extensionId)) {
-            debug(`listFiles -- extensionId is not valid - it cannot be used as a fileName: "${extensionId}"`);
-            throw new ExtensionError(`BrokerFileSystem.listFiles -- extensionId is not valid - it cannot be used as a fileName: "${extensionId}"`);
-          }
-
+        async listFiles(matchGLOB) {
           let matchRegExp;
           if (matchGLOB) matchRegExp = globToRegExp(matchGLOB);
 
-          const dirPath = buildPathName(context, extensionId); // notice no fileName parameter
+          const dirPath = buildPathName(context); // notice no fileName parameter
           if (! checkFilePath(dirPath)) {
             debug(`listFiles -- dirPath is invalid: "${dirPath}"`);
-            throw new ExtensionError(`BrokerFileSystem.listFiles -- dirPath is invalid: "${dirPath}"`);
+            throw new ExtensionError(`FileSystemExp.listFiles -- dirPath is invalid: "${dirPath}"`);
           }
 
           debug(`listFiles -- calling IOUtils.exists - dirPath="${dirPath}"`);
@@ -1103,13 +990,13 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
             } catch (error) { // sometimes stat() throws even though exists() returns true.  I don't know why.  Bugzilla #1962918
               if (error.name !== 'NotFoundError') {
                 caught(error, "listFiles -- FILE SYSTEM ERROR", `listing files at "${dirPath}"`);
-                throw new ExtensionError(`BrokerFileSystem.listFiles -- Error listing files at "${dirPath}"`);
+                throw new ExtensionError(`FileSystemExp.listFiles -- Error listing files at "${dirPath}"`);
               }
             }
             if (! dirFileInfo) {
-              throw new ExtensionError(`BrokerFileSystem.listFiles Unable to get file type for Directory "${extensionId}" at "${dirPath}" - is it a Directory?`);
+              throw new ExtensionError(`FileSystemExp.listFiles Unable to get file type for Directory at "${dirPath}" - is it a Directory?`);
             } else if (dirFileInfo.type !== 'directory') { // enum FileType { "regular", "directory", "other" };
-              throw new ExtensionError(`BrokerFileSystem.listFiles Directory "${extensionId}" at "${dirPath}" is not a Directory - FileInfo.type="${dirFileInfo.type}"`);
+              throw new ExtensionError(`FileSystemExp.listFiles Directory at "${dirPath}" is not a Directory - FileInfo.type="${dirFileInfo.type}"`);
             }
 
             try {
@@ -1126,11 +1013,11 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
                     } catch (error) { // sometimes stat() throws even though exists() returns true.  I don't know why.  Bugzilla #1962918
                       if (error.name !== 'NotFoundError') {
                         caught(error, "listFiles -- FILE SYSTEM ERROR", `getting FileInfo for "${filePath}"`);
-                        throw new ExtensionError(`BrokerFileSystem.listFiles -- Error listing files at "${dirPath}"`);
+                        throw new ExtensionError(`FileSystemExp.listFiles -- Error listing files at "${dirPath}"`);
                       }
                     }
                     if (! fileInfo) {
-                      throw new ExtensionError(`BrokerFileSystem.listFiles Unable to get file type for File "${fileName}" at "${dirPath}" - is it a File?`);
+                      throw new ExtensionError(`FileSystemExp.listFiles Unable to get file type for File "${fileName}" at "${dirPath}" - is it a File?`);
                     } else if (fileInfo.type === 'regular') { // enum FileType { "regular", "directory", "other" };
                       fileNames.push(fileName);
                     }
@@ -1141,8 +1028,8 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
               return fileNames; // return array of String
 
             } catch (error) {
-              caught(error, "listFiles -- FILE SYSTEM ERROR", `listing files in Directory "${extensionId}" at "${dirPath}"`);
-              throw new ExtensionError(`BrokerFileSystem.listFiles -- Error listing files in Directory "${extensionId}" at "${dirPath}"`);
+              caught(error, "listFiles -- FILE SYSTEM ERROR", `listing files in Directory at "${dirPath}"`);
+              throw new ExtensionError(`FileSystemExp.listFiles -- Error listing files in Directory at "${dirPath}"`);
             }
 
           } else { // MABXXX WHY? Do we still need this now that we have the makeDirectory function?
@@ -1153,8 +1040,8 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
               return [];
 
             } catch (error) {
-              caught(error, "listFiles -- FILE SYSTEM ERROR", `Failed to create Directory "${extensionId}" at "${dirPath}"`);
-              throw new ExtensionError(`BrokerFileSystem.listFiles -- Failed to create Directory "${extensionId}" at "${dirPath}"`);
+              caught(error, "listFiles -- FILE SYSTEM ERROR", `Failed to create Directory at "${dirPath}"`);
+              throw new ExtensionError(`FileSystemExp.listFiles -- Failed to create Directory at "${dirPath}"`);
             }
           }
         },
@@ -1164,19 +1051,14 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
         // returns array of FileInfo for only the (matching) Regular Files
         // optional matchGLOB must be a String
         // NOTE: If the extension directory does not exist, create it MABXXX BUT WHY???
-        async listFileInfo(extensionId, matchGLOB) {
-          if (! checkExtensionId(extensionId)) {
-            debug(`listFileInfo -- extensionId is not valid - it cannot be used as a fileName: "${extensionId}"`);
-            throw new ExtensionError(`BrokerFileSystem.listFileInfo -- extensionId is not valid - it cannot be used as a fileName: "${extensionId}"`);
-          }
-
+        async listFileInfo(matchGLOB) {
           let matchRegExp;
           if (matchGLOB) matchRegExp = globToRegExp(matchGLOB);
 
-          const dirPath = buildPathName(context, extensionId); // notice no fileName parameter
+          const dirPath = buildPathName(context); // notice no fileName parameter
           if (! checkFilePath(dirPath)) {
             debug(`listFileInfo -- dirPath is invalid: "${dirPath}"`);
-            throw new ExtensionError(`BrokerFileSystem.listFileInfo -- dirPath is invalid: "${dirPath}"`);
+            throw new ExtensionError(`FileSystemExp.listFileInfo -- dirPath is invalid: "${dirPath}"`);
           }
 
           debug(`listFileInfo -- calling IOUtils.exists - dirPath="${dirPath}"`);
@@ -1190,13 +1072,13 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
             } catch (error) { // sometimes stat() throws even though exists() returns true.  I don't know why.  Bugzilla #1962918
               if (error.name !== 'NotFoundError') {
                 caught(error, "listFileInfo -- FILE SYSTEM ERROR", `listing files at "${dirPath}"`);
-                throw new ExtensionError(`BrokerFileSystem.listFileInfo -- Error listing files at "${dirPath}"`);
+                throw new ExtensionError(`FileSystemExp.listFileInfo -- Error listing files at "${dirPath}"`);
               }
             }
             if (! dirFileInfo) {
-              throw new ExtensionError(`BrokerFileSystem.listFileInfo Unable to get file type for Directory "${extensionId}" at "${dirPath}" - is it a Directory?`);
+              throw new ExtensionError(`FileSystemExp.listFileInfo Unable to get file type for Directory at "${dirPath}" - is it a Directory?`);
             } else if (dirFileInfo.type !== 'directory') { // enum FileType { "regular", "directory", "other" };
-              throw new ExtensionError(`BrokerFileSystem.listFileInfo Directory "${extensionId}" at "${dirPath}" is not a Directory - FileInfo.type="${dirFileInfo.type}"`);
+              throw new ExtensionError(`FileSystemExp.listFileInfo Directory at "${dirPath}" is not a Directory - FileInfo.type="${dirFileInfo.type}"`);
             }
 
             try {
@@ -1213,11 +1095,11 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
                     } catch (error) { // sometimes stat() throws even though exists() returns true.  I don't know why.  Bugzilla #1962918
                       if (error.name !== 'NotFoundError') {
                         caught(error, "listFileInfo -- FILE SYSTEM ERROR", `getting FileInfo for "${filePath}"`);
-                        throw new ExtensionError(`BrokerFileSystem.listFileInfo -- Error listing files at "${dirPath}"`);
+                        throw new ExtensionError(`FileSystemExp.listFileInfo -- Error listing files at "${dirPath}"`);
                       }
                     }
                     if (! stat) {
-                      throw new ExtensionError(`BrokerFileSystem.listFileInfo Unable to get file type for File "${fileName}" at "${dirPath}" - is it a File?`);
+                      throw new ExtensionError(`FileSystemExp.listFileInfo Unable to get file type for File "${fileName}" at "${dirPath}" - is it a File?`);
                     } else if (stat.type === 'regular') { // enum FileType { "regular", "directory", "other" };
                       stat.fileName = fileName;
                       fileInfo.push(stat);
@@ -1229,8 +1111,8 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
               return fileInfo; // return array of FileInfo
 
             } catch (error) {
-              caught(error, "listFileInfo -- FILE SYSTEM ERROR", `listing files in Directory "${extensionId}" at "${dirPath}"`);
-              throw new ExtensionError(`BrokerFileSystem.listFileInfo -- Error listing files in Directory "${extensionId}" at "${dirPath}"`);
+              caught(error, "listFileInfo -- FILE SYSTEM ERROR", `listing files in Directory at "${dirPath}"`);
+              throw new ExtensionError(`FileSystemExp.listFileInfo -- Error listing files in Directory at "${dirPath}"`);
             }
 
           } else { // MABXXX WHY? Do we still need this now that we have the makeDirectory function?
@@ -1241,8 +1123,8 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
               return [];
 
             } catch (error) {
-              caught(error, "listFileInfo -- FILE SYSTEM ERROR", `Failed to create Directory "${extensionId}" at "${dirPath}"`);
-              throw new ExtensionError(`BrokerFileSystem.listFileInfo -- Failed to create Directory "${extensionId}" at "${dirPath}"`);
+              caught(error, "listFileInfo -- FILE SYSTEM ERROR", `Failed to create Directory at "${dirPath}"`);
+              throw new ExtensionError(`FileSystemExp.listFileInfo -- Failed to create Directory at "${dirPath}"`);
             }
           }
         },
@@ -1252,19 +1134,14 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
         // returns array of DOMString, the base names (last components in the paths) of the all (matching) items
         // optional matchGLOB must be a String
         // NOTE: If the extension directory does not exist, create it MABXXX BUT WHY???
-        async list(extensionId, matchGLOB) {
-          if (! checkExtensionId(extensionId)) {
-            debug(`list -- extensionId is not valid - it cannot be used as a fileName: "${extensionId}"`);
-            throw new ExtensionError(`BrokerFileSystem.list -- extensionId is not valid - it cannot be used as a fileName: "${extensionId}"`);
-          }
-
+        async list(matchGLOB) {
           let matchRegExp;
           if (matchGLOB) matchRegExp = globToRegExp(matchGLOB);
 
-          const dirPath = buildPathName(context, extensionId); // notice no fileName parameter
+          const dirPath = buildPathName(context); // notice no fileName parameter
           if (! checkFilePath(dirPath)) {
             debug(`list -- dirPath is invalid: "${dirPath}"`);
-            throw new ExtensionError(`BrokerFileSystem.list -- dirPath is invalid: "${dirPath}"`);
+            throw new ExtensionError(`FileSystemExp.list -- dirPath is invalid: "${dirPath}"`);
           }
 
           debug(`list -- calling IOUtils.exists - dirPath="${dirPath}"`);
@@ -1278,13 +1155,13 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
             } catch (error) { // sometimes stat() throws even though exists() returns true.  I don't know why.  Bugzilla #1962918
               if (error.name !== 'NotFoundError') {
                 caught(error, "list -- FILE SYSTEM ERROR", `listing items at "${dirPath}"`);
-                throw new ExtensionError(`BrokerFileSystem.list -- Error listing items at "${dirPath}"`);
+                throw new ExtensionError(`FileSystemExp.list -- Error listing items at "${dirPath}"`);
               }
             }
             if (! dirFileInfo) {
-              throw new ExtensionError(`BrokerFileSystem.list Unable to get file type for Directory "${extensionId}" at "${dirPath}" - is it a Directory?`);
+              throw new ExtensionError(`FileSystemExp.list Unable to get file type for Directory at "${dirPath}" - is it a Directory?`);
             } else if (dirFileInfo.type !== 'directory') { // enum FileType { "regular", "directory", "other" };
-              throw new ExtensionError(`BrokerFileSystem.list Directory "${extensionId}" at "${dirPath}" is not a Directory - FileInfo.type="${dirFileInfo.type}"`);
+              throw new ExtensionError(`FileSystemExp.list Directory at "${dirPath}" is not a Directory - FileInfo.type="${dirFileInfo.type}"`);
             }
 
             try {
@@ -1301,8 +1178,8 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
               return fileNames; // return array of String
 
             } catch (error) {
-              caught(error, "list -- FILE SYSTEM ERROR", `listing items in Directory "${extensionId}" at "${dirPath}"`);
-              throw new ExtensionError(`BrokerFileSystem.list -- Error listing items in Directory "${extensionId}" at "${dirPath}"`);
+              caught(error, "list -- FILE SYSTEM ERROR", `listing items in Directory at "${dirPath}"`);
+              throw new ExtensionError(`FileSystemExp.list -- Error listing items in Directory at "${dirPath}"`);
             }
 
           } else { // MABXXX WHY? Do we still need this now that we have the makeDirectory function?
@@ -1313,8 +1190,8 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
               return [];
 
             } catch (error) {
-              caught(error, "list -- FILE SYSTEM ERROR", `Failed to create Directory "${extensionId}" at "${dirPath}"`);
-              throw new ExtensionError(`BrokerFileSystem.list -- Failed to create Directory "${extensionId}" at "${dirPath}"`);
+              caught(error, "list -- FILE SYSTEM ERROR", `Failed to create Directory at "${dirPath}"`);
+              throw new ExtensionError(`FileSystemExp.list -- Failed to create Directory at "${dirPath}"`);
             }
           }
         },
@@ -1324,19 +1201,14 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
         // returns array of FileInfo for all (matching) items
         // optional matchGLOB must be a String
         // NOTE: If the extension directory does not exist, create it MABXXX BUT WHY???
-        async listInfo(extensionId, matchGLOB) {
-          if (! checkExtensionId(extensionId)) {
-            debug(`listInfo -- extensionId is not valid - it cannot be used as a fileName: "${extensionId}"`);
-            throw new ExtensionError(`BrokerFileSystem.listInfo -- extensionId is not valid - it cannot be used as a fileName: "${extensionId}"`);
-          }
-
+        async listInfo(matchGLOB) {
           let matchRegExp;
           if (matchGLOB) matchRegExp = globToRegExp(matchGLOB);
 
-          const dirPath = buildPathName(context, extensionId); // notice no fileName parameter
+          const dirPath = buildPathName(context); // notice no fileName parameter
           if (! checkFilePath(dirPath)) {
             debug(`listInfo -- dirPath is invalid: "${dirPath}"`);
-            throw new ExtensionError(`BrokerFileSystem.listInfo -- dirPath is invalid: "${dirPath}"`);
+            throw new ExtensionError(`FileSystemExp.listInfo -- dirPath is invalid: "${dirPath}"`);
           }
 
           debug(`listInfo -- calling IOUtils.exists - dirPath="${dirPath}"`);
@@ -1350,13 +1222,13 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
             } catch (error) { // sometimes stat() throws even though exists() returns true.  I don't know why.  Bugzilla #1962918
               if (error.name !== 'NotFoundError') {
                 caught(error, "listInfo -- FILE SYSTEM ERROR", `listing files at "${dirPath}"`);
-                throw new ExtensionError(`BrokerFileSystem.listInfo -- Error listing files at "${dirPath}"`);
+                throw new ExtensionError(`FileSystemExp.listInfo -- Error listing files at "${dirPath}"`);
               }
             }
             if (! dirFileInfo) {
-              throw new ExtensionError(`BrokerFileSystem.listInfo Unable to get file type for Directory "${extensionId}" at "${dirPath}" - is it a Directory?`);
+              throw new ExtensionError(`FileSystemExp.listInfo Unable to get file type for Directory at "${dirPath}" - is it a Directory?`);
             } else if (dirFileInfo.type !== 'directory') { // enum FileType { "regular", "directory", "other" };
-              throw new ExtensionError(`BrokerFileSystem.listInfo Directory "${extensionId}" at "${dirPath}" is not a Directory - FileInfo.type="${dirFileInfo.type}"`);
+              throw new ExtensionError(`FileSystemExp.listInfo Directory at "${dirPath}" is not a Directory - FileInfo.type="${dirFileInfo.type}"`);
             }
 
             try {
@@ -1373,11 +1245,11 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
                     } catch (error) { // sometimes stat() throws even though exists() returns true.  I don't know why.  Bugzilla #1962918
                       if (error.name !== 'NotFoundError') {
                         caught(error, "listInfo -- FILE SYSTEM ERROR", `getting FileInfo for "${filePath}"`);
-                        throw new ExtensionError(`BrokerFileSystem.listInfo -- Error listing files at "${dirPath}"`);
+                        throw new ExtensionError(`FileSystemExp.listInfo -- Error listing files at "${dirPath}"`);
                       }
                     }
                     if (! stat) {
-                      throw new ExtensionError(`BrokerFileSystem.listInfo Unable to get file type for File "${fileName}" at "${dirPath}" - is it a File?`);
+                      throw new ExtensionError(`FileSystemExp.listInfo Unable to get file type for File "${fileName}" at "${dirPath}" - is it a File?`);
                     } else {
                       stat.fileName = fileName;
                       fileInfo.push(stat);
@@ -1389,8 +1261,8 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
               return fileInfo; // return array of FileInfo
 
             } catch (error) {
-              caught(error, "listInfo -- FILE SYSTEM ERROR", `listing files in Directory "${extensionId}" at "${dirPath}"`);
-              throw new ExtensionError(`BrokerFileSystem.listInfo -- Error listing files in Directory "${extensionId}" at "${dirPath}"`);
+              caught(error, "listInfo -- FILE SYSTEM ERROR", `listing files in Directory at "${dirPath}"`);
+              throw new ExtensionError(`FileSystemExp.listInfo -- Error listing files in Directory at "${dirPath}"`);
             }
 
           } else { // MABXXX WHY? Do we still need this now that we have the makeDirectory function?
@@ -1401,8 +1273,8 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
               return [];
 
             } catch (error) {
-              caught(error, "listInfo -- FILE SYSTEM ERROR", `Failed to create Directory "${extensionId}" at "${dirPath}"`);
-              throw new ExtensionError(`BrokerFileSystem.listInfo -- Failed to create Directory "${extensionId}" at "${dirPath}"`);
+              caught(error, "listInfo -- FILE SYSTEM ERROR", `Failed to create Directory at "${dirPath}"`);
+              throw new ExtensionError(`FileSystemExp.listInfo -- Failed to create Directory at "${dirPath}"`);
             }
           }
         },
@@ -1410,18 +1282,13 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
 
 
         // returns String
-        async getFullPathName(extensionId, fileName) {
-          if (! checkExtensionId(extensionId)) {
-            debug(`getFullPathName -- extensionId is invalid: "${extensionId}"`);
-            throw new ExtensionError(`BrokerFileSystem.getFullPathName -- extensionId is invalid: "${extensionId}"`);
-          }
-
+        async getFullPathName(fileName) {
           if (fileName && ! checkFileName(fileName)) { // fileName is optional
             debug(`getFullPathName -- fileName is invalid: "${fileName}"`);
-            throw new ExtensionError(`BrokerFileSystem.getFullPathName -- fileName is invalid: "${fileName}"`);
+            throw new ExtensionError(`FileSystemExp.getFullPathName -- fileName is invalid: "${fileName}"`);
           }
 
-          return buildPathName(context, extensionId, fileName); // returns String
+          return buildPathName(context, fileName); // returns String
         },
 
 
@@ -1442,7 +1309,7 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
 
         // returns string
         async getFileSystemPathName(fileName) {
-          return PathUtils.join(PathUtils.profileDir, "BrokerFileSystem");
+          return PathUtils.join(PathUtils.profileDir, "FileSystemExp");
         },
 
       }
@@ -1453,30 +1320,10 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
 
 
 
-function buildPathName(context, extensionId, fileName) {
-  /*
-   * Was adding our own Extension ID from context making the PATH TOO LONG???
-   *
-   * IOUtils.stat was not using the same path as IOUtils.exists ???
-   *
-   * In getFileInfo(), IOUtils.exists said the file exists, but IOUtils.stat was
-   * saying it didn't, throwing an Error that didn't include the Extension ID in
-   * the path!!!
-   *
-   * BUT... I was passing in the same exact String!!!
-   *
-   * So I replaced this code:
-   *   if (fileName) return PathUtils.join(PathUtils.profileDir, "BrokerFileSystem", context.extension.id, extensionId, fileName);
-   *   return PathUtils.join(PathUtils.profileDir, "BrokerFileSystem", context.extension.id, extensionId);
-   *
-   * It seems that IOUtils.stat is REMOVING a component from the path, maybe to
-   * make it shorter for some reason, but IOUtils.exists isn't???
-   *
-   * JUST TOO WEIRD!!!
-   */
+function buildPathName(context, fileName) {
 
-  if (fileName) return PathUtils.join(PathUtils.profileDir, "BrokerFileSystem", /*context.extension.id,*/ extensionId, fileName);
-  return PathUtils.join(PathUtils.profileDir, "BrokerFileSystem", /*context.extension.id,*/ extensionId);
+  if (fileName) return PathUtils.join(PathUtils.profileDir, "FileSystemExp", context.extension.id, fileName);
+  return PathUtils.join(PathUtils.profileDir, "FileSystemExp", context.extension.id);
 }
 
 
@@ -1510,7 +1357,7 @@ function checkFilePath(filePath) {
  * - nul
  * - com0 - com9
  * - lpt0 - lpt9
- * AND FOR DIRECTORIES:
+ * AND FOR DIRECTORY NAMES:
  * - ..
  *
  * NO MORE THAN *64* CHARACTERS
@@ -1533,65 +1380,8 @@ function checkDirectoryName(dirName) {
   const ILLEGAL_CHARS = /[<>:"/\\|?*\x00-\x1F]/g;
   if (ILLEGAL_CHARS.test(dirName)) return false;
 
-  const RESERVED_NAMES = /^(\.\.|con|prn|aux|nul|com[0-9]|lpt[0-9])$/i;
+  const RESERVED_NAMES = /^(\.\.|con|prn|aux|nul|com[0-9]|lpt[0-9])$/i; // adds ".."
   if (RESERVED_NAMES.test(dirName)) return false;
-
-  return true;
-}
-
-/* Must be a String with at least one character.
- *
- * ILLEGAL CHARS:
- *
- *   A-Z (must be lower-case)
- *   <
- *   >
- *   :
- *   "
- *   /
- *   \
- *   |
- *   ?
- *   *
- *   x00-x1F (control characters)
- *
- * RESERVED NAMES:
- * - con
- * - prn
- * - aux
- * - nul
- * - com0 - com9
- * - lpt0 - lpt9
- * - ..
- *
- * NO MORE THAN *64* CHARACTERS
- */
-function checkExtensionId(extensionId) {
-  if (typeof extensionId !== 'string' || extensionId.length < 1 || extensionId.length > 64) return false;
-
-  // note: no upper-case
-  const LIKE_EMAIL_REGEX = /\A(?=[a-z0-9@.!#$%&'*+/=?^_`{|}~-]{6,254}\z)(?=[a-z0-9.!#$%&'*+/=?^_`{|}~-]{1,64}@)[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:(?=[a-z0-9-]{1,63}\.)[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+(?=[a-z0-9-]{1,63}\z)[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\z/;
-
-//const ENCLOSED_GUID_REGEX   = /^\{[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\}$/;
-//const UNENCLOSED_GUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
-
-  // note: no upper-case
-  const ENCLOSED_GUID_REGEX   = /^\{[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\}$/;
-  const UNENCLOSED_GUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
-
-  if (! LIKE_EMAIL_REGEX.test(extensionId)) {
-    if (extensionId[0] === '{') {
-      if (ENCLOSED_GUID_REGEX.test(extensionId)) return true;
-    } else {
-      if (UNENCLOSED_GUID_REGEX.test(extensionId)) return true;
-    }
-  }
-  
-//const ILLEGAL_CHARS = /<>:"/\\|?*\x00-\x1F]/g;
-//if (ILLEGAL_CHARS.test(extensionId)) return false;
-
-  const RESERVED_NAMES = /^(\.\.|con|prn|aux|nul|com[0-9]|lpt[0-9])$/i;
-  if (RESERVED_NAMES.test(extensionId)) return false;
 
   return true;
 }
@@ -1635,17 +1425,17 @@ const DEBUG = false;
 function debug(...info) {
   if (! DEBUG) return;
   const msg = info.shift();
-  console.debug("BrokerFileSystem#" + msg, ...info);
+  console.debug("FileSystemExp#" + msg, ...info);
 }
 
 function debugAlways(...info) {
   const msg = info.shift();
-  console.debug("BrokerFileSystem#" + msg, ...info);
+  console.debug("FileSystemExp#" + msg, ...info);
 }
 
 function caught(e, ...info) {
   const msg = info.shift();
-  console.error( "BrokerFileSystem#" + msg,
+  console.error( "FileSystemExp#" + msg,
                  "\n- error.name:    " + e.name,
                  "\n- error.message: " + e.message,
                  "\n- error.stack:   " + e.stack,

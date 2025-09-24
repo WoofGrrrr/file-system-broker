@@ -1,23 +1,18 @@
 [
   {
-    "namespace": "BrokerFileSystem",
+    "namespace": "FileSystemExp",
     "functions": [
       {
         "name": "exists",
         "type": "function",
         "async": true,
-        "description": "Returns boolean true if a file or directory with the given fileName exists inside the directory named like the extensionID. If a fileName is not provided, returns true if the directory named like the given extensionID exists.",
+        "description": "Returns boolean true if a file or directory with the given fileName exists inside the directory named like the extensionID. If a fileName is not provided, returns true if the directory named like the calling Extension exists.",
         "parameters": [
-          {
-            "name": "extensionId",
-            "type": "string",
-            "description": "The ID of the extension for which the operation will be performed. Must be valid for a file name."
-          },
           {
             "name": "fileName",
             "type": "string",
             "optional": true,
-            "description": "The name of the file to check for existence. If provided, must be a valid file name. If not provided, checks if the directory named like the given extensionID exists."
+            "description": "The name of the file to check for existence. If provided, must be a valid file name. If not provided, checks if the directory named like the calling Extension exists."
           }
         ]
       },
@@ -27,11 +22,6 @@
         "async": true,
         "description": "Returns a boolean true if a file with the given fileName exists inside the directory named like the extensionID and is a Regular File, not a Directory.",
         "parameters": [
-          {
-            "name": "extensionId",
-            "type": "string",
-            "description": "The ID of the extension for which the operation will be performed. Must be valid for a file name."
-          },
           {
             "name": "fileName",
             "type": "string",
@@ -43,18 +33,13 @@
         "name": "isDirectory",
         "type": "function",
         "async": true,
-        "description": "Returns boolean true if a file with the given directoryName exists inside the directory named like the extensionID and is a Directory, not a Regular File. If a directoryName is not provided, checks if a file named like the extensionId exists and is a Directory.",
+        "description": "Returns boolean true if a file with the given directoryName exists inside the directory named like the extensionID and is a Directory, not a Regular File. If a directoryName is not provided, checks if a file named like the ID of the calling Extension exists and is a Directory.",
         "parameters": [
-          {
-            "name": "extensionId",
-            "type": "string",
-            "description": "The ID of the extension for which the operation will be performed. Must be valid for a file name."
-          },
           {
             "name": "directoryName",
             "type": "string",
             "optional": true,
-            "description": "The name of the directory to check for existence and type. If provided, must be a valid file name. If not provided, checks if a file named like the extensionId exists and is a Directory."
+            "description": "The name of the directory to check for existence and type. If provided, must be a valid file name. If not provided, checks if a file named like the ID of the calling Extension exists and is a Directory."
           }
         ]
       },
@@ -62,18 +47,13 @@
         "name": "hasFiles",
         "type": "function",
         "async": true,
-        "description": "Returns boolean true if a file with the given directoryName exists inside the directory named like the extensionID, is a Directory, and contains files. If a directoryName is not provided, checks if a file named like the extensionId exists, is a Directory, and contains files and/or directories.",
+        "description": "Returns boolean true if a file with the given directoryName exists inside the directory named like the extensionID, is a Directory, and contains files. If a directoryName is not provided, checks if a file named like the ID of the calling Extension exists, is a Directory, and contains files and/or directories.",
         "parameters": [
-          {
-            "name": "extensionId",
-            "type": "string",
-            "description": "The ID of the extension for which the operation will be performed. Must be valid for a file name."
-          },
           {
             "name": "directoryName",
             "type": "string",
             "optional": true,
-            "description": "The name of the Directory to check. If provided, must be a valid file name. If not provided, checks the Directory named like the extensionId."
+            "description": "The name of the Directory to check. If provided, must be a valid file name. If not provided, checks the Directory named like the ID of the calling Extension."
           }
         ]
       },
@@ -81,18 +61,13 @@
         "name": "getFileCount",
         "type": "function",
         "async": true,
-        "description": "Returns a count of files and/or directories  if a file with the given directoryName exists inside the directory named like the extensionID and is a Directory. If a directoryName is not provided, returns a count of files and/or directories if a file named like the extensionId exists and is a Directory.",
+        "description": "Returns a count of files and/or directories  if a file with the given directoryName exists inside the directory named like the extensionID and is a Directory. If a directoryName is not provided, returns a count of files and/or directories if a file named like the ID of the calling Extension exists and is a Directory.",
         "parameters": [
-          {
-            "name": "extensionId",
-            "type": "string",
-            "description": "The ID of the extension for which the operation will be performed. Must be valid for a file name."
-          },
           {
             "name": "directoryName",
             "type": "string",
             "optional": true,
-            "description": "The name of the Directory to to get a count for. If provided, must be a valid file name. If not provided, get a count for the Directory named like the extensionId."
+            "description": "The name of the Directory to to get a count for. If provided, must be a valid file name. If not provided, get a count for the Directory named like the ID of the calling Extension."
           }
         ]
       },
@@ -102,11 +77,6 @@
         "async": true,
         "description": "Writes the data with UTF-8 encoding into file with the given fileName inside the directory named like the extensionID.",
         "parameters": [
-          {
-            "name": "extensionId",
-            "type": "string",
-            "description": "The ID of the extension for which the operation will be performed. Must be valid for a file name."
-          },
           {
             "name": "fileName",
             "type": "string",
@@ -132,11 +102,6 @@
         "description": "Writes the data with UTF-8 encoding into file with the given fileName inside the directory named like the extensionID, replacing any existing file if it already exists. (This is the same as writeFile() with writeMode = 'replace'.)",
         "parameters": [
           {
-            "name": "extensionId",
-            "type": "string",
-            "description": "The ID of the extension for which the operation will be performed. Must be valid for a file name."
-          },
-          {
             "name": "fileName",
             "type": "string",
             "description": "The name of the file to write. Must be a valid file name."
@@ -155,11 +120,6 @@
         "description": "Appends the data with UTF-8 encoding to the end of file with the given fileName inside the directory named like the extensionID, or creates a new file if it oes not exist. (This is the same as writeFile() with writeMode = 'appendOrCreate'.)",
         "parameters": [
           {
-            "name": "extensionId",
-            "type": "string",
-            "description": "The ID of the extension for which the operation will be performed. Must be valid for a file name."
-          },
-          {
             "name": "fileName",
             "type": "string",
             "description": "The name of the file to write. Must be a valid file name."
@@ -177,11 +137,6 @@
         "async": true,
         "description": "Writes JSON data with UTF-8 encoding into the file with the given fileName inside the directory named like the extensionID.",
         "parameters": [
-          {
-            "name": "extensionId",
-            "type": "string",
-            "description": "The ID of the extension for which the operation will be performed. Must be valid for a file name."
-          },
           {
             "name": "fileName",
             "type": "string",
@@ -207,11 +162,6 @@
         "description": "Formats the given JavaScript object to JSON and writes the result into the file with the given fileName inside the directory named like the extensionID.",
         "parameters": [
           {
-            "name": "extensionId",
-            "type": "string",
-            "description": "The ID of the extension for which the operation will be performed. Must be valid for a file name."
-          },
-          {
             "name": "fileName",
             "type": "string",
             "description": "The name of the file to write. Must be a valid file name."
@@ -236,11 +186,6 @@
         "description": "Reads a data with UTF-8 encoding from the file with the given fileName inside the directory named like the extensionID.",
         "parameters": [
           {
-            "name": "extensionId",
-            "type": "string",
-            "description": "The ID of the extension for which the operation will be performed. Must be valid for a file name."
-          },
-          {
             "name": "fileName",
             "type": "string",
             "description": "The name of the file to read. Must be a valid file name. The file must exist and be a Regular File, not a Directory."
@@ -253,11 +198,6 @@
         "async": true,
         "description": "Read the JSON data with UTF-8 encoding from the file with the given fileName inside the directory named like the extensionID.",
         "parameters": [
-          {
-            "name": "extensionId",
-            "type": "string",
-            "description": "The ID of the extension for which the operation will be performed. Must be valid for a file name."
-          },
           {
             "name": "fileName",
             "type": "string",
@@ -272,11 +212,6 @@
         "description": "Read the JSON data with UTF-8 encoding from the file with the given fileName inside the directory named like the extensionID, convert it into a JavaScript object, and return the result.",
         "parameters": [
           {
-            "name": "extensionId",
-            "type": "string",
-            "description": "The ID of the extension for which the operation will be performed. Must be valid for a file name."
-          },
-          {
             "name": "fileName",
             "type": "string",
             "description": "The name of the file to read. Must be a valid file name. The file must exist and be a Regular File, not a Directory."
@@ -287,18 +222,13 @@
         "name": "getFileInfo",
         "type": "function",
         "async": true,
-        "description": "Return the FileInfo for the file with the given fileName inside the directory named like the extensionID. If a fileName is not provided, get the FileInfo for the directory named like the given extensionId.",
+        "description": "Return the FileInfo for the file with the given fileName inside the directory named like the extensionID. If a fileName is not provided, get the FileInfo for the directory named like the calling Extension.",
         "parameters": [
-          {
-            "name": "extensionId",
-            "type": "string",
-            "description": "The ID of the extension for which the operation will be performed. Must be valid for a file name."
-          },
           {
             "name": "fileName",
             "type": "string",
             "optional": true,
-            "description": "The name of the file to get the FileInfo for. If provided, must be a valid file name. If not provided, get the FileInfo for the directory named like the given extensionId."
+            "description": "The name of the file to get the FileInfo for. If provided, must be a valid file name. If not provided, get the FileInfo for the directory named like the calling Extension."
           }
         ]
       },
@@ -308,11 +238,6 @@
         "async": true,
         "description": "Rename the file with the given fromFileName to the given toFileName.",
         "parameters": [
-          {
-            "name": "extensionId",
-            "type": "string",
-            "description": "The ID of the extension for which the operation will be performed. Must be valid for a file name."
-          },
           {
             "name": "fromFileName",
             "type": "string",
@@ -340,11 +265,6 @@
         "description": "Deletes the file with the given fileName inside the directory named like the extensionID.",
         "parameters": [
           {
-            "name": "extensionId",
-            "type": "string",
-            "description": "The ID of the extension for which the operation will be performed. Must be valid for a file name."
-          },
-          {
             "name": "fileName",
             "type": "string",
             "description": "The name of the file to delete. Must be a valid file name. The file must be a Regular FIle, not a Directory."
@@ -355,18 +275,13 @@
         "name": "deleteDirectory",
         "type": "function",
         "async": true,
-        "description": "Deletes the sub-directory with the given directoryName from inside the directory named like the extensionID. If a directoryName is not provided, delete the directory named like the given extensionId.",
+        "description": "Deletes the sub-directory with the given directoryName from inside the directory named like the extensionID. If a directoryName is not provided, delete the directory named like the calling Extension.",
         "parameters": [
-          {
-            "name": "extensionId",
-            "type": "string",
-            "description": "The ID of the extension for which the operation will be performed. Must be valid for a file name."
-          },
           {
             "name": "directoryName",
             "type": "string",
             "optional": true,
-            "description": "The name of the directory to delete. If provided, must be a valid file name. If not provided, delete the directory named like the given extensionId. The file must be a DIrectory, not  Regular File."
+            "description": "The name of the directory to delete. If provided, must be a valid file name. If not provided, delete the directory named like the calling Extension. The file must be a DIrectory, not  Regular File."
           },
           {
             "name": "recursive",
@@ -382,11 +297,6 @@
         "async": true,
         "description": "Creates the extension's directory - a directory named like the extensionID.",
         "parameters": [
-          {
-            "name": "extensionId",
-            "type": "string",
-            "description": "The ID of the extension for which the Directory will be created. Must be valid for a file name."
-          }
         ]
       },
       {
@@ -395,11 +305,6 @@
         "async": true,
         "description": "Returns an array of the names of for only Regular Files inside the directory named like the extensionID. If the optional matchGLOB GLOB string is provided, any files whose file names do not match the GLOB will be excluded.",
         "parameters": [
-          {
-            "name": "extensionId",
-            "type": "string",
-            "description": "The ID of the extension for which the operation will be performed. Must be valid for a file name."
-          },
           {
             "name": "matchGLOB",
             "type": "string",
@@ -415,11 +320,6 @@
         "description": "Returns an array of the FileInfo for only the Regular Files inside the directory named like the extensionID. If the optional matchGLOB GLOB string is provided, any files whose file names do not match the GLOB will be excluded.",
         "parameters": [
           {
-            "name": "extensionId",
-            "type": "string",
-            "description": "The ID of the extension for which the operation will be performed. Must be valid for a file name."
-          },
-          {
             "name": "matchGLOB",
             "type": "string",
             "optional": true,
@@ -433,11 +333,6 @@
         "async": true,
         "description": "Returns an array of the names of the items (all types) inside the directory named like the extensionID. If the optional matchGLOB GLOB string is provided, any files whose file names do not match the GLOB will be excluded.",
         "parameters": [
-          {
-            "name": "extensionId",
-            "type": "string",
-            "description": "The ID of the extension for which the operation will be performed. Must be valid for a file name."
-          },
           {
             "name": "matchGLOB",
             "type": "string",
@@ -453,11 +348,6 @@
         "description": "Returns an array of the FileInfo for the items (all types) inside the directory named like the extensionID. If the optional matchGLOB GLOB string is provided, any files whose file names do not match the GLOB will be excluded.",
         "parameters": [
           {
-            "name": "extensionId",
-            "type": "string",
-            "description": "The ID of the extension for which the operation will be performed. Must be valid for a file name."
-          },
-          {
             "name": "matchGLOB",
             "type": "string",
             "optional": true,
@@ -469,18 +359,13 @@
         "name": "getFullPathName",
         "type": "function",
         "async": true,
-        "description": "Returns the full pathanme of the file with the given fileName inside the directory named like the extensionID. If a fileName is not provided, returns the full pathname for the directory named like the given extensionId.",
+        "description": "Returns the full pathanme of the file with the given fileName inside the directory named like the extensionID. If a fileName is not provided, returns the full pathname for the directory named like the calling Extension.",
         "parameters": [
-          {
-            "name": "extensionId",
-            "type": "string",
-            "description": "The ID of the extension for which the operation will be performed. Must be valid for a file name."
-          },
           {
             "name": "fileName",
             "type": "string",
             "optional": true,
-            "description": "The name of the file to get the full pathname for. If provided, must be a valid file name. If not provided, returns the full pathname for the directory named like the given extensionId."
+            "description": "The name of the file to get the full pathname for. If provided, must be a valid file name. If not provided, returns the full pathname for the directory named like the calling Extension."
           }
         ]
       },
@@ -493,7 +378,7 @@
           {
             "name": "fileName",
             "type": "string",
-            "description": "The name of the File to to test the vailidity of."
+            "description": "The File Name to test the vailidity of."
           }
         ]
       },
@@ -506,7 +391,7 @@
           {
             "name": "directoryName",
             "type": "string",
-            "description": "The name of the Directory to to test the vailidity of."
+            "description": "The Directory Name to test the vailidity of."
           }
         ]
       },

@@ -88,6 +88,7 @@ export class FileSystemBrokerSelfTests {
      *  await this.testListInfoCommand( [matchGLOB] );
      *  await this.testGetFullPathNameCommand( [fileName] );
      *  await this.testIsValidFileNameCommand(fileName);
+     *  await this.testIsValidDirectoryNameCommand(directoryName);
      *  await this.testGetFileSystemPathNameCommand();
      *  await this.testUnknownCommand(command);
      */
@@ -228,6 +229,13 @@ export class FileSystemBrokerSelfTests {
     await this.testIsValidFileNameCommand( "return true",                       "xxx"                             );
     await this.testIsValidFileNameCommand( "return false",                      "f:le1.txt"                       );
     await this.testIsValidFileNameCommand( "return false",                      "f*le1.txt"                       );
+
+    await this.testIsValidDirectoryNameCommand( "error",                        ""                                );
+    await this.testIsValidDirectoryNameCommand( "return true",                  "dir1"                            );
+    await this.testIsValidDirectoryNameCommand( "return true",                  "xxx"                             );
+    await this.testIsValidDirectoryNameCommand( "return false",                 "d:r1"                            );
+    await this.testIsValidDirectoryNameCommand( "return false",                 "d*r1"                            );
+    await this.testIsValidDirectoryNameCommand( "return false",                 ".."                              );
 
     await this.testUnknownCommand(         "error",                             ""                                );
     await this.testUnknownCommand(         "error",                             "*"                               );
@@ -764,7 +772,7 @@ export class FileSystemBrokerSelfTests {
   }
 
   async testIsValidFileNameCommand(expecting, fileName) {
-    this.debugAlways(`testIsValidFileNameCommand -- COMMAND isvalidFileName: fileName="${fileName}" expecting "${expecting}"`);
+    this.debugAlways(`testIsValidFileNameCommand -- COMMAND isValidFileName: fileName="${fileName}" expecting "${expecting}"`);
     try {
       const response = await this.sendFSBrokerCommand( { "command": "isValidFileName", "fileName": fileName } );
       if (response) { // missing response and error handled by sendFSBrokerCommand()
@@ -778,6 +786,24 @@ export class FileSystemBrokerSelfTests {
       }
     } catch (error) {
       this.caught(error, `testIsValidFileNameCommand: !!!!! fileName="${fileName}" !!!!!!!!!!!!!!!!!!!!!!!!!!!`);
+    }
+  }
+
+  async testIsValidDirectoryNameCommand(expecting, directoryName) {
+    this.debugAlways(`testIsValidDirectoryNameCommand -- COMMAND isValidDirectoryName: directoryName="${directoryName}" expecting "${expecting}"`);
+    try {
+      const response = await this.sendFSBrokerCommand( { "command": "isValidDirectoryName", "directoryName": directoryName } );
+      if (response) { // missing response and error handled by sendFSBrokerCommand()
+        if (response.invalid) {
+          this.debugAlways(`testIsValidDirectoryNameCommand -- VALIDATION ERROR: "${response.invalid}"`);
+        } else if (response.error) {
+          this.debugAlways(`testIsValidDirectoryNameCommand -- ERROR: "${response.error}"`);
+        } else {
+          this.debugAlways(`testIsValidDirectoryNameCommand -- RESPONSE: directoryName="${response.directoryName}" valid="${response.valid}"`);
+        }
+      }
+    } catch (error) {
+      this.caught(error, `testIsValidDirectoryNameCommand: !!!!! directoryName="${directoryName}" !!!!!!!!!!!!!!!!!!!!!!!!!!!`);
     }
   }
 

@@ -17,8 +17,10 @@ class OptionsUI {
 
     this.logger                                     = new Logger();
     this.fsbOptionsApi                              = new FsbOptions(this.logger);
-    this.fsbEventLoggerApi                          = new FsbEventLogger(this.fsbOptionsApi, this.logger);
+    this.fsbEventLogger                             = new FsbEventLogger(this.fsbOptionsApi, this.logger);
     this.fsbSelfTestApi                             = new FileSystemBrokerSelfTests(this.logger);
+
+    this.fsbOptionsApi.setEventLogger(this.fsbEventLogger);
 
     this.windowMode                                 = false; // are we running in a popup window??? (from the windowMode parameter in our URL)
     this.windowModeRequestedBy                      = undefined;
@@ -36,6 +38,7 @@ class OptionsUI {
     this.EXTENSION_ITEM_CLICK_DELAY                 = 500;   // 500ms, 1/2 second (the JavaScript runtime does not guarantee this time - it's single-threaded)
 
     this.devDeleteOldEventLogsTimeout;
+    this.devRemovedUninstalledExtensionsTimeout;
 
     // gather i18n messages for tooltips (and some other stuff) in the Extension List
     // - the calls to getI18nMsg for tooltips will return null - NOT the message ID - if no message is configured - just no tooltip
@@ -61,18 +64,13 @@ class OptionsUI {
     this.extensionListEditErrorUpdateFailed         = getI18nMsg("options_fsbExtensionEditErrorUpdateFailed");
 
     this.i18n_label_dev_options_title               = getI18nMsg("options_fsbDevOptionsTitle.label");
-//  this.i18n_check_dev_logAccess                   = getI18nMsg("options_fsbEnableAccessLoggingCheck.label");
-//  this.i18n_check_dev_logAccessDenied             = getI18nMsg("options_fsbEnableAccessDeniedLoggingCheck.label");
-//  this.i18n_check_dev_logInternalMessage          = getI18nMsg("options_fsbEnableInternalMessageLoggingCheck.label");
-//  this.i18n_check_dev_logInternalMessageResult    = getI18nMsg("options_fsbEnableInternalMessageResultLoggingCheck.label");
-//  this.i18n_check_dev_logExternalMessage          = getI18nMsg("options_fsbEnableExternalMessageLoggingCheck.label");
-//  this.i18n_check_dev_logExternalMessageResult    = getI18nMsg("options_fsbEnableExternalMessageResultLoggingCheck.label");
     this.i18n_check_dev_skipOnboarding              = getI18nMsg("options_fsbDevSkipOnboardingCheck.label");
     this.i18n_check_dev_showOptionsWindowOnStartup  = getI18nMsg("options_fsbDevShowOptionsWindowOnStartupCheck.label");
     this.i18n_button_dev_resetOptions               = getI18nMsg("options_fsbDevResetOptionsButton.label");
     this.i18n_button_dev_runSelfTest                = getI18nMsg("options_fsbDevSelfTestButton.label");
     this.i18n_button_dev_displayOptionsAsPopup      = getI18nMsg("options_fsbDevDisplayOptionsAsPopupButton.label");
     this.i18n_button_dev_deleteOldEventLogs         = getI18nMsg("options_fsbDevDeleteOldEventLogsButton.label");
+    this.i18n_button_dev_removeUninstalledExtensions= getI18nMsg("options_fsbDevRemoveUninstalledExtensionsButton.label");
   }
 
 
@@ -286,10 +284,11 @@ class OptionsUI {
 
 
   populateSelectUIs() {
-    this.populateAutoPurgeDaysSelectUI();
+    this.populateAutoLogPurgeDaysSelectUI();
+    this.populateAutoRemoveUninstalledExtensionsDaysSelectUI();
   }
 
-  populateAutoPurgeDaysSelectUI() {
+  populateAutoLogPurgeDaysSelectUI() {
     const select = document.getElementById("fsbAutoLogPurgeDays");
     if (select) {
       var option = document.createElement("option");
@@ -345,6 +344,78 @@ class OptionsUI {
       option = document.createElement("option");
         option.value = 30;
         option.textContent = getI18nMsg("options_fsbAutoLogPurgeDaysSelect_30Days");
+      select.appendChild(option);
+    }
+  }
+
+  populateAutoRemoveUninstalledExtensionsDaysSelectUI() {
+    const select = document.getElementById("fsbAutoRemoveUninstalledExtensionsDays");
+    if (select) {
+      var option;
+
+      option = document.createElement("option");
+        option.value = -1;
+        option.textContent = getI18nMsg("options_fsbAutoRemoveUninstalledExtensionsDaysSelect_optionDisabled");
+      select.appendChild(option);
+
+      option = document.createElement("option");
+        option.value = 0;
+        option.textContent = getI18nMsg("options_fsbAutoRemoveUninstalledExtensionsDaysSelect_optionWhenUninstalled");
+      select.appendChild(option);
+
+      option = document.createElement("option");
+        option.value = 1;
+        option.textContent = getI18nMsg("options_fsbAutoRemoveUninstalledExtensionsDaysSelect_1Day");
+      select.appendChild(option);
+
+      option = document.createElement("option");
+        option.value = 2;
+        option.textContent = getI18nMsg("options_fsbAutoRemoveUninstalledExtensionsDaysSelect_2Days");
+      select.appendChild(option);
+
+      option = document.createElement("option");
+        option.value = 3;
+        option.textContent = getI18nMsg("options_fsbAutoRemoveUninstalledExtensionsDaysSelect_3Days");
+      select.appendChild(option);
+
+      option = document.createElement("option");
+        option.value = 4;
+        option.textContent = getI18nMsg("options_fsbAutoRemoveUninstalledExtensionsDaysSelect_4Days");
+      select.appendChild(option);
+
+      option = document.createElement("option");
+        option.value = 5;
+        option.textContent = getI18nMsg("options_fsbAutoRemoveUninstalledExtensionsDaysSelect_5Days");
+      select.appendChild(option);
+
+      option = document.createElement("option");
+        option.value = 6;
+        option.textContent = getI18nMsg("options_fsbAutoRemoveUninstalledExtensionsDaysSelect_6Days");
+      select.appendChild(option);
+
+      option = document.createElement("option");
+        option.value = 7;
+        option.textContent = getI18nMsg("options_fsbAutoRemoveUninstalledExtensionsDaysSelect_7Days");
+      select.appendChild(option);
+
+      option = document.createElement("option");
+        option.value = 10;
+        option.textContent = getI18nMsg("options_fsbAutoRemoveUninstalledExtensionsDaysSelect_10Days");
+      select.appendChild(option);
+
+      option = document.createElement("option");
+        option.value = 14;
+        option.textContent = getI18nMsg("options_fsbAutoRemoveUninstalledExtensionsDaysSelect_14Days");
+      select.appendChild(option);
+
+      option = document.createElement("option");
+        option.value = 21;
+        option.textContent = getI18nMsg("options_fsbAutoRemoveUninstalledExtensionsDaysSelect_21Days");
+      select.appendChild(option);
+
+      option = document.createElement("option");
+        option.value = 30;
+        option.textContent = getI18nMsg("options_fsbAutoRemoveUninstalledExtensionsDaysSelect_30Days");
       select.appendChild(option);
     }
   }
@@ -1692,11 +1763,11 @@ this.debugAlways(`extensionOptionCheckClicked -- LABEL CLICKED, FOR ELEMENT FOUN
 
     if (numMinutes == 0) {
       this.logAlways(`deleteOldEventLogsButtonClicked -- Deleting Log Files more than ${numDays} days old`);
-      await this.fsbEventLoggerApi.deleteOldEventLogs(numDays);
+      await this.fsbEventLogger.deleteOldEventLogs(numDays);
 
     } else {
       const delayMS = numMinutes * 60000; // 60000 is one minute is MS
-      this.logAlways(`deleteOldEventLogsButtonClicked -- setting timeout for ${numMinutes} minutes --  ${delayMS} ms`);
+      this.logAlways(`deleteOldEventLogsButtonClicked -- Setting timeout for ${numMinutes} minutes --  ${delayMS} ms`);
       this.devDeleteOldEventLogsTimeout = setTimeout( () => this.devDeleteOldEventLogsTimeoutTimedOut(delayMS, numDays), delayMS);
     }
   }
@@ -1709,7 +1780,48 @@ this.debugAlways(`extensionOptionCheckClicked -- LABEL CLICKED, FOR ELEMENT FOUN
     }
 
     this.logAlways(`devDeleteOldEventLogsTimeoutTimedOut -- Timed out after ${delayMS} ms -- Deleting Log Files more than ${numDays} days old`);
-    await this.fsbEventLoggerApi.deleteOldEventLogs(numDays);
+    await this.fsbEventLogger.deleteOldEventLogs(numDays);
+  }
+
+
+
+  async removeUninstalledExtensionsButtonClicked(e) {
+    e.preventDefault();
+
+    this.resetErrors();
+
+    var numDays = 2;
+    const numDaysInput = document.getElementById("fsbRemoveUninstalledExtensionsNumDays");
+    if (numDaysInput) {
+      numDays = +numDaysInput.value;
+    }
+
+    var numMinutes = 0;
+    const numMinutesInput = document.getElementById("fsbRemoveUninstalledExtensionsNumMinutes");
+    if (numMinutesInput) {
+      numMinutes = +numMinutesInput.value;
+    }
+
+    if (numMinutes == 0) {
+      this.logAlways(`removeUninstalledExtensionsButtonClicked -- Removing Extensions uninstalled more than ${numDays} days ago`);
+      await this.fsbOptionsApi.autoRemoveUninstalledExtensions(numDays);
+
+    } else {
+      const delayMS = numMinutes * 60000; // 60000 is one minute is MS
+      this.logAlways(`removeUninstalledExtensionsButtonClicked -- Setting timeout for ${numMinutes} minutes --  ${delayMS} ms`);
+      this.devRemoveUninstalledExtensionsTimeout = setTimeout( () => this.devRemoveUninstalledExtensionsTimeoutTimedOut(delayMS, numDays), delayMS);
+    }
+  }
+
+  async devRemoveUninstalledExtensionsTimeoutTimedOut(delayMS, numDays) {
+    const timeout = this.devRemoveUninstalledExtensionsTimeout;
+    this.devRemoveUninstalledExtensionsTimeout = null;
+    if (timeout) {
+      clearTimeout(timeout);
+    }
+
+    this.logAlways(`devRemoveUninstalledExtensionsTimeoutTimedOut -- Timed out after ${delayMS} ms -- Removing Extensions uninstalled more than ${numDays} days ago`);
+    await this.fsbOptionsApi.autoRemoveUninstalledExtensions(numDays);
   }
 
 
@@ -1719,7 +1831,7 @@ this.debugAlways(`extensionOptionCheckClicked -- LABEL CLICKED, FOR ELEMENT FOUN
 
     const fsbDeveloperOptionsDiv = document.getElementById("fsbDeveloperOptions");
     if (fsbDeveloperOptionsDiv) {
-      // developer options aready there, nothing to do (restore from backu would cause this)
+      // developer options aready there, nothing to do (restore options from backup would cause this)
     } else {
       const accessLoggingEnabled                = await this.fsbOptionsApi.isEnabledAccessLogging();
       const accessDeniedLoggingEnabled          = await this.fsbOptionsApi.isEnabledAccessDeniedLogging();
@@ -1890,45 +2002,66 @@ this.debugAlways(`extensionOptionCheckClicked -- LABEL CLICKED, FOR ELEMENT FOUN
           showOptionsWindowOnStartupDiv.appendChild(showOptionsWindowOnStartupLabel);
         devloperOptionsDiv.appendChild(showOptionsWindowOnStartupDiv);
   */
-        const buttonPanelDiv = document.createElement("div");
-          buttonPanelDiv.classList.add("option-panel");
-          buttonPanelDiv.classList.add("dev-option-panel");
-          buttonPanelDiv.classList.add("dev-button-panel");
-          buttonPanelDiv.setAttribute("id", "fsbDevButtonPanel");
+        const buttonPanelDiv1 = document.createElement("div");
+          buttonPanelDiv1.classList.add( "option-panel"     );
+          buttonPanelDiv1.classList.add( "dev-option-panel" );
+          buttonPanelDiv1.classList.add( "dev-button-panel" );
+          buttonPanelDiv1.setAttribute("id", "fsbDevButtonPanel");
 
           const resetOptionsButton = document.createElement("button");
             resetOptionsButton.setAttribute("id", "fsbResetOptions");
             resetOptionsButton.addEventListener("click", (e) => this.resetOptionsButtonClicked(e));
 
             const resetOptionsButtonLabel = document.createElement("label");
-              resetOptionsButtonLabel.setAttribute("id", "fsbResetOptionsLabel");
-              resetOptionsButtonLabel.setAttribute("for", "fsbResetOptions");
-              resetOptionsButtonLabel.setAttribute("data-l10n-id", "options_fsbDevResetOptionsButton.label");
+              resetOptionsButtonLabel.setAttribute( "id",           "fsbResetOptionsLabel"                   );
+              resetOptionsButtonLabel.setAttribute( "for",          "fsbResetOptions"                        );
+              resetOptionsButtonLabel.setAttribute( "data-l10n-id", "options_fsbDevResetOptionsButton.label" );
               resetOptionsButtonLabel.appendChild(document.createTextNode(this.i18n_button_dev_resetOptions));
             resetOptionsButton.appendChild(resetOptionsButtonLabel);
-          buttonPanelDiv.appendChild(resetOptionsButton);
+          buttonPanelDiv1.appendChild(resetOptionsButton);
 
           const runFilesystemBrokerTestsButton = document.createElement("button");
             runFilesystemBrokerTestsButton.setAttribute("id", "fsbRunSelfTest");
             runFilesystemBrokerTestsButton.addEventListener("click", (e) => this.runSelfTestButtonClicked(e));
 
             const runFilesystemBrokerTestsButtonLabel = document.createElement("label");
-              runFilesystemBrokerTestsButtonLabel.setAttribute("id", "fsbRunSelfTestsLabel");
-              runFilesystemBrokerTestsButtonLabel.setAttribute("for", "fsbRunSelfTest");
-              runFilesystemBrokerTestsButtonLabel.setAttribute("data-l10n-id", "options_fsbDevSelfTestsButton.label");
+              runFilesystemBrokerTestsButtonLabel.setAttribute( "id",           "fsbRunSelfTestsLabel"                );
+              runFilesystemBrokerTestsButtonLabel.setAttribute( "for",          "fsbRunSelfTest"                      );
+              runFilesystemBrokerTestsButtonLabel.setAttribute( "data-l10n-id", "options_fsbDevSelfTestsButton.label" );
               runFilesystemBrokerTestsButtonLabel.appendChild(document.createTextNode(this.i18n_button_dev_runSelfTest));
             runFilesystemBrokerTestsButton.appendChild(runFilesystemBrokerTestsButtonLabel);
-          buttonPanelDiv.appendChild(runFilesystemBrokerTestsButton);
+          buttonPanelDiv1.appendChild(runFilesystemBrokerTestsButton);
 
+          if (! this.windowMode) {
+            const displayOptionsAsPopupButton = document.createElement("button");
+              displayOptionsAsPopupButton.setAttribute("id", "fsbDisplayOptionsAsPopup");
+              displayOptionsAsPopupButton.addEventListener("click", (e) => this.displayOptionsAsPopupButtonClicked(e), true); // true: capturing phase
+
+              const displayOptionsAsPopupButtonLabel = document.createElement("label");
+                displayOptionsAsPopupButtonLabel.setAttribute( "id",           "fsbDisplayOptionsAsPopupLabel"                );
+                displayOptionsAsPopupButtonLabel.setAttribute( "for",          "fsbDisplayOptionsAsPopup"                     );
+                displayOptionsAsPopupButtonLabel.setAttribute( "data-l10n-id", "options_fsbDisplayOptionsAsPopupButton.label" );
+                displayOptionsAsPopupButtonLabel.appendChild(document.createTextNode(this.i18n_button_dev_displayOptionsAsPopup));
+              displayOptionsAsPopupButton.appendChild(displayOptionsAsPopupButtonLabel);
+            buttonPanelDiv1.appendChild(displayOptionsAsPopupButton);
+          }
+
+        devloperOptionsDiv.appendChild(buttonPanelDiv1);
+
+        const buttonPanelDiv2 = document.createElement("div");
+          buttonPanelDiv2.classList.add( "option-panel"     );
+          buttonPanelDiv2.classList.add( "dev-option-panel" );
+          buttonPanelDiv2.classList.add( "dev-button-panel" );
+          buttonPanelDiv2.setAttribute("id", "fsbDevButtonPanel");
           const deleteOldEventLogsDiv = document.createElement("div");
             const deleteOldEventLogsButton = document.createElement("button");
               deleteOldEventLogsButton.setAttribute("id", "fsbDeleteOldEventLogs");
               deleteOldEventLogsButton.addEventListener("click", (e) => this.deleteOldEventLogsButtonClicked(e));
 
               const deleteOldEventLogsButtonLabel = document.createElement("label");
-                deleteOldEventLogsButtonLabel.setAttribute("id", "fsbDeleteOldEventLogsLabel");
-                deleteOldEventLogsButtonLabel.setAttribute("for", "fsbDeleteOldEventLogs");
-                deleteOldEventLogsButtonLabel.setAttribute("data-l10n-id", "options_fsbDevDeleteOldEventLogsButton.label");
+                deleteOldEventLogsButtonLabel.setAttribute( "id",           "fsbDeleteOldEventLogsLabel"                   );
+                deleteOldEventLogsButtonLabel.setAttribute( "for",          "fsbDeleteOldEventLogs"                        );
+                deleteOldEventLogsButtonLabel.setAttribute( "data-l10n-id", "options_fsbDevDeleteOldEventLogsButton.label" );
                 deleteOldEventLogsButtonLabel.appendChild(document.createTextNode(this.i18n_button_dev_deleteOldEventLogs));
               deleteOldEventLogsButton.appendChild(deleteOldEventLogsButtonLabel);
             deleteOldEventLogsDiv.appendChild(deleteOldEventLogsButton);
@@ -1950,23 +2083,41 @@ this.debugAlways(`extensionOptionCheckClicked -- LABEL CLICKED, FOR ELEMENT FOUN
               deleteOldEventLogsNumMinutesInput.classList.add("no-css");               // Do not change me, userContent.css !!!
               deleteOldEventLogsNumMinutesInput.value = 1;
             deleteOldEventLogsDiv.appendChild(deleteOldEventLogsNumMinutesInput);
-          buttonPanelDiv.appendChild(deleteOldEventLogsDiv);
+          buttonPanelDiv2.appendChild(deleteOldEventLogsDiv);
 
-          if (! this.windowMode) {
-            const displayOptionsAsPopupButton = document.createElement("button");
-              displayOptionsAsPopupButton.setAttribute("id", "fsbDisplayOptionsAsPopup");
-              displayOptionsAsPopupButton.addEventListener("click", (e) => this.displayOptionsAsPopupButtonClicked(e), true); // true: capturing phase
+          const removeUninstalledExtensionsDiv = document.createElement("div");
+            const removeUninstalledExtensionsButton = document.createElement("button");
+              removeUninstalledExtensionsButton.setAttribute("id", "fsbRemoveUninstalledExtensions");
+              removeUninstalledExtensionsButton.addEventListener("click", (e) => this.removeUninstalledExtensionsButtonClicked(e));
 
-              const displayOptionsAsPopupButtonLabel = document.createElement("label");
-                displayOptionsAsPopupButtonLabel.setAttribute("id", "fsbDisplayOptionsAsPopup");
-                displayOptionsAsPopupButtonLabel.setAttribute("for", "fsbDisplayOptionsAsPopup");
-                displayOptionsAsPopupButtonLabel.setAttribute("data-l10n-id", "options_fsbDisplayOptionsAsPopupButton.label");
-                displayOptionsAsPopupButtonLabel.appendChild(document.createTextNode(this.i18n_button_dev_displayOptionsAsPopup));
-              displayOptionsAsPopupButton.appendChild(displayOptionsAsPopupButtonLabel);
-            buttonPanelDiv.appendChild(displayOptionsAsPopupButton);
-          }
+              const removeUninstalledExtensionsButtonLabel = document.createElement("label");
+                removeUninstalledExtensionsButtonLabel.setAttribute( "id",           "fsbRemoveUninstalledExtensionsLabel"                   );
+                removeUninstalledExtensionsButtonLabel.setAttribute( "for",          "fsbRemoveUninstalledExtensions"                        );
+                removeUninstalledExtensionsButtonLabel.setAttribute( "data-l10n-id", "options_fsbDevRemoveUninstalledExtensionsButton.label" );
+                removeUninstalledExtensionsButtonLabel.appendChild(document.createTextNode(this.i18n_button_dev_removeUninstalledExtensions));
+              removeUninstalledExtensionsButton.appendChild(removeUninstalledExtensionsButtonLabel);
+            removeUninstalledExtensionsDiv.appendChild(removeUninstalledExtensionsButton);
 
-        devloperOptionsDiv.appendChild(buttonPanelDiv);
+            const removeUninstalledExtensionsNumDaysInput = document.createElement("input");
+              removeUninstalledExtensionsNumDaysInput.setAttribute( "type", "number"                                );
+              removeUninstalledExtensionsNumDaysInput.setAttribute( "id",   "fsbRemoveUninstalledExtensionsNumDays" );
+              removeUninstalledExtensionsNumDaysInput.setAttribute( "min",  0                                       );
+              removeUninstalledExtensionsNumDaysInput.setAttribute( "max",  30                                      );
+              removeUninstalledExtensionsNumDaysInput.classList.add("no-css");                  // Do not change me, userContent.css !!!
+              removeUninstalledExtensionsNumDaysInput.value = 2;
+            removeUninstalledExtensionsDiv.appendChild(removeUninstalledExtensionsNumDaysInput);
+
+            const removeUninstalledExtensionsNumMinutesInput = document.createElement("input");
+              removeUninstalledExtensionsNumMinutesInput.setAttribute( "type", "number"                                   );
+              removeUninstalledExtensionsNumMinutesInput.setAttribute( "id",   "fsbRemoveUninstalledExtensionsNumMinutes" );
+              removeUninstalledExtensionsNumMinutesInput.setAttribute( "min",  0                                          );
+              removeUninstalledExtensionsNumMinutesInput.setAttribute( "max",  5                                          );
+              removeUninstalledExtensionsNumMinutesInput.classList.add("no-css");               // Do not change me, userContent.css !!!
+              removeUninstalledExtensionsNumMinutesInput.value = 1;
+            removeUninstalledExtensionsDiv.appendChild(removeUninstalledExtensionsNumMinutesInput);
+          buttonPanelDiv2.appendChild(removeUninstalledExtensionsDiv);
+
+        devloperOptionsDiv.appendChild(buttonPanelDiv2);
 
       fsbExtensionOptionsDiv.appendChild(devloperOptionsDiv);
     }

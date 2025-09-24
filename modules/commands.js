@@ -40,6 +40,7 @@ export class FileSystemBrokerCommands {
       "listInfo",
       "getFullPathName",
       "isValidFileName",
+      "isValidDirectoryName",
       "getFileSystemPathName"
     ];
     Object.freeze(this.commands);
@@ -96,13 +97,13 @@ export class FileSystemBrokerCommands {
 
   async processCommand(command, extensionId) {    
     if (! command) {
-      this.error(`processCommand -- No Command parameter`);
+      this.error("processCommand -- No Command parameter");
       return ( { "error": "Invalid Request: No Command.command parameter", "code": "400" } );
     } else if (typeof command !== 'object') {
-      this.error(`processCommand -- Command parameter is not an object`);
+      this.error("processCommand -- Command parameter is not an object");
       return ( { "error": "Invalid Request: Command.command parameter is not an object", "code": "400" } );
     } else if (! command.command) {
-      this.error(`processCommand -- Command has no command parameter`);
+      this.error("processCommand -- Command has no command parameter");
       return ( { "error": "Invalid Request: Command has no command parameter", "code": "400" } );
     } else if (typeof command.command !== 'string') {
       this.error(`processCommand -- Command.command parameter is NOT A STRING`);
@@ -110,10 +111,13 @@ export class FileSystemBrokerCommands {
     }
 
     if (! extensionId) {
-      this.error(`processCommand -- No extensionId`);
+      this.error("processCommand -- No extensionId");
       return ( { "error": "Invalid Request: Invalid Command - no extensionId parameter", "code": "400" } );
     } else if (typeof extensionId !== 'string') {
-      this.error(`processCommand -- extensionId parameter is NOT A STRING`);
+      this.error("processCommand -- extensionId parameter is NOT A STRING");
+      return ( { "error": "Invalid Request: Invalid Command", "code": "400" } );
+    } else if (! this.checkValidExtensionId(extensionId)) {
+      this.error(`processCommand -- extensionId parameter is invalid: "${extensionId}"`);
       return ( { "error": "Invalid Request: Invalid Command", "code": "400" } );
     }
 
@@ -172,6 +176,8 @@ export class FileSystemBrokerCommands {
         return this.getFullPathNameCommand(command, extensionId);
       case "isValidFileName":
         return this.isValidFileNameCommand(command, extensionId);
+      case "isValidDirectoryName":
+        return this.isValidDirectoryNameCommand(command, extensionId);
       case "getFileSystemPathName":
         return this.getFileSystemPathNameCommand(command, extensionId);
     }
@@ -262,7 +268,7 @@ export class FileSystemBrokerCommands {
         return ( { "invalid": "isDirectory Command: 'directoryName' parameter type must be 'string'" } );
       }
 
-      if (! this.checkValidFileName(command.directoryName)) {
+      if (! this.checkValidDirName(command.directoryName)) {
         this.debug(`isDirectoryCommand -- Message 'directoryName' parameter is invalid: "${command.directoryName}"`);
         return ( { "invalid": `isDirectory Command: 'directoryName' parameter is invalid: "${command.directoryName}"` } );
       }
@@ -302,7 +308,7 @@ export class FileSystemBrokerCommands {
         return ( { "invalid": "hasFiles Command: 'directoryName' parameter type must be 'string'" } );
       }
 
-      if (! this.checkValidFileName(command.directoryName)) {
+      if (! this.checkValidDirName(command.directoryName)) {
         this.debug(`hasFilesCommand -- Message 'directoryName' parameter is invalid: "${command.directoryName}"`);
         return ( { "invalid": `hasFiles Command: 'directoryName' parameter is invalid: "${command.directoryName}"` } );
       }
@@ -371,7 +377,7 @@ export class FileSystemBrokerCommands {
         return ( { "invalid": "getFileCount Command: 'directoryName' parameter type must be 'string'" } );
       }
 
-      if (! this.checkValidFileName(command.directoryName)) {
+      if (! this.checkValidDirName(command.directoryName)) {
         this.debug(`getFileCountCommand -- Message 'directoryName' parameter is invalid: "${command.directoryName}"`);
         return ( { "invalid": `getFileCount Command: 'directoryName' parameter is invalid: "${command.directoryName}"` } );
       }
@@ -1019,7 +1025,7 @@ export class FileSystemBrokerCommands {
         return ( { "invalid": "deleteDirectory Command: 'directoryName' parameter type must be 'string'" } );
       }
 
-      if (! this.checkValidFileName(command.directoryName)) {
+      if (! this.checkValidDirName(command.directoryName)) {
         this.debug(`deleteDirectoryCommand -- Message 'directoryName' parameter is invalid: "${command.directoryName}"`);
         return ( { "invalid": `deleteDirectory Command: 'directoryName' parameter is invalid: "${command.directoryName}"` } );
       }
@@ -1353,6 +1359,33 @@ export class FileSystemBrokerCommands {
 
 
 
+  async isValidDirectoryNameCommand(command, extensionId) {
+    this.debug(`isValidDirectoryNameCommand ~~~~~~~~~~~~~~~~~~~~ command.directoryName="${command.directoryName}"`);
+
+    if (! command.directoryName) {
+      this.debug("isValidDirectoryNameCommand -- Message has no 'directoryName' parameter");
+      return ( { "invalid": "isValidDirectoryName Command: no 'directoryName' parameter" } );
+    } else if ((typeof command.directoryName) !== 'string') {
+      this.debug("isValidDirectoryNameCommand -- Message 'directoryName' parameter type is not 'string'");
+      return ( { "invalid": "isValidDirectoryName Command: 'directoryName' parameter type must be 'string'" } );
+    }
+
+    try {
+      this.debug(`isValidDirectoryNameCommand -- checking for valid directoryName for directory "${command.directoryName}"`);
+      const valid = await messenger.BrokerFileSystem.isValidDirectoryName(command.directoryName);
+      this.debug(`isValidDirectoryNameCommand -- valid=${valid}`);
+      return ( { "directoryName": command.directoryName, "valid": valid } );
+
+    } catch (error) {
+      this.caught(error, `isValidDirectoryNameCommand -- Caught error while checking for valid directoryName for directory "${command.directoryName}":`);
+      return ( { "error": `Error Processing isValidDirectoryName Command: ${error.command}`, "code": "500" } );
+    }
+
+    return false;
+  }
+
+
+
   async getFileSystemPathNameCommand(command, extensionId) {
     this.debug("getFileSystemPathNameCommand ~~~~~~~~~~~~~~~~~~~~");
 
@@ -1653,6 +1686,8 @@ export class FileSystemBrokerCommands {
           return "fullPathName=" + result.fullPathName;
         case "isValidFileName":
           return "valid=" + result.valid;
+        case "isValidDirectoryName":
+          return "valid=" + result.valid;
         case "getFileSystemPathName":
           return "pathName=" + result.pathName;
       }
@@ -1688,6 +1723,8 @@ export class FileSystemBrokerCommands {
    * - nul
    * - com0 - com9
    * - lpt0 - lpt9
+   * AND FOR DIRECTORIES:
+   * - ..
    *
    * NO MORE THAN 64 CHARACTERS
    */
@@ -1704,6 +1741,78 @@ export class FileSystemBrokerCommands {
 
     return true;
   }
+
+  checkValidDirName(dirname) {
+    if (typeof dirname !== 'string') return false;
+
+    const ILLEGAL_CHARS = /[<>:"/\\|?*\x00-\x1F]/g;
+    if (ILLEGAL_CHARS.test(dirname)) return false;
+
+    const RESERVED_NAMES = /^(\.\.|con|prn|aux|nul|com[0-9]|lpt[0-9])$/i;
+    if (RESERVED_NAMES.test(dirname)) return false;
+
+    if (dirname.length > 64) return false;
+
+    return true;
+  }
+
+  /* Must be a String with at least one character.
+   *
+   * ILLEGAL CHARS:
+   *
+   *   A-Z (must be lower-case)
+   *   <
+   *   >
+   *   :
+   *   "
+   *   /
+   *   \
+   *   |
+   *   ?
+   *   *
+   *   x00-x1F (control characters)
+   *
+   * RESERVED NAMES:
+   * - con
+   * - prn
+   * - aux
+   * - nul
+   * - com0 - com9
+   * - lpt0 - lpt9
+   * - ..
+   *
+   * NO MORE THAN *64* CHARACTERS
+   */
+  checkValidExtensionId(extensionId) {
+    if (typeof extensionId !== 'string' || extensionId.length < 1 || extensionId.length > 64) return false;
+
+    // note: no upper-case
+    const LIKE_EMAIL_REGEX = /\A(?=[a-z0-9@.!#$%&'*+/=?^_`{|}~-]{6,254}\z)(?=[a-z0-9.!#$%&'*+/=?^_`{|}~-]{1,64}@)[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:(?=[a-z0-9-]{1,63}\.)[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+(?=[a-z0-9-]{1,63}\z)[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\z/;
+
+  //const ENCLOSED_GUID_REGEX   = /^\{[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\}$/;
+  //const UNENCLOSED_GUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+
+    // note: no upper-case
+    const ENCLOSED_GUID_REGEX   = /^\{[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\}$/;
+    const UNENCLOSED_GUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+    if (! LIKE_EMAIL_REGEX.test(extensionId)) {
+      if (extensionId[0] === '{') {
+        if (ENCLOSED_GUID_REGEX.test(extensionId)) return true;
+      } else {
+        if (UNENCLOSED_GUID_REGEX.test(extensionId)) return true;
+      }
+    }
+    
+  //const ILLEGAL_CHARS = /<>:"/\\|?*\x00-\x1F]/g;
+  //if (ILLEGAL_CHARS.test(extensionId)) return false;
+
+    const RESERVED_NAMES = /^(\.\.|con|prn|aux|nul|com[0-9]|lpt[0-9])$/i;
+    if (RESERVED_NAMES.test(extensionId)) return false;
+
+    return true;
+  }
+
 
 
 

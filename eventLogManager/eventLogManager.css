@@ -92,8 +92,8 @@ input[type="checkbox"].open-close-check:not(checked) + label {
     "controls-panel   right-spacer"
     "bottom-spacer    bottom-spacer";
 
-  grid-template-columns: auto max-content auto;
-  grid-template-rows:    min-content min-content min-content auto min-content min-content;
+  grid-template-columns: min-content auto;
+  grid-template-rows:    min-content min-content min-content min-content min-content min-content;
 
   & #fsbEventLogManagerTitlePanel {
     grid-area: title;
@@ -166,7 +166,9 @@ input[type="checkbox"].open-close-check:not(checked) + label {
   border:           1px solid var(--panel-border-color);
   border-radius:    10px;
   margin:           4px 12px 12px 12px;
-  overflow-x:       hidden;
+  min-width:        200px;
+  max-width:        800px;
+  overflow-x:       auto;
   overflow-y:       auto;
   padding:          0.5em 1.0em 0.5em 1.0em;
 }
@@ -176,8 +178,6 @@ input[type="checkbox"].open-close-check:not(checked) + label {
   border-collapse:  separate;
   border-spacing:   2px 0px;
   margin-right:     20px;
-  overflow-x:       hidden;
-  overflow-y:       auto;
   -moz-appearance:  none;
 }
 

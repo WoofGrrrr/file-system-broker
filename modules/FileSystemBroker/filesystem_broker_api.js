@@ -1,10 +1,10 @@
 /*
- * This file is provided by the ??? repository at
- * ???
+ * This file is provided by the WoofGrrrr GitHub repository at
+ * https://github.com/WoofGrrrr/file-system-broker
  *
  * Author: WoofGrrrr
  *
- * Version x
+ * Version v0.9.0-beta-1
  *
  * - Functions:
  *   . access
@@ -32,6 +32,7 @@
  *   . listInfo - with optional fileName match GLOB
  *   . getFullPathName
  *   . isValidFileName
+ *   . isValidDirectoryName
  *   . getFileSystemPathName
  *
  * ** A fileName may not contain these characters:
@@ -53,6 +54,8 @@
  *      - nul
  *      - com0 - com9
  *      - lpt0 - lpt9
+ *    IN ADDITION, THE FOLLOWING DIRECTORY NAMES CANNOT BE USED:
+ *      - .. (two dots or periods)
  *
  * ** A fileName may not be longer than 64 characters
  *
@@ -60,7 +63,7 @@
  * 
  *
  *
- * Version 0.1
+ * Version v0.9.0-beta-1
  * - First version
  *
  * Author: WoofGrrrr
@@ -257,6 +260,10 @@ export class FileSystemBrokerAPI {
 
   async isValidFileName(fileName) {
     return await this.sendFSBrokerCommand( { "command": "isValidFileName", "fileName": fileName } );
+  }
+
+  async isValidDirectoryName(directoryName) {
+    return await this.sendFSBrokerCommand( { "command": "isValidDirectoryName", "directoryName": directoryName } );
   }
 
   async getFileSystemPathName() {

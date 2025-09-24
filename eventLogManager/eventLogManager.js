@@ -395,7 +395,7 @@ class EventLogManager {
       this.appendListMessageUI(domFileNameList, getI18nMsg(   'fsbEventLogManager_message_noFileInfo',     "Unable to get FileName List" ) );
     } else if (eventLogInfo.length < 1) {
       if (this.listMode === this.LIST_MODE_LOGS) {
-        this.appendListMessageUI(domFileNameList, getI18nMsg( 'fsbEventLogManager_message_noEventLogs',     "No Log Files"                ) );
+        this.appendListMessageUI(domFileNameList, getI18nMsg( 'fsbEventLogManager_message_noEventLogs',    "No Log Files"                ) );
       } else {
         this.appendListMessageUI(domFileNameList, getI18nMsg( 'fsbEventLogManager_message_noArchiveFiles', "No Archived Log Files"       ) );
       }
@@ -415,6 +415,7 @@ class EventLogManager {
   appendListMessageUI(domList, msg) {
     const listMessageTR = document.createElement('tr');
       const listMessageTD = document.createElement('td');
+        listMessageTD.style.setProperty('white-space', 'nowrap');
         listMessageTD.appendChild( document.createTextNode(msg) );
       listMessageTR.appendChild(listMessageTD);
     domList.appendChild(listMessageTR);

@@ -1,61 +1,91 @@
-# BrokerFileSystem - A Thunderbird Web Experiments API That Provides Limited Access to The Computer's File System
+# FileSystemExp - A Thunderbird Web Experiments API That Provides Limited Access to The Computer's File System
 
-## Objective
-
-Use this API to access files in the user Thunderbirdprofile folder.
+Use this API to access files in the Thunderbird user profile directory/folder.
 
 Until Mozilla has made a final decision about including the
 [Chrome FileSystem API](https://web.dev/file-system-access/),
-this API can be used as an interim solution.
+this API can be used as an interim solution.  (Actually, it
+appears that the people at Mozilla may have decided not to
+implement the Chrome FileSystem API.)
 
 This API is an enhancement to the original API from the webext-support repository at
-[webext-support FileSystem API](https://github.com/thunderbird/webext-support/tree/master/experiments/FileSystem).
+[webext-support FileSystem API](https://github.com/thunderbird/webext-support).
 
-It is tailored specifically for the needs of the Experimental FileSystemBroker
-Extension in that it uses a given Extension ID as the name of the sub-directory
-in the user's Profile Directory rather than that of the ID of the extension
-that is actually using the API.
+This enhancement provides a number of additional functions and features.
 
-The FileSystemBroker Extension uses Web Extension Inter-Extension Messaging to
-receive requests from other extensions to access the File System on their behalf.
-This way, those extensions do not need to use the Experiments API directly.
+As an "Experiments API", in order to use ths API, it requires that you accept granting
+full access to your system to Thunderbird.  This is considered by many to compromise
+a computer's security.
 
-The Messaging system provides the ID of the extension that sends the request
-messages, and FileSystemBroker provides those Extension IDs to this API.
+I have provided this API for those extension developers who may already need to use the
+Experiements API for other purposes.
 
-This enhancement also provides a number of additional functions.
+If, as an extension developer, you don't wish to compromise security, or you have no
+other need to use the Experiements API, you can instead use the
+[FileSystemBroker Extension](https://github.com/WoofGrrrr/file-system-broker)
+and its
+[FileSystemBroker API](https://github.com/WoofGrrrr/file-system-broker/tree/main/modules/FileSystemBroker).
+
+With the FileSystemBroker Extension and its API, you can write an extension that can
+access the computer's file system without having to use the Experiments API and thus
+requiring your extension's users to grant full system access to your extension.  You
+can simply use the FileSystemBroker API, and let it use the FileSystemBroker Extension
+to to the files system access on your extension's behalf.
+
+The API uses inter-extension messaging to request services from the extension. The API
+sends a message to the extension, the extension receives the message and performs the
+requested command, and finally responds with another message with the results of the
+command.
 
 **Note: Currently does not work with TB78.**
 
 
-## Usage
+## How to Use the FileSystemBroker API
 
-MABXXX FIX THIS: Add the [FileSystem API](https://github.com/thunderbird/webext-support/tree/master/experiments/FileSystem) to your add-on.
-Your `manifest.json` needs an entry like this:
+* Add the [FileSystemExp API](https://github.com/WoofGrrrr/file-system-broker/tree/main/apis/BrokerFileSystemExp)
+to your add-on.
+
+* Download the directory and its contents and copy them into the `"apis"` sub-directory for your extension
+
+* Your extension's `manifest.json` file needs an entry like this:
 
 ```json
   "experiment_apis": {
-    "BrokerFileSystem": {
-      "schema": "apis/BrokerFileSystem/schema.json",
+    "FileSystemExp": {
+      "schema": "apis/FileSystemExp/schema.json",
       "parent": {
         "scopes": ["addon_parent"],
-        "paths": [["BrokerFileSystem"]],
-        "script": "apis/BrokerFileSystem/implementation.js"
+        "paths": [["FileSystemExp"]],
+        "script": "apis/FileSystemExp/implementation.js"
       }
     }
   },
 ```
 
-The API uses the following folder for file access:
+* In your extension's JavaScript code, you use the API just like any other Web Extension API...
 
 ```
-<profile-folder>/BrokerFileSystem/<extension-id>/
+  const valid = await messenger.FileSystemExp.isValidFileName("file1.txt");
+```
+<br>
+<br>
+
+### The API uses the following directory/folder for file access:
+
+```
+<profile-directory>/FileSystemExp/<extension-id>/
 ```
 Where:
-  + \<profile-folder\> is the user's profile folder
-  + \<extension-id\> is the given Extension ID
+  + \<profile-directory\> is the user's profile directory/folder
+  + \<extension-id\> is the Extension ID of the extension using the API
 
+On a Windows system, if the User ID of the user using Thunderbird were "user1",
+and if the ID of your extension were "aaa.bbb@xxx.com", the pathName of this
+directory would be something like this:
+> C:\Users\user1\AppData\Roaming\Thunderbird\Profiles\4x4rl22v.default-release\FileSystemExp\aaa.bbb@xxx.com
 
+<br>
+<br>
 
 ## The API provides these functions:
 
@@ -86,42 +116,42 @@ Where:
   + isValidDirectoryName - is a directoryName valid?
   + getFileSystemPathName - return the full pathName of the system directory on which this API operates
 
-### exists(extensionId [, fileName])
+### exists( [ fileName] )
 
     Returns true if a file with the given fileName exists
-    in the directory for the extensionId.
+    in the directory for the extension.
 
     The fileName parameter is optional.  If it is not
     provided, returns true if the directory for the
-    given extensionId exists.
+    calling extension exists.
 
-    Throws if the extensionId or fileName is invalid,
+    Throws if the fileName is invalid,
     or if the file's full pathName is > 255 characters,
     or if there is an operating system error.
 
 
-### isRegularFile(extensionId, fileName)
+### isRegularFile(fileName)
 
     Returns true if a file with the given fileName exists
-    in the directory for the given  extensionId and is a
+    in the directory for the calling  extension and is a
     Regular File, i.e. not a Directory or 'other'.
 
-    Throws if the extensionId or fileName are missing or invalid,
+    Throws if the fileName is missing or invalid,
     or if the file's full pathName is > 255 characters,
     or if there is an operating system error.
 
 
-### isDirectory(extensionId [, directoryName])
+### isDirectory( [directoryName] )
 
     Returns true if a file with the given directoryName exists.
-    in the directory for the given extensionId and is a
+    in the directory for the calling extension and is a
     Directory, i.e. not a Regular File or 'other'.
 
     The directoryName parameter is optional.  If not provided,
-    returns true if the directory for the given extensionId
+    returns true if the directory for the calling extension
     exists and is a Directory.
 
-    Throws if the extensionId or directoryName is invalid,
+    Throws if the directoryName is invalid,
     or if the directory's full pathName > 255 characters,
     or if there is an operating system error.
 
@@ -129,19 +159,19 @@ Where:
     directoryName parameter is not currently supported.
 
 
-### hasFiles(extensionId [, directoryName])
+### hasFiles( [directoryName] )
 
     Returns true if a file with the given directoryName exists
-    in the directory for the given extensionId, is a
+    in the directory for the calling extension, is a
     Directory, i.e. not a Regular File or 'other',
     and contains files and/or sub-directories.
 
     The directoryName parameter is optional.  If not provided,
-    returns true if the directory for the given extensionId
+    returns true if the directory for the calling extension
     exists, is a Directory, and contains files and/or
     sub-directories.
 
-    Throws if the extensionId or directoryName is invalid,
+    Throws if the directoryName is invalid,
     or if the directory's full pathName > 255 characters,
     of if the file does not exist or is not a Directory,
     or if there is an operating system error.
@@ -150,19 +180,19 @@ Where:
     directoryName parameter is not currently supported.
 
 
-### getFileCount(extensionId [, directoryName])
+### getFileCount( [directoryName] )
 
     Returns a count of files and/or sub-directories in the
     directory if a file with the given directoryName exists
-    in the directory for the given extensionId and is a
+    in the directory for the calling extension and is a
     Directory, i.e. not a Regular File or 'other'.
 
     The directoryName parameter is optional.  If not provided,
     returns the count of files and/or sub-directories in the
-    directory if the directory for the given extensionId
+    directory if the directory for the calling extension
     exists and is a Directory.
 
-    Throws if the extensionId or directoryName is invalid,
+    Throws if the directoryName is invalid,
     or if the directory's full pathName > 255 characters,
     of if the file does not exist or is not a Directory,
     or if there is an operating system error.
@@ -171,47 +201,47 @@ Where:
     directoryName parameter is not currently supported.
 
 
-### readFile(extensionId, fileName)
+### readFile(fileName)
 
     Returns a UTF8-Encoded String for the contents of
     the file with the given fileName in the directory for
-    the given extensionId.
+    the calling extension.
 
-    Throws if the extensionId or fileName is invalid,
+    Throws if the fileName is invalid,
     if the file's full pathName is > 255 characters,
     or if the file does not exist,
     or if there is an operating system error. 
 
 
-### readJSONFile(extensionId, fileName)
+### readJSONFile(fileName)
 
     Returns a UTF8-encoded string for the contents of the file
-    with the given fileName in the directory for the given
-    extensionId
+    with the given fileName in the directory for the calling
+    extension
 
-    Throws if the extensionId or fileName is invalid,
+    Throws if the fileName is invalid,
     if the file's full pathName is > 255 characters,
     or if the file does not exist,
     or if there is an operating system error. 
 
 
-### readObjectFromJSONFile(extensionId, fileName)
+### readObjectFromJSONFile(fileName)
 
     Returns a JavaScript object for the JSON contents of the file
-    with the given fileName in the directory for the given
-    extensionId
+    with the given fileName in the directory for the calling
+    extension
 
-    Throws if the extensionId or fileName is invalid,
+    Throws if the fileName is invalid,
     if the file's full pathName is > 255 characters,
     or if the file does not exist,
     or if there is an operating system error. 
 
 
-###  writeFile(extensionId, fileName, data [,writeMode])
+###  writeFile(fileName, data [,writeMode])
 
     Writes the UTF8-Encoded data to the file with the
-    given fileName in the directory for the given
-    extensionId.
+    given fileName in the directory for the calling
+    extension.
 
     The optional writeMode parameter has these options:
     - 'overwrite'        (the default)  will replace any existing file or create a new file.
@@ -222,48 +252,48 @@ Where:
 
     Returns the byte count of the data that was written.
 
-    Throws if the extensionId or fileName is invalid,
+    Throws if the fileName is invalid,
     or if the file's full pathName > 255 characters,
     or if the writeMode parameter is not one of the values listed above,
     or if the file's existence does not match the writeMode criteria listed above,
     or if there is an operating system error.
 
 
-###  replaceFile(extensionId, fileName, data)
+###  replaceFile(fileName, data)
 
     Writes the data with UTF-8 encoding into file with the
-    given fileName in the directory for the given extensionId,
+    given fileName in the directory for the calling extension,
     replacing any existing file if it already exists.
     (This is the same as using writeFile() with
     writeMode='overwrite' or writeMode='replace'.)
 
     Returns the byte count of the data that was written.
 
-    Throws if the extensionId or fileName is invalid,
+    Throws if the fileName is invalid,
     or if the file's full pathName > 255 characters,
     or if there is an operating system error.
 
 
-###  appendToFile(extensionId, fileName, data)
+###  appendToFile(fileName, data)
 
     Appends the UTF8-Encoded data to the file with the
-    given fileName in the directory for the given
-    extensionId, or creates the file and writes the data
+    given fileName in the directory for the calling
+    extension, or creates the file and writes the data
     to the file is the file doesn't not already exist.
     (This is the same as using writeFile() with
     writeMode='appendOrCreate'.)
 
     Returns the byte count of the data that was written.
 
-    Throws if the extensionId or fileName is invalid,
+    Throws if the fileName is invalid,
     or if the file's full pathName > 255 characters,
     or if there is an operating system error.
 
 
-###  writeJSONFile(extensionId, fileName, data [,writeMode])
+###  writeJSONFile(fileName, data [,writeMode])
 
     Writes the given UTF8-encoded string as JSON to the file with the given
-    fileName, in the directory for the given extensionId.
+    fileName, in the directory for the calling extension.
 
     The optional writeMode parameter has these options:
     - 'overwrite'   (the default) will replace any existing file.
@@ -272,17 +302,17 @@ Where:
 
     Returns the byte count of the data that was written.
 
-    Throws if the extensionId or fileName is invalid,
+    Throws if the fileName is invalid,
     or if the file's full pathName > 255 characters,
     or if the writeMode parameter is not one of the values listed above,
     or if the file's existence does not match the writeMode criteria listed above,
     or if there is an operating system error.
 
 
-###  writeObjectToJSONFile(extensionId, fileName, object [,writeMode])
+###  writeObjectToJSONFile(fileName, object [,writeMode])
 
     Writes the given JavaScript object as JSON to the file with the given
-    fileName, in the directory for the given extensionId.
+    fileName, in the directory for the calling extension.
 
     The optional writeMode parameter has these options:
     - 'overwrite'   (the default) will replace any existing file.
@@ -291,44 +321,44 @@ Where:
 
     Returns the byte count of the data that was written.
 
-    Throws if the extensionId or fileName is invalid,
+    Throws if the fileName is invalid,
     or if the file's full pathName > 255 characters,
     or if the writeMode parameter is not one of the values listed above,
     or if the file's existence does not match the writeMode criteria listed above,
     or if there is an operating system error.
 
 
-###  deleteFile(extensionId, fileName)
+###  deleteFile(fileName)
 
     Deletes the file with the given fileName in the
-    directory for the given extensionId.
+    directory for the calling extension.
 
     Returns true if the file was deleted,
     or false if the file does not exist.
 
-    Throws if the extensionId or fileName is invalid,
+    Throws if the fileName is invalid,
     if the file's full pathName is > 255 characters,
     or if the file is not a Regular File,
     or if there is an operating system error.
 
 
-###  deleteDirectory(extensionId [, directoryName] [, recursive])
+###  deleteDirectory( [directoryName] [, recursive] )
 
     Deletes the directory with the given directoryName
-    in the directory for the given extensionId.
+    in the directory for the calling extension.
 
     If recursive is true, the directory and all it's
     contents are deleted. Throws if recursive is false
     or is not provided and the directory is not empty.
 
     The directoryName parameter is optional.  If it is not
-    provided, delete the directory for the given
-    extensionId.
+    provided, delete the directory for the calling
+    extension.
 
     Returns true if the directory was deleted, or false
     if the directory does not exist.
 
-    Throws if the extensionId or directoryName is invalid,
+    Throws if the directoryName is invalid,
     if the directory's full pathName is > 255 characters,
     or if the directory is not a Directory,
     or if recursive is false or not provided and the directory is not empty,
@@ -342,29 +372,28 @@ Where:
     directoryName parameter is not currently supported.
 
 
-###  makeDirectory(extensionId)
+###  makeDirectory()
 
-    Creates the directory for the given extensionId.
+    Creates the directory for the calling extension.
 
     Returns true if the directory was created, or false
     if the directory already exists.
 
-    Throws if the extensionId is invalid,
-    or if the directory's full pathName is > 255 characters,
+    Throws if the directory's full pathName is > 255 characters,
     or if there is an operating system error.
 
     Sub-directories are currently not supported, thus a
     directoryName parameter is not currently supported.
 
 
-###  getFileInfo(extensionId [, fileName])
+###  getFileInfo( [fileName] )
 
     Returns a FileInfo object for the file with the given fileName
     or undefined if the file does not exist.
 
     The fileName parameter is optional.  If it is not
     provided, returns the FileInfo of the directory for the
-    given extensionId.
+    calling extension.
 
     FileInfo has these entries:
     - fileName:     the fileName
@@ -376,12 +405,12 @@ Where:
     - lastModified: milliseconds since 1970-01-01T00:00:00.000Z
     - permissions:  expressed as a UNIX file mode (for Windows, the 'user', 'group', and 'other' parts will always be identical)
 
-    Throws if the extensionId or fileName is invalid,
+    Throws if the fileName is invalid,
     or if the file's full pathName is > 255 characters,
     or if there is an operating system error.
 
 
-###  renameFile(extensionId, fromFileName, toFileName[, overwrite])
+###  renameFile(fromFileName, toFileName[, overwrite])
 
     Renames a Regular file named by fromFileName to toFileName.
 
@@ -389,19 +418,17 @@ Where:
     it is provided and its value is false, and the file named by toFileName
     already exists, an Exception is thrown.
 
-    Throws if the extensionId, fromFileName, or toFileName is invalid,
+    Throws if the fromFileName or toFileName is invalid,
     or if a file's full pathName is > 255 characters,
     or if the file named by fromFileName does not exist,
     or if the file named by fromFileName is not a Regular file,
     or if overwrite is not true and the file named by toFileName already exists,
     or if there is an operating system error.
 
-
-
-###  listFiles(extensionId [, matchGLOB])
+###  listFiles( [matchGLOB] )
 
     Returns an array of String listing the fileNames of only
-    the Regular Files in the directory for the given extensionId.
+    the Regular Files in the directory for the calling extension.
 
     If the optional matchGLOB parameter is given, only
     the names of files that match the given GLOB will
@@ -410,8 +437,7 @@ Where:
     If the Directory for the extension does not exist, it
     will be created and an empty array is returned. MABXXX WHY???
 
-    Throws if the extensionId is invalid,
-    if the directory's full pathName is > 255 characters,
+    Throws if the directory's full pathName is > 255 characters,
     or if the matchGLOB is provided and is not a String,
     or if there is an operating system error.
 
@@ -419,10 +445,10 @@ Where:
     directoryName parameter is not currently supported.
 
 
-###  listFileInfo(extensionId [, matchGLOB])
+###  listFileInfo( [matchGLOB] )
 
     Returns an array of FileInfo objects listing the File Info for only
-    the Regular Files in the directory for the given extensionId.
+    the Regular Files in the directory for the calling extension.
 
     If the optional matchGLOB parameter is given, only
     the FileInfo for files whose names match the given GLOB will
@@ -441,8 +467,7 @@ Where:
     - lastModified: milliseconds since 1970-01-01T00:00:00.000Z
     - permissions:  expressed as a UNIX file mode (for Windows, the 'user', 'group', and 'other' parts will always be identical)
 
-    Throws if the extensionId is invalid,
-    if the directory's full pathName is > 255 characters,
+    Throws if the directory's full pathName is > 255 characters,
     or if the matchGLOB is provided and is not a String,
     or if there is an operating system error.
 
@@ -450,10 +475,10 @@ Where:
     directoryName parameter is not currently supported.
 
 
-###  list(extensionId [, matchGLOB])
+###  list( [matchGLOB] )
 
     Returns an array of String listing the fileNames of the
-    items (all types) in the directory for the given extensionId.
+    items (all types) in the directory for the calling extension.
 
     If the optional matchGLOB parameter is given, only
     the names of items that match the given GLOB will
@@ -462,8 +487,7 @@ Where:
     If the Directory for the extension does not exist, it
     will be created and an empty array is returned. MABXXX WHY???
 
-    Throws if the extensionId is invalid,
-    if the directory's full pathName is > 255 characters,
+    Throws if the directory's full pathName is > 255 characters,
     or if the matchGLOB is provided and is not a String,
     or if there is an operating system error.
 
@@ -471,10 +495,10 @@ Where:
     directoryName parameter is not currently supported.
 
 
-###  listInfo(extensionId [, matchGLOB])
+###  listInfo( [matchGLOB] )
 
     Returns an array of FileInfo objects listing the File Info for the
-    items (all types) in the directory for the given extensionId.
+    items (all types) in the directory for the calling extension.
 
     If the optional matchGLOB parameter is given, only
     the FileInfo for items whose names match the given GLOB will
@@ -493,8 +517,7 @@ Where:
     - lastModified: milliseconds since 1970-01-01T00:00:00.000Z
     - permissions:  expressed as a UNIX file mode (for Windows, the 'user', 'group', and 'other' parts will always be identical)
 
-    Throws if the extensionId is invalid,
-    if the directory's full pathName is > 255 characters,
+    Throws if the directory's full pathName is > 255 characters,
     or if the matchGLOB is provided and is not a String,
     or if there is an operating system error.
 
@@ -502,15 +525,15 @@ Where:
     directoryName parameter is not currently supported.
 
 
-###  getFullPathName(extensionId [, fileName])
+###  getFullPathName( [fileName] )
 
     Returns the Full pathName of the file with the given fileName
-    in the directory for the given exxtensionId.
+    in the directory for the calling extension.
 
     If the fileName is not provided, returns just the full pathName
-    of the directory for the given extensionId.
+    of the directory for the calling extension.
 
-    Throws if the extensionId or fileName is invalid,
+    Throws if the fileName is invalid,
     or if there is an operating system error.
 
 

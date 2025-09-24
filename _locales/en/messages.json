@@ -30,7 +30,7 @@
     "message": "Grant only select Extensions access to FileSystemBroker (otherwise all have access)"
   },
   "options_fsbShowGrantExtensionAccessDialogCheck.label": {
-    "message": "When an Extension requests access and is not granted, display a dialog where you can grant or deny it"
+    "message": "When an Extension requests access and is not granted or denied, display a dialog where you can grant or deny it"
   },
   "options_fsbExtensionControlsTitle": {
     "message": "Extension Access Controls"
@@ -260,6 +260,51 @@
   "options_fsbAutoLogPurgeDaysSelect_30Days": {
     "message": "30 days"
   },
+  "options_fsbAutoRemoveUninstalledExtensionsDaysSelect.label": {
+    "message": "Automatically Remove Extensions that have been Uninstalled"
+  },
+  "options_fsbAutoRemoveUninstalledExtensionsDaysSelect_optionDisabled": {
+    "message": "disabled"
+  },
+  "options_fsbAutoRemoveUninstalledExtensionsDaysSelect_optionWhenUninstalled": {
+    "message": "when uninstalled"
+  },
+  "options_fsbAutoRemoveUninstalledExtensionsDaysSelect_1Day": {
+    "message": "for more than 1 day"
+  },
+  "options_fsbAutoRemoveUninstalledExtensionsDaysSelect_2Days": {
+    "message": "for more than 2 days"
+  },
+  "options_fsbAutoRemoveUninstalledExtensionsDaysSelect_3Days": {
+    "message": "for more than 3 days"
+  },
+  "options_fsbAutoRemoveUninstalledExtensionsDaysSelect_4Days": {
+    "message": "for more than 4 days"
+  },
+  "options_fsbAutoRemoveUninstalledExtensionsDaysSelect_5Days": {
+    "message": "for more than 5 days"
+  },
+  "options_fsbAutoRemoveUninstalledExtensionsDaysSelect_6Days": {
+    "message": "for more than 6 days"
+  },
+  "options_fsbAutoRemoveUninstalledExtensionsDaysSelect_7Days": {
+    "message": "for more than 1 week"
+  },
+  "options_fsbAutoRemoveUninstalledExtensionsDaysSelect_10Days": {
+    "message": "for more than 10 days"
+  },
+  "options_fsbAutoRemoveUninstalledExtensionsDaysSelect_12Days": {
+    "message": "for more than 12 days"
+  },
+  "options_fsbAutoRemoveUninstalledExtensionsDaysSelect_14Days": {
+    "message": "for more than 2 weeks"
+  },
+  "options_fsbAutoRemoveUninstalledExtensionsDaysSelect_21Days": {
+    "message": "for more than 3 weeks"
+  },
+  "options_fsbAutoRemoveUninstalledExtensionsDaysSelect_30Days": {
+    "message": "for more than 30 days"
+  },
   "options_fsbEnableExternalMessageResultLoggingCheck.label": {
     "message": "Log External Command Results"
   },
@@ -280,6 +325,9 @@
   },
   "options_fsbDevDeleteOldEventLogsButton.label": {
     "message": "Delete Old Event Logs"
+  },
+  "options_fsbDevRemoveUninstalledExtensionsButton.label": {
+    "message": "Remove Uninstalled Extensions"
   },
   "options_fsbDevDisplayOptionsAsPopupButton.label": {
     "message": "Display Options as Popup"

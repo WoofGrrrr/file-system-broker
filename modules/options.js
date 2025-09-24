@@ -1,23 +1,22 @@
 import { FileSystemBrokerAPI } from '../modules/FileSystemBroker/filesystem_broker_api.js';
 
-import { logProps, getExtensionId, getExtensionName, getI18nMsg, formatNowToDateTimeForFilename } from '../utilities.js';
+import { logProps, getExtensionId, getExtensionName, getI18nMsg, formatNowToDateTimeForFilename, formatMsToDateTime24HR, getMidnightMS } from '../utilities.js';
 
 export class FsbOptions {
-  constructor(logger) {
-    this.className = this.constructor.name;
+  constructor(logger, fsbEventLogger) {
+    this.className      = this.constructor.name;
+    this.extId          = getExtensionId();
+    this.extName        = getExtensionName();
 
-    this.LOG       = false;
-    this.DEBUG     = false;
+    this.LOG            = false;
+    this.DEBUG          = false;
 
-    this.fsBrokerApi = new FileSystemBrokerAPI();
+    this.logger         = logger;
+    this.fsbEventLogger = fsbEventLogger;
+    this.fsBrokerApi    = new FileSystemBrokerAPI();
 
     this.BACKUP_FILENAME_EXTENSION  = ".fsbbackup";
     this.BACKUP_FILENAME_MATCH_GLOB = "*.fsbbackup";
-
-    this.extId     = getExtensionId();
-    this.extName   = getExtensionName();
-
-    this.logger    = logger;
 
     this.settingDefaultOptions = false;
 
@@ -40,6 +39,7 @@ export class FsbOptions {
       'fsbEnableInternalEventLogging',
       'fsbShowLoggingOptions',
       'fsbAutoLogPurgeDays',
+      'fsbAutoRemoveUninstalledExtensionsDays',
       'fsbShowOptionsHints',
       'fsbShowOptionsActions',
       'fsbShowExtensionChooserInstructions',
@@ -48,29 +48,30 @@ export class FsbOptions {
     ];
 
     this.defaultOptionValues = {
-      'fsbExtensionAccessControlEnabled':      true,
-      'fsbShowGrantExtensionAccessDialog':     false,
-      'fsbShowOptionsWindowOnStartup':         false,
-      'fsbSkipOnboardingEnabled':              false,
-      'fsbEnableConsoleLog':                   false,
-      'fsbEnableConsoleDebug':                 false,
-      'fsbEnableConsoleDebugTrace':            false,
-      'fsbEnableConsoleWarn':                  false,
-      'fsbEnableConsoleErrorTrace':            false,
-      'fsbEnableAccessLogging':                false,
-      'fsbEnableAccessDeniedLogging':          true,
-      'fsbEnableInternalMessageLogging':       false,
-      'fsbEnableInternalMessageResultLogging': true,
-      'fsbEnableExternalMessageLogging':       false,
-      'fsbEnableExternalMessageResultLogging': true,
-      'fsbEnableInternalEventLogging':         true,
-      'fsbShowLoggingOptions':                 true,
-      'fsbAutoLogPurgeDays':                   14,
-      'fsbShowOptionsHints':                   true,
-      'fsbShowOptionsActions':                 true,
-      'fsbShowExtensionChooserInstructions':   true,
-      'fsbShowBackupManagerInstructions':      true,
-      'fsbShowEventLogManagerInstructions':    true
+      'fsbExtensionAccessControlEnabled':       true,
+      'fsbShowGrantExtensionAccessDialog':      false,
+      'fsbShowOptionsWindowOnStartup':          false,
+      'fsbSkipOnboardingEnabled':               false,
+      'fsbEnableConsoleLog':                    false,
+      'fsbEnableConsoleDebug':                  false,
+      'fsbEnableConsoleDebugTrace':             false,
+      'fsbEnableConsoleWarn':                   false,
+      'fsbEnableConsoleErrorTrace':             false,
+      'fsbEnableAccessLogging':                 false,
+      'fsbEnableAccessDeniedLogging':           true,
+      'fsbEnableInternalMessageLogging':        false,
+      'fsbEnableInternalMessageResultLogging':  true,
+      'fsbEnableExternalMessageLogging':        false,
+      'fsbEnableExternalMessageResultLogging':  true,
+      'fsbEnableInternalEventLogging':          true,
+      'fsbShowLoggingOptions':                  true,
+      'fsbAutoLogPurgeDays':                    14,
+      'fsbAutoRemoveUninstalledExtensionsDays': 2,
+      'fsbShowOptionsHints':                    true,
+      'fsbShowOptionsActions':                  true,
+      'fsbShowExtensionChooserInstructions':    true,
+      'fsbShowBackupManagerInstructions':       true,
+      'fsbShowEventLogManagerInstructions':     true
     };
   }
 
@@ -142,6 +143,13 @@ export class FsbOptions {
                    );
     }
   }
+
+
+
+  setEventLogger(fsbEventLogger) {
+    this.fsbEventLogger = fsbEventLogger;
+  }
+
 
 
 
@@ -325,6 +333,17 @@ export class FsbOptions {
     return value;
   }
 
+  async getAutoRemoveUninstalledExtensionsDays(defaultValue) {
+    const options = await messenger.storage.local.get('fsbAutoRemoveUninstalledExtensionsDays'); // returns a Promise of an Object with a key-value pair for every key found
+
+    var value = defaultValue;
+    if (key in options) {
+      value = options['fsbAutoRemoveUninstalledExtensionsDays']; // get the value for the specific key
+    }
+
+    return value;
+  }
+
 
 
   async getAllOptions() {
@@ -357,7 +376,8 @@ export class FsbOptions {
 
 
 
-  async getExtensionsProps() { // MABXXX NEED A WAY TO GET RID OF PROPS FOR UNINSTALLED EXTENSIONS
+  async getExtensionsProps() {
+    const nowMS               = Date.now();
     const installedExtensions = await messenger.management.getAll();
     const props               = await messenger.storage.local.get('extensionsProps'); // return Object with key-value pair for every key found
     let   extensionsProps;
@@ -389,13 +409,14 @@ export class FsbOptions {
           if (installedExtension.type === 'extension') {
             const configured = extensionsProps.hasOwnProperty(installedExtension.id);
             if (! configured) {
-              this.debug(`getExtensionsProps -- Extension NOT configured - not found in extensionsProps: id="${installedExtension.id}`);
+              this.debug(`getExtensionsProps -- Extension NOT configured - not found in extensionsProps: ID="${installedExtension.id}`);
             } else {
-              this.debug(`getExtensionsProps -- Extension IS configured - found in extensionsProps: id="${installedExtension.id}`);
+              this.debug(`getExtensionsProps -- Extension IS configured - found in extensionsProps: ID="${installedExtension.id}`);
 
               const extensionProps       = extensionsProps[installedExtension.id];
-              extensionProps.installed   = true;
-              extensionProps.id          = installedExtension.id;                       // redundant - should already be
+              extensionProps.installed   = true; // this should have been 'configured'
+              extensionProps.uninstalled = false;
+              extensionProps.id          = installedExtension.id;                       // redundant - should already be there
               extensionProps.description = installedExtension.description;              // remove this line if we ever store this locally so we can edit/replace
               extensionProps.disabled    = ! installedExtension.enabled;                // remove this line if we ever store this locally so we can edit/replace
 //////////////extensionProps.name        = installedExtension.name;                     // we store this locally so we can edit/replace MABXXX WHY?
@@ -555,7 +576,7 @@ export class FsbOptions {
 
 
 
-  // Delete the extensionProps for the Extension
+  // Delete the extensionProps for the Extension (not the Extension istself)
   // with the given extensionId and return it.
   async deleteExtension(extensionId) {
     this.log(`deleteExtension -- begin extensionId="${extensionId}"`);
@@ -600,6 +621,97 @@ export class FsbOptions {
       }
     }
     return count;
+  }
+
+
+
+  async autoRemoveUninstalledExtensions(numDays) {
+    const nowMS            = Date.now();
+    const removeBeforeMS   = getMidnightMS(nowMS, -numDays - 1);
+    const removeBeforeTime = formatMsToDateTime24HR(removeBeforeMS);
+    const parameters       = { 'numDays': numDays, "removeBeforeTime": removeBeforeTime };
+
+    this.debugAlways(`autoRemoveUninstalledExtensions -- begin -- numDays=${numDays}, removeBeforeMS=${removeBeforeMS}, removeBeforeTime="${removeBeforeTime}"`);
+
+    if (this.fsbEventLogger) {
+      await this.fsbEventLogger.logInternalEvent("autoRemoveUninstalledExtensions", "request", parameters, "");
+    }
+
+    if (numDays < 0) { // -1: auto-remove is disabled, 0: remove immediately
+      this.debugAlways("autoRemoveUninstalledExtensions -- Auto-Remove is Disabled");
+      if (this.fsbEventLogger) {
+        await this.fsbEventLogger.logInternalEvent("autoRemoveUninstalledExtensions", "success", parameters, "Auto-Remove is Disabled");
+      }
+
+    } else {
+      var   removedCount           = 0;
+      const installedExtensionById = [];
+      const installedExtensions    = await messenger.management.getAll();
+      for (const ext of installedExtensions) {
+        installedExtensionById[ext.id] = ext;
+      }
+
+      const allExtensionsProps = await this.getExtensionsProps();
+      for (const [extensionId, extProps] of Object.entries(allExtensionsProps)) {
+        var notInstalled      = false;
+        var alreadyRecorded   = false;
+        var uninstalledTimeMS = nowMS;
+
+        if (extProps.uninstalled) {
+          var installedExtension = installedExtensionById[extensionId];
+          if (installedExtension) {
+            this.debugAlways(`autoRemoveUninstalledExtensions -- Extension recorded as Uninstalled IS Installed (again?,) ID="${extensionId}"`);
+            extProps.uninstalled = false;
+            delete extProps['uninstalledTimeMS'];
+            delete extProps['uninstalledType'];
+            this.debugAlways(`autoRemoveUninstalledExtensions -- Recording Extension as NOT Uninstalled, ID="${extensionId}"`);
+            await this.storeExtensionPropsById(extensionId, extProps);
+          } else {
+            this.debugAlways(`autoRemoveUninstalledExtensions -- Extension already recorded as Uninstalled, ID="${extensionId}"`);
+            notInstalled      = true;
+            alreadyRecorded   = true;
+            uninstalledTimeMS = extProps.uninstalledTimeMS;
+          }
+
+        } else {
+          var installedExtension = installedExtensionById[extensionId];
+          if (installedExtension) {
+            this.debugAlways(`autoRemoveUninstalledExtensions -- Extension is still Installed, ID="${extensionId}"`);
+          } else {
+            this.debugAlways(`autoRemoveUninstalledExtensions -- Extension is no longer Installed, ID="${extensionId}"`);
+            notInstalled               = true;
+            extProps.uninstalled       = true;
+            extProps.uninstalledTimeMS = nowMS;
+            extProps.uninstalledType   = 'autoRemoveUninstalledExtensions';
+          }
+        }
+
+        if (notInstalled) {
+          if (numDays == 0 || uninstalledTimeMS < removeBeforeMS) {
+            if (numDays == 0) {
+              this.debugAlways(`autoRemoveUninstalledExtensions -- Immediately Removing Extension, ID="${extensionId}"`);
+            } else {
+              this.debugAlways(`autoRemoveUninstalledExtensions -- uninstalledTimeMS=${uninstalledTimeMS} removeBeforeMS=${removeBeforeMS} -- Removing Extension, ID="${extensionId}"`);
+            }
+            await this.deleteExtension(extensionId);
+            ++removedCount;
+
+          } else if (alreadyRecorded) {
+            this.debugAlways(`autoRemoveUninstalledExtensions -- Extension already recorded as Uninstalled, ID="${extensionId}"`);
+          } else {
+            this.debugAlways(`autoRemoveUninstalledExtensions -- Recording Extension as Uninstalled, ID="${extensionId}"`);
+            await this.storeExtensionPropsById(extensionId, extProps);
+          }
+        }
+      }
+
+      this.debugAlways(`autoRemoveUninstalledExtensions -- removedCount=${removedCount}`);
+      if (this.fsbEventLogger) {
+        await this.fsbEventLogger.logInternalEvent("autoRemoveUninstalledExtensions", "success", parameters, `removedCount=${removedCount}`);
+      }
+    }
+
+    this.debugAlways("autoRemoveUninstalledExtensions -- end");
   }
 
 
@@ -700,8 +812,7 @@ export class FsbOptions {
       }
 
       if (! installedExtension) {
-        // MABXXX should we check for and remove props?
-        this.error(`allowAccess -- Extension is not installed, id="${extensionId}"`);
+        this.error(`allowAccess -- Extension is not installed, ID="${extensionId}"`);
 
       } else {
         const props = await this.getExtensionPropsById(extensionId);
@@ -751,8 +862,7 @@ export class FsbOptions {
       }
 
       if (! installedExtension) {
-        // MABXXX should we check for and remove props?
-        this.error(`allowAccess -- Extension is not installed, id="${extensionId}"`);
+        this.error(`allowAccess -- Extension is not installed, ID="${extensionId}"`);
 
       } else {
         const props = await this.getExtensionPropsById(extensionId);

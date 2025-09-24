@@ -314,6 +314,7 @@ class EventLogViewer {
   appendLogLineMessageUI(domFileDataList, msg) {
     const logLineMessageTR = document.createElement('tr');
       const logLineMessageTD = document.createElement('td');
+        logLineMessageTD.style.setProperty('white-space', 'nowrap');
         logLineMessageTD.appendChild( document.createTextNode(msg) );
       logLineMessageTR.appendChild(logLineMessageTD);
     domFileDataList.appendChild(logLineMessageTR);

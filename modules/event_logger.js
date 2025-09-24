@@ -92,6 +92,7 @@ export class FsbEventLogger {
         this.fsbCommandsApi.addCommandToObject(parameters, logMsg);
       } else if (typeof parameters === 'string') {
         logMsg.parameters = parameters;
+      }
     }
 
     // We cannot use writeObjectToJSONFile because it does not support APPEND modes
@@ -143,43 +144,43 @@ export class FsbEventLogger {
 
 
 
-  async deleteOldLogFiles(numDays) {
-    this.debugAlways(`deleteOldLogFiles -- begin -- numDays=${numDays}`);
+  async deleteOldEventLogs(numDays) {
+    this.debugAlways(`deleteOldEventLogs -- begin -- numDays=${numDays}`);
 
     const parameters = { 'numDays': numDays };
-    await this.logInternalEvent("deleteOldLogFiles", "request", parameters, "");
+    await this.logInternalEvent("deleteOldEventLogs", "request", parameters, "");
     
     var   deleted  = 0;
     const fileInfo = await this.getLogFileInfo();
     if (! fileInfo) {
       // errors should already have been recorded in getLogFileInfo()
-      await this.logInternalEvent("deleteOldLogFiles", "error", parameters, "Failed to get Log Files list");
+      await this.logInternalEvent("deleteOldEventLogs", "error", parameters, "Failed to get Log Files list");
 
     } else if (fileInfo.length < 1) {
-      await this.logInternalEvent("deleteOldLogFiles", "success", parameters, "No Log Files");
+      await this.logInternalEvent("deleteOldEventLogs", "success", parameters, "No Log Files");
 
     } else {
       const deleteFilesOlderThanMS = getMidnightMS(Date.now(), -numDays);
       const deleteFilesOlderThan   = formatMsToDateTime24HR(deleteFilesOlderThanMS);
-      this.debugAlways(`deleteOldLogFiles -- Delete Log Files older than days=${numDays} ms=${deleteFilesOlderThanMS} date="${deleteFilesOlderThan}"`);
+      this.debugAlways(`deleteOldEventLogs -- Delete Log Files older than days=${numDays} ms=${deleteFilesOlderThanMS} date="${deleteFilesOlderThan}"`);
 
       for (const info of fileInfo) {
         if (true || this.DEBUG) {
           const fileCreationDateTime = formatMsToDateTime24HR(info.creationTime);
-          this.debugAlways(`deleteOldLogFiles -- file "${info.fileName}" creationTime: "${fileCreationDateTime}" (${info.creationTime})`);
+          this.debugAlways(`deleteOldEventLogs -- file "${info.fileName}" creationTime: "${fileCreationDateTime}" (${info.creationTime})`);
         }
         if (info.creationTime < deleteFilesOlderThanMS) {
-          this.debugAlways(`deleteOldLogFiles -- Deleting file "${info.fileName}"`);
+          this.debugAlways(`deleteOldEventLogs -- Deleting file "${info.fileName}"`);
           const response = await this.deleteLogFile(info.fileName);
           // errors should already have been recorded in deleteLogFile()
           if (response.deleted) deleted++;
         }
       }
 
-      await this.logInternalEvent("deleteOldLogFiles", "success", parameters, `${deleted} Log Files deleted`);
+      await this.logInternalEvent("deleteOldEventLogs", "success", parameters, `${deleted} Log Files deleted`);
     }
 
-    this.debugAlways(`deleteOldLogFiles -- end -- deleted: ${deleted}`);
+    this.debugAlways(`deleteOldEventLogs -- end -- deleted: ${deleted}`);
   }
 
   async getLogFileInfo() {

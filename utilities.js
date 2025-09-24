@@ -474,8 +474,56 @@ export function isValidFileName(filename) {
 
 
 export function isValidEmail(email) {  // MABXXX this allows an email with a TLD like just "c" ??? I suppose you'd need some list of valid TLD's
+  if (typeof email !== 'string' || email.length < 1) return false;
+
 //const EMAIL_REGEX = /^[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i;
 //const EMAIL_REGEX = /^(?=[a-z0-9][a-z0-9@._%+-]{5,253}+$)[a-z0-9._%+-]{1,64}+@(?:(?=[a-z0-9-]{1,63}+\.)[a-z0-9]++(?:-[a-z0-9]++)*+\.){1,8}+[a-z]{2,63}+$/i;
   const EMAIL_REGEX = /\A(?=[a-z0-9@.!#$%&'*+/=?^_`{|}~-]{6,254}\z)(?=[a-z0-9.!#$%&'*+/=?^_`{|}~-]{1,64}@)[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:(?=[a-z0-9-]{1,63}\.)[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+(?=[a-z0-9-]{1,63}\z)[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\z/i;
   return EMAIL_REGEX.test(email);
+}
+
+
+
+export function isValidGUID(guid) {
+  if (typeof guid !== 'string' || guid.length < 1) return false;
+
+  const ENCLOSED_GUID_REGEX   = /^\{[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\}$/;
+  const UNENCLOSED_GUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+
+  if (guid[0] === '{') return ENCLOSED_GUID_REGEX.test(guid);
+
+  return UNENCLOSED_GUID_REGEX.test(guid);
+  
+}
+
+
+
+export function isValidExtensionId(extensionId) {
+  if (typeof extensionId !== 'string' || extensionId.length < 1 || extensionId.length > 64) return false;
+
+  // note: no upper-case
+  const LIKE_EMAIL_REGEX = /\A(?=[a-z0-9@.!#$%&'*+/=?^_`{|}~-]{6,254}\z)(?=[a-z0-9.!#$%&'*+/=?^_`{|}~-]{1,64}@)[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:(?=[a-z0-9-]{1,63}\.)[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+(?=[a-z0-9-]{1,63}\z)[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\z/;
+
+//const ENCLOSED_GUID_REGEX   = /^\{[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\}$/;
+//const UNENCLOSED_GUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+
+  // note: no upper-case
+  const ENCLOSED_GUID_REGEX   = /^\{[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\}$/;
+  const UNENCLOSED_GUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+  if (! LIKE_EMAIL_REGEX.test(extensionId)) {
+    if (extensionId[0] === '{') {
+      if (ENCLOSED_GUID_REGEX.test(extensionId)) return true;
+    } else {
+      if (UNENCLOSED_GUID_REGEX.test(extensionId)) return true;
+    }
+  }
+  
+//const ILLEGAL_CHARS = /<>:"/\\|?*\x00-\x1F]/g;
+//if (ILLEGAL_CHARS.test(extensionId)) return false;
+
+  const RESERVED_NAMES = /^(\.\.|con|prn|aux|nul|com[0-9]|lpt[0-9])$/i;
+  if (RESERVED_NAMES.test(extensionId)) return false;
+
+  return true;
 }

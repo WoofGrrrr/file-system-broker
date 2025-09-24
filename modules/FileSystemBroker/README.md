@@ -1,10 +1,10 @@
-# An API for Thunderbird Web Extensions to Access Files on the System
+# An API for Thunderbird Web Extensions to Access Files on the User's System
 
 ## Objective
 
 This FileSystemBroker API provides a safe way for any Thunderbird Web Extension
 to access the computer's file system without having to use an "Experiments API", which
-would open up Thunderbird to alllow an extension complete and unrestricted access
+could open up Thunderbird to alllow an extension complete and unrestricted access
 to the user's system.
 
 A Thunderbird extension can use this API to access files in a caller-specific
@@ -13,14 +13,16 @@ a safe place, and files for each extension that uses this API are isolated from
 each other.
 
 This API uses the FileSystemBroker Extension as a proxy to access the file system.
-(MABXXX PUT REFERNECE TO EXTENSION HERE)
+You can install FileSystemBroker from here:
+
+        https://github.com/WoofGrrrr/file-system-broker
 
 Because the Thunderbird (and Firefox) Web Extensions API does not provide any way to access
 a computer's file system, FileSystemBroker itself uses the Web Extensions "Experiments" API
 to directly access the file system.  But using this Experiments API requires that an
 extension be allowed to access anything and everything on the user's computer, which could
 open up the user's computer to inadvertant or even malicious activities, like accessing
-sensitive data, deleting files, or downloading and installing programs.
+sensitive data, adding files, deleting files, etc.
 
 The FileSystemBroker Extension uses Web Extension Inter-Extension Messaging to receive
 requests from other extensions to access the file system on their behalf and returns a
@@ -37,16 +39,32 @@ extension instead.
 
 FileSystemBroker uses the following directory for file system access:
 
-    thunderbird-profile-folder/FileSystemBroker/ MABXXX FIX THIS
+        <thunderbird-profile-directory>/FileSystemBroker
+
+Where \<thunderbird-profile-directory\> is the user's Thunderbird Profile Directory. On a
+Windows system, for a user with user ID "user1", this would be something like:
+
+        C:\Users\user1\AppData\Roaming\Thunderbird\Profiles\4x4rl22v.default-release\FileSystemBroker\aaa.bbb@xxx.com
+
+
 
 Each extension that uses FileSystemBroker gets its own sub-directory in this directory,
 named using the ID of the extension.
+
+        <thunderbird-profile-directory>/FileSystemBroker/<extension-id>
+
+Where \<thunderbird-profile-directory\> is the user's Thunderbird Profile Directory and
+\<extension-id\> is the Extension ID of the extension using FileSystemBroker. On a
+Windows system, for a user with user ID "user1", and with the extension with ID
+"aaa.bbb@xxx.com" using FileSystemBroker, this would be something like:
+
+         C:\Users\user1\AppData\Roaming\Thunderbird\Profiles\4x4rl22v.default-release\FileSystemBroker\aaa.bbb@xxx.com
 
 
 
 ## Usage
 
-MABXXX FIX THIS: Add the [FileSystem API](https://github.com/thunderbird/webext-support/tree/master/experiments/FileSystem) to your add-on.
+Add the [FileSystemBroker API](https://github.com/WoofGrrrr/file-system-broker/tree/main/modules/FileSystemBroker) to your add-on.
 Your `manifest.json` needs an entry like this:
 
 ```json
@@ -54,15 +72,20 @@ Your `manifest.json` needs an entry like this:
     {
       "matches": [ "https://*/*" ],
       "js": [
-        "./utilities.js",
         "FileSystemBroker/filesystem_broker_api.js",
       ]
     }
   ]
 ```
-```
-import { FileSystemBroker } from '../modules/FileSystemBroker/filesystem_broker_api.js';
-```
+
+
+Use something like the following code in your JavaScript:
+
+        import { FileSystemBrokerApi } from '../modules/FileSystemBroker/filesystem_broker_api.js';
+          .
+          .
+          .
+        const fsbApi = new FileSystemBrokerApi();
 
 
 
@@ -96,6 +119,7 @@ import { FileSystemBroker } from '../modules/FileSystemBroker/filesystem_broker_
   + listInfo -               list FileInfo objects for all items - Reguar files, Directories, and "other" files - in a directory
   + getFullPathName -        return the full system pathName for a file
   + isValidFileName -        is a fileName valid?
+  + isValidDirectoryName -   is a directoryName valid?
   + getFileSystemPathName -  returns the full pathName of the top-level system directory on which this API operates (in the users profile)
 
 
@@ -142,6 +166,10 @@ import { FileSystemBroker } from '../modules/FileSystemBroker/filesystem_broker_
       nul
       com0 - com9
       lpt0 - lpt9
+
++ IN ADDITION, THE FOLLOWING DIRECTORY NAMES CANNOT BE USED:
+
+      .. (two dots or periods)
    
 + FileNames & DirectoryNames must be NO MORE THAN *64* CHARACTERS in length
 
@@ -681,12 +709,22 @@ import { FileSystemBroker } from '../modules/FileSystemBroker/filesystem_broker_
 
 ###  isValidFileName(fileName)
 
-    Returns true if the given fileName is a valid file name.
+    Returns true if the given fileName is a valid File name.
     (The file need not actually exist.)
 
     Returns:        { "fileName": string, "valid": boolean }
 
     Returns an "invalid" response if the fileName parameter is not provided or is not a String.
+
+
+###  isValidDirectoryName(directoryName)
+
+    Returns true if the given directoryName is a valid Directory name.
+    (The directory need not actually exist.)
+
+    Returns:        { "directoryName": string, "valid": boolean }
+
+    Returns an "invalid" response if the directoryName parameter is not provided or is not a String.
 
 
 ###  getFileSystemPathName()

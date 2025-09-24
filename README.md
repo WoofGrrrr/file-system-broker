@@ -1,7 +1,7 @@
 # file-system-broker: File System Broker for Mozilla Thunderbird
 
-The File System Broker Extension uses the Web Extension Experiments API to provide
-limited access to the computer's file system.
+The FileSystemBroker Extension uses the Web Extension Experiments API to provide
+managed, limited access to the computer's file system.
 
 Its purpose is to make it so that other Web Extensions can access the computer's
 file system without having to use the Experiments API directly. Access to the
@@ -9,16 +9,26 @@ file system is limited to only a specific directory in the user's Profile Folder
 It can get a list of files, write, read, check the existence of, get properties
 of, rename, and delete files, etc, in *only* that directory.
 
-To use the File System Broker, an extension can use the API to be found in;
-  * modules/FileSystemBroker/filesystem_broker_api.js
+On a Windows system, for example, the files accessible to an extension with the
+ID "aaa.bbb@xxx.com" might be:
+
+         C:\Users\user1\AppData\Roaming\Thunderbird\Profiles\4x4rl22v.default-release\FileSystemBroker\aaa.bbb@xxx.com
+
+Access to FileSystemBroker is granted to all extensions by default, but you
+can enable access controls and grant access to only select extensions.
+
+To use the FileSystemBroker, an extension can use the API to be found in;
+
+         modules/FileSystemBroker/filesystem_broker_api.js
 
 (information about how to use this API can be found below.)
 
-ALTERNATIVELY, an extension can  use File SYstem Broker by sending a
+ALTERNATIVELY, an extension can  use FileSystemBroker directly by sending a
 command message to this extension by calling the Web Extension function:
-  * browser.runtime.sendMessage(extensionId, message)
 
-(The FileSystemBroker API does for you.)
+         browser.runtime.sendMessage(extensionId, message)
+
+(The FileSystemBroker API does the messaging for you.)
 
 <br>
 
@@ -49,8 +59,39 @@ command message to this extension by calling the Web Extension function:
   + listInfo - list FileInfo objects for all items - Reguar files, Directories, and "other" - in a directory
   + getFullPathName - return the full system pathName for a file
   + isValidFileName - is a fileName valid?
+  + isValidDirectoryName - is a directoryName valid?
 
-The FileSystemBroker API provides a function for each of these operations.  See the API's READMEd file for details.
+The FileSystemBroker API provides a function for each of these operations.  See the API's README file for details.
+
+The FileSystemBroker API can be found in;
+> * modules/FileSystemBroker/
+
+To use it in your extension
+
+1. Copy this directory and it's files into the modules directory for your extension:
+```
+        modules/FileSystemBroker/
+```
+2. Add a "content_scripts" section, or add to any existing such section, in your manifest.json file:
+```
+        "content_scripts": [
+          {
+            "matches": [ "https://*/*" ],
+            "js": [
+              "FileSystemBroker/filesystem_broker_api.js"
+            ]
+          }
+        ]
+```
+3. Then add something like the following to you JavaScript code:
+```
+        import { FileSystemBrokerAPI } from '../modules/FileSystemBroker/filesystem_broker_api.js';
+          .
+          .
+          .
+          .
+        const fsbApi = new FileSysemBrokerApi();
+```
 
 <br>
 
@@ -60,11 +101,7 @@ The FileSystemBroker API provides a function for each of these operations.  See 
 
 ### The Commands:
 
-An extension can use this extension by using the FileSystemBroker API. The
-module has a method for each of the functions listed above.
-Read the README file in modules/FileSystemBroker for more information.
-
-The message is a command, which is an object of the form:
+A command is a message which is an object of the form:
 
         { Command : { "command": command_name, "<parameter-name>": parameter_value, ... } }
 
@@ -73,33 +110,34 @@ The message is a command, which is an object of the form:
 
 #### The command can be any one of the following (details below):
 
-        { "command": command_name           [, parameters                                  ] } - returns { return_values                                                           }
+        { "command": command_name           [, parameters                                  ] } - response { return_values                                                           }
           ========== ====================== ================================================               =======================================================================
-        { "command": "access"                                                                } - returns { "access":        string                                                 }
-        { "command": "exits"                [, "fileName":      string ]                     } - returns { "fileName":      string, "exists":        boolean                       }
-        { "command": "isRegularFile",          "fileName":      string                       } - returns { "fileName":      string, "isRegularFile": boolean                       }
-        { "command": "isDirectory"          [, "directoryName": string ]                     } - returns { "directoryName": string, "isDirectory":   boolean                       }
-        { "command": "hasFiles"             [, "directoryName": string ]                     } - returns { "directoryName": string, "hasFiles":      boolean                       }
-        { "command": "getFileCount"         [, "directoryName": string ]                     } - returns { "directoryName": string, "fileCount":     integer                       }
-        { "command": "writeFile",              "fileName":      string,  "data": UTF8-String } - returns { "fileName":      string, "bytesWritten":  integer                       }
-        { "command": "replaceFile",            "fileName":      string,  "data": UTF8-String } - returns { "fileName":      string, "bytesWritten":  integer                       }
-        { "command": "appendToFile",           "fileName":      string,  "data": UTF8-String } - returns { "fileName":      string, "bytesWritten":  integer                       }
-        { "command": "writeJSONFile",          "fileName":      string,  "data": UTF8-String } - returns { "fileName":      string, "bytesWritten":  integer                       }
-        { "command": "writeObjectToJSONFile",  "fileName":      string,  "object": object    } - returns { "fileName":      string, "bytesWritten":  integer                       }
-        { "command": "readFile",               "fileName":      string                       } - returns { "fileName":      string, "data":          UTF8-String                   }
-        { "command": "readJSONFile",           "fileName":      string                       } - returns { "fileName":      string, "data":          UTF8-String                   }
-        { "command": "readObjectFromJSONFile", "fileName":      string                       } - returns { "fileName":      string, "object":        object                        }
-        { "command": "makeDirectory"                                                         } - returns { "directoryName": string, "created":       boolean                       }
-        { "command": "getFileInfo"          [, "fileName":      string ]                     } - returns { "fileName":      string, "fileInfo":      FileInfo or undefined         }
-        { "command": "deleteFile",             "fileName":      string                       } - returns { "fileName":      string, "deleted":       boolean                       }
-        { "command": "deleteDirectory"      [, "directoryName": string ]                     } - returns { "directoryName": string, "deleted":       boolean                       }
-        { "command": "listFiles"            [, "matchGLOB":     string ]                     } - returns { "fileNames":     [],     "length":        integer                       }
-        { "command": "listFileInfo"         [, "matchGLOB":     string ]                     } - returns { "fileInfo":      [],     "length":        integer                       }
-        { "command": "list"                 [, "matchGLOB":     string ]                     } - returns { "fileNames":     [],     "length":        integer                       }
-        { "command": "listInfo"             [, "matchGLOB":     string ]                     } - returns { "fileInfo":      [],     "length":        integer                       }
-        { "command": "getFullPathName"      [, "fileName":      string ]                     } - returns { "fileName":      string, "fullPathName":  string                        }
-        { "command": "isValidFileName",        "fileName":      string                       } - returns { "fileName":      string, "valid":         boolean                       }
-        { "command": "renameFile", "fromFileName": string, "toFileName: string [, "overwrite": boolean] } - returns { "fromFileName": string, "toFileName": string, "renamed": boolean }
+        { "command": "access"                                                                } - response { "access":        string                                                 }
+        { "command": "exits"                [, "fileName":      string ]                     } - response { "fileName":      string, "exists":        boolean                       }
+        { "command": "isRegularFile",          "fileName":      string                       } - response { "fileName":      string, "isRegularFile": boolean                       }
+        { "command": "isDirectory"          [, "directoryName": string ]                     } - response { "directoryName": string, "isDirectory":   boolean                       }
+        { "command": "hasFiles"             [, "directoryName": string ]                     } - response { "directoryName": string, "hasFiles":      boolean                       }
+        { "command": "getFileCount"         [, "directoryName": string ]                     } - response { "directoryName": string, "fileCount":     integer                       }
+        { "command": "writeFile",              "fileName":      string,  "data": UTF8-String } - response { "fileName":      string, "bytesWritten":  integer                       }
+        { "command": "replaceFile",            "fileName":      string,  "data": UTF8-String } - response { "fileName":      string, "bytesWritten":  integer                       }
+        { "command": "appendToFile",           "fileName":      string,  "data": UTF8-String } - response { "fileName":      string, "bytesWritten":  integer                       }
+        { "command": "writeJSONFile",          "fileName":      string,  "data": UTF8-String } - response { "fileName":      string, "bytesWritten":  integer                       }
+        { "command": "writeObjectToJSONFile",  "fileName":      string,  "object": object    } - response { "fileName":      string, "bytesWritten":  integer                       }
+        { "command": "readFile",               "fileName":      string                       } - response { "fileName":      string, "data":          UTF8-String                   }
+        { "command": "readJSONFile",           "fileName":      string                       } - response { "fileName":      string, "data":          UTF8-String                   }
+        { "command": "readObjectFromJSONFile", "fileName":      string                       } - response { "fileName":      string, "object":        object                        }
+        { "command": "makeDirectory"                                                         } - response { "directoryName": string, "created":       boolean                       }
+        { "command": "getFileInfo"          [, "fileName":      string ]                     } - response { "fileName":      string, "fileInfo":      FileInfo or undefined         }
+        { "command": "deleteFile",             "fileName":      string                       } - response { "fileName":      string, "deleted":       boolean                       }
+        { "command": "deleteDirectory"      [, "directoryName": string ]                     } - response { "directoryName": string, "deleted":       boolean                       }
+        { "command": "listFiles"            [, "matchGLOB":     string ]                     } - response { "fileNames":     [],     "length":        integer                       }
+        { "command": "listFileInfo"         [, "matchGLOB":     string ]                     } - response { "fileInfo":      [],     "length":        integer                       }
+        { "command": "list"                 [, "matchGLOB":     string ]                     } - response { "fileNames":     [],     "length":        integer                       }
+        { "command": "listInfo"             [, "matchGLOB":     string ]                     } - response { "fileInfo":      [],     "length":        integer                       }
+        { "command": "getFullPathName"      [, "fileName":      string ]                     } - response { "fileName":      string, "fullPathName":  string                        }
+        { "command": "isValidFileName",        "fileName":      string                       } - response { "fileName":      string, "valid":         boolean                       }
+        { "command": "isValidDirectoryName",   "directoryName": string                       } - response { "directoryName": string, "valid":         boolean                       }
+        { "command": "renameFile", "fromFileName": string, "toFileName: string [, "overwrite": boolean] } - response { "fromFileName": string, "toFileName": string, "renamed": boolean }
 
 <br>
 
@@ -122,8 +160,8 @@ In addition to the responses listed with each command above, a command may retur
 
     As stated earlier, to request that a command be performed, an extension sends a message
     to this extension.  The message is in the form of a JavaScript object with a specific
-    structure, i.e. a "command". Each command also returns a JavaScript object.  To make
-    things easier, the API can handle this messaging for you.
+    structure, i.e. a "Command". Each Command also returns a JavaScript object as a Response.
+    To make things easier, the API can handle this messaging for you.
 
     Each command operates on files in a sub-drectory of the BrokerFileSystem directory inside
     the user's Thunderbird Profile Folder.  The name of this sub-directory is the Extension ID
@@ -141,7 +179,7 @@ In addition to the responses listed with each command above, a command may retur
 ### The fileNames and directoryNames must be a String with at least one character.
 
 #### ILLEGAL CHARS:
-
+A
 They must not contain the following characters:
    
       < (less-than)
@@ -157,7 +195,7 @@ They must not contain the following characters:
    
 #### RESERVED NAMES:
 
-They must not be any of the following values:
++ They must not be any of the following values:
 
       con
       prn
@@ -165,6 +203,10 @@ They must not be any of the following values:
       nul
       com0 - com9
       lpt0 - lpt9
+
++ IN ADDITION, THE FOLLOWING DIRECTORY NAMES CANNOT BE USED:
+
+      .. (two dots or periods)
    
 #### MAXIMUM LENGTH:
 
@@ -176,8 +218,9 @@ longer than *255* characters.
 This is a limitiation of the underlying code in Thunderbird that
 performs the actual file system operations.
 
-The length of the pathName *does* depend on where the Thunderbird
-places the user's profile directory on the given system.
+The length of the pathName *does* depend on where Thunderbird
+places the user's profile directory on the given system.  Keep that
+in mind.
 
 <br>
 
@@ -685,8 +728,196 @@ places the user's profile directory on the given system.
     The file with the given fileName need not actually exist.  This command merely checks
     if the given string is a valid fileName.
 
+
+#### isValidDirectoryName - Determine if the given directoryName is valid
+
+    command message: { "Command": { "command": "isValidDirectoryName", "directoryName": string } }
+
+    response:        { "directoryName": string, "valid": boolean }
+
+    Returns an "invalid" response if the directoryName parameter is not provided or is not a String.
+
+    The directory with the given directoryName need not actually exist.  This command merely checks
+    if the given string is a valid directoryName.
+
+<br>
+<br>
 <br>
 
+## Access Control
+
+Access to FileSystemBroker is granted to ALL extensions by default, but you
+can enable Access Controls and Grant or Deny access to only select extensions.
+
+> If Access Controls are Enabled, any extension that has not been explicitly
+> Granted or Denied access, i.e. they are __NOT__ in the Extensions List,
+> will be implicitly Denied access.
+
+
+#### To enable Access Control, go to the FileSystemBroker Settings Tab:
+1. Open the Thunderbird Add-ons Manager
+    1. In the menus, select: Tools -> Add-ons and Themes
+    2. On the left side of the tab, click on Extensions
+2. Find FileSystemBroker
+3. Click the Options button
+4. The FileSystemBroker Settings Tab is displayed
+5. Check the "Grant only select Extensions access to FileSystemBroker" Checkbox
+6. The "Extension Access Controls" Section and the Extensions List will be displayed
+7. Add any extensions to which you want to Grant access to the Extensions List
+7. Grant access to the Extensions as desired
+
+#### To Add An Extension to The Extensions List
+
+There are three ways add an extension to the Extensions List:
+
+* Manually:
+    1. Click the "Add New" Button on the Actions Panel or click the "Add" Icon at the top-right of the Extensions List header
+        * If you do not see the Buttons on the Actions Panel, click the small triangle icon to the left of "Actions".
+    2. Just below the Extension List header, the Extension Editor line will be displayed
+    3. Enter the Extension Name and Id
+    4. Check the "Grant Access" Checkbox to grant acccess to the extension or Un-Check it to deny access
+    5. Click the "Save" Icon
+* From the Extensions List:
+    1. Click the "Installed Extensions" button on the Actions Panel
+        * If you do not see the Buttons on the Actions Panel, click the small triangle icon to the left of "Actions".
+    2. The "Add Installed Extensions" Window is opened
+    3. Select one or more extensions
+    4. Click the "Add" Button
+        * The extensions will be added to the Extensions List, but they will not have been granted access
+* When an extension tries to access FileSystemBroker:
+    1. Open the FileSystemBroker Settings Tab
+        1. Open the Thunderbird Add-ons Manager
+            1. In the menus, select: Tools -> Add-ons and Themes
+            2. On the left side of the tab, click on Extensions
+        2. Find FileSystemBroker
+        3. Click the Options button
+    2. Check the "When an Extension requests access and is not granted or denied, display a dialog where you can grant or deny it" Checkbox
+    3. When an extension attempts to access FileSystemBroker and has not already been explicitly granted or denied access, the "FileSystemBroker Access Control" Pop-Up Window will be displayed
+    4. Click on the "Grant" or "Deny" Button
+       * If you click the "Grant" Button, the extension will be added to the Extension List and access will be granted
+       * If you click the "Deny" Button, the extension will be added to the Extension List and access will be denied. The pop-up window will **not** be displayed again unless the extension
+         is deleted from the Extensions List
+       * If you click the "Cancel" Button or simply close the window, the extension will **NOT** be added to the Extension List and the pop-up window **will** be displayed again the next time the extension tries again
+
+#### To Grant Access to An Extension
+
+There are five ways to GRANT access to an extension:
+
+* When adding a new extension, check the "Grant Access" Checkbox
+* Check the "Grant Access" Checkbox to the left of the extension in the Extensions List
+* Click the "Grant All" Button in the Actions Sub-Panel of the Extension Action Controls Panel
+    * If you do not see the Buttons on the Actions Panel, click the small triangle icon to the left of "Actions".
+* Select one or more extensions in the Extensions List, then click the "Grant Selected" Button in the Actions Sub-Panel of the Extension Action Controls Panel
+* Edit the extension:
+    1. Click the "Edit" Icon to the eight of the extension in the Extensions List
+    2. Just below the Extension List header, the Extension Editor line will be displayed
+    3. Check the "Grant Access" Checkbox to the left of the Extension Name
+    4. Click the "Save" Icon to the right of the Extension ID
+
+#### To Deny Access to An Extension
+
+There are six ways to DENY access to an extension:
+
+* When adding a new extension, un-check the "Grant Access" Checkbox
+* Un-Check the "Grant Access" Checkbox to the left of the extension in the Extensions List
+    * The "FileSystemBroker Access Control" Pop-Up Window will **not** be displayed then next time the extension tries access FileSystemBroker
+* Click the "Deny All" Button in the Actions Sub-Panel of the Extension Action Controls Panel
+    * If you do not see the Buttons on the Actions Panel, click the small triangle icon to the left of "Actions".
+* Select one or more extensions in the Extensions List, then click the "Deny Selected" Button in the Actions Sub-Panel of the Extension Action Controls Panel
+* Delete the extension from the Extensions List
+    * Click the "Delete" Icon to the right of the extension
+    * -or- Select one or more extensions in the Extensions List, then click the "Delete Selected" Button in the Actions Sub-Panel of the Extension Action Controls Panel
+    * If it's enabled, the "FileSystemBroker Access Control" Pop-Up Window **will** be displayed the next time the extension tries access FileSystemBroker
+* Edit the extension:
+    1. Click the "Edit" Icon to the right of the extension in the Extensions List
+    2. Just below the Extension List header, the Extension Editor line will be displayed
+    3. Un-Check the "Grant Access" Checkbox to the left of the Extension Name
+    4. Click the "Save" Icon to the right of the Extension ID
+
+#### Automatic Extension Removal
+
+FileSystemBroker will automatically remove extensions that have been uninstalled from Thunderbird.
+
+The default is to remove them when they have been removed more than 2 days in the past.
+
+You can change this setting by selecting a value for the "__Automatically Remove Extensions that
+have been Uninstalled__" Selection Box on the FileSystemBroker Settings Tab. You can choose
+a different number of days, you can choose to have the Extenstion removed as soon as it has
+been uninstalled, or you can disable this feature altogether.
+
+<br>
+<br>
+<br>
+
+## Backing up And Restoring FileSystemBroker Settings
+
+You can Back Up you FileSystemBroker settings to a file (using FileSystemBroker) and
+restore your settings from a backup file at another time. To do this, you use the
+Backup Manager.
+
+To open the Backup Manager", click the "Manage Backups" Button on the FileSystemManager Settings Tab.
+
+A list of existing fsbbackup files is displayed.  You can create a new backup file, restore from an
+existing backup file, or delete one or more backup files.
+
+<br>
+<br>
+<br>
+
+## FileSystemBroker Event Logging
+
+FileSystemBroker logs certain events and writes them to Files. You can
+choose which events get logged, and you can use the Event Log Manager to
+List, View, and Delete logs.
+
+#### Automatic Event Log Deletion
+
+FileSystemBroker will automatically delete logs older than a selected
+number of days.  The default is 1 week (7 days.)  You can disable this
+or you can change the number of days using the "__Automatically delete
+Event Logs older than__" Selection Box.
+
+* If you do not see the Selection Box, click on the small triangle icon
+to the left of "Event Logging Options".
+
+* Archived Event Logs will ___not___ get deleted during automatic Event Log deletion.
+
+#### To Choose Which Events Types Get Logged
+
+The FileSystemBroker Settings Tab has a section labeled "Event Logging
+Options".
+
+There are Checkboxes for several events types.
+
+* If you do not see the Checkboxes, click on the small triangle icon to 
+the left of "Event Logging Options".
+
+Check a Checkbox to start logging an event type.  Un-check it to stop
+logging the event type.
+
+These are the Event Types that can be logged:
+* Access Events - Access was Granted
+* Access Denied Events - Access was Denied
+* Internal Command Requests - Internal command requests from FileSystemBroker itself
+* Internal Command Results - Results of internal command requests from FileSystemBroker itself
+* External Command Requests - Command requests from other Extensions
+* External Command Results - Results of command requests from other Extensions
+* Internal Events - Internal FileSystemBroker events, like extension startup, automatic daily Event Log deletion, automatic removal of uninstalled extensions, etc
+
+####  Event Log Manager
+
+The Event Log Manager lists existing Event Logs and allows you to view, archive
+or delete them. Archived Event Logs will ___not___ get deleted during automatic 
+Event Log deletion.
+
+Click the "Manage Event Logs" Button on the FileSystemBroker Settings Tab to
+open the Event Log Manager.
+
+
+
+<br>
+<br>
+<br>
 
 ## How to install (FUTURE):
 
@@ -695,43 +926,47 @@ version.  Development releases might be available earlier in the
 [Releases] section on GitHub.
 
   [ic-mx]: MABXXX https://addons.thunderbird.net/addon/file-system-broker/
-  [releases]: MABXXX https://github.com/xxx/file-system-broke/releases
+  [releases]: https://github.com/WoofGrrrr/file-system-broke/releases
+* ___FileSystemBroker DOES use the Web Extension Experiments API for access to the computer's file system, so you must allow full, unrestricted access to Thunderbird and your computer, otherwise it cannot function.___
 
 <br>
 
 
 
-## How to install this Extension from GitHub (FUTURE):
+## How to install this Extension from GitHub:
 
-1. Download the .xpi file from GitHub:
-    1. MABXXX Go to this page in your browser: https://github.com/WoofGrrrr/file-system-broker/
-    2. x
-    3. y
+1. Download the .zip file from GitHub:
+    1. Go to this page in your browser: https://github.com/WoofGrrrr/file-system-broker/
+    2. Look for file-system-broker.zip file in the list
+    3. Use your browser to download it - usually you can just click on it
+    4. Place the file somewhere you will remember it
 2. Open Thunderbird's **Add-ons and Themes** Tab
-  + Tools -> Add-ons and Themes
+    + Tools -> Add-ons and Themes
 3. Select the **Extensions** Tab on the left
 4. Click on the **Gear** icon
 5. Select **Install Add-on From File...**
 6. Find the file you downloaded from GitHub and double-click on it
+* ___FileSystemBroker DOES use the Web Extension Experiments API for access to the computer's file system, so you must allow full, unrestricted access to Thunderbird and your computer, otherwise it cannot function.___
 
 <br>
 
 
 
-## How to install the latest versions of this Extension from GitHub (FUTURE):
+## How to install the latest versions of this Extension from GitHub:
 
 1. Download the .zip file from GitHub:
     1. Go to this page in your browser: https://github.com/WoofGrrrr/file-system-broker/releases
-    2. Click on the release you want 
-    3. Look for the file-system-broker.zip file
-    4. Use your browser to download it - usually you can just clicked on it
+    2. On the left side of the page, click on the release you want 
+    3. Look for the file-system-broker.zip file in the list
+    4. Use your browser to download it - usually you can just click on it
     5. Place the file somewhere you will remember it
 2. Open Thunderbird's **Add-ons and Themes** Tab
-  + Tools -> Add-ons and Themes
+    + Tools -> Add-ons and Themes
 3. Select the **Extensions** Tab on the left
 4. Click on the **Gear** icon
 5. Select **Install Add-on From File...**
 6. Find the file you downloaded from GitHub and double-click on it
+* ___FileSystemBroker DOES use the Web Extension Experiments API for access to the computer's file system, so you must allow full, unrestricted access to Thunderbird and your computer, otherwise it cannot function.___
 
 <br>
 
