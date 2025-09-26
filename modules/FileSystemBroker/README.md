@@ -44,7 +44,7 @@ FileSystemBroker uses the following directory for file system access:
 Where \<thunderbird-profile-directory\> is the user's Thunderbird Profile Directory. On a
 Windows system, for a user with user ID "user1", this would be something like:
 
-        C:\Users\user1\AppData\Roaming\Thunderbird\Profiles\4x4rl22v.default-release\FileSystemBroker\aaa.bbb@xxx.com
+        C:\Users\user1\AppData\Roaming\Thunderbird\Profiles\4x4rl22v.default-release\FileSystemBroker
 
 
 
@@ -82,13 +82,34 @@ Your `manifest.json` needs an entry like this:
 
 
 Use something like the following code in your JavaScript:
+```
+    import { FileSystemBrokerAPI } from '../modules/FileSystemBroker/filesystem_broker_api.js';
+      .
+      .
+      .
+      const fsbApi = new FileSystemBrokerApi();
+      var response;
+      var alreadyExists;
+      var bytesWritten;
 
-        import { FileSystemBrokerApi } from '../modules/FileSystemBroker/filesystem_broker_api.js';
-          .
-          .
-          .
-        const fsbApi = new FileSystemBrokerApi();
-
+      response = fsbApi.exists("file1.txt");
+      if (! response) {
+      } else if (response.invalid) {
+      } else if (response.error) {
+      } else
+        alreadyExists = response.exists;
+        if (alreadyExists) {
+        } else {
+          response = fsbApi.writeFile("file1.txt", "data", 'create');
+          if (! response) {
+          } else if (response.invalid) {
+          } else if (response.error) {
+          } else {
+            bytesWritten = response.bytesWritten
+          }
+        }
+      }
+```
 
 
 

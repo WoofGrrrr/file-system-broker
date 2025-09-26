@@ -107,16 +107,35 @@ To use it in your extension
 ```
 3. Then add something like the following to your JavaScript code:
 ```
-        import { FileSystemBrokerAPI } from '../modules/FileSystemBroker/filesystem_broker_api.js';
-          .
-          .
-          .
-          const fsbApi = new FileSystemBrokerApi();
-          if (! fsbApi.exists("file1.txt")) {
-            const bytesWritten = fsbApi.writeFile("file1.txt", "data");
+    import { FileSystemBrokerAPI } from '../modules/FileSystemBroker/filesystem_broker_api.js';
+      .
+      .
+      .
+      const fsbApi = new FileSystemBrokerApi();
+      var response;
+      var alreadyExists;
+      var bytesWritten;
+
+      response = fsbApi.exists("file1.txt");
+      if (! response) {
+      } else if (response.invalid) {
+      } else if (response.error) {
+      } else
+        alreadyExists = response.exists;
+        if (alreadyExists) {
+        } else {
+          response = fsbApi.writeFile("file1.txt", "data", 'create');
+          if (! response) {
+          } else if (response.invalid) {
+          } else if (response.error) {
+          } else {
+            bytesWritten = response.bytesWritten
           }
+        }
+      }
 ```
 
+<br>
 <br>
 
 ## The Messaging API
