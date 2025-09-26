@@ -1075,8 +1075,8 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
 
 
         // returns array of DOMString, the base names (last components in the paths) of only the (matching) Regular files
-        // optional matchGLOB must be a String
-        // NOTE: If the extension directory does not exist, create it MABXXX BUT WHY???
+        // optional matchGLOB must be a String - schema.json makes sure of this
+        // NOTE: If the extension directory does not exist, create it MABXXX BUT WHY??? from before we had makeDirectory()
         async listFiles(extensionId, matchGLOB) {
           if (! checkExtensionId(extensionId)) {
             debug(`listFiles -- extensionId is not valid - it cannot be used as a fileName: "${extensionId}"`);
@@ -1162,8 +1162,8 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
 
 
         // returns array of FileInfo for only the (matching) Regular Files
-        // optional matchGLOB must be a String
-        // NOTE: If the extension directory does not exist, create it MABXXX BUT WHY???
+        // optional matchGLOB must be a String - schema.json makes sure of this
+        // NOTE: If the extension directory does not exist, create it MABXXX BUT WHY??? from before we had makeDirectory()
         async listFileInfo(extensionId, matchGLOB) {
           if (! checkExtensionId(extensionId)) {
             debug(`listFileInfo -- extensionId is not valid - it cannot be used as a fileName: "${extensionId}"`);
@@ -1250,8 +1250,8 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
 
 
         // returns array of DOMString, the base names (last components in the paths) of the all (matching) items
-        // optional matchGLOB must be a String
-        // NOTE: If the extension directory does not exist, create it MABXXX BUT WHY???
+        // optional matchGLOB must be a String - schema.json makes sure of this
+        // NOTE: If the extension directory does not exist, create it MABXXX BUT WHY??? from before we had makeDirectory()
         async list(extensionId, matchGLOB) {
           if (! checkExtensionId(extensionId)) {
             debug(`list -- extensionId is not valid - it cannot be used as a fileName: "${extensionId}"`);
@@ -1322,8 +1322,8 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
 
 
         // returns array of FileInfo for all (matching) items
-        // optional matchGLOB must be a String
-        // NOTE: If the extension directory does not exist, create it MABXXX BUT WHY???
+        // optional matchGLOB must be a String - schema.json makes sure of this
+        // NOTE: If the extension directory does not exist, create it MABXXX BUT WHY??? from before we had makeDirectory()
         async listInfo(extensionId, matchGLOB) {
           if (! checkExtensionId(extensionId)) {
             debug(`listInfo -- extensionId is not valid - it cannot be used as a fileName: "${extensionId}"`);

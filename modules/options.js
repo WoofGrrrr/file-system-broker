@@ -326,8 +326,12 @@ export class FsbOptions {
     const options = await messenger.storage.local.get('fsbAutoLogPurgeDays'); // returns a Promise of an Object with a key-value pair for every key found
 
     var value = defaultValue;
-    if (key in options) {
+    if ('fsbAutoLogPurgeDays' in options) {
       value = options['fsbAutoLogPurgeDays']; // get the value for the specific key
+      if (typeof value === 'string') {
+        value = +value;
+        if (Number.isNaN(value)) value = defaultValue;
+      }
     }
 
     return value;
@@ -337,8 +341,12 @@ export class FsbOptions {
     const options = await messenger.storage.local.get('fsbAutoRemoveUninstalledExtensionsDays'); // returns a Promise of an Object with a key-value pair for every key found
 
     var value = defaultValue;
-    if (key in options) {
+    if ('fsbAutoRemoveUninstalledExtensionsDays' in options) {
       value = options['fsbAutoRemoveUninstalledExtensionsDays']; // get the value for the specific key
+      if (typeof value === 'string') {
+        value = +value;
+        if (Number.isNaN(value)) value = defaultValue;
+      }
     }
 
     return value;

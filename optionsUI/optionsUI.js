@@ -1096,6 +1096,23 @@ class OptionsUI {
       const optionName  = target.id;
       const optionValue = target.value;
 
+      // too bad target.value returns a string
+      switch (optionName) {
+        case 'fsbAutoLogPurgeDays':
+          optionValue = +optionValue;
+          if (Number.isNaN(optionValue)) {
+            optionValue = 14; // 14 is the default
+            // target.value = optionValue; ???
+          }
+          break;
+        case 'fsbAutoRemoveUninstalledExtensionsDays':
+          optionValue = +optionValue;
+          if (Number.isNaN(optionValue)) {
+            optionValue = 2; // 2 is the default
+            // target.value = optionValue; ???
+          }
+          break;
+      }
       this.debug(`optionChanged -- Setting Select Option {[${optionName}]: ${optionValue}}`);
       await this.fsbOptionsApi.storeOption(
         { [optionName]: optionValue }
@@ -2925,7 +2942,7 @@ this.debugAlways(`extensionOptionCheckClicked -- LABEL CLICKED, FOR ELEMENT FOUN
        * Save this EventLogManagerResponse into response for resolve()
        */
       function messageListener(request, sender, sendResponse) {
-        if (sender.tab.windowId == eventLogManagerWindowId && request && request.EventLogManagerResponse) {
+        if (sender.tab && sender.tab.windowId == eventLogManagerWindowId && request && request.EventLogManagerResponse) {
           response = request.EventLogManagerResponse;
         }
 

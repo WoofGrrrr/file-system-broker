@@ -324,47 +324,47 @@ class EventLogViewer {
 
   buildLogHeaderUI() {
     const logHeaderTR = document.createElement('tr');
-      logHeaderTR.classList.add('file-header-item');
+      logHeaderTR.classList.add('event-header-item');
 
       const logLineTimestampTH =  document.createElement('th');
-        logLineTimestampTH.classList.add('file-header-data');
-        logLineTimestampTH.classList.add('file-header-time');
+        logLineTimestampTH.classList.add('event-header-data');
+        logLineTimestampTH.classList.add('event-header-time');
         logLineTimestampTH.appendChild( document.createTextNode( getI18nMsg('fsbEventLogViewer_listHeader_timstamp', 'TIME') ) );
       logHeaderTR.appendChild(logLineTimestampTH);
 
       const logLineSenderTH =  document.createElement('th');
-        logLineSenderTH.classList.add('file-header-data');
-        logLineSenderTH.classList.add('file-header-sender');
+        logLineSenderTH.classList.add('event-header-data');
+        logLineSenderTH.classList.add('event-header-sender');
         logLineSenderTH.appendChild( document.createTextNode( getI18nMsg('fsbEventLogViewer_listHeader_sender', 'SENDER') ) );
       logHeaderTR.appendChild(logLineSenderTH);
 
       const logLineTypeTH =  document.createElement('th');
-        logLineTypeTH.classList.add('file-header-data');
-        logLineTypeTH.classList.add('file-header-type');
+        logLineTypeTH.classList.add('event-header-data');
+        logLineTypeTH.classList.add('event-header-type');
         logLineTypeTH.appendChild( document.createTextNode( getI18nMsg('fsbEventLogViewer_listHeader_type', 'TYPE') ) );
       logHeaderTR.appendChild(logLineTypeTH);
 
       const logLineCommandTH =  document.createElement('th');
-        logLineCommandTH.classList.add('file-header-data');
-        logLineCommandTH.classList.add('file-header-command');
+        logLineCommandTH.classList.add('event-header-data');
+        logLineCommandTH.classList.add('event-header-command');
         logLineCommandTH.appendChild( document.createTextNode( getI18nMsg('fsbEventLogViewer_listHeader_command', 'COMMAND') ) );
       logHeaderTR.appendChild(logLineCommandTH);
 
       const logLineStatusTH =  document.createElement('th');
-        logLineStatusTH.classList.add('file-header-data');
-        logLineStatusTH.classList.add('file-header-status');
+        logLineStatusTH.classList.add('event-header-data');
+        logLineStatusTH.classList.add('event-header-status');
         logLineStatusTH.appendChild( document.createTextNode( getI18nMsg('fsbEventLogViewer_listHeader_status', 'STATUUS') ) );
       logHeaderTR.appendChild(logLineStatusTH);
 
       const logLineParametersTH =  document.createElement('th');
-        logLineParametersTH.classList.add('file-header-data');
-        logLineParametersTH.classList.add('file-header-parameters');
+        logLineParametersTH.classList.add('event-header-data');
+        logLineParametersTH.classList.add('event-header-parameters');
         logLineParametersTH.appendChild( document.createTextNode( getI18nMsg('fsbEventLogViewer_listHeader_parameters', 'PARAMETERS') ) );
       logHeaderTR.appendChild(logLineParametersTH);
 
       const logLineResultTH =  document.createElement('th');
-        logLineResultTH.classList.add('file-header-data');
-        logLineResultTH.classList.add('file-header-result');
+        logLineResultTH.classList.add('event-header-data');
+        logLineResultTH.classList.add('event-header-result');
         logLineResultTH.appendChild( document.createTextNode( getI18nMsg('fsbEventLogViewer_listHeader_result', 'RESULT') ) );
       logHeaderTR.appendChild(logLineResultTH);
 
@@ -426,7 +426,7 @@ class EventLogViewer {
 
   buildLogLineItemUI(logLineData) {
     const logLineItemTR = document.createElement('tr');
-      logLineItemTR.classList.add('file-line-item');
+      logLineItemTR.classList.add('event-line-item');
 
       // these will make filtering easier
       logLineItemTR.setAttribute( 'timeMS',  logLineData.timeMS  );
@@ -437,44 +437,44 @@ class EventLogViewer {
       logLineItemTR.setAttribute( 'status',  logLineData.status  );
 
       const logLineTimestampTD =  document.createElement('td');
-        logLineTimestampTD.classList.add('file-line-data');
-        logLineTimestampTD.classList.add('file-line-time');
+        logLineTimestampTD.classList.add('event-line-data');
+        logLineTimestampTD.classList.add('event-line-time');
         logLineTimestampTD.appendChild( document.createTextNode( formatMsToDateTime24HR(logLineData.time) ) );
       logLineItemTR.appendChild(logLineTimestampTD);
 
       const logLineSenderTD =  document.createElement('td');
-        logLineSenderTD.classList.add('file-line-data');
-        logLineSenderTD.classList.add('file-line-sender');
+        logLineSenderTD.classList.add('event-line-data');
+        logLineSenderTD.classList.add('event-line-sender');
         if (logLineData.sender) logLineSenderTD.appendChild( document.createTextNode(logLineData.sender) );
       logLineItemTR.appendChild(logLineSenderTD);
 
       const logLineTypeTD =  document.createElement('td');
-        logLineTypeTD.classList.add('file-line-data');
-        logLineTypeTD.classList.add('file-line-type');
+        logLineTypeTD.classList.add('event-line-data');
+        logLineTypeTD.classList.add('event-line-type');
         if (logLineData.type) logLineTypeTD.appendChild( document.createTextNode(logLineData.type) );
       logLineItemTR.appendChild(logLineTypeTD);
 
       const logLineCommandTD =  document.createElement('td');
-        logLineCommandTD.classList.add('file-line-data');
-        logLineCommandTD.classList.add('file-line-command');
-        logLineCommandTD.appendChild( document.createTextNode(logLineData.command) );
+        logLineCommandTD.classList.add('event-line-data');
+        logLineCommandTD.classList.add('event-line-command');
+        if (logLineData.command) logLineCommandTD.appendChild( document.createTextNode(logLineData.command) );
       logLineItemTR.appendChild(logLineCommandTD);
 
       const logLineStatusTD =  document.createElement('td');
-        logLineStatusTD.classList.add('file-line-data');
-        logLineStatusTD.classList.add('file-line-status');
+        logLineStatusTD.classList.add('event-line-data');
+        logLineStatusTD.classList.add('event-line-status');
         if (logLineData.status) logLineStatusTD.appendChild( document.createTextNode(logLineData.status) );
       logLineItemTR.appendChild(logLineStatusTD);
 
       const logLineParametersTD =  document.createElement('td');
-        logLineParametersTD.classList.add('file-line-data');
-        logLineParametersTD.classList.add('file-line-parameters');
+        logLineParametersTD.classList.add('event-line-data');
+        logLineParametersTD.classList.add('event-line-parameters');
         logLineParametersTD.appendChild( document.createTextNode( this.formatCommandParameters(logLineData) ) );
       logLineItemTR.appendChild(logLineParametersTD);
 
       const logLineResultTD =  document.createElement('td');
-        logLineResultTD.classList.add('file-line-data');
-        logLineResultTD.classList.add('file-line-result');
+        logLineResultTD.classList.add('event-line-data');
+        logLineResultTD.classList.add('event-line-result');
         if (logLineData.result) logLineResultTD.appendChild( document.createTextNode(logLineData.result) );
       logLineItemTR.appendChild(logLineResultTD);
 
@@ -665,7 +665,7 @@ class EventLogViewer {
 
   filterLogLinesByTimeMS(startTimeMS, endTimeMS) {
     const domFileDataList    = document.getElementById("fsbEventLogViewerFileData");
-    const selector           = `tr.file-line-item`;
+    const selector           = `tr.event-line-item`;
     const matchingLogLineTRs = domFileDataList.querySelectorAll(selector);
 
     if (this.DEBUG) {
@@ -863,7 +863,7 @@ class EventLogViewer {
     this.debug(`applyLogLineCssClassByAttribute -- cssClass="${cssClass}" attrName="${attrName}" attrValue="${attrValue}" `);
 
     const domFileDataList    = document.getElementById("fsbEventLogViewerFileData");
-    const selector           = `tr.file-line-item`;
+    const selector           = `tr.event-line-item`;
     const matchingLogLineTRs = domFileDataList.querySelectorAll(selector);
 
     for (const logLineTR of matchingLogLineTRs) {
@@ -877,7 +877,7 @@ class EventLogViewer {
 
   removeLogLineCssClass(cssClass) {
     const domFileDataList    = document.getElementById("fsbEventLogViewerFileData");
-    const selector           = `tr.file-line-item.${cssClass}`;
+    const selector           = `tr.event-line-item.${cssClass}`;
     const matchingLogLineTRs = domFileDataList.querySelectorAll(selector);
 
     for (const logLineTR of matchingLogLineTRs) {
@@ -930,7 +930,7 @@ class EventLogViewer {
 
   getFilteredLogLineCount() {
     const domFileDataList    = document.getElementById("fsbEventLogViewerFileData");
-    const selector           = "tr.file-line-item";
+    const selector           = "tr.event-line-item";
     const matchingLogLineTRs = domFileDataList.querySelectorAll(selector);
 
     var count = 0;

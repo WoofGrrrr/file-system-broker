@@ -25,7 +25,7 @@ __NOTE: Sub-directories are not supported at this time (there is no method to cr
 ## Access Control
 
 Access to FileSystemBroker is granted to all extensions by default, but you
-can enable access controls and grant access to only select extensions. See
+can enable access controls and then grant access to only select extensions. See
 below for details.
 
 <br>
@@ -78,6 +78,7 @@ command message to this extension by calling the Web Extension function:
   + getFullPathName - return the full system pathName for a file
   + isValidFileName - is a fileName valid?
   + isValidDirectoryName - is a directoryName valid?
+  + getFileSystemPathName - returns the full pathName of the system directory on which this API operates
 
 <br>
 <br>
@@ -110,13 +111,36 @@ To use it in your extension
           .
           .
           .
-          .
-        const fsbApi = new FileSystemBrokerApi();
+          const fsbApi = new FileSystemBrokerApi();
+          if (! fsbApi.exists("file1.txt")) {
+            const bytesWritten = fsbApi.writeFile("file1.txt", "data");
+          }
 ```
 
 <br>
 
-## In addition to using the FileSystemBroker API, an extension can directly send Command Messages to this extension and await the responses.
+## The Messaging API
+
+In addition to using the FileSystemBroker API, an extension can directly send Command Messages to this extension and await the responses.
+
+Here is a simple example to check if a file named "file1.txt" exists:
+```
+    const FILE_SYSTEM_BROKER_EXTENSION_ID = "file-system-broker@localmotive.com";
+      .
+      .
+      .
+    let response;
+    let exists = false;
+    try {
+      const message = { "Command": { "command": "exists", "fileName": "file1.text" } };
+      response = await messenger.runtime.sendMessage(FILE_SYSTEM_BROKER_EXTENSION_ID, message);
+    } catch (error) {
+    }
+
+    if (response) {
+      exists = response.exists;
+    }
+```
 
 <br>
 
@@ -158,6 +182,9 @@ A command is a message which is an object of the form:
         { "command": "getFullPathName"      [, "fileName":      string ]                     } - response { "fileName":      string, "fullPathName":  string                        }
         { "command": "isValidFileName",        "fileName":      string                       } - response { "fileName":      string, "valid":         boolean                       }
         { "command": "isValidDirectoryName",   "directoryName": string                       } - response { "directoryName": string, "valid":         boolean                       }
+
+
+        { "command": "getFileSystemPathName"                                                 } - response { "pathName":      string                                                 }
         { "command": "renameFile", "fromFileName": string, "toFileName: string [, "overwrite": boolean] } - response { "fromFileName": string, "toFileName": string, "renamed": boolean }
 
 <br>
@@ -177,7 +204,7 @@ In addition to the responses listed with each command above, a command may retur
 
 <br>
 
-### Details:
+### Using The Messaging API - Details:
 
     As stated earlier, to request that a command be performed, an extension sends a message
     to this extension.  The message is in the form of a JavaScript object with a specific
@@ -313,6 +340,8 @@ in mind.
 
     Returns an "error" response if the directory's full pathName is > 255 characters
     or if the operating system had a problem processing the command.
+
+    Sub-directories are not supported at this time (there is no method to create one.)
 
 <br>
 
@@ -754,6 +783,8 @@ in mind.
     The file with the given fileName need not actually exist.  This command merely checks
     if the given string is a valid fileName.
 
+<br>
+
 
 #### isValidDirectoryName - Determine if the given directoryName is valid
 
@@ -767,16 +798,25 @@ in mind.
     if the given string is a valid directoryName.
 
 <br>
+
+
+####  getFileSystemPathName - Returns the full pathName of the system directory on which this API operates.
+
+    command message: { "Command": { "command": "getFileSystemPathName" } }
+
+    response:        { "pathName": string }
+
+<br>
 <br>
 <br>
 
-## Access Control
+## Access Control - Details
 
 Access to FileSystemBroker is granted to ALL extensions by default, but you
-can enable Access Controls and Grant or Deny access to only select extensions.
+can enable Access Controls and then Grant or Deny access to only select extensions.
 
 > If Access Controls are Enabled, any extension that has not been explicitly
-> Granted or Denied access, i.e. they are __NOT__ in the Extensions List,
+> Granted or Denied access, i.e. they are __NOT__ in the Extension List,
 > will be implicitly Denied access.
 
 
@@ -788,28 +828,28 @@ can enable Access Controls and Grant or Deny access to only select extensions.
 3. Click the Options button
 4. The FileSystemBroker Settings Tab is displayed
 5. Check the "Grant only select Extensions access to FileSystemBroker" Checkbox
-6. The "Extension Access Controls" Section and the Extensions List will be displayed
-7. Add any extensions to which you want to Grant access to the Extensions List
+6. The "Extension Access Controls" Section and the Extension List will be displayed
+7. Add any extensions to which you want to Grant access to the Extension List
 7. Grant access to the Extensions as desired
 
-#### To Add An Extension to The Extensions List
+#### To Add An Extension to The Extension List
 
-There are three ways add an extension to the Extensions List:
+There are three ways add an extension to the Extension List:
 
 * Manually:
-    1. Click the "Add New" Button on the Actions Panel or click the "Add" Icon at the top-right of the Extensions List header
+    1. Click the "Add New" Button on the Actions Panel or click the "Add" Icon at the top-right of the Extension List header
         * If you do not see the Buttons on the Actions Panel, click the small triangle icon to the left of "Actions".
     2. Just below the Extension List header, the Extension Editor line will be displayed
     3. Enter the Extension Name and Id
     4. Check the "Grant Access" Checkbox to grant acccess to the extension or Un-Check it to deny access
     5. Click the "Save" Icon
-* From the Extensions List:
+* From the Installed Extensions List:
     1. Click the "Installed Extensions" button on the Actions Panel
         * If you do not see the Buttons on the Actions Panel, click the small triangle icon to the left of "Actions".
     2. The "Add Installed Extensions" Window is opened
     3. Select one or more extensions
     4. Click the "Add" Button
-        * The extensions will be added to the Extensions List, but they will not have been granted access
+        * The extensions will be added to the Extension List, but they will ___not___ have been granted access
 * When an extension tries to access FileSystemBroker:
     1. Open the FileSystemBroker Settings Tab
         1. Open the Thunderbird Add-ons Manager
@@ -822,7 +862,7 @@ There are three ways add an extension to the Extensions List:
     4. Click on the "Grant" or "Deny" Button
        * If you click the "Grant" Button, the extension will be added to the Extension List and access will be granted
        * If you click the "Deny" Button, the extension will be added to the Extension List and access will be denied. The pop-up window will **not** be displayed again unless the extension
-         is deleted from the Extensions List
+         is removed from the Extension List
        * If you click the "Cancel" Button or simply close the window, the extension will **NOT** be added to the Extension List and the pop-up window **will** be displayed again the next time the extension tries again
 
 #### To Grant Access to An Extension
@@ -830,12 +870,12 @@ There are three ways add an extension to the Extensions List:
 There are five ways to GRANT access to an extension:
 
 * When adding a new extension, check the "Grant Access" Checkbox
-* Check the "Grant Access" Checkbox to the left of the extension in the Extensions List
+* Check the "Grant Access" Checkbox to the left of the extension in the Extension List
 * Click the "Grant All" Button in the Actions Sub-Panel of the Extension Action Controls Panel
     * If you do not see the Buttons on the Actions Panel, click the small triangle icon to the left of "Actions".
-* Select one or more extensions in the Extensions List, then click the "Grant Selected" Button in the Actions Sub-Panel of the Extension Action Controls Panel
+* Select one or more extensions in the Extension List, then click the "Grant Selected" Button in the Actions Sub-Panel of the Extension Action Controls Panel
 * Edit the extension:
-    1. Click the "Edit" Icon to the eight of the extension in the Extensions List
+    1. Click the "Edit" Icon to the eight of the extension in the Extension List
     2. Just below the Extension List header, the Extension Editor line will be displayed
     3. Check the "Grant Access" Checkbox to the left of the Extension Name
     4. Click the "Save" Icon to the right of the Extension ID
@@ -845,29 +885,33 @@ There are five ways to GRANT access to an extension:
 There are six ways to DENY access to an extension:
 
 * When adding a new extension, un-check the "Grant Access" Checkbox
-* Un-Check the "Grant Access" Checkbox to the left of the extension in the Extensions List
+* Un-Check the "Grant Access" Checkbox to the left of the extension in the Extension List
     * The "FileSystemBroker Access Control" Pop-Up Window will **not** be displayed then next time the extension tries access FileSystemBroker
 * Click the "Deny All" Button in the Actions Sub-Panel of the Extension Action Controls Panel
     * If you do not see the Buttons on the Actions Panel, click the small triangle icon to the left of "Actions".
-* Select one or more extensions in the Extensions List, then click the "Deny Selected" Button in the Actions Sub-Panel of the Extension Action Controls Panel
-* Delete the extension from the Extensions List
+* Select one or more extensions in the Extension List, then click the "Deny Selected" Button in the Actions Sub-Panel of the Extension Action Controls Panel
+* Delete the extension from the Extension List
     * Click the "Delete" Icon to the right of the extension
-    * -or- Select one or more extensions in the Extensions List, then click the "Delete Selected" Button in the Actions Sub-Panel of the Extension Action Controls Panel
+    * -or- Select one or more extensions in the Extension List, then click the "Delete Selected" Button in the Actions Sub-Panel of the Extension Action Controls Panel
     * If it's enabled, the "FileSystemBroker Access Control" Pop-Up Window **will** be displayed the next time the extension tries access FileSystemBroker
 * Edit the extension:
-    1. Click the "Edit" Icon to the right of the extension in the Extensions List
+    1. Click the "Edit" Icon to the right of the extension in the Extension List
     2. Just below the Extension List header, the Extension Editor line will be displayed
     3. Un-Check the "Grant Access" Checkbox to the left of the Extension Name
     4. Click the "Save" Icon to the right of the Extension ID
+
+> NOTE: If Access Control is Enabled, any extensions that are **NOT** in the Extension List will be implicitly denied access.
+> If the "FileSystemBroker Access Control" Pop-Up Window is enabled, when any extension that is **NOT** in the Extension List
+tries to use FileSystemBroker, the pop=up windiw **will** be displayed the next time the extension tries access FileSystemBroker
 
 #### Automatic Extension Removal
 
 FileSystemBroker will automatically remove extensions that have been uninstalled from Thunderbird.
 
-The default is to remove them when they have been removed more than 2 days in the past.
+The default is to remove them when they were uninstalled more than 2 days in the past.
 
 You can change this setting by selecting a value for the "__Automatically Remove Extensions that
-have been Uninstalled__" Selection Box on the FileSystemBroker Settings Tab. You can choose
+have been Uninstalled__" Select Box on the FileSystemBroker Settings Tab. You can choose
 a different number of days, you can choose to have the Extenstion removed as soon as it has
 been uninstalled, or you can disable this feature altogether.
 
@@ -899,11 +943,11 @@ List, View, and Delete logs.
 #### Automatic Event Log Deletion
 
 FileSystemBroker will automatically delete logs older than a selected
-number of days.  The default is 1 week (7 days.)  You can disable this
+number of days.  The default is 2 weeks (14 days.)  You can disable this
 or you can change the number of days using the "__Automatically delete
-Event Logs older than__" Selection Box.
+Event Logs older than__" Select Box.
 
-* If you do not see the Selection Box, click on the small triangle icon
+* If you do not see the Select Box, click on the small triangle icon
 to the left of "Event Logging Options".
 
 * Archived Event Logs will ___not___ get deleted during automatic Event Log deletion.

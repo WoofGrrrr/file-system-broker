@@ -161,8 +161,8 @@ export class FsbEventLogger {
 
     } else {
       const deleteFilesOlderThanMS = getMidnightMS(Date.now(), -numDays);
-      const deleteFilesOlderThan   = formatMsToDateTime24HR(deleteFilesOlderThanMS);
-      this.debugAlways(`deleteOldEventLogs -- Delete Log Files older than days=${numDays} ms=${deleteFilesOlderThanMS} date="${deleteFilesOlderThan}"`);
+      const deleteFilesOlderThanTime   = formatMsToDateTime24HR(deleteFilesOlderThanMS);
+      this.debugAlways(`deleteOldEventLogs -- Delete Log Files older than days=${numDays} ms=${deleteFilesOlderThanMS} time="${deleteFilesOlderThanTime}"`);
 
       for (const info of fileInfo) {
         if (true || this.DEBUG) {
@@ -201,7 +201,7 @@ await this.logInternalEvent("listLogFileInfo", "error", null, "LIST FILEINFO -- 
 await this.logInternalEvent("listLogFileInfo", "error", null, `LIST FILEINFO -- ERROR: ${listLogFileInfoResponse.invalid}`);
     } else if (listLogFileInfoResponse.error) {
       this.error(`getLogFileInfo -- listLogFileInfo -- LIST FILEINFO ERROR: ${listLogFileInfoResponse.error}`);
-await this.logInternalEvent("listLogFileInfo", "error", null, `LIST FILEINFO -- ERROR: ${listLogFileInfoResponse.invalid}`);
+await this.logInternalEvent("listLogFileInfo", "error", null, `LIST FILEINFO -- ERROR: ${listLogFileInfoResponse.error}`);
     } else if (! listLogFileInfoResponse.fileInfo) {
       this.error("getLogFileInfo -- listLogFileInfo -- NO FILEINFO RETURNED");
 await this.logInternalEvent("listLogFileInfo", "error", null, "LIST FILEINFO -- NO FILEINFO RETURNED");
@@ -209,6 +209,8 @@ await this.logInternalEvent("listLogFileInfo", "error", null, "LIST FILEINFO -- 
 await this.logInternalEvent("listLogFileInfo", "success", null, `LIST FILEINFO -- RETURNED LENGTH ${listLogFileInfoResponse.fileInfo.length}`);
       return listLogFileInfoResponse.fileInfo
     }
+
+    // returns undefined on error
   }
 
   /* returns { "fileInfo": [],    "length": number } array of FileInfo - see the FileSystemBroker API README file

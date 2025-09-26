@@ -549,7 +549,7 @@
     "message": "Failed to archive Event Log"
   },
   "fsbEventLogViewer_pageTitle": {
-    "message": "Event Log iewer"
+    "message": "Event Log Viewer"
   },
   "fsbEventLogViewer_title": {
     "message": "Event Log Viewer"
@@ -579,7 +579,7 @@
     "message": "XXX"
   },
   "fsbEventLogViewer_instructions_5": {
-    "message": "Click the Delete button to delete the Event Log"
+    "message": "Click the Delete button to delete this Event Log"
   },
   "fsbEventLogsDirectoryPathName.label": {
     "message": "Event Logs are placed in this Directory:"

@@ -26,6 +26,7 @@ class FileSystemBroker {
     this.fsbOptionsApi.setEventLogger(this.fsbEventLogger);
 
     this.midnightTimeout;
+    this.firstTime = true;
   }
 
 
@@ -93,12 +94,12 @@ class FileSystemBroker {
       this.caught(error, `run -- Caught error while reading settings from local storage. Attempt #${attempts} of ${MAX_ATTEMPTS}. Retrying.`);
     }
 
-    await this.setupMidnightTimeoutListener();
-
     messenger.runtime.onMessage.addListener(         (message)         => this.onMessageReceivedInternal(message)         );
     messenger.runtime.onMessageExternal.addListener( (message, sender) => this.onMessageReceivedExternal(message, sender) );
     messenger.management.onInstalled.addListener(    (extensionInfo)   => this.onExtensionInstalled(extensionInfo)        );
     messenger.management.onUninstalled.addListener(  (extensionInfo)   => this.onExtensionUninstalled(extensionInfo)      );
+
+    await this.setupMidnightTimeoutListener();
 
 
 
@@ -123,9 +124,14 @@ class FileSystemBroker {
 
     this.logAlways(`setupMidnightTimeoutListener -- Setting up next Midnight Timeout -- ${result}`);
 
-    this.midnightTimeout = setTimeout( () => this.midnightTimerTimedOut(delayMS, nowMs), delayMS);
-
+    this.midnightTimeout = setTimeout( () => this.midnightTimerTimedOut(delayMS, nowMS), delayMS);
     if (this.LOG_MIDNIGHT_EVENTS) await this.fsbEventLogger.logInternalEvent("setupMidnightTimeoutListener", "success", parameters, "");
+
+//  if (this.firstTime) {
+//    this.firstTime = false;
+//    this.midnightTimeout = setTimeout( () => this.midnightTimerTimedOut(10000, nowMS), 10000);
+//    if (this.LOG_MIDNIGHT_EVENTS) await this.fsbEventLogger.logInternalEvent("setupMidnightTimeoutListener", "success", { 'delay': 10000 }, "TEST 10000");
+//  }
   }
 
   async midnightTimerTimedOut(delayMS, thenMS) {
@@ -145,7 +151,7 @@ class FileSystemBroker {
   }
 
   async processMidnightTasks() {
-    this.logAlways("processMidnightTasks - start");
+    this.logAlways("processMidnightTasks -- start");
 
     try {
       if (this.LOG_MIDNIGHT_EVENTS) await this.fsbEventLogger.logInternalEvent("processMidnightTasks", "request", null, "");
@@ -160,23 +166,25 @@ class FileSystemBroker {
       this.caught(error, "processMidnightTasks");
     }
 
-    this.logAlways("processMidnightTasks - end");
+    this.logAlways("processMidnightTasks -- end");
   }
 
   async autoPurgeOldLogFiles() {
-    const numDays    = this.fsbOptionsApi.getAutoLogPurgeDays(14);
+    const numDays    = await this.fsbOptionsApi.getAutoLogPurgeDays(14);
+this.debugAlways("autoPurgeOldLogFiles -- numDays: ", numDays);
     const parameters = { 'numDays': numDays };
     if (this.LOG_PURGE_OLD_LOG_FILES) await this.fsbEventLogger.logInternalEvent("autoPurgeOldLogFiles", "request", parameters, "");
 
     if (numDays > 0) {
-      await this.fsbEventLogger.deleteOldLogFiles(numDays); // this event is already logged inside call
+      await this.fsbEventLogger.deleteOldEventLogs(numDays); // this event is already logged inside call
     }
 
     if (this.LOG_PURGE_OLD_LOG_FILES) await this.fsbEventLogger.logInternalEvent("autoPurgeOldLogFiles", "success", parameters, "");
   }
 
   async autoRemoveUninstalledExtensions() {
-    const numDays    = this.fsbOptionsApi.getAutoRemoveUninstalledExtensionsDays(2);
+    const numDays    = await this.fsbOptionsApi.getAutoRemoveUninstalledExtensionsDays(2);
+this.debugAlways("autoRemoveUninstalledExtensions -- numDays: ", numDays);
     const parameters = { 'numDays': numDays };
     if (this.LOG_REMOVE_UNINSTALLED_EXTENSIONS) await this.fsbEventLogger.logInternalEvent("autoRemoveUninstalledExtensions", "request", parameters, "");
 
