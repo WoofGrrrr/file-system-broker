@@ -491,17 +491,29 @@
   "fsbEventLogsDirectoryPathName.label": {
     "message": "Event Logs are placed in this Directory:"
   },
-  "fsbEventLogManager_title_listMode_archives.label": {
-    "message": "Archived Event Logs"
+  "fsbEventLogManagerActionDeleteEventLogsOlderThanDaysSelect.label": {
+    "message": "Delete Event Logs older than"
+  },
+  "fsbEventLogManagerActionDeleteEventLogsOlderThanDaysButton.label": {
+    "message": "Delete"
   },
   "fsbEventLogManager_title_listMode_logs.label": {
     "message": "Event Logs"
+  },
+  "fsbEventLogManager_title_listMode_archives.label": {
+    "message": "Archived Event Logs"
   },
   "fsbEventLogManager_button_listMode_archives.label": {
     "message": "List Archived Event Logs"
   },
   "fsbEventLogManager_button_listMode_logs.label": {
     "message": "List Event Logs"
+  },
+  "fsbEventLogManager_label_deleteNumDays_listMode_logs.label": {
+    "message": "Delete Event Logs older than"
+  },
+  "fsbEventLogManager_label_deleteNumDays_listMode_archives.label": {
+    "message": "Delete Archived Event Logs older than"
   },
   "fsbEventLogManager_message_fileNamesLoading": {
     "message": "...loading log filenames..."
@@ -663,7 +675,7 @@
     "message": "Reset All"
   },
   "fsbEventLogViewer_message_filter_startTimeAfterEndTime": {
-    "message": "The after time is later than the before time"
+    "message": "The begin time is after the end time"
   },
   "fsbEventLogViewer_message_filter_noMatch": {
     "message": "No Logged Events match the selected filters"
@@ -727,5 +739,68 @@
   },
   "fsbEventLogViewer_message_error_responseMessageFailed": {
     "message": "Internal Error - Failed to send response message to Event Log Manager UI"
+  },
+  "numDaysSelectOption_1": {
+    "message": "1 day"
+  },
+  "numDaysSelectOption_2": {
+    "message": "2 days"
+  },
+  "numDaysSelectOption_3": {
+    "message": "3 days"
+  },
+  "numDaysSelectOption_4": {
+    "message": "4 days"
+  },
+  "numDaysSelectOption_5": {
+    "message": "5 days"
+  },
+  "numDaysSelectOption_6": {
+    "message": "6 days"
+  },
+  "numDaysSelectOption_7": {
+    "message": "1 week"
+  },
+  "numDaysSelectOption_8": {
+    "message": "8 days"
+  },
+  "numDaysSelectOption_9": {
+    "message": "9 days"
+  },
+  "numDaysSelectOption_10": {
+    "message": "10 days"
+  },
+  "numDaysSelectOption_11": {
+    "message": "11 days"
+  },
+  "numDaysSelectOption_12": {
+    "message": "12 days"
+  },
+  "numDaysSelectOption_13": {
+    "message": "13 days"
+  },
+  "numDaysSelectOption_14": {
+    "message": "2 weeks"
+  },
+  "numDaysSelectOption_15": {
+    "message": "15 days"
+  },
+  "numDaysSelectOption_16": {
+    "message": "16 days"
+  },
+  "numDaysSelectOption_17": {
+    "message": "17 days"
+  },
+  "numDaysSelectOption_18": {
+    "message": "18 days"
+  },
+  "numDaysSelectOption_19": {
+    "message": "19 days"
+  },
+  "numDaysSelectOption_20": {
+    "message": "20 days"
+  },
+  "numDaysSelectOption_21": {
+    "message": "3 weeks"
   }
 }

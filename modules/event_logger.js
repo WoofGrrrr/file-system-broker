@@ -5,20 +5,22 @@ import { getExtensionId, getExtensionName, formatMsToDateForFilename, formatMsTo
 
 export class FsbEventLogger {
   constructor(fsbOptionsApi, logger) {
-    this.CLASS_NAME              = this.constructor.name;
-    this.extId                   = getExtensionId();
-    this.extName                 = getExtensionName();
+    this.CLASS_NAME                      = this.constructor.name;
+    this.extId                           = getExtensionId();
+    this.extName                         = getExtensionName();
 
-    this.LOG                     = false;
-    this.DEBUG                   = false;
+    this.LOG                             = false;
+    this.DEBUG                           = false;
 
-    this.LOG_FILENAME_MATCH_GLOB = "*.log";
-    this.LOG_FILENAME_EXTENSION  = ".log";
+    this.LOG_FILENAME_MATCH_GLOB         = "*.log";
+    this.LOG_FILENAME_EXTENSION          = ".log";
+    this.LOG_ARCHIVE_FILENAME_MATCH_GLOB = "*.alog";
+    this.LOG_ARCHIVE_FILENAME_EXTENSION  = ".alog";
 
-    this.logger                  = logger;
-    this.fsbOptionsApi           = fsbOptionsApi;
-    this.fsbCommandsApi          = new FileSystemBrokerCommands(this.logger);
-    this.fsBrokerApi             = new FileSystemBrokerAPI();
+    this.logger                          = logger;
+    this.fsbOptionsApi                   = fsbOptionsApi;
+    this.fsbCommandsApi                  = new FileSystemBrokerCommands(this.logger);
+    this.fsBrokerApi                     = new FileSystemBrokerAPI();
   }
 
 
@@ -97,7 +99,7 @@ export class FsbEventLogger {
 
     // We cannot use writeObjectToJSONFile because it does not support APPEND modes
     const json = JSON.stringify(logMsg) + "\n";
-    const response = messenger.BrokerFileSystem.writeFile(this.extId, logFileName, json, "appendOrCreate" );
+    const bytesWritten = messenger.BrokerFileSystem.writeFile(this.extId, logFileName, json, "appendOrCreate" );
   }
 
 
@@ -117,7 +119,7 @@ export class FsbEventLogger {
 
     // We cannot use writeObjectToJSONFile because it does not support APPEND modes
     const json = JSON.stringify(logMsg) + "\n";
-    const response = messenger.BrokerFileSystem.writeFile(this.extId, logFileName, json, "appendOrCreate" );
+    const bytesWritten = messenger.BrokerFileSystem.writeFile(this.extId, logFileName, json, "appendOrCreate" );
   }
 
 
@@ -139,86 +141,114 @@ export class FsbEventLogger {
 
     // We cannot use writeObjectToJSONFile because it does not support APPEND modes
     const json = JSON.stringify(logMsg) + "\n";
-    const response = messenger.BrokerFileSystem.writeFile(this.extId, logFileName, json, "appendOrCreate" );
+    const bytesWritten = messenger.BrokerFileSystem.writeFile(this.extId, logFileName, json, "appendOrCreate" );
   }
 
 
 
-  async deleteOldEventLogs(numDays) {
-    this.debugAlways(`deleteOldEventLogs -- begin -- numDays=${numDays}`);
+  // if numDays == 0 just delete them all, regardless
+  // if optional archives parameter is true, delete archived log files */
+  //
+  // Does NOT use the FilSystemBroker API, so this MAY be called from background.js,
+  // where the message listeners are defined.
+  async deleteOldEventLogs(numDays, archives) {
+    this.debugAlways(`deleteOldEventLogs -- begin -- numDays=${numDays} archives=${archives}`);
 
-    const parameters = { 'numDays': numDays };
+    const deleteArchives           = (typeof archives === 'boolean') ? archives : false;
+    const deleteFilesOlderThanMS   = (numDays == 0) ? 0  : getMidnightMS(Date.now(), -numDays);
+    const deleteFilesOlderThanTime = (numDays == 0) ? "" : formatMsToDateTime24HR(deleteFilesOlderThanMS);
+
+    const parameters = (numDays == 0) ? { 'numDays': numDays, 'archives': deleteArchives }
+                                      : { 'numDays': numDays, 'olderThan': deleteFilesOlderThanTime, 'archives': deleteArchives };
     await this.logInternalEvent("deleteOldEventLogs", "request", parameters, "");
     
-    var   deleted  = 0;
-    const fileInfo = await this.getLogFileInfo();
+    var   numDeleted       = 0;
+    const deletedFileNames = [];
+    const fileInfo         = await this.getLogFileInfo(archives);
     if (! fileInfo) {
       // errors should already have been recorded in getLogFileInfo()
-      await this.logInternalEvent("deleteOldEventLogs", "error", parameters, "Failed to get Log Files list");
+      await this.logInternalEvent("deleteOldEventLogs", "error", parameters, "Failed to get Log File Info");
 
     } else if (fileInfo.length < 1) {
       await this.logInternalEvent("deleteOldEventLogs", "success", parameters, "No Log Files");
 
     } else {
-      const deleteFilesOlderThanMS = getMidnightMS(Date.now(), -numDays);
-      const deleteFilesOlderThanTime   = formatMsToDateTime24HR(deleteFilesOlderThanMS);
-      this.debugAlways(`deleteOldEventLogs -- Delete Log Files older than days=${numDays} ms=${deleteFilesOlderThanMS} time="${deleteFilesOlderThanTime}"`);
+      this.debugAlways(`deleteOldEventLogs -- Delete ${deleteArchives? "Archived " : ""}Log Files older than days=${numDays} ms=${deleteFilesOlderThanMS} time="${deleteFilesOlderThanTime}"`);
 
       for (const info of fileInfo) {
         if (true || this.DEBUG) {
-          const fileCreationDateTime = formatMsToDateTime24HR(info.creationTime);
-          this.debugAlways(`deleteOldEventLogs -- file "${info.fileName}" creationTime: "${fileCreationDateTime}" (${info.creationTime})`);
+          if (numDays == 0) {
+            this.debugAlways(`deleteOldEventLogs -- file "${info.fileName}" numDays==0`);
+          } else {
+            const fileCreationDateTime    = formatMsToDateTime24HR(info.creationTime);
+            const fileLasModifiedDateTime = formatMsToDateTime24HR(info.lastModified);
+            this.debugAlways(`deleteOldEventLogs -- file "${info.fileName}" -- creationTime: "${fileCreationDateTime}" (${info.creationTime}) -- lastModified: "${fileLasModifiedDateTime}" (${info.lastModified}) `);
+          }
         }
-        if (info.creationTime < deleteFilesOlderThanMS) {
+
+        // MABXXX using last modified time instead of creation time
+        // Windows doesn't seem to set creation time as I would expect
+////////if (numDays == 0 || info.creationTime < deleteFilesOlderThanMS) {
+        if (numDays == 0 || info.lastModified < deleteFilesOlderThanMS) {
           this.debugAlways(`deleteOldEventLogs -- Deleting file "${info.fileName}"`);
           const response = await this.deleteLogFile(info.fileName);
           // errors should already have been recorded in deleteLogFile()
-          if (response.deleted) deleted++;
+          if (response.deleted) {
+            numDeleted++;
+            deletedFileNames.push(info.fileName);
+          }
         }
       }
 
-      await this.logInternalEvent("deleteOldEventLogs", "success", parameters, `${deleted} Log Files deleted`);
+      await this.logInternalEvent("deleteOldEventLogs", "success", parameters, `${numDeleted} Log Files deleted`);
     }
 
-    this.debugAlways(`deleteOldEventLogs -- end -- deleted: ${deleted}`);
+    this.debugAlways(`deleteOldEventLogs -- end -- numDeleted: ${numDeleted}`);
+
+    return deletedFileNames;
   }
 
-  async getLogFileInfo() {
-await this.logInternalEvent("listLogFileInfo", "request", null, "LIST FILEINFO");
-    let listLogFileInfoResponse;
+  // if optional archives parameter is true, get archived log FileInfo
+  //
+  // Does NOT use the FilSystemBroker API, so this MAY be called from background.js,
+  // where the message listeners are defined.
+  async getLogFileInfo(archives) {
+    const deleteArchives = (typeof archives === 'boolean') ? archives : false;
+    const matchGLOB      = deleteArchives ? this.LOG_ARCHIVE_FILENAME_MATCH_GLOB : this.LOG_FILENAME_MATCH_GLOB;
+    const parameters     = {  'archives': deleteArchives, 'matchGLOB': matchGLOB};
+
+    this.debugAlways(`getLogFileInfo -- archives=${archives} matchGLOB="${matchGLOB}"`);
+    await this.logInternalEvent("getLogFileInfo", "request", parameters, "");
+
+    var logFileInfo;
     try {
-      listLogFileInfoResponse = await this.listLogFileInfo();
+      logFileInfo = await messenger.BrokerFileSystem.listFileInfo(this.extId, matchGLOB);
+      if (! logFileInfo) {
+        await this.logInternalEvent("getLogFileInfo", "error", parameters, "No Log FileInfo");
+      } else {
+        await this.logInternalEvent("getLogFileInfo", "success", parameters, `Got ${logFileInfo.length} Log Files`);
+      }
     } catch (error) {
-      this.caught(error, " -- getLogFileInfo");
-await this.logInternalEvent("listLogFileInfo", "error", null, `LIST FILEINFO -- EXCEPTION: "${error.name}" -- "${error.message}" `);
+      this.caught(error, "getLogFileInfo");
+      await this.logInternalEvent("getLogFileInfo", "error", parameters, `EXCEPTION -- ${error.name}: ${error.message}`);
     }
 
-    if (! listLogFileInfoResponse) {
-      this.error("getLogFileInfo -- listLogFileInfo -- LIST FILEINFO - NO RESPONSE");
-await this.logInternalEvent("listLogFileInfo", "error", null, "LIST FILEINFO -- NO RESPONSE");
-    } else if (listLogFileInfoResponse.invalid) {
-      this.error(`getLogFileInfo -- listLogFileInfo -- LIST FILEINFO ERROR: ${listLogFileInfoResponse.invalid}`);
-await this.logInternalEvent("listLogFileInfo", "error", null, `LIST FILEINFO -- ERROR: ${listLogFileInfoResponse.invalid}`);
-    } else if (listLogFileInfoResponse.error) {
-      this.error(`getLogFileInfo -- listLogFileInfo -- LIST FILEINFO ERROR: ${listLogFileInfoResponse.error}`);
-await this.logInternalEvent("listLogFileInfo", "error", null, `LIST FILEINFO -- ERROR: ${listLogFileInfoResponse.error}`);
-    } else if (! listLogFileInfoResponse.fileInfo) {
-      this.error("getLogFileInfo -- listLogFileInfo -- NO FILEINFO RETURNED");
-await this.logInternalEvent("listLogFileInfo", "error", null, "LIST FILEINFO -- NO FILEINFO RETURNED");
-    } else {
-await this.logInternalEvent("listLogFileInfo", "success", null, `LIST FILEINFO -- RETURNED LENGTH ${listLogFileInfoResponse.fileInfo.length}`);
-      return listLogFileInfoResponse.fileInfo
-    }
-
-    // returns undefined on error
+    return logFileInfo;
   }
 
-  /* returns { "fileInfo": [],    "length": number } array of FileInfo - see the FileSystemBroker API README file
-   *         { "error":    string                  } If there was some error writing the file. The returned string gives the reason.
+  /* if optional archives parameter is true, list archived log FileInfo
+   *
+   * returns { "fileInfo": [],    "length": number } array of FileInfo - see the FileSystemBroker API README file
+   *         { "error":    string                  } If there was some error getting the file info. The returned string gives the reason.
+   *
+   * Uses the FilSystemBroker API, so this may NOT be called from background.js,
+   * where the listeners are defined.
    */
-  async listLogFileInfo() {
+  async listLogFileInfo(archives) {
+    const deleteArchives = (typeof archives === 'boolean') ? archives : false;
+    const matchGLOB      = deleteArchives ? this.LOG_ARCHIVE_FILENAME_MATCH_GLOB : this.LOG_FILENAME_MATCH_GLOB;
+
     try {
-      const matchGLOB = this.LOG_FILENAME_MATCH_GLOB;
       this.debug(`listLogFileInfo -- Getting list of log files with matchGLOB "${matchGLOB}"`);
       const response = await this.fsBrokerApi.listFileInfo(matchGLOB);
       this.debug(`listLogFileInfo --response: "${response}"`);

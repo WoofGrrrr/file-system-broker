@@ -33,15 +33,15 @@ below for details.
 
 ## How to Use FileSystemBroker
 
-To use the FileSystemBroker, an extension can use the FileSystemBrokder API to be found in;
+To use the FileSystemBroker, an extension can use the FileSystemBroker API to be found in:
 
          modules/FileSystemBroker/filesystem_broker_api.js
 
-Information about how to use this API can be found below in the README file in modules/FileSystemBroker
+Information about how to use this API can be found below and in the README file in modules/FileSystemBroker
 
 <br>
 
-ALTERNATIVELY, an extension can  use FileSystemBroker directly by sending a
+___ALTERNATIVELY___, an extension can  use FileSystemBroker directly by sending a
 command message to this extension by calling the Web Extension function:
 
          browser.runtime.sendMessage(extensionId, message)
@@ -271,7 +271,7 @@ They must not contain the following characters:
 
 + IN ADDITION, THE FOLLOWING DIRECTORY NAMES CANNOT BE USED:
 
-      .. (two dots or periods, if you're not American, full-stops)
+      .. (two dots or periods, or, if you're not American, full-stops)
    
 #### MAXIMUM LENGTH:
 
@@ -921,7 +921,7 @@ There are six ways to DENY access to an extension:
 
 > NOTE: If Access Control is Enabled, any extensions that are **NOT** in the Extension List will be implicitly denied access.
 > If the "FileSystemBroker Access Control" Pop-Up Window is enabled, when any extension that is **NOT** in the Extension List
-tries to use FileSystemBroker, the pop=up windiw **will** be displayed the next time the extension tries access FileSystemBroker
+> tries to use FileSystemBroker, the pop-up window **will** be displayed the next time the extension tries access FileSystemBroker
 
 #### Automatic Extension Removal
 
@@ -957,7 +957,7 @@ existing backup file, or delete one or more backup files.
 
 FileSystemBroker logs certain events and writes them to Files. You can
 choose which events get logged, and you can use the Event Log Manager to
-List, View, and Delete logs.
+List, View, Archive, or Delete logs.
 
 #### Automatic Event Log Deletion
 

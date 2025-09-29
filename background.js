@@ -5,6 +5,10 @@ import { FileSystemBrokerCommands } from '../modules/commands.js';
 import { logProps, getExtensionId, getExtensionName, getI18nMsg, formatMsToDateForFilename, formatMsToDateTime24HR, getMidnightDelayMS, getNextMidnightDelayMS, getMidnightMS, formatNowToDateTime24HR } from './utilities.js';
 
 
+/********
+ * NOTE: The FileSystemBroker API CANNOT be used here.
+ * That would result in sending a message to itself, which the Web Extensions API apparently does not allow.
+ */
 class FileSystemBroker {
   constructor() {
     this.CLASS_NAME                        = this.constructor.name;
@@ -27,6 +31,8 @@ class FileSystemBroker {
 
     this.midnightTimeout;
     this.firstTime = true;
+    this.midnightEventDispatcher = new EventTarget();
+    this.midnightEventDispatcher.addEventListener('midnight', (e) => this.onMidnight(e));
   }
 
 
@@ -99,7 +105,7 @@ class FileSystemBroker {
     messenger.management.onInstalled.addListener(    (extensionInfo)   => this.onExtensionInstalled(extensionInfo)        );
     messenger.management.onUninstalled.addListener(  (extensionInfo)   => this.onExtensionUninstalled(extensionInfo)      );
 
-    await this.setupMidnightTimeoutListener();
+    await this.setupMidnightTimeout();
 
 
 
@@ -113,7 +119,7 @@ class FileSystemBroker {
 
 
 
-  async setupMidnightTimeoutListener() {
+  async setupMidnightTimeout() {
     const nowMS        = Date.now();
     const midnightMS   = getMidnightMS(nowMS, 0);
     const midnightTime = formatMsToDateTime24HR(midnightMS);
@@ -122,43 +128,59 @@ class FileSystemBroker {
     const parameters   = { 'delayMS': delayMS, 'midnightTime': midnightTime }; 
     const result       = `Setting Midnight Timeout: delayMS=${delayMS} midnightMS=${midnightMS} midnightTime="${midnightTime}"`;
 
-    this.logAlways(`setupMidnightTimeoutListener -- Setting up next Midnight Timeout -- ${result}`);
+    this.logAlways(`setupMidnightTimeout -- Setting up next Midnight Timeout -- ${result}`);
 
     this.midnightTimeout = setTimeout( () => this.midnightTimerTimedOut(delayMS, nowMS), delayMS);
-    if (this.LOG_MIDNIGHT_EVENTS) await this.fsbEventLogger.logInternalEvent("setupMidnightTimeoutListener", "success", parameters, "");
+    if (this.LOG_MIDNIGHT_EVENTS) await this.fsbEventLogger.logInternalEvent("setupMidnightTimeout", "success", parameters, "");
 
 //  if (this.firstTime) {
 //    this.firstTime = false;
 //    this.midnightTimeout = setTimeout( () => this.midnightTimerTimedOut(10000, nowMS), 10000);
-//    if (this.LOG_MIDNIGHT_EVENTS) await this.fsbEventLogger.logInternalEvent("setupMidnightTimeoutListener", "success", { 'delay': 10000 }, "TEST 10000");
+//    if (this.LOG_MIDNIGHT_EVENTS) await this.fsbEventLogger.logInternalEvent("setupMidnightTimeout", "success", { 'delay': 10000 }, "TEST 10000");
 //  }
   }
 
-  async midnightTimerTimedOut(delayMS, thenMS) {
+  async midnightTimerTimedOut(delayMS, timerSetAtMS) {
     const timer = this.midnightTimeout;
     this.midnightTimeout = null;
     if (timer) {
       clearTimeout(timer);
     }
 
-    const result = `Timed out after ${delayMS} ms -- Set at "${formatMsToDateTime24HR(thenMS)}"`;
+    const timerSetAtTime = formatMsToDateTime24HR(timerSetAtMS);
+    const result         = `Timed out after ${delayMS} ms -- Set at "${timerSetAtTime}"`;
     this.logAlways(`midnightTimerTimedOut -- ${result}`);
-    if (this.LOG_MIDNIGHT_EVENTS) await this.fsbEventLogger.logInternalEvent("midnightTimerTimedOut", "success", null, result);
 
+    if (this.LOG_MIDNIGHT_EVENTS) {
+      const parameters = { 'delayMs': delayMS, 'timerSetAt': timerSetAtTime };
+      await this.fsbEventLogger.logInternalEvent("midnightTimerTimedOut", "success", parameters, result);
+    }
+
+    this.dispatchMidnightEvent();
+
+    await this.setupMidnightTimeout();
+  }
+
+  dispatchMidnightEvent() {
+    this.logAlways("dispatchMidnightEvent -- begin");
+    const midnightEvent = new Event('midnight');
+    this.midnightEventDispatcher.dispatchEvent(midnightEvent);
+    this.logAlways("dispatchMidnightEvent -- end");
+  }
+
+  async onMidnight(e) {
+    this.logAlways("onMidnight -- begin");
     await this.processMidnightTasks();
-
-    await this.setupMidnightTimeoutListener();
+    this.logAlways("onMidnight -- end");
   }
 
   async processMidnightTasks() {
-    this.logAlways("processMidnightTasks -- start");
+    this.logAlways("processMidnightTasks -- begin");
 
     try {
       if (this.LOG_MIDNIGHT_EVENTS) await this.fsbEventLogger.logInternalEvent("processMidnightTasks", "request", null, "");
 
-
       await this.autoRemoveUninstalledExtensions(); // this event is already logged inside call
-
       await this.autoPurgeOldLogFiles(); // this event is already logged inside call
 
       if (this.LOG_MIDNIGHT_EVENTS) await this.fsbEventLogger.logInternalEvent("processMidnightTasks", "success", null, "");
@@ -170,8 +192,9 @@ class FileSystemBroker {
   }
 
   async autoPurgeOldLogFiles() {
-    const numDays    = await this.fsbOptionsApi.getAutoLogPurgeDays(14);
-this.debugAlways("autoPurgeOldLogFiles -- numDays: ", numDays);
+    const numDays = await this.fsbOptionsApi.getAutoLogPurgeDays(14);
+    this.debug("autoPurgeOldLogFiles -- numDays: ", numDays);
+
     const parameters = { 'numDays': numDays };
     if (this.LOG_PURGE_OLD_LOG_FILES) await this.fsbEventLogger.logInternalEvent("autoPurgeOldLogFiles", "request", parameters, "");
 
@@ -183,8 +206,9 @@ this.debugAlways("autoPurgeOldLogFiles -- numDays: ", numDays);
   }
 
   async autoRemoveUninstalledExtensions() {
-    const numDays    = await this.fsbOptionsApi.getAutoRemoveUninstalledExtensionsDays(2);
-this.debugAlways("autoRemoveUninstalledExtensions -- numDays: ", numDays);
+    const numDays = await this.fsbOptionsApi.getAutoRemoveUninstalledExtensionsDays(2);
+    this.debug("autoRemoveUninstalledExtensions -- numDays: ", numDays);
+
     const parameters = { 'numDays': numDays };
     if (this.LOG_REMOVE_UNINSTALLED_EXTENSIONS) await this.fsbEventLogger.logInternalEvent("autoRemoveUninstalledExtensions", "request", parameters, "");
 
@@ -274,9 +298,10 @@ this.debugAlways("autoRemoveUninstalledExtensions -- numDays: ", numDays);
 
       if (! message.hasOwnProperty('Command')) {
         //this.logAlways( "onMessageReceivedInternal -- Received Unknown Internal Message --", message);
-        return { "error": "Invalid Request: Message has no Command Object",
-                 "code": "400"
-               };
+//      return { "error": "Invalid Request: Message has no Command Object",
+//               "code": "400"
+//             };
+        return false;
       }
 
       const formattedParameters = this.fsbCommandsApi.formatParameters(message.Command);
@@ -300,7 +325,7 @@ this.debugAlways("autoRemoveUninstalledExtensions -- numDays: ", numDays);
       } else {
         if (await this.fsbOptionsApi.isEnabledInternalMessageResultLogging()) {
           const formattedResult = this.fsbCommandsApi.formatCommandResult(message.Command, result);
-          this.logAlways( "onMessageReceivedInternal --"
+          this.logAlways( "onMessageReceivedInternal -- RESULT"
                           + "\n- INTERNAL"
                           + `\n- Command="${message.Command.command}"`
 //////////////////////////+ `\n- FileName="${message.Command.fileName}"`
@@ -441,7 +466,7 @@ this.debugAlways("autoRemoveUninstalledExtensions -- numDays: ", numDays);
       } else {
         if (logResult) {
           const formattedResult = this.fsbCommandsApi.formatCommandResult(message.Command, result);
-          this.logAlways( "onMessageReceivedExternal --"
+          this.logAlways( "onMessageReceivedExternal -- RESULT"
                           + `\n- From="${sender.id}"`
                           + `\n- Command="${message.Command.command}"`
 //////////////////////////+ `\n- FileName="${message.Command.fileName}"`
@@ -645,10 +670,10 @@ this.debugAlways("autoRemoveUninstalledExtensions -- numDays: ", numDays);
 
     switch (confirmDialogResponse) {
       case 'BUTTON_1': // 'Yes' button
-        await this.grantAccessToExtension(extensionId); // MABXXX Add NEW Extension vs Grant existing Extension???
+        await this.grantAccessToExtension(extensionId); // Add NEW Extension and Grant -vs- Grant existing Extension???
         return true;
       case 'BUTTON_2': // 'No' button
-        await this.denyAccessToExtension(extensionId); // MABXXX Add NEW Extension and Deny vs Deny existing Extension???
+        await this.denyAccessToExtension(extensionId); // Add NEW Extension and Deny -vs- Deny existing Extension???
         return false;
       case 'BUTTON_3': // 'Cancel' button
         this.debug("showGrantExtensionConfirmDialog -- ConfirmDialog canceled");
@@ -713,11 +738,11 @@ this.debugAlways("autoRemoveUninstalledExtensions -- numDays: ", numDays);
        * Save this ConfirmDialogResponse into response for resolve()
        */
       function messageListener(request, sender, sendResponse) {
-        if (sender.tab.windowId == confirmDialogWindowId && request && request.ConfirmDialogResponse) {
+        if (sender.tab && sender.tab.windowId == confirmDialogWindowId && request && request.hasOwnProperty("ConfirmDialogResponse")) {
           response = request.ConfirmDialogResponse;
         }
 
-        return false; // we're not sending any more messages
+        return false; // we're not sending any response 
       }
 
       messenger.runtime.onMessage.addListener(messageListener);
@@ -805,29 +830,8 @@ messenger.runtime.onSuspend.addListener(async () => {
 
 
 
-async function waitForLoad() {
-  const onCreate = new Promise(function(resolve, reject) {
-    function listener() {
-      messenger.windows.onCreated.removeListener(listener);
-      resolve(true);
-    }
-    messenger.windows.onCreated.addListener(listener);
-  } );
-
-  const windows = await messenger.windows.getAll( {windowTypes:["normal"]} );
-  if (windows.length > 0) {
-    return false;
-  } else {
-    return onCreate;
-  }
-}
-
-
-
 // self-executing async "main" function
 (async () => {
-  await waitForLoad();
-
   const fileSystemBroker = new FileSystemBroker();
-  waitForLoad().then((isAppStartup) => fileSystemBroker.run());
+  fileSystemBroker.run();
 })()

@@ -66,6 +66,16 @@ input[type="checkbox"].open-close-check:not(checked) + label {
   background-image:  url("../images/icons/light-gray-triangle-outline-right_10x10.png") !important;
 }
 
+#fsbEventLogManager input:is([type="text"], [type="number"]):not([disabled]) { /* any text or number field */
+  color:       black;       /* MABXXX MOVE TO theming.css */
+  text-shadow: none;
+}
+#fsbEventLogManager input:is[type="number"]:not([disabled]) { /* any number field */
+  cursor:      pointer;
+}
+#fsbEventLogManager input:is([type="text"], [type="number"])[disabled] { /* any disabled text or number field */
+}
+
 .options-open-close-panel {
 /*background-color: var(--panel-background-color);*/
 /*border:           1px solid var(--panel-border-color);*/
@@ -82,18 +92,19 @@ input[type="checkbox"].open-close-check:not(checked) + label {
   /* grid layout */
 
   display:    grid;
-  column-gap: 2px;
+  column-gap: 0px;
   row-gap:    0px;
   grid-template-areas:
     "title            title"
     "instructions     instructions"
+    "actions-panel    actions-panel"
     "list-title-panel right-spacer"
     "list-wrapper     right-spacer"
     "controls-panel   right-spacer"
     "bottom-spacer    bottom-spacer";
 
   grid-template-columns: min-content auto;
-  grid-template-rows:    min-content min-content min-content min-content min-content min-content;
+  grid-template-rows:    min-content min-content min-content min-content min-content min-content min-content;
 
   & #fsbEventLogManagerTitlePanel {
     grid-area: title;
@@ -101,6 +112,10 @@ input[type="checkbox"].open-close-check:not(checked) + label {
 
   & #fsbEventLogManagerInstructionsPanel {
     grid-area: instructions;
+  }
+
+  & #fsbEventLogManagerActionsPanel {
+    grid-area: actions-panel;
   }
 
   & #fsbEventLogManagerFileNameListTitlePanel {
@@ -151,6 +166,16 @@ input[type="checkbox"].open-close-check:not(checked) + label {
   font-size:        var(--instructions-font-size);
   font-weight:      var(--instructions-font-weight);
   margin-left:      1.0em;
+}
+
+#fsbEventLogManagerActionsPanel {
+  background-color: var(--panel-background-color);
+  border:           1px solid var(--panel-border-color);
+  border-radius:    10px;
+  margin-bottom:    1.0em;
+  margin-left:      2.0em;
+  margin-top:       0.0em;
+  padding:          0.5em 1.0em 0.5em 1.0em;
 }
 
 #fsbEventLogManagerFileNameListTitlePanel {

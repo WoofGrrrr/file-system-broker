@@ -276,11 +276,11 @@ option {
 /*background-color: #5E758E;*/
 }
 
-.event-line-item[status='invalid'] > .event-line-status {
+.event-line-item[status='invalid'] > .event-line-data { /* .event-line-status { */
   background-color: #797342;
 }
 
-.event-line-item[status='error'] > .event-line-status {
+.event-line-item[status='error'] > .event-line-data { /* .event-line-status { */
   background-color: #9A6565;
 }
 

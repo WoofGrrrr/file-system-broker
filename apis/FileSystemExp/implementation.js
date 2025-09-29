@@ -1388,6 +1388,7 @@ function checkDirectoryName(dirName) {
 
 
 
+
 function checkWriteMode(writeMode) {
   if (typeof writeMode !== 'string') return false;
 

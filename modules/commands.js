@@ -1734,6 +1734,7 @@ export class FileSystemBrokerCommands {
     const ILLEGAL_CHARS = /[<>:"/\\|?*\x00-\x1F]/g;
     if (ILLEGAL_CHARS.test(filename)) return false;
 
+    // should this be windows-only???
     const RESERVED_NAMES = /^(con|prn|aux|nul|com[0-9]|lpt[0-9])$/i;
     if (RESERVED_NAMES.test(filename)) return false;
 
@@ -1748,6 +1749,7 @@ export class FileSystemBrokerCommands {
     const ILLEGAL_CHARS = /[<>:"/\\|?*\x00-\x1F]/g;
     if (ILLEGAL_CHARS.test(dirname)) return false;
 
+    // should this be windows-only???
     const RESERVED_NAMES = /^(\.\.|con|prn|aux|nul|com[0-9]|lpt[0-9])$/i;
     if (RESERVED_NAMES.test(dirname)) return false;
 
@@ -1785,13 +1787,19 @@ export class FileSystemBrokerCommands {
    */
   checkValidExtensionId(extensionId) {
     if (typeof extensionId !== 'string' || extensionId.length < 1 || extensionId.length > 64) return false;
+    
+    const ILLEGAL_CHARS = /[<>:"/\\|?*\x00-\x1F]/g; // will be used as part of a directoryName, so no OS-restricted chars
+    if (ILLEGAL_CHARS.test(extensionId)) return false;
+
+    // should this be windows-only???
+    const RESERVED_NAMES = /^(\.\.|con|prn|aux|nul|com[0-9]|lpt[0-9])$/i;
+    if (RESERVED_NAMES.test(extensionId)) return false;
 
     // note: no upper-case
     const LIKE_EMAIL_REGEX = /\A(?=[a-z0-9@.!#$%&'*+/=?^_`{|}~-]{6,254}\z)(?=[a-z0-9.!#$%&'*+/=?^_`{|}~-]{1,64}@)[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:(?=[a-z0-9-]{1,63}\.)[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+(?=[a-z0-9-]{1,63}\z)[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\z/;
 
-  //const ENCLOSED_GUID_REGEX   = /^\{[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\}$/;
-  //const UNENCLOSED_GUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
-
+////const ENCLOSED_GUID_REGEX   = /^\{[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\}$/;
+////const UNENCLOSED_GUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
     // note: no upper-case
     const ENCLOSED_GUID_REGEX   = /^\{[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\}$/;
     const UNENCLOSED_GUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
@@ -1803,12 +1811,6 @@ export class FileSystemBrokerCommands {
         if (UNENCLOSED_GUID_REGEX.test(extensionId)) return true;
       }
     }
-    
-  //const ILLEGAL_CHARS = /<>:"/\\|?*\x00-\x1F]/g;
-  //if (ILLEGAL_CHARS.test(extensionId)) return false;
-
-    const RESERVED_NAMES = /^(\.\.|con|prn|aux|nul|com[0-9]|lpt[0-9])$/i;
-    if (RESERVED_NAMES.test(extensionId)) return false;
 
     return true;
   }

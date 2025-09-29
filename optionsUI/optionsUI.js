@@ -31,14 +31,14 @@ class OptionsUI {
 
     this.prevFocusedWindow                          = undefined;
 
-    this.extensionOptionsTitleClickTimer            = null;  // for detecting single- vs double-click
+    this.extensionOptionsTitleClickTimeout          = null;  // for detecting single- vs double-click
     this.EXTENSION_OPTIONS_TITLE_CLICK_DELAY        = 500;   // 500ms, 1/2 second (the JavaScript runtime does not guarantee this time - it's single-threaded)
 
-    this.extensionItemClickTimer                    = null;  // for detecting single- vs double-click
+    this.extensionItemClickTimeout                  = null;  // for detecting single- vs double-click
     this.EXTENSION_ITEM_CLICK_DELAY                 = 500;   // 500ms, 1/2 second (the JavaScript runtime does not guarantee this time - it's single-threaded)
 
-    this.devDeleteOldEventLogsTimeout;
-    this.devRemovedUninstalledExtensionsTimeout;
+    this.devDeleteOldEventLogsTimeout               = null;
+    this.devRemovedUninstalledExtensionsTimeout     = null;
 
     // gather i18n messages for tooltips (and some other stuff) in the Extension List
     // - the calls to getI18nMsg for tooltips will return null - NOT the message ID - if no message is configured - just no tooltip
@@ -1675,15 +1675,15 @@ this.debugAlways(`extensionOptionCheckClicked -- LABEL CLICKED, FOR ELEMENT FOUN
   async extensionOptionsTitleDivClicked(e) {
     this.resetErrors();
 
-    this.extensionOptionsTitleClickTimer = setTimeout(() => this.extensionOptionsTitleDivSingleClicked(e), this.EXTENSION_OPTIONS_TITLE_CLICK_DELAY);
+    this.extensionOptionsTitleClickTimeout = setTimeout(() => this.extensionOptionsTitleDivSingleClicked(e), this.EXTENSION_OPTIONS_TITLE_CLICK_DELAY);
   }
 
-  // Should be called ONLY when the this.extensionOptionsTitleClickTimer has timed out
+  // Should be called ONLY when the this.extensionOptionsTitleClickTimeout has timed out
   async extensionOptionsTitleDivSingleClicked(e) {
-    if (this.extensionOptionsTitleClickTimer) {
-      const timer = this.extensionOptionsTitleClickTimer;
-      this.extensionsOptionTitleClickTimer = null;
-      clearTimeout(timer);
+    if (this.extensionOptionsTitleClickTimeout) {
+      const timeout = this.extensionOptionsTitleClickTimeout;
+      this.extensionsOptionTitleClickTimeout = null;
+      clearTimeout(timeout);
     }
 
     if (! e) return;
@@ -1700,10 +1700,10 @@ this.debugAlways(`extensionOptionCheckClicked -- LABEL CLICKED, FOR ELEMENT FOUN
       const divId = e.target.id;
 
       if (divId == "fsbExtensionOptionsTitle") {
-        if (this.extensionOptionsTitleClickTimer) {
-          const timer = this.extensionOptionsTitleClickTimer;
-          this.extensionsOptionTitleClickTimer = null;
-          clearTimeout(timer);
+        if (this.extensionOptionsTitleClickTimeout) {
+          const timeout = this.extensionOptionsTitleClickTimeout;
+          this.extensionsOptionTitleClickTimeout = null;
+          clearTimeout(timeout);
         }
 
         const isEnabledShowDeveloperOptions = await this.fsbOptionsApi.isEnabledOption("fsbShowDeveloperOptions");
@@ -2189,19 +2189,19 @@ this.debugAlways(`extensionOptionCheckClicked -- LABEL CLICKED, FOR ELEMENT FOUN
             const extensionId = trElement.getAttribute("extensionId");
             this.debug(`extensionClicked -- Got TR.extension-list-item extensionId=${extensionId} EXTENSION_ITEM_CLICK_DELAY=${this.EXTENSION_ITEM_CLICK_DELAY}`);
 
-            this.extensionItemClickTimer = setTimeout(() => this.extensionSingleClicked(e, trElement), this.EXTENSION_ITEM_CLICK_DELAY);
+            this.extensionItemClickTimeout = setTimeout(() => this.extensionSingleClicked(e, trElement), this.EXTENSION_ITEM_CLICK_DELAY);
           }
         }
       }
     }
   }
 
-  // Should be called ONLY when the extensionIdItemClickTimer for an extension-list-item (TR or TD) click has timed out
+  // Should be called ONLY when the extensionIdItemClickTimeout for an extension-list-item (TR or TD) click has timed out
   async extensionSingleClicked(e, extensionElement) {
-    if (this.extensionItemClickTimer) {
-      const timer = this.extensionItemClickTimer;
-      this.extensiontemClickTimer = null;
-      clearTimeout(timer);
+    if (this.extensionItemClickTimeout) {
+      const timeout = this.extensionItemClickTimeout;
+      this.extensiontemClickTimeout = null;
+      clearTimeout(timeout);
     }
 
     if (! e) return;
@@ -2254,10 +2254,10 @@ this.debugAlways(`extensionOptionCheckClicked -- LABEL CLICKED, FOR ELEMENT FOUN
 
   // and extension-list-item (TR or TD) was double-clicked
   async extensionDoubleClicked(e) {
-    if (this.extensionIdItemClickTimer) {
-      const timer = this.extensionIdItemClickTimer;
-      this.extensionIdItemClickTimer = null;
-      clearTimeout(timer);
+    if (this.extensionIdItemClickTimeout) {
+      const timeout = this.extensionIdItemClickTimeout;
+      this.extensionIdItemClickTimeout = null;
+      clearTimeout(timeout);
     }
 
     e.stopPropagation();
@@ -2610,17 +2610,16 @@ this.debugAlways(`extensionOptionCheckClicked -- LABEL CLICKED, FOR ELEMENT FOUN
       }
 
       /* The ExtensionChooser sends a message as ExtensionChooserResponse:
-       *  - CLOSED             - the user closed the popup window                  --  Problem - message "conduit" gets destroyed before message is sent/received
+       *  - CLOSED             - the user closed the popup window                  --  Problem - sometime message "conduit" gets destroyed before message is sent/received
        *  - CANCELED           - the user clicked the Cancel button
        *  - { 'ADDED': count } - Extensions added, count is how many (may be 0)    -- MABXXX NEED TO CHANGE { 'ADDED': 0 } to something else???
        * Save this ExtensionChooserResponse into response for resolve()
        */
       function messageListener(request, sender, sendResponse) {
-        if (sender.tab.windowId == extensionChooserWindowId && request && request.ExtensionChooserResponse) {
+        if (sender.tab && sender.tab.windowId == extensionChooserWindowId && request && request.hasOwnProperty("ExtensionChooserResponse")) {
           response = request.ExtensionChooserResponse;
         }
-
-        return false; // we're not sending any more messages
+        return false; // we're not sending any response
       }
 
       messenger.runtime.onMessage.addListener(messageListener);
@@ -2791,11 +2790,10 @@ this.debugAlways(`extensionOptionCheckClicked -- LABEL CLICKED, FOR ELEMENT FOUN
        * Save this BackupManagerResponse into response for resolve()
        */
       function messageListener(request, sender, sendResponse) {
-        if (sender.tab.windowId == backupManagerWindowId && request && request.BackupManagerResponse) {
+        if (sender.tab && sender.tab.windowId == backupManagerWindowId && request && request.hasOwnProperty("BackupManagerResponse")) {
           response = request.BackupManagerResponse;
         }
-
-        return false; // we're not sending any more messages
+        return false; // we're not sending any response
       }
 
       messenger.runtime.onMessage.addListener(messageListener);
@@ -2942,11 +2940,10 @@ this.debugAlways(`extensionOptionCheckClicked -- LABEL CLICKED, FOR ELEMENT FOUN
        * Save this EventLogManagerResponse into response for resolve()
        */
       function messageListener(request, sender, sendResponse) {
-        if (sender.tab && sender.tab.windowId == eventLogManagerWindowId && request && request.EventLogManagerResponse) {
+        if (sender.tab && sender.tab.windowId == eventLogManagerWindowId && request && request.hasOwnProperty("EventLogManagerResponse")) {
           response = request.EventLogManagerResponse;
         }
-
-        return false; // we're not sending any more messages
+        return false; // we're not sending any response
       }
 
       messenger.runtime.onMessage.addListener(messageListener);

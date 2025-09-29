@@ -1,6 +1,7 @@
 import { FileSystemBrokerAPI } from '../modules/FileSystemBroker/filesystem_broker_api.js';
 import { FsbOptions          } from '../modules/options.js';
 import { Logger              } from '../modules/logger.js';
+import { FsbEventLogger      } from '../modules/event_logger.js';
 import { getI18nMsg, formatMsToDateTime24HR, formatMsToDateTime12HR, formatMsToTimeForFilename } from '../utilities.js';
 
 
@@ -21,25 +22,28 @@ class EventLogManager {
     this.logger                      = new Logger();
     this.fsbOptionsApi               = new FsbOptions(this.logger);
     this.fsBrokerApi                 = new FileSystemBrokerAPI();
+    this.fsbEventLogger              = new FsbEventLogger(this.fsbOptionsApi, this.logger);
 
     this.LIST_MODE_LOGS              = 'logs';
     this.LIST_MODE_ARCHIVES          = 'archives';
     this.listMode                    = this.LIST_MODE_LOGS;
     this.canceled                    = false;
 
-    this.fileListItemClickTimer     = null;  // for detecting single- vs double-click
+    this.fileListItemClickTimeout   = null;  // for detecting single- vs double-click
     this.FILE_LIST_ITEM_CLICK_DELAY = 500;   // 500ms, 1/2 second (the JavaScript runtime does not guarantee this time - it's single-threaded)
 
 
-    this.i18n_listHeader_FileName                 = getI18nMsg( "fsbEventLogManager_listHeader_fileName",              "File Name"               );
-    this.i18n_listHeader_FileCreationDateTime     = getI18nMsg( "fsbEventLogManager_listHeader_fileTimeCreated",       "Time Created"            );
-    this.i18n_listHeader_FileLastModifiedDateTime = getI18nMsg( "fsbEventLogManager_listHeader_fileTimeLastModified",  "Time Last Modified"      );
-    this.i18n_listHeader_FileSize                 = getI18nMsg( "fsbEventLogManager_listHeader_fileSize",              "Size (bytes)"            );
+    this.i18n_listHeader_FileName                   = getI18nMsg( "fsbEventLogManager_listHeader_fileName",                           "File Name"                             );
+    this.i18n_listHeader_FileCreationDateTime       = getI18nMsg( "fsbEventLogManager_listHeader_fileTimeCreated",                    "Time Created"                          );
+    this.i18n_listHeader_FileLastModifiedDateTime   = getI18nMsg( "fsbEventLogManager_listHeader_fileTimeLastModified",               "Time Last Modified"                    );
+    this.i18n_listHeader_FileSize                   = getI18nMsg( "fsbEventLogManager_listHeader_fileSize",                           "Size (bytes)"                          );
 
-    this.i18n_title_listMode_logs                 = getI18nMsg( "fsbEventLogManager_title_listMode_logs.label",        "Log Files"               );
-    this.i18n_title_listMode_archives             = getI18nMsg( "fsbEventLogManager_title_listMode_archives.label",    "Archived Log Files"      );
-    this.i18n_button_listMode_logs                = getI18nMsg( "fsbEventLogManager_button_listMode_logs.label",       "List Log Files"          );
-    this.i18n_button_listMode_archives            = getI18nMsg( "fsbEventLogManager_button_listMode_archives.label",   "List Archived Log Files" );
+    this.i18n_title_listMode_logs                   = getI18nMsg( "fsbEventLogManager_title_listMode_logs.label",                     "Log Files"                             );
+    this.i18n_title_listMode_archives               = getI18nMsg( "fsbEventLogManager_title_listMode_archives.label",                 "Archived Log Files"                    );
+    this.i18n_button_listMode_logs                  = getI18nMsg( "fsbEventLogManager_button_listMode_logs.label",                    "List Log Files"                        );
+    this.i18n_button_listMode_archives              = getI18nMsg( "fsbEventLogManager_button_listMode_archives.label",                "List Archived Log Files"               );
+    this.i18n_label_deleteNumDays_listMode_logs     = getI18nMsg( "fsbEventLogManager_label_deleteNumDays_listMode_logs.label",       "Delete Event Logs older than"          );
+    this.i18n_label_deleteNumDays_listMode_archives = getI18nMsg( "fsbEventLogManager_label_deleteNumDays_listMode_archives.label",   "Delete Archived Event Logs older than" );
   }
 
   log(...info) {
@@ -95,8 +99,27 @@ class EventLogManager {
     await this.updateOptionsUI();
     await this.updateEventLogsDirectoryUI();
     await this.localizePage();
+          this.populateDeleteOldLogsDaysSelect();
     await this.buildFileNameListUI();
     this.setupEventListeners();
+  }
+
+
+
+  populateDeleteOldLogsDaysSelect() {
+    const numDaysSelect = document.getElementById("fsbEventLogManagerActionDeleteEventLogsOlderThanDaysSelect");
+    if (numDaysSelect) {
+      numDaysSelect.innerHTML = '';
+
+      for (var i=1; i<=21; i++) {
+        const option = document.createElement('option');
+        option.value = i;
+        option.textContent = getI18nMsg("numDaysSelectOption_" + i);
+        numDaysSelect.appendChild(option)
+      }
+
+      numDaysSelect.value = 7;
+    }
   }
 
 
@@ -262,12 +285,11 @@ class EventLogManager {
 
 
 
-  // an Action button was clicked - refesh, allow/disallow all, allow/disallow selected, add, delete selected, etc
+  // An Action button was clicked
   // or a label was clicked, so check it has a for="" attribute,
-  // or the extension settings title was clicked
+  // or ...
   //
-  // copied from optionsUI.js, so this does a lot that we don't really need for now.
-  // All we need it the part that handles the labels that have a for attribute and the value is the id of a checkbox 
+  // Copied from optionsUI.js, so this does a lot that we don't really need for now.
   async actionClicked(e) {
     this.debug('actionClicked --');
     if (e == null) return;
@@ -291,7 +313,8 @@ class EventLogManager {
 
         const buttonId = button.id;
         if (buttonId) switch (buttonId) {
-          case "XXX":
+          case "fsbEventLogManagerActionDeleteEventLogsOlderThanDaysButton":
+            this.deleteEventLogsOlderThanDaysButtonClicked(e);
             break;
           default:
             this.debug(`action -- NOT OUR BUTTON -- tagName="${e.target.tagName}" id="${e.target.id}"`);
@@ -310,9 +333,27 @@ class EventLogManager {
 
 
 
+  async deleteEventLogsOlderThanDaysButtonClicked(e) {
+    const numDaysSelect = document.getElementById("fsbEventLogManagerActionDeleteEventLogsOlderThanDaysSelect");
+    if (numDaysSelect) {
+      const numDays = +numDaysSelect.value;
+      const archives = (this.listMode === this.LIST_MODE_ARCHIVES);
+      this.debugAlways(`deleteEventLogsOlderThanDaysButtonClicked -- numDays=${numDays} archives=${archives}`);
+      const deletedFileNames = await this.fsbEventLogger.deleteOldEventLogs(numDays, archives);
+      this.debugAlways(`deleteEventLogsOlderThanDaysButtonClicked -- deletedFileNames.length=${deletedFileNames.length}`);
+
+      if (deletedFileNames && deletedFileNames.length > 0) {
+        // could delete the rows for the given fileNames, but just rebuild the list for now...
+        await this.buildFileNameListUI();
+      }
+    }
+  }
+
+
+
   async updateEventLogsDirectoryUI() {
     const eventLogsDirectoryPathNameLabel = document.getElementById("fsbEventLogsDirectoryPathName");
-    const response                       = await this.fsBrokerApi.getFullPathName(); // MABXXX perhaps this should come from fsbOptionsApi???
+    const response                        = await this.fsBrokerApi.getFullPathName(); // MABXXX perhaps this should come from fsbOptionsApi???
 
     if (response && response.fullPathName) {
       eventLogsDirectoryPathNameLabel.textContent = response.fullPathName;
@@ -479,8 +520,8 @@ class EventLogManager {
     const fileNameItemTR = document.createElement("tr");
       fileNameItemTR.classList.add("filename-list-item");             // filename-list-item
       fileNameItemTR.setAttribute("fileName", fileInfo.fileName);
-      fileNameItemTR.addEventListener( "click",    (e) => this.eventLognameClicked(e)       );
-      fileNameItemTR.addEventListener( "dblclick", (e) => this.eventLognameDoubleClicked(e) );
+      fileNameItemTR.addEventListener( "click",    (e) => this.eventLogItemClicked(e)       );
+      fileNameItemTR.addEventListener( "dblclick", (e) => this.eventLogItemDoubleClicked(e) );
 
       // Create FileName element and add it to the row
       const fileNameTD = document.createElement("td");
@@ -596,16 +637,16 @@ class EventLogManager {
 
 
   // a filename-list-item (TR or TD) was clicked
-  async eventLognameClicked(e) {
+  async eventLogItemClicked(e) {
     if (! e) return;
 
     e.stopPropagation();
     e.stopImmediatePropagation();
 
-    this.debug(`eventLognameClicked -- e.target.tagName="${e.target.tagName}"`);
+    this.debug(`eventLogItemClicked -- e.target.tagName="${e.target.tagName}"`);
 
     if (e.target.tagName == 'TR' || e.target.tagName == 'TD') {
-      this.debug("eventLognameClicked -- TR or TD Clicked");
+      this.debug("eventLogItemClicked -- TR or TD Clicked");
 
       // there's a reason for not simply using closest('tr') but I just don't remember
       let trElement;
@@ -616,51 +657,52 @@ class EventLogManager {
       }
 
       if (! trElement) {
-        this.debug("eventLognameClicked -- Did NOT get our TR");
+        this.debug("eventLogItemClicked -- Did NOT get our TR");
       } else if (! trElement.classList.contains("filename-list-item")) {
-        this.debug("eventLognameClicked -- TR does NOT have class 'filename-list-item'");
+        this.debug("eventLogItemClicked -- TR does NOT have class 'filename-list-item'");
       } else {
         const fileName = trElement.getAttribute("fileName");
-        this.debug(`eventLognameClicked -- Got TR.filename-list-item fileName=${fileName} FILE_LIST_ITEM_CLICK_DELAY=${this.FILE_LIST_ITEM_CLICK_DELAY}`);
-        this.fileListItemClickTimer = setTimeout(() => this.eventLognameSingleClicked(e, trElement), this.FILE_LIST_ITEM_CLICK_DELAY);
+        this.debugAlways(`eventLogItemClicked -- Got TR.filename-list-item fileName=${fileName} FILE_LIST_ITEM_CLICK_DELAY=${this.FILE_LIST_ITEM_CLICK_DELAY}`);
+        this.fileListItemClickTimeout = setTimeout( () => this.eventLogItemSingleClicked( e, trElement, Date.now() ), this.FILE_LIST_ITEM_CLICK_DELAY );
       }
     }
   }
 
-  //this.fileListItemClickTimer     = null;  // for detecting single- vs double-click
-  //this.FILE_LIST_ITEM_CLICK_DELAY = 500;   // 500ms, 1/2 second (the JavaScript runtime does not guarantee this time - it's single-threaded)
-  async eventLognameSingleClicked(e, trElement) {
-    const timer = this.fileListItemClickTimer;
-    this.fileListItemClickTimer = null;
-    if (timer) clearTimeout(timer)
+  async eventLogItemSingleClicked(e, trElement, timerSetMS) {
+    const timeout = this.fileListItemClickTimeout;
+    this.fileListItemClickTimeout = null;
+    if (timeout) {
+      clearTimeout(timeout);
 
-    if (! e) return;
+      const fileName    = trElement.getAttribute("fileName");
+      const wasSelected = trElement.classList.contains('selected');
 
-    const fileName    = trElement.getAttribute("fileName");
-    const wasSelected = trElement.classList.contains('selected');
+      this.debug(`eventLogItemSingleClicked -- GOT SINGLE-CLICK ON TR: wasSelected=${wasSelected} fileName="${fileName}"`);
 
-    this.debug(`eventLognameSIngleClicked -- GOT SINGLE-CLICK ON TR: wasSelected=${wasSelected}  fileName="${fileName}"`);
+      if (! wasSelected) {
+        trElement.classList.add('selected');
+      } else {
+        trElement.classList.remove('selected');
+      }
 
-    if (! wasSelected) {
-      trElement.classList.add('selected');
-    } else {
-      trElement.classList.remove('selected');
+      this.updateUIOnSelectionChanged();
     }
-
-    this.updateUIOnSelectionChanged();
   }
 
-  async eventLognameDoubleClicked(e) {
-    const timer = this.fileListItemClickTimer;
-    this.fileListItemClickTimer = null;
-    if (timer) clearTimeout(timer)
+  async eventLogItemDoubleClicked(e) {
+    const timeout = this.fileListItemClickTimeout;
+    this.fileListItemClickTimeout = null;
+    if (timeout) {
+      clearTimeout(timeout); // why is clearTimeout() not working???
+      this.debug("eventLogItemDoubleClicked -- GOT DOUBLE-CLICK -- cleared Timeout", timeout);
+    }
 
     if (! e) return;
 
-    this.debug(`eventLognameDoubleClicked -- e.target.tagName="${e.target.tagName}" e.detail=${e.detail}`);
+    this.debug(`eventLogItemDoubleClicked -- GOT DOUBLE-CLICK -- e.target.tagName="${e.target.tagName}" e.detail=${e.detail}`);
 
     if (e.detail == 2 && (e.target.tagName == 'TR' || e.target.tagName == 'TD')) {
-      this.debug("eventLognameDoubleClicked -- TR or TD Double-Clicked");
+      this.debug("eventLogItemDoubleClicked -- TR or TD Double-Clicked");
 
       // there's a reason for not simply using closest('tr') but I just don't remember
       let trElement;
@@ -671,16 +713,16 @@ class EventLogManager {
       }
 
       if (! trElement) {
-        this.error("eventLognameDoubleClicked -- NO TR ELEMENT");
+        this.error("eventLogItemDoubleClicked -- NO TR ELEMENT");
       } else {
-        this.debug("eventLognameDoubleClicked -- GOT TR ELEMENT");
+        this.debug("eventLogItemDoubleClicked -- GOT TR ELEMENT");
         if (! trElement.classList.contains("filename-list-item")) {
-          this.error("eventLognameDoubleClicked -- TR ELEMENT DOES NOT HAVE CLASS 'filename-list-item'");
+          this.error("eventLogItemDoubleClicked -- TR ELEMENT DOES NOT HAVE CLASS 'filename-list-item'");
         } else {
           const fileName = trElement.getAttribute("fileName");
-          this.debug(`eventLognameDoubleClicked -- GOT DOUBLE-CLICK ON TR: fileName="${fileName}"`);
+          this.debug(`eventLogItemDoubleClicked -- GOT DOUBLE-CLICK ON TR: fileName="${fileName}"`);
           if (! fileName) {
-            this.error("eventLognameDoubleClicked -- TR ELEMENT DOES NOT HAVE ATTRIBUTE 'fileName'");
+            this.error("eventLogItemDoubleClicked -- TR ELEMENT DOES NOT HAVE ATTRIBUTE 'fileName'");
           } else {
             await this.showEventLogViewer(fileName);
           }
@@ -759,14 +801,17 @@ class EventLogManager {
 
     e.preventDefault();
 
-    const listModeButtonLabel = document.getElementById("fsbEventLogManagerListModeButtonLabel");
+    const listModeButtonLabel      = document.getElementById("fsbEventLogManagerListModeButtonLabel");
+    const deleteNumDaysSelectLabel = document.getElementById("fsbEventLogManagerActionDeleteEventLogsOlderThanDaysSelectLabel");
 
     if (this.listMode === this.LIST_MODE_LOGS) {
       this.listMode = this.LIST_MODE_ARCHIVES;
-      listModeButtonLabel.textContent = this.i18n_button_listMode_logs;
+      listModeButtonLabel.textContent      = this.i18n_button_listMode_logs;
+      deleteNumDaysSelectLabel.textContent = this.i18n_label_deleteNumDays_listMode_archives;
     } else {
       this.listMode = this.LIST_MODE_LOGS;
-      listModeButtonLabel.textContent = this.i18n_button_listMode_archives;
+      listModeButtonLabel.textContent      = this.i18n_button_listMode_archives;
+      deleteNumDaysSelectLabel.textContent = this.i18n_label_deleteNumDays_listMode_logs;
     }
 
     await this.buildFileNameListUI();
@@ -977,11 +1022,11 @@ class EventLogManager {
        * Save this EventLogViewerResponse into response for resolve()
        */
       function messageListener(request, sender, sendResponse) {
-        if (sender.tab.windowId == eventLogViewerWindowId && request && request.EventLogViewerResponse) {
+        if (sender.tab && sender.tab.windowId == eventLogViewerWindowId && request && request.hasOwnProperty('EventLogViewerResponse')) {
           response = request.EventLogViewerResponse;
         }
 
-        return false; // we're not sending any more messages
+        return false; // we're not sending any response
       }
 
       messenger.runtime.onMessage.addListener(messageListener);
