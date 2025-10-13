@@ -1610,7 +1610,7 @@ this.debugAlways(`extensionOptionCheckClicked -- LABEL CLICKED, FOR ELEMENT FOUN
 
       // I thought the browser was supposed to take care of this <label> with a "for" attribute stuff...
       if (e.target.tagName === 'LABEL' && ! e.target.parentElement || e.target.parentElement.tagName !== 'BUTTON') {
-        // ignore it
+        // ignore it - let optionChanged() handle it
       } else {
         e.preventDefault();
 

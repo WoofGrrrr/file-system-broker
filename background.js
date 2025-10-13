@@ -84,20 +84,34 @@ class FileSystemBroker {
     await this.fsbEventLogger.logInternalEvent("startup", "success", null, "");
 
 
-    const MAX_ATTEMPTS = 3;
-    let   attempts     = 0;
+    var   defaultOptionsSetup = false;
+    var   attempts            = 0;
+    const MAX_ATTEMPTS        = 3;
 
-    try {
+    while (! defaultOptionsSetup && attempts < MAX_ATTEMPTS) {
       ++attempts;
-      await this.fsbOptionsApi.setupDefaultOptions();
-    } catch (error) {
+      try {
+        await this.fsbOptionsApi.setupDefaultOptions();
+        defaultOptionsSetup = true;
+      } catch (error) {
+        // Workaround. Several users report issues with accessing the
+        // messenger.local store
+        //
+        //    20:30:33.873 TransactionInactiveError: A request was placed
+        //    against a transaction which is currently not active, or which
+        //    is finished. IndexedDB.jsm:101:46
+        //
+        // Assuming that this error is caused by a timing issue while
+        // accessing the store concurrently, we simply try to circumvent this by
+        // reloading
 
-      if (attempts >= MAX_ATTEMPTS) {
-        this.caught(error, `run -- Caught error while reading settings from local storage. Attempt #${attempts} >= ${MAX_ATTEMPTS}. Giving up.`);
-        return;
+        if (attempts >= MAX_ATTEMPTS) {
+          this.caught(error, `run -- Caught error while reading settings from local storage. Attempt #${attempts} >= ${MAX_ATTEMPTS}. Giving up.`);
+          return;
+        }
+
+        this.caught(error, `run -- Caught error while reading settings from local storage. Attempt #${attempts} of ${MAX_ATTEMPTS}. Retrying.`);
       }
-
-      this.caught(error, `run -- Caught error while reading settings from local storage. Attempt #${attempts} of ${MAX_ATTEMPTS}. Retrying.`);
     }
 
     messenger.runtime.onMessage.addListener(         (message)         => this.onMessageReceivedInternal(message)         );

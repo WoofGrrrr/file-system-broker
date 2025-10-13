@@ -1,20 +1,18 @@
 # file-system-broker: File System Broker for Mozilla Thunderbird
 
-The FileSystemBroker Extension uses the Web Extension Experiments API to provide
-managed, limited access to the computer's file system.
+FileSystemBroker provides other web extensions the ability to safely access the computer's file system.  It provides managed, limited access.
 
-Its purpose is to make it so that other Web Extensions can access the computer's
-file system without having to use the Experiments API directly. Access to the
-file system is limited to only a specific directory in the user's Profile Folder.
-It can get a list of files, write, read, check the existence of, get properties
-of, rename, and delete files, etc, in *only* that directory.
+It can read, write, rename, delete, check the existence of, or get the properties of files or it can get a list of files, etc.
 
-On a Windows system, for example, for a user with User ID "user1", the files
-accessible to an extension with the ID "aaa.bbb@xxx.com" might be in this
-directory:
+FileSystemBroker uses the Thunderbird Extension Experiments API to provide access to the file system.  Using this extension, other Web Extensions can access the file system without having to use the Experiments API directly, which would give them unlimited acccess to the user's computer.
+
+Access to the file system is limited to only a specific directory in the user's Thunderbird Profile Directory.  Each extension that uses FileSystemBroker is limited to only its own specific directory.
+
+On a Windows system, for example, for a user with User ID "user1", the files accessible to an extension with the ID "aaa.bbb@xxx.com" might be in this directory:
 
          C:\Users\user1\AppData\Roaming\Thunderbird\Profiles\4x4rl22v.default-release\FileSystemBroker\aaa.bbb@xxx.com
 
+Learn more about and get support for this extension by going to: https://github.com/WoofGrrrr/file-system-broker
 <br>
 
 __NOTE: Sub-directories are not supported at this time (there is no method to create one.)__
@@ -201,8 +199,6 @@ A command is a message which is an object of the form:
         { "command": "getFullPathName"      [, "fileName":      string ]                     } - response { "fileName":      string, "fullPathName":  string                        }
         { "command": "isValidFileName",        "fileName":      string                       } - response { "fileName":      string, "valid":         boolean                       }
         { "command": "isValidDirectoryName",   "directoryName": string                       } - response { "directoryName": string, "valid":         boolean                       }
-
-
         { "command": "getFileSystemPathName"                                                 } - response { "pathName":      string                                                 }
         { "command": "renameFile", "fromFileName": string, "toFileName: string [, "overwrite": boolean] } - response { "fromFileName": string, "toFileName": string, "renamed": boolean }
 
@@ -613,7 +609,7 @@ in mind.
 
     command message: { "Command": { "command": "renameFile", "fromFileName": string, "toFileName": string[, "overwrite": boolean] } }
 
-                     The oviwrite parameter is optional. The default is false.
+                     The overwrite parameter is optional. The default is false.
 
     response:        { "fromFileName": string, "toFileName": string, "renamed": boolean }
 
@@ -819,7 +815,7 @@ in mind.
 <br>
 
 
-####  getFileSystemPathName - Returns the full pathName of the system directory on which this API operates.
+####  getFileSystemPathName - Returns the full pathName of the directory that this API uses for the calling extension.
 
     command message: { "Command": { "command": "getFileSystemPathName" } }
 

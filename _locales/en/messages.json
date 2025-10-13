@@ -3,7 +3,7 @@
     "message": "FileSystemBroker"
   },
   "extensionDescription": {
-    "message": "FileSystemBroker uses the Experiments API to provide limited access to the system file system. Its purpose is to make it so that other Web Extensions can write an read files without having to use the Experiments API directly. Access to the file system is limited to only a specific directory in the user's Profile Folder. It can write, read, check the existence, get file properties, get a list of files, etc"
+    "message": "FileSystemBroker provides other web extensions the ability to safely access the computer's file system.  It can read, write, rename, delete, check the existence of, or get the properties of files or it can get a list of files, etc.  Access to the file system is limited to only a specific directory in the user's Thunderbird Profile Directory.  Each extension that uses FileSystemBroker is limited to only its own specific directory.  FileSystemBroker uses the Extension Experiments API to provide access to the file system.  Using this extension, other Web Extensions can access the file system without having to use the Experiments API directly, which would give them unlimited acccess to the user's computer. Learn more by going to: https://github.com/WoofGrrrr/file-system-broker"
   },
   "fsbConfirmDialogPageTitle": {
     "message": "Confirmation"

@@ -453,9 +453,6 @@ input:disabled {
   cursor:           var(--cursor-disabled);
 }
 
-#fsbBackupManager button:-moz-window-inactive,
-.filename-list-item:-moz-window-inactive,
-.label:-moz-window-inactive
-{
-  opacity: 0.8;
+#fsbBackupManager :is(button, input, select, th, tr, td, table, input[type="checkbox"] ~ label):-moz-window-inactive {
+  opacity: var(--window-inactive-opacity);
 }

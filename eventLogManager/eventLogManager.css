@@ -506,9 +506,6 @@ input:disabled {
   cursor:           var(--cursor-disabled);
 }
 
-#fsbEventLogManager button:-moz-window-inactive,
-.filename-list-item:-moz-window-inactive,
-.label:-moz-window-inactive
-{
-  opacity: 0.8;
+#fsbEventLogManager :is(button, input, select, th, tr, td, table, input[type="checkbox"] ~ label):-moz-window-inactive {
+  opacity: var(--window-inactive-opacity);
 }

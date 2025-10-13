@@ -440,9 +440,6 @@ button#fsbExtensionChooserPopupControlsAddButton:not([disabled]):hover {
   color:            var(--button-sav e-hover-color);
 }
 
-#fsbExtensionChooserPopup button:-moz-window-inactive,
-.extension-list-item:-moz-window-inactive,
-.label:-moz-window-inactive
-{
-  opacity: 0.8;
+#fsbExtensionChooserPopup :is(button, input, select, th, tr, td, table, input[type="checkbox"] ~ label):-moz-window-inactive {
+  opacity: var(--window-inactive-opacity);
 }

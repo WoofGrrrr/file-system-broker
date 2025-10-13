@@ -1,4 +1,6 @@
 :root { /* default to dark */
+  --window-inactive-opacity:                       0.8;
+
   --cursor-disabled:                               not-allowed;
 
   --page-background-color:                         rgb(  47,  47,  55 );
