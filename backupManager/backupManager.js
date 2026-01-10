@@ -1,7 +1,7 @@
 import { FileSystemBrokerAPI } from '../modules/FileSystemBroker/filesystem_broker_api.js';
 import { FsbOptions          } from '../modules/options.js';
 import { Logger              } from '../modules/logger.js';
-import { getI18nMsg, formatMsToDateTime24HR , formatMsToDateTime12HR } from '../utilities.js';
+import { getI18nMsg, formatMsToDateTime24HR , formatMsToDateTime12HR } from '../modules/utilities.js';
 
 
 
@@ -10,8 +10,10 @@ class BackupManager {
   constructor() {
     this.className     = this.constructor.name;
 
+    this.INFO          = false;
     this.LOG           = false;
     this.DEBUG         = false;
+    this.WARN          = false;
 
     this.logger        = new Logger();
     this.fsbOptionsApi = new FsbOptions(this.logger);
@@ -25,38 +27,49 @@ class BackupManager {
     this.listHeaderTextFileSize                 = getI18nMsg( "fsbBackupManager_listHeader_fileSize",             "Size (bytes)"       );
   }
 
+
+
+  info(...info) {
+    if (this.INFO) this.logger.info(this.className, ...info);
+  }
+
+  infoAlways(...info) {
+    this.logger.infoAlways(this.className, ...info);
+  }
+
   log(...info) {
-    if (! this.LOG) return;
-    const msg = info.shift();
-    this.logger.log(this.className + '#' + msg, ...info);
+    if (this.LOG) this.logger.log(this.className, ...info);
   }
 
   logAlways(...info) {
-    const msg = info.shift();
-    this.logger.logAlways(this.className + '#' + msg, ...info);
+    this.logger.logAlways(this.className, ...info);
   }
 
   debug(...info) {
-    if (! this.DEBUG) return;
-    const msg = info.shift();
-    this.logger.debug(this.className + '#' + msg, ...info);
+    if (this.DEBUG) this.logger.debug(this.className, ...info);
   }
 
   debugAlways(...info) {
-    const msg = info.shift();
-    this.logger.debugAlways(this.className + '#' + msg, ...info);
+    this.logger.debugAlways(this.className, ...info);
+  }
+
+  warn(...info) {
+    if (this.WARN) this.logger.warn(this.className, ...info);
+  }
+
+  warnAlways(...info) {
+    this.logger.warnAlways(this.className, ...info);
   }
 
   error(...info) {
     // always log errors
-    const msg = info.shift();
-    this.logger.error(this.className + '#' + msg, ...info);
+    this.logger.error(this.className, ...info);
   }
   
-  caught(e, ...info) {
+  caught(e, msg, ...info) {
     // always log exceptions
-    const msg = info.shift();
-    this.logger.error( this.className + '#' + msg,
+    this.logger.error( this.className,
+                       msg,
                        "\n- name:    " + e.name,
                        "\n- message: " + e.message,
                        "\n- stack:   " + e.stack,
@@ -67,7 +80,7 @@ class BackupManager {
 
 
   async run(e) {
-    this.debug("run -- begin");
+    this.debug("-- begin");
 
     ////window.onbeforeunload = (e) => this.windowUnloading(e);
     window.addEventListener("beforeunload", (e) => this.windowUnloading(e));
@@ -103,7 +116,7 @@ class BackupManager {
 
 
   async localizePage() {
-    this.debug("localizePage -- start");
+    this.debug("-- start");
 
     for (const el of document.querySelectorAll("[data-l10n-id]")) {
       const id = el.getAttribute("data-l10n-id");
@@ -123,21 +136,21 @@ class BackupManager {
       el.insertAdjacentHTML('afterbegin', i18nMessage);
     }
 
-    this.debug("localizePage -- end");
+    this.debug("-- end");
   }
 
 
 
   async updateOptionsUI() {
-    this.debug("updateOptionsUI -- start");
+    this.debug("-- start");
 
     const options = await this.fsbOptionsApi.getAllOptions();
 
-    this.debug("updateOptionsUI -- sync options to UI");
+    this.debug("-- sync options to UI");
     for (const [optionName, optionValue] of Object.entries(options)) {
-      this.debug("updateOptionsUI -- option: ", optionName, "value: ", optionValue);
+      this.debug("-- option: ", optionName, "value: ", optionValue);
 
-      if (optionName in this.fsbOptionsApi.defaultOptionValues) {
+      if (this.fsbOptionsApi.isDefaultOption(optionName)) { // MABXXX WHY WHY WHY???
         const optionElement = document.getElementById(optionName);
 
         if (optionElement && optionElement.classList.contains("fsbGeneralOption")) {
@@ -157,7 +170,7 @@ class BackupManager {
       }
     }
 
-    this.debug("updateOptionsUI -- end");
+    this.debug("-- end");
   }
 
 
@@ -167,7 +180,7 @@ class BackupManager {
   // copied from optionsUI.js, so this does a lot that we don't really need for now.
   async optionChanged(e) {
     if (e == null) return;
-    this.debug(`optionChanged -- tagName="${e.target.tagName}" type="${e.target.type}" fsbGeneralOption? ${e.target.classList.contains("fsbGeneralOption")} id="${e.target.id}"`);
+    this.debug(`-- tagName="${e.target.tagName}" type="${e.target.type}" fsbGeneralOption? ${e.target.classList.contains("fsbGeneralOption")} id="${e.target.id}"`);
 
     var target = e.target;
     if ( target.tagName == "INPUT"
@@ -182,10 +195,10 @@ class BackupManager {
 
       /* if it's a radio button, set the values for all the other buttons in the group to false */
       if (target.type == "radio") { // is it a radio button?
-        this.debug(`optionChanged -- radio buttton selected ${optionName}=<${optionValue}> - group=${target.name}`);
+        this.debug(`-- radio buttton selected ${optionName}=<${optionValue}> - group=${target.name}`);
 
         // first, set this option
-        this.debug(`optionChanged -- Setting Radio Option {[${optionName}]: ${optionValue}}`);
+        this.debug(`-- Setting Radio Option {[${optionName}]: ${optionValue}}`);
         await this.fsbOptionsApi.storeOption(
           { [optionName]: optionValue }
         );
@@ -195,15 +208,15 @@ class BackupManager {
           const radioGroupName = target.name;
           const radioGroup = document.querySelectorAll(`input[type="radio"][name="${radioGroupName}"]`);
           if (! radioGroup) {
-            this.debug('optionChanged -- no radio group found');
+            this.debug('-- no radio group found');
           } else {
-            this.debug(`optionChanged -- radio group members length=${radioGroup.length}`);
+            this.debug(`-- radio group members length=${radioGroup.length}`);
             if (radioGroup.length < 2) {
-              this.debug('optionChanged -- no radio group members to reset (length < 2)');
+              this.debug('-- no radio group members to reset (length < 2)');
             } else {
               for (const radio of radioGroup) {
                 if (radio.id != optionName) { // don't un-check the one that fired
-                  this.debug(`optionChanged -- resetting radio button {[${radio.id}]: false}`);
+                  this.debug(`-- resetting radio button {[${radio.id}]: false}`);
                   await this.fsbOptionsApi.storeOption(
                     { [radio.id]: false }
                   );
@@ -213,7 +226,7 @@ class BackupManager {
           }
         }
       } else { // since we already tested for it, it's got to be a checkbox
-        this.debug(`optionChanged -- Setting Checkbox Option {[${optionName}]: ${optionValue}}`);
+        this.debug(`-- Setting Checkbox Option {[${optionName}]: ${optionValue}}`);
         await this.fsbOptionsApi.storeOption(
           { [optionName]: optionValue }
         );
@@ -232,7 +245,7 @@ class BackupManager {
       const optionName  = target.id;
       const optionValue = target.value;
 
-      this.debug(`optionChanged -- Setting Select Option {[${optionName}]: ${optionValue}}`);
+      this.debug(`-- Setting Select Option {[${optionName}]: ${optionValue}}`);
       await this.fsbOptionsApi.storeOption(
         { [optionName]: optionValue }
       );
@@ -242,7 +255,7 @@ class BackupManager {
 
 
   showHideInstructions(show) {
-    this.debug(`showHideInstructions -- show=${show}`);
+    this.debug(`-- show=${show}`);
     const panel = document.getElementById("fsbBackupManagerInstructions");
     if (panel) {
       if (show) {
@@ -270,7 +283,7 @@ class BackupManager {
 
 
   async windowUnloading(e) {
-    if (this.DEBUG) this.debugAlways( "windowUnloading --- Window Unloading ---"
+    if (this.DEBUG) this.debugAlways( "--- Window Unloading ---"
                                       + `\n- window.screenTop=${window.screenTop}`
                                       + `\n- window.screenLeft=${window.screenLeft}`
                                       + `\n- window.outerWidth=${window.outerWidth}`
@@ -283,11 +296,11 @@ class BackupManager {
       let bounds = await this.fsbOptionsApi.getWindowBounds("backupManagerWindowBounds");
 
       if (! bounds) {
-        this.debugAlways("windowUnloading --- WINDOW UNLOADING --- Retrieve Stored Window Bounds --- FAILED TO GET Backup Manager Window Bounds ---");
+        this.debugAlways("--- WINDOW UNLOADING --- Retrieve Stored Window Bounds --- FAILED TO GET Backup Manager Window Bounds ---");
       } else if (typeof bounds !== 'object') {
-        this.debugAlways(`windowUnloading --- WINDOW UNLOADING --- Retrieve Stored Window Bounds --- Backup Manager Window Bounds IS NOT AN OBJECT: typeof='${typeof bounds}' ---`);
+        this.debugAlways(`--- WINDOW UNLOADING --- Retrieve Stored Window Bounds --- Backup Manager Window Bounds IS NOT AN OBJECT: typeof='${typeof bounds}' ---`);
       } else {
-        this.debugAlways( "windowUnloading --- Retrieve Stored Window Bounds ---"
+        this.debugAlways( "--- Retrieve Stored Window Bounds ---"
                           + `\n- bounds.top:    ${bounds.top}`
                           + `\n- bounds.left:   ${bounds.left}`
                           + `\n- bounds.width:  ${bounds.width}`
@@ -306,7 +319,7 @@ class BackupManager {
   async buildFileNameListUI() {
     const domFileNameList = document.getElementById("fsbBackupManagerFileNameList");
     if (! domFileNameList) {
-      this.debug("run -- failed to get domFileNameList");
+      this.debug("-- failed to get domFileNameList");
       // MABXXX DISPLAY MESSAGE TO USER
       return;
     }
@@ -342,7 +355,7 @@ class BackupManager {
 
 
   buildFileNameListHeaderUI() {
-    this.debug("buildFileNameListHeaderUI -- BUILD LIST HEADER UI");
+    this.debug("-- BUILD LIST HEADER UI");
 
     const fileNameItemTR = document.createElement("tr");
       fileNameItemTR.classList.add("filename-list-header");             // filename-list-header
@@ -392,7 +405,7 @@ class BackupManager {
     - permissions: expressed as a UNIX file mode (for Windows, the 'user', 'group', and 'other' parts will always be identical)
 */ 
 
-    this.debug(`buildFileNameListItemUI -- BUILD LIST ITEM UI: -- fileInfo.path="${fileInfo.path}" fileName="${fileInfo.fileName}"`);
+    this.debug(`-- BUILD LIST ITEM UI: -- fileInfo.path="${fileInfo.path}" fileName="${fileInfo.fileName}"`);
 
     const fileNameItemTR = document.createElement("tr");
       fileNameItemTR.classList.add("filename-list-item");             // filename-list-item
@@ -430,17 +443,17 @@ class BackupManager {
     try {
       listBackupFileInfoResponse = await this.fsbOptionsApi.listBackupFileInfo();
     } catch (error) {
-      this.caught(error, " -- listBackupFiles");
+      this.caught(error, "-- listBackupFileInfo");
     }
 
     if (! listBackupFileInfoResponse) {
-      this.error("getBackupFileInfo -- listBackupFileInfo -- NO RESPONSE");
+      this.error("-- listBackupFileInfo -- NO RESPONSE");
     } else if (listBackupFileInfoResponse.invalid) {
-      this.error(`getBackupFileInfo -- listBackupFileInfo -- LIST FILEINFO ERROR: ${listBackupFileInfoResponse.invalid}`);
+      this.error(`-- listBackupFileInfo -- LIST FILEINFO ERROR: ${listBackupFileInfoResponse.invalid}`);
     } else if (listBackupFileInfoResponse.error) {
-      this.error(`getBackupFileInfo -- listBackupFileInfo -- LIST FILEINFO ERROR: ${listBackupFileInfoResponse.error}`);
+      this.error(`-- listBackupFileInfo -- LIST FILEINFO ERROR: ${listBackupFileInfoResponse.error}`);
     } else if (! listBackupFileInfoResponse.fileInfo) {
-      this.error("getBackupFileInfo -- listBackupFileInfo -- NO FILEINFO RETURNED");
+      this.error("-- listBackupFileInfo -- NO FILEINFO RETURNED");
     } else {
       return listBackupFileInfoResponse.fileInfo
     }
@@ -474,10 +487,10 @@ class BackupManager {
 ////e.stopPropagation();
 ////e.stopImmediatePropagation();
 
-    this.debug(`backupFilenameClicked -- e.target.tagName="${e.target.tagName}"`);
+    this.debug(`-- e.target.tagName="${e.target.tagName}"`);
 
     if (e.target.tagName == "TR" || e.target.tagName == "TD") {
-      this.debug("backupFilenameClicked -- TR or TD Clicked");
+      this.debug("-- TR or TD Clicked");
 
       let trElement = e.target;
       if (e.target.tagName == "TD") {
@@ -485,17 +498,17 @@ class BackupManager {
       }
 
       if (! trElement) {
-        this.debug("backupFilenameClicked -- Did NOT get our TR");
+        this.debug("-- Did NOT get our TR");
 
       } else {
-        this.debug(  "backupFilenameClicked -- Got our TR --"
+        this.debug(  "-- Got our TR --"
                     + ` filename-list-item? ${trElement.classList.contains("filename-list-item")}`
                   );
         if (trElement.classList.contains("filename-list-item")) {
           const fileName = trElement.getAttribute("fileName");
           const wasSelected = trElement.classList.contains('selected');
       
-          this.debug(`backupFilenameClicked -- wasSelected=${wasSelected}  fileName="${fileName}"`);
+          this.debug(`-- wasSelected=${wasSelected}  fileName="${fileName}"`);
 
           if (! wasSelected) {
             trElement.classList.add('selected');
@@ -512,7 +525,7 @@ class BackupManager {
   deselectAllFileNames() {
     const domFileNameList = document.getElementById("fsbBackupManagerFileNameList");
     if (! domFileNameList) {
-      this.debug("deselectAllFileNames -- failed to get domFileNameList");
+      this.debug("-- failed to get domFileNameList");
     } else {
       for (const listItem of domFileNameList.children) {
         listItem.classList.remove('selected');
@@ -528,7 +541,7 @@ class BackupManager {
   getSelectedDomFileNameListItem() {
     const domFileNameList = document.getElementById("fsbBackupManagerFileNameList");
     if (! domFileNameList) {
-      this.debug("getSelectedDomFileNameListItem -- failed to get domFileNameList");
+      this.debug("-- failed to get domFileNameList");
     } else {
       for (const domFileNameListItemTR of domFileNameList.children) {
         if (domFileNameListItemTR.classList.contains('selected')) {
@@ -541,7 +554,7 @@ class BackupManager {
   getSelectedDomFileNameListItems() {
     const domFileNameList = document.getElementById("fsbBackupManagerFileNameList");
     if (! domFileNameList) {
-      this.debug("getSelectedDomFileNameListItems -- failed to get domFileNameList");
+      this.debug("-- failed to get domFileNameList");
     } else {
       const selected = [];
       for (const domFileNameListItemTR of domFileNameList.children) {
@@ -558,7 +571,7 @@ class BackupManager {
     const domFileNameList = document.getElementById("fsbBackupManagerFileNameList");
 
     if (! domFileNameList) {
-      this.debug("getSelectedDomFileNameListItemCount -- failed to get domFileNameList");
+      this.debug("-- failed to get domFileNameList");
     } else {
       for (const domFileNameListItemTR of domFileNameList.children) {
         if (domFileNameListItemTR.classList.contains('selected')) {
@@ -573,7 +586,7 @@ class BackupManager {
 
 
   async backupButtonClicked(e) {
-    this.debug(`backupButtonClicked -- e.target.tagName="${e.target.tagName}"`);
+    this.debug(`-- e.target.tagName="${e.target.tagName}"`);
 
     e.preventDefault();
 
@@ -583,25 +596,25 @@ class BackupManager {
     let   errors   = 0;
     const response = await this.fsbOptionsApi.backupToFile();
     if (! response) {
-      this.error("backupButtonClicked -- FAILED TO RESTORE OPTIONS -- NO RESPONSE RETURNED");
+      this.error("-- FAILED TO RESTORE OPTIONS -- NO RESPONSE RETURNED");
       ++errors;
     } else if (response.invalid) {
-      this.error("backupButtonClicked -- FAILED TO RESTORE OPTIONS -- INVALID RETURNED IN RESPONSE");
+      this.error("-- FAILED TO RESTORE OPTIONS -- INVALID RETURNED IN RESPONSE");
       ++errors;
     } else if (response.error) {
-      this.error("backupButtonClicked -- FAILED TO RESTORE OPTIONS -- ERROR RETURNED IN RESPONSE");
+      this.error("-- FAILED TO RESTORE OPTIONS -- ERROR RETURNED IN RESPONSE");
       ++errors;
     } else if (! response.fileName) {
-      this.error("backupButtonClicked -- FAILED TO RESTORE OPTIONS -- NO FILENAME RETURNED IN RESPONSE");
+      this.error("-- FAILED TO RESTORE OPTIONS -- NO FILENAME RETURNED IN RESPONSE");
       ++errors;
     } else if ((typeof response.bytesWritten) !== 'number') {
-      this.error(`backupButtonClicked -- FAILED TO RESTORE OPTIONS -- INVALID BYTES_WRITTEN RETURNED IN RESPONSE -- backupFileName="${response.fileName}"`);
+      this.error(`-- FAILED TO RESTORE OPTIONS -- INVALID BYTES_WRITTEN RETURNED IN RESPONSE -- backupFileName="${response.fileName}"`);
       ++errors;
     } else if (response.bytesWritten < 1) {
-      this.error(`backupButtonClicked -- FAILED TO RESTORE OPTIONS -- NO BYTES WRITTEN -- backupFileName="${response.fileName}"`);
+      this.error(`-- FAILED TO RESTORE OPTIONS -- NO BYTES WRITTEN -- backupFileName="${response.fileName}"`);
       ++errors;
     } else {
-      this.debug(`backupButtonClicked -- backupFileName="${response.fileName}" bytesWritten=${response.bytesWritten}`);
+      this.debug(`-- backupFileName="${response.fileName}" bytesWritten=${response.bytesWritten}`);
       await this.buildFileNameListUI();
     }
 
@@ -617,7 +630,7 @@ class BackupManager {
 
 
   async restoreButtonClicked(e) {
-    this.debug(`restoreButtonClicked -- e.target.tagName="${e.target.tagName}"`);
+    this.debug(`-- e.target.tagName="${e.target.tagName}"`);
 
     e.preventDefault();
 
@@ -628,36 +641,36 @@ class BackupManager {
     let errors = 0;
 
     if (! domSelectedFileNameItemTR) {
-      this.error("restoreButtonClicked -- NO FILENAME SELECTED -- Restore Button should have been disabled!!!");
+      this.error("-- NO FILENAME SELECTED -- Restore Button should have been disabled!!!");
 
     } else {
-      this.debug(`restoreButtonClicked -- domSelectedFileNameItemTR=${domSelectedFileNameItemTR} domSelectedFileNameItemTR.tagName="${domSelectedFileNameItemTR.tagName}"`);
+      this.debug(`-- domSelectedFileNameItemTR=${domSelectedFileNameItemTR} domSelectedFileNameItemTR.tagName="${domSelectedFileNameItemTR.tagName}"`);
 
       const backupFileName = domSelectedFileNameItemTR.getAttribute("fileName");
-      this.debug(`restoreButtonClicked -- Restoring Options from backupFileName="${backupFileName}"`);
+      this.debug(`-- Restoring Options from backupFileName="${backupFileName}"`);
 
       const response = await this.fsbOptionsApi.readOptionsFromBackupAndRestore(backupFileName);
       if (! response) {
-        this.error(`restoreButtonClicked -- FAILED TO RESTORE OPTIONS -- NO RESPONSE RETURNED -- backupFileName="${backupFileName}"`);
+        this.error(`-- FAILED TO RESTORE OPTIONS -- NO RESPONSE RETURNED -- backupFileName="${backupFileName}"`);
         ++errors;
       } else if (response.invalid) {
-        this.error(`restoreButtonClicked -- FAILED TO RESTORE OPTIONS -- INVALID RETURNED -- backupFileName="${backupFileName}"`);
+        this.error(`-- FAILED TO RESTORE OPTIONS -- INVALID RETURNED -- backupFileName="${backupFileName}"`);
         ++errors;
       } else if (response.error) {
-        this.error(`restoreButtonClicked -- FAILED TO RESTORE OPTIONS -- ERROR RETURNED -- backupFileName="${backupFileName}"`);
+        this.error(`-- FAILED TO RESTORE OPTIONS -- ERROR RETURNED -- backupFileName="${backupFileName}"`);
         ++errors;
       } else if (! response.fileName) {
-        this.error(`restoreButtonClicked -- FAILED TO RESTORE OPTIONS -- NO FILENAME RETURNED -- backupFileName="${backupFileName}"`);
+        this.error(`-- FAILED TO RESTORE OPTIONS -- NO FILENAME RETURNED -- backupFileName="${backupFileName}"`);
         ++errors;
       } else if (! response.object) {
-        this.error(`restoreButtonClicked -- FAILED TO RESTORE OPTIONS -- NO DATA OBJECT RETURNED -- backupFileName="${backupFileName}"`);
+        this.error(`-- FAILED TO RESTORE OPTIONS -- NO DATA OBJECT RETURNED -- backupFileName="${backupFileName}"`);
         ++errors;
       } else {
         if (this.DEBUG) {
           const entries = Object.entries(response.object);
-          this.debugAlways(`restoreButtonClicked -- Options Restored -- response.fileName="${response.fileName}" response.object.entries.length="${entries.length}"`);
+          this.debugAlways(`-- Options Restored -- response.fileName="${response.fileName}" response.object.entries.length="${entries.length}"`);
           for (const [key, value] of entries) {
-            this.debugAlways(`restoreButtonClicked -- OPTION ${key}: "${value}"`);
+            this.debugAlways(`-- OPTION ${key}: "${value}"`);
           }
         }
       }
@@ -667,7 +680,7 @@ class BackupManager {
       } else {
         const responseMessage = { 'RESTORED': backupFileName };
 
-        this.debug(`restoreButtonClicked -- Sending responseMessage="${responseMessage}"`);
+        this.debug(`-- Sending responseMessage="${responseMessage}"`);
 
         try {
           await messenger.runtime.sendMessage(
@@ -675,7 +688,7 @@ class BackupManager {
           );
         } catch (error) {
           this.caught( error, 
-                       "restoreButtonClicked ##### SEND RESPONSE MESSAGE FAILED #####"
+                       "##### SEND RESPONSE MESSAGE FAILED #####"
                        + `\n- responseMessage="${responseMessage}"`
                      );
           ++errors;
@@ -688,7 +701,7 @@ class BackupManager {
         restoreBtn.disabled = false;
 
       } else {
-        this.debug("restoreButtonClicked -- No Errors - closing window");
+        this.debug("-- No Errors - closing window");
         window.close();
       }
     }
@@ -697,7 +710,7 @@ class BackupManager {
 
 
   async deleteButtonClicked(e) {
-    this.debug(`deleteButtonClicked -- e.target.tagName="${e.target.tagName}"`);
+    this.debug(`-- e.target.tagName="${e.target.tagName}"`);
 
     e.preventDefault();
 
@@ -708,33 +721,33 @@ class BackupManager {
     let errors = 0;
 
     if (! domSelectedFileNameItemTRs) {
-      this.error("deleteButtonClicked -- NO FILENAMES SELECTED -- Delete Button should have been disabled!!!");
+      this.error("-- NO FILENAMES SELECTED -- Delete Button should have been disabled!!!");
 
     } else {
-      this.debug(`deleteButtonClicked -- domSelectedFileNameItemTRs.length=${domSelectedFileNameItemTRs.length}`);
+      this.debug(`-- domSelectedFileNameItemTRs.length=${domSelectedFileNameItemTRs.length}`);
 
       for (const domSelectedFileNameItemTR of domSelectedFileNameItemTRs) {
         const backupFileName = domSelectedFileNameItemTR.getAttribute("fileName");
-        this.debug(`deleteButtonClicked -- Deleting Options backupFileName="${backupFileName}"`);
+        this.debug(`-- Deleting Options backupFileName="${backupFileName}"`);
 
         const response = await this.fsbOptionsApi.deleteBackupFile(backupFileName);
         if (! response) {
-          this.error(`deleteButtonClicked -- FAILED TO DELETE OPTIONS BACKUP FILE -- NO RESPONSE RETURNED -- backupFileName="${backupFileName}"`);
+          this.error(`-- FAILED TO DELETE OPTIONS BACKUP FILE -- NO RESPONSE RETURNED -- backupFileName="${backupFileName}"`);
           ++errors;
         } else if (response.invalid) {
-          this.error(`deleteButtonClicked -- FAILED TO DELETE OPTIONS BACKUP FILE -- INVALID RETURNED -- backupFileName="${backupFileName}"`);
+          this.error(`-- FAILED TO DELETE OPTIONS BACKUP FILE -- INVALID RETURNED -- backupFileName="${backupFileName}"`);
           ++errors;
         } else if (response.error) {
-          this.error(`deleteButtonClicked -- FAILED TO DELETE OPTIONS BACKUP FILE -- ERROR RETURNED -- backupFileName="${backupFileName}"`);
+          this.error(`-- FAILED TO DELETE OPTIONS BACKUP FILE -- ERROR RETURNED -- backupFileName="${backupFileName}"`);
           ++errors;
         } else if (! response.fileName) {
-          this.error(`deleteButtonClicked -- FAILED TO DELETE OPTIONS BACKUP FILE -- NO FILENAME RETURNED -- backupFileName="${backupFileName}"`);
+          this.error(`-- FAILED TO DELETE OPTIONS BACKUP FILE -- NO FILENAME RETURNED -- backupFileName="${backupFileName}"`);
           ++errors;
         } else if (! response.deleted) {
-          this.error(`deleteButtonClicked -- FAILED TO DELETE OPTIONS BACKUP FILE -- backupFileName="${backupFileName}" response.deleted="${response.deleted}"`);
+          this.error(`-- FAILED TO DELETE OPTIONS BACKUP FILE -- backupFileName="${backupFileName}" response.deleted="${response.deleted}"`);
           ++errors;
         } else {
-          this.debug(`deleteButtonClicked -- Options Backup File Deleted -- backupFileName="${backupFileName}" response.deleted="${response.deleted}"`);
+          this.debug(`-- Options Backup File Deleted -- backupFileName="${backupFileName}" response.deleted="${response.deleted}"`);
           domSelectedFileNameItemTR.remove();
         }
       }
@@ -745,7 +758,7 @@ class BackupManager {
         // MABXXX NO RESPONSE MESSAGE REQUIRED FOR BACKUP FILE DELETE
 //      const responseMessage = { 'RESTORED': backupFileName };
 //
-//      this.debug(`deleteButtonClicked -- Sending responseMessage="${responseMessage}"`);
+//      this.debug(`-- Sending responseMessage="${responseMessage}"`);
 //
 //      try {
 //        await messenger.runtime.sendMessage(
@@ -753,7 +766,7 @@ class BackupManager {
 //        );
 //      } catch (error) {
 //        this.caught( error, 
-//                     "deleteButtonClicked ##### SEND RESPONSE MESSAGE FAILED #####"
+//                     "##### SEND RESPONSE MESSAGE FAILED #####"
 //                     + `\n- responseMessage="${responseMessage}"`
 //                   );
 //        ++errors;
@@ -809,14 +822,14 @@ class BackupManager {
 
 
   async doneButtonClicked(e) {
-    this.debug(`doneButtonClicked -- e.target.tagName="${e.target.tagName}"`);
+    this.debug(`-- e.target.tagName="${e.target.tagName}"`);
 
     e.preventDefault();
 
     this.canceled = true;
 
     let responseMessage = "DONE";
-    this.debug(`doneButtonClicked -- Sending responseMessage="${responseMessage}"`);
+    this.debug(`-- Sending responseMessage="${responseMessage}"`);
 
     try {
       await messenger.runtime.sendMessage(
@@ -825,12 +838,12 @@ class BackupManager {
     } catch (error) {
       // any need to tell the user???
       this.caught( error,
-                   "doneButtonClicked ##### SEND RESPONSE MESSAGE FAILED #####"
+                   "##### SEND RESPONSE MESSAGE FAILED #####"
                    + `\n- responseMessage="${responseMessage}"`
                  );
     }
 
-    this.debug("doneButtonClicked -- Closing window");
+    this.debug("-- Closing window");
     window.close();
   }
 }

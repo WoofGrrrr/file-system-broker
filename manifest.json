@@ -26,7 +26,7 @@
     "storage"
   ],
   "background": {
-    "page": "background.html"
+    "page": "fsb-background.html"
   },
    "options_ui": {
     "page": "optionsUI/optionsUI.html",
@@ -37,8 +37,8 @@
     {
       "matches": [ "https://*/*" ],
       "js": [
-        "./ical.js",
-        "./utilities.js"
+        "ical.js",
+        "utilities.js"
       ]
     }
   ]

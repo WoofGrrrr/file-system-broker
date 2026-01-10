@@ -2,7 +2,7 @@ import { FileSystemBrokerAPI } from '../modules/FileSystemBroker/filesystem_brok
 import { FsbOptions          } from '../modules/options.js';
 import { Logger              } from '../modules/logger.js';
 import { FsbEventLogger      } from '../modules/event_logger.js';
-import { getI18nMsg, formatMsToDateTime24HR, formatMsToDateTime12HR, formatMsToTimeForFilename } from '../utilities.js';
+import { getI18nMsg, formatMsToDateTime24HR, formatMsToDateTime12HR, formatMsToTimeForFilename } from '../modules/utilities.js';
 
 
 
@@ -16,8 +16,10 @@ class EventLogManager {
     this.ARCHIVE_FILENAME_EXTENSION  = ".alog";
     this.ARCHIVE_FILENAME_MATCH_GLOB = "*.alog";
 
+    this.INFO                        = false;
     this.LOG                         = false;
     this.DEBUG                       = false;
+    this.WARN                        = false;
 
     this.logger                      = new Logger();
     this.fsbOptionsApi               = new FsbOptions(this.logger);
@@ -36,7 +38,8 @@ class EventLogManager {
     this.i18n_listHeader_FileName                   = getI18nMsg( "fsbEventLogManager_listHeader_fileName",                           "File Name"                             );
     this.i18n_listHeader_FileCreationDateTime       = getI18nMsg( "fsbEventLogManager_listHeader_fileTimeCreated",                    "Time Created"                          );
     this.i18n_listHeader_FileLastModifiedDateTime   = getI18nMsg( "fsbEventLogManager_listHeader_fileTimeLastModified",               "Time Last Modified"                    );
-    this.i18n_listHeader_FileSize                   = getI18nMsg( "fsbEventLogManager_listHeader_fileSize",                           "Size (bytes)"                          );
+    this.i18n_listHeader_FileSize_formatted         = getI18nMsg( "fsbEventLogManager_listHeader_fileSize_formatted",                 "Size"                                  );
+    this.i18n_listHeader_FileSize_bytes             = getI18nMsg( "fsbEventLogManager_listHeader_fileSize_bytes",                     "Size (bytes)"                          );
 
     this.i18n_title_listMode_logs                   = getI18nMsg( "fsbEventLogManager_title_listMode_logs.label",                     "Log Files"                             );
     this.i18n_title_listMode_archives               = getI18nMsg( "fsbEventLogManager_title_listMode_archives.label",                 "Archived Log Files"                    );
@@ -46,38 +49,33 @@ class EventLogManager {
     this.i18n_label_deleteNumDays_listMode_archives = getI18nMsg( "fsbEventLogManager_label_deleteNumDays_listMode_archives.label",   "Delete Archived Event Logs older than" );
   }
 
+
+
   log(...info) {
-    if (! this.LOG) return;
-    const msg = info.shift();
-    this.logger.log(this.CLASS_NAME + '#' + msg, ...info);
+    if (this.LOG) this.logger.log(this.CLASS_NAME, ...info);
   }
 
   logAlways(...info) {
-    const msg = info.shift();
-    this.logger.logAlways(this.CLASS_NAME + '#' + msg, ...info);
+    this.logger.logAlways(this.CLASS_NAME, ...info);
   }
 
   debug(...info) {
-    if (! this.DEBUG) return;
-    const msg = info.shift();
-    this.logger.debug(this.CLASS_NAME + '#' + msg, ...info);
+    if (this.DEBUG) this.logger.debug(this.CLASS_NAME, ...info);
   }
 
   debugAlways(...info) {
-    const msg = info.shift();
-    this.logger.debugAlways(this.CLASS_NAME + '#' + msg, ...info);
+    this.logger.debugAlways(this.CLASS_NAME, ...info);
   }
 
   error(...info) {
     // always log errors
-    const msg = info.shift();
-    this.logger.error(this.CLASS_NAME + '#' + msg, ...info);
+    this.logger.error(this.CLASS_NAME, ...info);
   }
 
-  caught(e, ...info) {
+  caught(e, msg, ...info) {
     // always log exceptions
-    const msg = info.shift();
-    this.logger.error( this.CLASS_NAME + '#' + msg,
+    this.logger.error( this.CLASS_NAME,
+                       msg,
                        "\n- name:    " + e.name,
                        "\n- message: " + e.message,
                        "\n- stack:   " + e.stack,
@@ -88,7 +86,7 @@ class EventLogManager {
 
 
   async run(e) {
-    this.debug("run -- begin");
+    this.debug("-- begin");
 
     ////window.onbeforeunload = (e) => this.windowUnloading(e);
     window.addEventListener("beforeunload", (e) => this.windowUnloading(e));
@@ -147,7 +145,7 @@ class EventLogManager {
 
 
   async localizePage() {
-    this.debug("localizePage -- start");
+    this.debug("-- start");
 
     for (const el of document.querySelectorAll("[data-l10n-id]")) {
       const id = el.getAttribute("data-l10n-id");
@@ -167,21 +165,21 @@ class EventLogManager {
       el.insertAdjacentHTML('afterbegin', i18nMessage);
     }
 
-    this.debug("localizePage -- end");
+    this.debug("-- end");
   }
 
 
 
   async updateOptionsUI() {
-    this.debug("updateOptionsUI -- start");
+    this.debug("-- start");
 
     const options = await this.fsbOptionsApi.getAllOptions();
 
-    this.debug("updateOptionsUI -- sync options to UI");
+    this.debug("-- sync options to UI");
     for (const [optionName, optionValue] of Object.entries(options)) {
-      this.debug("updateOptionsUI -- option: ", optionName, "value: ", optionValue);
+      this.debug("-- option: ", optionName, "value: ", optionValue);
 
-      if (optionName in this.fsbOptionsApi.defaultOptionValues) {
+      if (this.fsbOptionsApi.isDefaultOption(optionName)) { // MABXXX WHY WHY WHY???????????
         const optionElement = document.getElementById(optionName);
 
         if (optionElement && optionElement.classList.contains("fsbGeneralOption")) {
@@ -201,7 +199,7 @@ class EventLogManager {
       }
     }
 
-    this.debug("updateOptionsUI -- end");
+    this.debug("-- end");
   }
 
 
@@ -211,7 +209,7 @@ class EventLogManager {
   // copied from optionsUI.js, so this does a lot that we don't really need for now.
   async optionChanged(e) {
     if (e == null) return;
-    this.debug(`optionChanged -- tagName="${e.target.tagName}" type="${e.target.type}" fsbGeneralOption? ${e.target.classList.contains("fsbGeneralOption")} id="${e.target.id}"`);
+    this.debug(`-- tagName="${e.target.tagName}" type="${e.target.type}" fsbGeneralOption? ${e.target.classList.contains("fsbGeneralOption")} id="${e.target.id}"`);
 
     var target = e.target;
     if ( target.tagName == "INPUT"
@@ -226,10 +224,10 @@ class EventLogManager {
 
       /* if it's a radio button, set the values for all the other buttons in the group to false */
       if (target.type == "radio") { // is it a radio button?
-        this.debug(`optionChanged -- radio buttton selected ${optionName}=<${optionValue}> - group=${target.name}`);
+        this.debug(`-- radio buttton selected ${optionName}=<${optionValue}> - group=${target.name}`);
 
         // first, set this option
-        this.debug(`optionChanged -- Setting Radio Option {[${optionName}]: ${optionValue}}`);
+        this.debug(`-- Setting Radio Option {[${optionName}]: ${optionValue}}`);
         await this.fsbOptionsApi.storeOption(
           { [optionName]: optionValue }
         );
@@ -239,15 +237,15 @@ class EventLogManager {
           const radioGroupName = target.name;
           const radioGroup = document.querySelectorAll(`input[type="radio"][name="${radioGroupName}"]`);
           if (! radioGroup) {
-            this.debug('optionChanged -- no radio group found');
+            this.debug('-- no radio group found');
           } else {
-            this.debug(`optionChanged -- radio group members length=${radioGroup.length}`);
+            this.debug(`-- radio group members length=${radioGroup.length}`);
             if (radioGroup.length < 2) {
-              this.debug('optionChanged -- no radio group members to reset (length < 2)');
+              this.debug('-- no radio group members to reset (length < 2)');
             } else {
               for (const radio of radioGroup) {
                 if (radio.id != optionName) { // don't un-check the one that fired
-                  this.debug(`optionChanged -- resetting radio button {[${radio.id}]: false}`);
+                  this.debug(`-- resetting radio button {[${radio.id}]: false}`);
                   await this.fsbOptionsApi.storeOption(
                     { [radio.id]: false }
                   );
@@ -257,7 +255,7 @@ class EventLogManager {
           }
         }
       } else { // since we already tested for it, it's got to be a checkbox
-        this.debug(`optionChanged -- Setting Checkbox Option {[${optionName}]: ${optionValue}}`);
+        this.debug(`-- Setting Checkbox Option {[${optionName}]: ${optionValue}}`);
         await this.fsbOptionsApi.storeOption(
           { [optionName]: optionValue }
         );
@@ -276,7 +274,7 @@ class EventLogManager {
       const optionName  = target.id;
       const optionValue = target.value;
 
-      this.debug(`optionChanged -- Setting Select Option {[${optionName}]: ${optionValue}}`);
+      this.debug(`-- Setting Select Option {[${optionName}]: ${optionValue}}`);
       await this.fsbOptionsApi.storeOption(
         { [optionName]: optionValue }
       );
@@ -291,13 +289,13 @@ class EventLogManager {
   //
   // Copied from optionsUI.js, so this does a lot that we don't really need for now.
   async actionClicked(e) {
-    this.debug('actionClicked --');
+    this.debug('--');
     if (e == null) return;
 
-    this.debug(`actionClicked -- tagName="${e.target.tagName}" id="${e.target.id}" for="${e.target.getAttribute('for')}"`);
+    this.debug(`-- tagName="${e.target.tagName}" id="${e.target.id}" for="${e.target.getAttribute('for')}"`);
 
     if (e.target.tagName === 'BUTTON' || e.target.tagName === 'LABEL') {
-      this.debug(`actionClicked -- BUTTON OR LABEL CLICKED tagName="${e.target.tagName}" id="${e.target.id}"`);
+      this.debug(`-- BUTTON OR LABEL CLICKED tagName="${e.target.tagName}" id="${e.target.id}"`);
 
       if (e.target.tagName === 'LABEL' && e.target.parentElement.tagName !== 'BUTTON') {
       } else {
@@ -309,7 +307,7 @@ class EventLogManager {
         } else {
           button = e.target;
         }
-        this.debug(`actionClicked -- BUTTON CLICKED tagName="${button.tagName}" id="${button.id}"`);
+        this.debug(`-- BUTTON CLICKED tagName="${button.tagName}" id="${button.id}"`);
 
         const buttonId = button.id;
         if (buttonId) switch (buttonId) {
@@ -317,11 +315,11 @@ class EventLogManager {
             this.deleteEventLogsOlderThanDaysButtonClicked(e);
             break;
           default:
-            this.debug(`action -- NOT OUR BUTTON -- tagName="${e.target.tagName}" id="${e.target.id}"`);
+            this.debug(`-- NOT OUR BUTTON -- tagName="${e.target.tagName}" id="${e.target.id}"`);
         }
       }
     } else if (e.target.tagName == "DIV") {
-      this.debug(`action -- DIV CLICKED id="${e.target.id}"`);
+      this.debug(`-- DIV CLICKED id="${e.target.id}"`);
 
       const divId = e.target.id;
       if (divId == "XXX") {
@@ -338,9 +336,9 @@ class EventLogManager {
     if (numDaysSelect) {
       const numDays = +numDaysSelect.value;
       const archives = (this.listMode === this.LIST_MODE_ARCHIVES);
-      this.debugAlways(`deleteEventLogsOlderThanDaysButtonClicked -- numDays=${numDays} archives=${archives}`);
+      this.debugAlways(`-- numDays=${numDays} archives=${archives}`);
       const deletedFileNames = await this.fsbEventLogger.deleteOldEventLogs(numDays, archives);
-      this.debugAlways(`deleteEventLogsOlderThanDaysButtonClicked -- deletedFileNames.length=${deletedFileNames.length}`);
+      this.debugAlways(`-- deletedFileNames.length=${deletedFileNames.length}`);
 
       if (deletedFileNames && deletedFileNames.length > 0) {
         // could delete the rows for the given fileNames, but just rebuild the list for now...
@@ -365,7 +363,7 @@ class EventLogManager {
 
 
   async windowUnloading(e) {
-    if (this.DEBUG) this.debugAlways( "windowUnloading --- Window Unloading ---"
+    if (this.DEBUG) this.debugAlways( "--- Window Unloading ---"
                                       + `\n- window.screenTop=${window.screenTop}`
                                       + `\n- window.screenLeft=${window.screenLeft}`
                                       + `\n- window.outerWidth=${window.outerWidth}`
@@ -378,11 +376,11 @@ class EventLogManager {
       let bounds = await this.fsbOptionsApi.getWindowBounds("eventLogManagerWindowBounds");
 
       if (! bounds) {
-        this.debugAlways("windowUnloading --- WINDOW UNLOADING --- Retrieve Stored Window Bounds --- FAILED TO GET Log Manager Window Bounds ---");
+        this.debugAlways("--- WINDOW UNLOADING --- Retrieve Stored Window Bounds --- FAILED TO GET Log Manager Window Bounds ---");
       } else if (typeof bounds !== 'object') {
-        this.error(`windowUnloading --- WINDOW UNLOADING --- Retrieve Stored Window Bounds --- Log Manager Window Bounds IS NOT AN OBJECT: typeof='${typeof bounds}' ---`);
+        this.error(`--- Retrieve Stored Window Bounds --- Log Manager Window Bounds IS NOT AN OBJECT: typeof='${typeof bounds}' ---`);
       } else {
-        this.debugAlways( "windowUnloading --- Retrieve Stored Window Bounds ---"
+        this.debugAlways( "--- Retrieve Stored Window Bounds ---"
                           + `\n- bounds.top:    ${bounds.top}`
                           + `\n- bounds.left:   ${bounds.left}`
                           + `\n- bounds.width:  ${bounds.width}`
@@ -401,7 +399,7 @@ class EventLogManager {
   async buildFileNameListUI() {
     const domFileNameList = document.getElementById("fsbEventLogManagerFileNameList");
     if (! domFileNameList) {
-      this.error("run -- failed to get domFileNameList");
+      this.error("-- failed to get domFileNameList");
       // MABXXX DISPLAY MESSAGE TO USER
       return;
     }
@@ -445,7 +443,7 @@ class EventLogManager {
       domFileNameList.append(headerItemUI);
 
       for (const fileInfo of eventLogInfo) {
-        const listItemUI = this.buildFileNameListItemUI(fileInfo);
+        const listItemUI = await this.buildFileNameListItemUI(fileInfo);
         domFileNameList.append(listItemUI);
       }
     }
@@ -465,7 +463,7 @@ class EventLogManager {
 
 
   buildFileNameListHeaderUI() {
-    this.debug("buildFileNameListHeaderUI -- BUILD LIST HEADER UI");
+    this.debug("-- BUILD LIST HEADER UI");
 
     const fileNameItemTR = document.createElement("tr");
       fileNameItemTR.classList.add("filename-list-header");             // filename-list-header
@@ -492,18 +490,25 @@ class EventLogManager {
       fileNameItemTR.appendChild(lastModifiedTimeTH);
 
       // Create file size element and add it to the row
-      const fileSizeTH = document.createElement("th");
-        fileSizeTH.classList.add("filename-list-header-data");          // filename-list-header > filename-list-header-data
-        fileSizeTH.classList.add("filename-list-header-filesize");      // filename-list-header > filename-list-header-filesize
-        fileSizeTH.appendChild( document.createTextNode(this.i18n_listHeader_FileSize) );
-      fileNameItemTR.appendChild(fileSizeTH);
+      const fileSizeFormattedTH = document.createElement("th");
+        fileSizeFormattedTH.classList.add("filename-list-header-data");                    // filename-list-header > filename-list-header-data
+        fileSizeFormattedTH.classList.add("filename-list-header-filesize-formatted");      // filename-list-header > filename-list-header-filesize-formatted
+        fileSizeFormattedTH.appendChild( document.createTextNode(this.i18n_listHeader_FileSize_formatted) );
+      fileNameItemTR.appendChild(fileSizeFormattedTH);
+
+      // Create file size element and add it to the row
+      const fileSizeBytesTH = document.createElement("th");
+        fileSizeBytesTH.classList.add("filename-list-header-data");                // filename-list-header > filename-list-header-data
+        fileSizeBytesTH.classList.add("filename-list-header-filesize-bytes");      // filename-list-header > filename-list-header-filesize-bytes
+        fileSizeBytesTH.appendChild( document.createTextNode(this.i18n_listHeader_FileSize_bytes) );
+      fileNameItemTR.appendChild(fileSizeBytesTH);
 
     return fileNameItemTR;
   }  
 
 
 
-  buildFileNameListItemUI(fileInfo) {
+  async buildFileNameListItemUI(fileInfo) {
 /*  FileInfo has these values:
     - fileName: the fileName
     - path: the full pathName
@@ -515,7 +520,7 @@ class EventLogManager {
     - permissions: expressed as a UNIX file mode (for Windows, the 'user', 'group', and 'other' parts will always be identical)
 */ 
 
-    this.debug(`buildFileNameListItemUI -- BUILD LIST ITEM UI: -- fileInfo.path="${fileInfo.path}" fileName="${fileInfo.fileName}"`);
+    this.debug(`-- BUILD LIST ITEM UI: -- fileInfo.path="${fileInfo.path}" fileName="${fileInfo.fileName}"`);
 
     const fileNameItemTR = document.createElement("tr");
       fileNameItemTR.classList.add("filename-list-item");             // filename-list-item
@@ -544,12 +549,20 @@ class EventLogManager {
         lastModifiedTimeTD.appendChild( document.createTextNode( formatMsToDateTime24HR(fileInfo.lastModified) ) );
       fileNameItemTR.appendChild(lastModifiedTimeTD);
 
-      // Create file size element and add it to the row
-      const fileSizeTD = document.createElement("td");
-        fileSizeTD.classList.add("filename-list-item-data");          // filename-list-item > filename-list-item-data
-        fileSizeTD.classList.add("filename-list-item-filesize");      // filename-list-item > filename-list-item-filesize
-        fileSizeTD.appendChild( document.createTextNode(fileInfo.size) );
-      fileNameItemTR.appendChild(fileSizeTD);
+      // Create formatted file size element and add it to the row
+      const fileSizeFormattedTD = document.createElement("td");
+        fileSizeFormattedTD.classList.add("filename-list-item-data");                    // filename-list-item > filename-list-item-data
+        fileSizeFormattedTD.classList.add("filename-list-item-filesize-formatted");      // filename-list-item > filename-list-item-filesize-formatted
+        const formattedFileSize = await messenger.messengerUtilities.formatFileSize(fileInfo.size);
+        fileSizeFormattedTD.appendChild( document.createTextNode(formattedFileSize) );
+      fileNameItemTR.appendChild(fileSizeFormattedTD);
+
+      // Create file size (bytes) element and add it to the row
+      const fileSizeBytesTD = document.createElement("td");
+        fileSizeBytesTD.classList.add("filename-list-item-data");          // filename-list-item > filename-list-item-data
+        fileSizeBytesTD.classList.add("filename-list-item-filesize-bytes");      // filename-list-item > filename-list-item-filesize_bytes
+        fileSizeBytesTD.appendChild( document.createTextNode( "(" + fileInfo.size + ")" ) );
+      fileNameItemTR.appendChild(fileSizeBytesTD);
 
     return fileNameItemTR;
   }  
@@ -557,7 +570,7 @@ class EventLogManager {
 
 
   showHideInstructions(show) {
-    this.debug(`showHideInstructions -- show=${show}`);
+    this.debug(`-- show=${show}`);
     const panel = document.getElementById("fsbEventLogManagerInstructions");
     if (panel) {
       if (show) {
@@ -575,17 +588,17 @@ class EventLogManager {
     try {
       listEventLogInfoResponse = await this.listEventLogInfo(); // MABXXX FsbEventLogger HAS listEventLogInfo() AS WELL
     } catch (error) {
-      this.caught(error, " -- listEventLogs");
+      this.caught(error, "Failed to get Event Log info");
     }
 
     if (! listEventLogInfoResponse) {
-      this.error("getEventLogInfo -- listEventLogInfo -- NO RESPONSE");
+      this.error("-- listEventLogInfo -- NO RESPONSE");
     } else if (listEventLogInfoResponse.invalid) {
-      this.error(`getEventLogInfo -- listEventLogInfo -- LIST FILEINFO ERROR: ${listEventLogInfoResponse.invalid}`);
+      this.error(`-- listEventLogInfo -- LIST FILEINFO ERROR: ${listEventLogInfoResponse.invalid}`);
     } else if (listEventLogInfoResponse.error) {
-      this.error(`getEventLogInfo -- listEventLogInfo -- LIST FILEINFO ERROR: ${listEventLogInfoResponse.error}`);
+      this.error(`-- listEventLogInfo -- LIST FILEINFO ERROR: ${listEventLogInfoResponse.error}`);
     } else if (! listEventLogInfoResponse.fileInfo) {
-      this.error("getEventLogInfo -- listEventLogInfo -- NO FILEINFO RETURNED");
+      this.error("-- listEventLogInfo -- NO FILEINFO RETURNED");
     } else {
       return listEventLogInfoResponse.fileInfo
     }
@@ -596,7 +609,7 @@ class EventLogManager {
   updateUIAfterDelete() {
     const domFileNameList = document.getElementById("fsbEventLogManagerFileNameList");
     if (! domFileNameList) {
-      this.error("updateUIAfterDelete -- failed to get domFileNameList");
+      this.error("-- failed to get domFileNameList");
       return;
     }
 
@@ -643,10 +656,10 @@ class EventLogManager {
     e.stopPropagation();
     e.stopImmediatePropagation();
 
-    this.debug(`eventLogItemClicked -- e.target.tagName="${e.target.tagName}"`);
+    this.debug(`-- e.target.tagName="${e.target.tagName}"`);
 
     if (e.target.tagName == 'TR' || e.target.tagName == 'TD') {
-      this.debug("eventLogItemClicked -- TR or TD Clicked");
+      this.debug("-- TR or TD Clicked");
 
       // there's a reason for not simply using closest('tr') but I just don't remember
       let trElement;
@@ -657,12 +670,12 @@ class EventLogManager {
       }
 
       if (! trElement) {
-        this.debug("eventLogItemClicked -- Did NOT get our TR");
+        this.debug("-- Did NOT get our TR");
       } else if (! trElement.classList.contains("filename-list-item")) {
-        this.debug("eventLogItemClicked -- TR does NOT have class 'filename-list-item'");
+        this.debug("-- TR does NOT have class 'filename-list-item'");
       } else {
         const fileName = trElement.getAttribute("fileName");
-        this.debugAlways(`eventLogItemClicked -- Got TR.filename-list-item fileName=${fileName} FILE_LIST_ITEM_CLICK_DELAY=${this.FILE_LIST_ITEM_CLICK_DELAY}`);
+        this.debug(`-- Got TR.filename-list-item fileName=${fileName} FILE_LIST_ITEM_CLICK_DELAY=${this.FILE_LIST_ITEM_CLICK_DELAY}`);
         this.fileListItemClickTimeout = setTimeout( () => this.eventLogItemSingleClicked( e, trElement, Date.now() ), this.FILE_LIST_ITEM_CLICK_DELAY );
       }
     }
@@ -677,7 +690,7 @@ class EventLogManager {
       const fileName    = trElement.getAttribute("fileName");
       const wasSelected = trElement.classList.contains('selected');
 
-      this.debug(`eventLogItemSingleClicked -- GOT SINGLE-CLICK ON TR: wasSelected=${wasSelected} fileName="${fileName}"`);
+      this.debug(`-- GOT SINGLE-CLICK ON TR: wasSelected=${wasSelected} fileName="${fileName}"`);
 
       if (! wasSelected) {
         trElement.classList.add('selected');
@@ -694,15 +707,15 @@ class EventLogManager {
     this.fileListItemClickTimeout = null;
     if (timeout) {
       clearTimeout(timeout); // why is clearTimeout() not working???
-      this.debug("eventLogItemDoubleClicked -- GOT DOUBLE-CLICK -- cleared Timeout", timeout);
+      this.debug("-- GOT DOUBLE-CLICK -- cleared Timeout", timeout);
     }
 
     if (! e) return;
 
-    this.debug(`eventLogItemDoubleClicked -- GOT DOUBLE-CLICK -- e.target.tagName="${e.target.tagName}" e.detail=${e.detail}`);
+    this.debug(`-- GOT DOUBLE-CLICK -- e.target.tagName="${e.target.tagName}" e.detail=${e.detail}`);
 
     if (e.detail == 2 && (e.target.tagName == 'TR' || e.target.tagName == 'TD')) {
-      this.debug("eventLogItemDoubleClicked -- TR or TD Double-Clicked");
+      this.debug("-- TR or TD Double-Clicked");
 
       // there's a reason for not simply using closest('tr') but I just don't remember
       let trElement;
@@ -713,16 +726,16 @@ class EventLogManager {
       }
 
       if (! trElement) {
-        this.error("eventLogItemDoubleClicked -- NO TR ELEMENT");
+        this.error("-- NO TR ELEMENT");
       } else {
-        this.debug("eventLogItemDoubleClicked -- GOT TR ELEMENT");
+        this.debug("-- GOT TR ELEMENT");
         if (! trElement.classList.contains("filename-list-item")) {
-          this.error("eventLogItemDoubleClicked -- TR ELEMENT DOES NOT HAVE CLASS 'filename-list-item'");
+          this.error("-- TR ELEMENT DOES NOT HAVE CLASS 'filename-list-item'");
         } else {
           const fileName = trElement.getAttribute("fileName");
-          this.debug(`eventLogItemDoubleClicked -- GOT DOUBLE-CLICK ON TR: fileName="${fileName}"`);
+          this.debug(`-- GOT DOUBLE-CLICK ON TR: fileName="${fileName}"`);
           if (! fileName) {
-            this.error("eventLogItemDoubleClicked -- TR ELEMENT DOES NOT HAVE ATTRIBUTE 'fileName'");
+            this.error("-- TR ELEMENT DOES NOT HAVE ATTRIBUTE 'fileName'");
           } else {
             await this.showEventLogViewer(fileName);
           }
@@ -736,7 +749,7 @@ class EventLogManager {
   deselectAllFileNames() {
     const domFileNameList = document.getElementById("fsbEventLogManagerFileNameList");
     if (! domFileNameList) {
-      this.error("deselectAllFileNames -- failed to get domFileNameList");
+      this.error("-- failed to get domFileNameList");
     } else {
       for (const listItem of domFileNameList.children) {
         listItem.classList.remove('selected');
@@ -752,7 +765,7 @@ class EventLogManager {
   getSelectedDomFileNameListItem() {
     const domFileNameList = document.getElementById("fsbEventLogManagerFileNameList");
     if (! domFileNameList) {
-      this.error("getSelectedDomFileNameListItem -- failed to get domFileNameList");
+      this.error("-- failed to get domFileNameList");
     } else {
       for (const domFileNameListItemTR of domFileNameList.children) {
         if (domFileNameListItemTR.classList.contains('selected')) {
@@ -765,7 +778,7 @@ class EventLogManager {
   getSelectedDomFileNameListItems() {
     const domFileNameList = document.getElementById("fsbEventLogManagerFileNameList");
     if (! domFileNameList) {
-      this.error("getSelectedDomFileNameListItems -- failed to get domFileNameList");
+      this.error("-- failed to get domFileNameList");
     } else {
       const selected = [];
       for (const domFileNameListItemTR of domFileNameList.children) {
@@ -782,7 +795,7 @@ class EventLogManager {
     const domFileNameList = document.getElementById("fsbEventLogManagerFileNameList");
 
     if (! domFileNameList) {
-      this.error("getSelectedDomFileNameListItemCount -- failed to get domFileNameList");
+      this.error("-- failed to get domFileNameList");
     } else {
       for (const domFileNameListItemTR of domFileNameList.children) {
         if (domFileNameListItemTR.classList.contains('selected')) {
@@ -797,7 +810,7 @@ class EventLogManager {
 
 
   async listModeButtonClicked(e) {
-    this.debug(`listModeButtonClicked -- e.target.tagName="${e.target.tagName}"`);
+    this.debug(`-- e.target.tagName="${e.target.tagName}"`);
 
     e.preventDefault();
 
@@ -820,7 +833,7 @@ class EventLogManager {
 
 
   async viewButtonClicked(e) {
-    this.debug(`viewButtonClicked -- e.target.tagName="${e.target.tagName}"`);
+    this.debug(`-- e.target.tagName="${e.target.tagName}"`);
 
     e.preventDefault();
 
@@ -830,13 +843,13 @@ class EventLogManager {
   async viewSelectedEventLog(e) {
     const domSelectedFileNameListItemTR = this.getSelectedDomFileNameListItem();
     if (! domSelectedFileNameListItemTR) {
-      this.error("viewSelectedEventLog -- No fileName Item Selected");
+      this.error("-- No fileName Item Selected");
       return;
     }
 
     const selectedFileName = domSelectedFileNameListItemTR.getAttribute('fileName');
     if (! selectedFileName) {
-      this.error("viewSelectedEventLog -- Selected fileName Item has no 'fileName' attribute");
+      this.error("-- Selected fileName Item has no 'fileName' attribute");
       return;
     }
 
@@ -851,7 +864,7 @@ class EventLogManager {
 
 
   async showEventLogViewer(fileName) { // MABXXX could we make all this part of the LogViewer class inside eventLogViewer.js ???
-    this.debug(`showEventLogViewer -- fileName="${fileName}"`);
+    this.debug(`-- fileName="${fileName}"`);
 
     let   popupLeft   = 100;
     let   popupTop    = 100;
@@ -860,10 +873,10 @@ class EventLogManager {
     const mainWindow  = await messenger.windows.getCurrent();
 
     if (! mainWindow) {
-      this.debug("showEventLogViewer -- DID NOT GET THE CURRENT (MAIN, mail:3pane) WINDOW!!! ---");
+      this.debug("-- DID NOT GET THE CURRENT (MAIN, mail:3pane) WINDOW!!! ---");
 
     } else {
-      this.debug( "showEventLogViewer -- Got the Current (Main, mail:3pane) Window:"
+      this.debug( "-- Got the Current (Main, mail:3pane) Window:"
                   + `\n- mainWindow.top=${mainWindow.top}`
                   + `\n- mainWindow.left=${mainWindow.left}`
                   + `\n- mainWindow.height=${mainWindow.height}`
@@ -878,11 +891,11 @@ class EventLogManager {
     let bounds = await this.fsbOptionsApi.getWindowBounds("eventLogViewerWindowBounds");
 
     if (! bounds) {
-      this.debug("showEventLogViewer -- no previous window bounds");
+      this.debug("-- no previous window bounds");
     } else if (typeof bounds !== 'object') {
-      this.error(`showEventLogViewer -- PREVIOUS WINDOW BOUNDS IS NOT AN OBJECT: typeof='${typeof bounds}' #####`);
+      this.error(`-- PREVIOUS WINDOW BOUNDS IS NOT AN OBJECT: typeof='${typeof bounds}' #####`);
     } else {
-      this.debug( "showEventLogViewer -- restoring previous window bounds:"
+      this.debug( "-- restoring previous window bounds:"
                   + `\n- bounds.top=${bounds.top}`
                   + `\n- bounds.left=${bounds.left}`
                   + `\n- bounds.width=${bounds.width}`
@@ -901,9 +914,9 @@ class EventLogManager {
     let   ourWindowId;
     const currentTab = await messenger.tabs.getCurrent();
     if (! currentTab) {
-      this.error("showEventLogViewer -- messenger.tabs.getCurrent() didn't return a Tab");
+      this.error("-- messenger.tabs.getCurrent() didn't return a Tab");
     } else {
-      this.debug(`showEventLogViewer -- currentTab.id="${currentTab.id}" currentTab.windowId="${currentTab.windowId}"`);
+      this.debug(`currentTab.id="${currentTab.id}" currentTab.windowId="${currentTab.windowId}"`);
       ourTabId    = currentTab.id;
       ourWindowId = currentTab.windowId;
     }
@@ -927,7 +940,7 @@ class EventLogManager {
       }
     );
 
-    this.debug( "showEventLogViewer -- Backup File Viewer Popup Window Created --"
+    this.debug( "-- Backup File Viewer Popup Window Created --"
                 + `\n-from ourTabId="${ourTabId}"`
                 + `\n-from ourWindowId="${ourWindowId}"`
                 + `\n-eventLogViewerWindow.id="${eventLogViewerWindow.id}"`
@@ -946,7 +959,7 @@ class EventLogManager {
     // - { 'DELETED': fileName }  - the user clicked the Delete button (sent by the LogViewer window's Delete button listener)
 
     const eventLogViewerResponse = await this.eventLogViewerPrompt(eventLogViewerWindow.id, null);
-    this.debug(`showEventLogViewer -- LogViewer eventLogViewerResponse="${eventLogViewerResponse}"`);
+    this.debug(`-- LogViewer eventLogViewerResponse="${eventLogViewerResponse}"`);
 
     // NOW UPDATE THE UI!!!
     switch (eventLogViewerResponse) {
@@ -956,27 +969,27 @@ class EventLogManager {
         break;
       default: {
         if (! typeof (eventLogViewerResponse === 'object')) {
-          this.error(`showEventLogViewer -- UNKNOWN LogViewer Response - NOT A KEYWORD OR OBJECT: "${eventLogViewerResponse}"`);
+          this.error(`-- UNKNOWN LogViewer Response - NOT A KEYWORD OR OBJECT: "${eventLogViewerResponse}"`);
 
         } else {
           if (! eventLogViewerResponse.hasOwnProperty('DELETED')) {
-            this.error(`showEventLogViewer -- UNKNOWN LogViewer Response - Object has No 'DELETED' Property: "${eventLogViewerResponse}"`);
+            this.error(`-- UNKNOWN LogViewer Response - Object has No 'DELETED' Property: "${eventLogViewerResponse}"`);
 
           } else {
             const fileName = eventLogViewerResponse.DELETED;
             if (typeof fileName !== 'string') {
-              this.error(`showEventLogViewer -- MALFORMED LogViewer Response - Invalid 'DELETED' Property type - expected 'string', got: '${typeof fileName}'`);
+              this.error(`-- MALFORMED LogViewer Response - Invalid 'DELETED' Property type - expected 'string', got: '${typeof fileName}'`);
 
             } else {
               // MABXXX Perhaps it wold be better for *US* to actually delete the Log File...
-              this.debug(`showEventLogViewer -- Log File '${fileName}' was deleted`);
+              this.debug(`-- Log File '${fileName}' was deleted`);
               const selector         = `tr.filename-list-item[fileName='${fileName}']`;
               const domDeletedFileTR = document.querySelector(selector);
 
               if (! domDeletedFileTR) {
-                this.error(`showEventLogViewer -- Failed to select deleted file item, selector="${selector}"`);
+                this.error(`-- Failed to select deleted file item, selector="${selector}"`);
               } else {
-                this.log(`showEventLogViewer -- Removing deleted file item, selector="${selector}"`);
+                this.log(`-- Removing deleted file item, selector="${selector}"`);
                 domDeletedFileTR.remove(); // why bother with this if we're just going to call buildFileNameListUI() ???
 //              const domeventLogManager = document.getElementById("fsbEventLogManager"); // MABXXX attempting to force re-layout
 //              if (domeventLogManager) domeventLogManager.offsetHeight;                  // MABXXX attempting to force re-layout
@@ -998,7 +1011,7 @@ class EventLogManager {
       await messenger.windows.get(eventLogViewerWindowId);
     } catch (error) {
       // Window does not exist, assume closed.
-      this.caught(error, "eventLogViewerPrompt -- PERHAPS WINDOW CLOSED???");
+      this.caught(error, "-- PERHAPS WINDOW CLOSED???");
       return defaultResponse;
     }
 
@@ -1037,7 +1050,7 @@ class EventLogManager {
 
 
   async archiveButtonClicked(e) {
-    this.debug(`archiveButtonClicked -- e.target.tagName="${e.target.tagName}"`);
+    this.debug(`-- e.target.tagName="${e.target.tagName}"`);
 
     e.preventDefault();
 
@@ -1052,37 +1065,37 @@ class EventLogManager {
     let errors = 0;
 
     if (! domSelectedFileNameItemTRs) {
-      this.error("archiveSelectedFiles -- NO FILENAMES SELECTED -- Archive Button should have been disabled!!!");
+      this.error("-- NO FILENAMES SELECTED -- Archive Button should have been disabled!!!");
 
     } else {
-      this.debug(`archiveSelectedFiles -- domSelectedFileNameItemTRs.length=${domSelectedFileNameItemTRs.length}`);
+      this.debug(`-- domSelectedFileNameItemTRs.length=${domSelectedFileNameItemTRs.length}`);
 
       var archived = 0;
       for (const domSelectedFileNameItemTR of domSelectedFileNameItemTRs) {
         const eventLogName = domSelectedFileNameItemTR.getAttribute("fileName");
-        this.debug(`archiveSelectedFiles -- Archiving Log FIle eventLogName="${eventLogName}"`);
+        this.debug(`-- Archiving Log FIle eventLogName="${eventLogName}"`);
 
         const response = await this.archiveEventLog(eventLogName);
         if (! response) {
-          this.error(`archiveSelectedFiles -- FAILED TO ARCHIVE LOG FILE -- NO RESPONSE RETURNED -- eventLogName="${eventLogName}"`);
+          this.error(`-- FAILED TO ARCHIVE LOG FILE -- NO RESPONSE RETURNED -- eventLogName="${eventLogName}"`);
           ++errors;
         } else if (response.invalid) {
-          this.error(`archiveSelectedFiles -- FAILED TO ARCHIVE LOG FILE -- INVALID RETURNED -- eventLogName="${eventLogName}"`);
+          this.error(`-- FAILED TO ARCHIVE LOG FILE -- INVALID RETURNED -- eventLogName="${eventLogName}"`);
           ++errors;
         } else if (response.error) {
-          this.error(`archiveSelectedFiles -- FAILED TO ARCHIVE LOG FILE -- ERROR RETURNED -- eventLogName="${eventLogName}"`);
+          this.error(`-- FAILED TO ARCHIVE LOG FILE -- ERROR RETURNED -- eventLogName="${eventLogName}"`);
           ++errors;
         } else if (! response.eventLogName) {
-          this.error(`archiveSelectedFiles -- FAILED TO ARCHIVE LOG FILE -- NO LOG FILENAME RETURNED -- eventLogName="${eventLogName}"`);
+          this.error(`-- FAILED TO ARCHIVE LOG FILE -- NO LOG FILENAME RETURNED -- eventLogName="${eventLogName}"`);
           ++errors;
         } else if (! response.archiveFileName) {
-          this.error(`archiveSelectedFiles -- FAILED TO ARCHIVE LOG FILE -- NO ARCHIVE FILENAME RETURNED -- response.eventLogName="${response.eventLogName}"`);
+          this.error(`-- FAILED TO ARCHIVE LOG FILE -- NO ARCHIVE FILENAME RETURNED -- response.eventLogName="${response.eventLogName}"`);
           ++errors;
         } else if (! response.archived) {
-          this.error(`archiveSelectedFiles -- FAILED TO ARCHIVE LOG FILE -- response.eventLogName="${response.eventLogName}" response.archiveFileName="${response.archiveFileName}" response.archived="${response.archived}"`);
+          this.error(`-- FAILED TO ARCHIVE LOG FILE -- response.eventLogName="${response.eventLogName}" response.archiveFileName="${response.archiveFileName}" response.archived="${response.archived}"`);
           ++errors;
         } else {
-          this.debug(`archiveSelectedFiles -- Log File Archived -- response.eventLogName="${response.eventLogName}" response.archiveFileName="${response.archiveFileName}" response.archived="${response.archived}"`);
+          this.debug(`-- Log File Archived -- response.eventLogName="${response.eventLogName}" response.archiveFileName="${response.archiveFileName}" response.archived="${response.archived}"`);
           ++archived;
           domSelectedFileNameItemTR.remove();
         }
@@ -1094,7 +1107,7 @@ class EventLogManager {
         // MABXXX NO RESPONSE MESSAGE REQUIRED FOR LOG FILE ARCHIVE
 //      const responseMessage = { 'ARCHIVED': archived };
 //
-//      this.debug(`archiveSelectedFiles -- Sending responseMessage="${responseMessage}"`);
+//      this.debug(`-- Sending responseMessage="${responseMessage}"`);
 //
 //      try {
 //        await messenger.runtime.sendMessage(
@@ -1102,7 +1115,7 @@ class EventLogManager {
 //        );
 //      } catch (error) {
 //        this.caught( error, 
-//                     "archiveSelectedFiles ##### SEND RESPONSE MESSAGE FAILED #####"
+//                     "##### SEND RESPONSE MESSAGE FAILED #####"
 //                     + `\n- responseMessage="${responseMessage}"`
 //                   );
 //        ++errors;
@@ -1124,7 +1137,7 @@ class EventLogManager {
 
 
   async deleteButtonClicked(e) {
-    this.debug(`deleteButtonClicked -- e.target.tagName="${e.target.tagName}"`);
+    this.debug(`-- e.target.tagName="${e.target.tagName}"`);
 
     e.preventDefault();
 
@@ -1139,34 +1152,34 @@ class EventLogManager {
     let errors = 0;
 
     if (! domSelectedFileNameItemTRs) {
-      this.error("deleteSelectedFiles -- NO FILENAMES SELECTED -- Delete Button should have been disabled!!!");
+      this.error("-- NO FILENAMES SELECTED -- Delete Button should have been disabled!!!");
 
     } else {
-      this.debug(`deleteSelectedFiles -- domSelectedFileNameItemTRs.length=${domSelectedFileNameItemTRs.length}`);
+      this.debug(`-- domSelectedFileNameItemTRs.length=${domSelectedFileNameItemTRs.length}`);
 
       var deleted = 0;
       for (const domSelectedFileNameItemTR of domSelectedFileNameItemTRs) {
         const eventLogName = domSelectedFileNameItemTR.getAttribute("fileName");
-        this.debug(`deleteSelectedFiles -- Deleting Log File eventLogName="${eventLogName}"`);
+        this.debug(`-- Deleting Log File eventLogName="${eventLogName}"`);
 
         const response = await this.deleteEventLog(eventLogName);
         if (! response) {
-          this.error(`deleteSelectedFiles -- FAILED TO DELETE LOG FILE -- NO RESPONSE RETURNED -- eventLogName="${eventLogName}"`);
+          this.error(`-- FAILED TO DELETE LOG FILE -- NO RESPONSE RETURNED -- eventLogName="${eventLogName}"`);
           ++errors;
         } else if (response.invalid) {
-          this.error(`deleteSelectedFiles -- FAILED TO DELETE LOG FILE -- INVALID RETURNED -- eventLogName="${eventLogName}"`);
+          this.error(`-- FAILED TO DELETE LOG FILE -- INVALID RETURNED -- eventLogName="${eventLogName}"`);
           ++errors;
         } else if (response.error) {
-          this.error(`deleteSelectedFiles -- FAILED TO DELETE LOG FILE -- ERROR RETURNED -- eventLogName="${eventLogName}"`);
+          this.error(`-- FAILED TO DELETE LOG FILE -- ERROR RETURNED -- eventLogName="${eventLogName}"`);
           ++errors;
         } else if (! response.fileName) {
-          this.error(`deleteSelectedFiles -- FAILED TO DELETE LOG FILE -- NO FILENAME RETURNED -- eventLogName="${eventLogName}"`);
+          this.error(`-- FAILED TO DELETE LOG FILE -- NO FILENAME RETURNED -- eventLogName="${eventLogName}"`);
           ++errors;
         } else if (! response.deleted) {
-          this.error(`deleteSelectedFiles -- FAILED TO DELETE LOG FILE -- eventLogName="${eventLogName}" response.deleted="${response.deleted}"`);
+          this.error(`-- FAILED TO DELETE LOG FILE -- eventLogName="${eventLogName}" response.deleted="${response.deleted}"`);
           ++errors;
         } else {
-          this.debug(`deleteSelectedFiles -- Log File Deleted -- eventLogName="${eventLogName}" response.deleted="${response.deleted}"`);
+          this.debug(`-- Log File Deleted -- eventLogName="${eventLogName}" response.deleted="${response.deleted}"`);
           ++deleted;
           domSelectedFileNameItemTR.remove();
         }
@@ -1182,7 +1195,7 @@ class EventLogManager {
         // MABXXX NO RESPONSE MESSAGE REQUIRED FOR LOG FILE DELETE
 //      const responseMessage = { 'DELETED': deleted };
 //
-//      this.debug(`deleteSelectedFiles -- Sending responseMessage="${responseMessage}"`);
+//      this.debug(`-- Sending responseMessage="${responseMessage}"`);
 //
 //      try {
 //        await messenger.runtime.sendMessage(
@@ -1190,7 +1203,7 @@ class EventLogManager {
 //        );
 //      } catch (error) {
 //        this.caught( error, 
-//                     "deleteSelectedFiles ##### SEND RESPONSE MESSAGE FAILED #####"
+//                     "##### SEND RESPONSE MESSAGE FAILED #####"
 //                     + `\n- responseMessage="${responseMessage}"`
 //                   );
 //        ++errors;
@@ -1244,14 +1257,14 @@ class EventLogManager {
 
 
   async doneButtonClicked(e) {
-    this.debug(`doneButtonClicked -- e.target.tagName="${e.target.tagName}"`);
+    this.debug(`-- e.target.tagName="${e.target.tagName}"`);
 
     e.preventDefault();
 
     this.canceled = true;
 
     const responseMessage = "DONE";
-    this.debug(`doneButtonClicked -- Sending responseMessage="${responseMessage}"`);
+    this.debug(`-- Sending responseMessage="${responseMessage}"`);
     try {
       await messenger.runtime.sendMessage(
         { eventLogManagerResponse: responseMessage }
@@ -1259,12 +1272,12 @@ class EventLogManager {
     } catch (error) {
       // any need to tell the user???
       this.caught( error,
-                   "doneButtonClicked ##### SEND RESPONSE MESSAGE FAILED #####"
+                   "##### SEND RESPONSE MESSAGE FAILED #####"
                    + `\n- responseMessage="${responseMessage}"`
                  );
     }
 
-    this.debug("doneButtonClicked -- Closing window");
+    this.debug("-- Closing window");
     window.close();
   }
 
@@ -1277,14 +1290,14 @@ class EventLogManager {
     try {
       let matchGLOB = this.LOG_FILENAME_MATCH_GLOB;
       if (this.listMode === this.LIST_MODE_ARCHIVES) matchGLOB = this.ARCHIVE_FILENAME_MATCH_GLOB;
-      this.debug(`listEventLogs -- Getting list of log files with matchGLOB "${matchGLOB}"`);
+      this.debug(`-- Getting list of log files with matchGLOB "${matchGLOB}"`);
       const response = await this.fsBrokerApi.listFiles(matchGLOB);
-      this.debug(`listEventLogs --response: "${response}"`);
+      this.debug(`--response: "${response}"`);
 
       return response;
 
     } catch (error) {
-      this.caught(error, "listEventLogs -- Unexpected Error");
+      this.caught(error, "-- Unexpected Error");
       return { "error": error.name + ": " + error.message };
     }
   }
@@ -1296,14 +1309,14 @@ class EventLogManager {
     try {
       let matchGLOB = this.LOG_FILENAME_MATCH_GLOB;
       if (this.listMode === this.LIST_MODE_ARCHIVES) matchGLOB = this.ARCHIVE_FILENAME_MATCH_GLOB;
-      this.debug(`listEventLogInfo -- Getting list of log files with matchGLOB "${matchGLOB}"`);
+      this.debug(`-- Getting list of log files with matchGLOB "${matchGLOB}"`);
       const response = await this.fsBrokerApi.listFileInfo(matchGLOB);
-      this.debug(`listEventLogInfo --response: "${response}"`);
+      this.debug(`--response: "${response}"`);
 
       return response;
 
     } catch (error) {
-      this.caught(error, "listEventLogInfo -- Unexpected Error");
+      this.caught(error, "-- Unexpected Error");
       return { "error": error.name + ": " + error.message };
     }
   }
@@ -1314,23 +1327,23 @@ class EventLogManager {
    */
   async readEventLog(fileName) {
     try {
-      this.debug(`readEventLog -- Reading log file "${fileName}"`);
+      this.debug(`-- Reading log file "${fileName}"`);
       const response = await this.fsBrokerApi.readFile(fileName);
-      //this.debug("readEventLog -- response:", response);
-      //this.debug(`readEventLog -- response.data: "${response.data}"`);
+      //this.debug("-- response:", response);
+      //this.debug(`-- response.data: "${response.data}"`);
 
       if (response.data) {
         const lines    = response.data.split('\n');
         const lineData = [];
 
         for (const line of lines) {
-          //this.debug(`readEventLog -- line: "${line}"`);
+          //this.debug(`-- line: "${line}"`);
           if (line.length >= 1) {
             try {
               const obj = JSON.parse(line);
               lineData.push(obj);
             } catch (error) {
-              this.caught(error, `readEventLog -- Unexpected Error parsing JSON: "${line}"`);
+              this.caught(error, `-- Unexpected Error parsing JSON: "${line}"`);
             }
           }
         }
@@ -1341,7 +1354,7 @@ class EventLogManager {
       return response;
 
     } catch (error) {
-      this.caught(error, "readEventLog -- Unexpected Error");
+      this.caught(error, "-- Unexpected Error");
       return { "error": error.name + ": " + error.message };
     }
   }
@@ -1358,26 +1371,26 @@ class EventLogManager {
 //  this.ARCHIVE_FILENAME_EXTENSION  = ".alog";
       const dotLogIndex = eventLogName.indexOf(this.LOG_FILENAME_EXTENSION);
       if (dotLogIndex == -1) {
-        this.error(`archiveEventLog -- eventLogName does not end with "${this.LOG_FILENAME_EXTENSION}": "${eventLogName}"`);
+        this.error(`-- eventLogName does not end with "${this.LOG_FILENAME_EXTENSION}": "${eventLogName}"`);
         return { "invalid": `eventLogName does not end with "${this.LOG_FILENAME_EXTENSION}": "${eventLogName}"` };
       }
       const timestamp       = formatMsToTimeForFilename(nowMS);
       const archiveFileName = eventLogName.substring(0, dotLogIndex) + "_" + timestamp + this.ARCHIVE_FILENAME_EXTENSION;
 
-      this.debug(`archiveEventLog -- Renaming log file "${eventLogName}" to "${archiveFileName}" `);
+      this.debug(`-- Renaming log file "${eventLogName}" to "${archiveFileName}" `);
       const response = await this.fsBrokerApi.renameFile(eventLogName, archiveFileName, true);
-      this.debug(`archiveEventLog --response: "${response}"`);
+      this.debug(`--response: "${response}"`);
 
       if (response.renamed !== true) {
-        this.error(`archiveEventLog -- Failed to rename file "${eventLogName}" to "${archiveFileName}" `);
+        this.error(`-- Failed to rename file "${eventLogName}" to "${archiveFileName}" `);
         return { "error": `Failed to archive log file "${eventLogName}"` };
       }
 
-      this.debug(`archiveEventLog -- Successfully archived log file "${eventLogName}" to "${archiveFileName}" `);
+      this.debug(`-- Successfully archived log file "${eventLogName}" to "${archiveFileName}" `);
       return { "eventLogName": eventLogName, "archiveFileName": archiveFileName, "archived": true };
 
     } catch (error) {
-      this.caught(error, `archiveEventLog --  Failed to archive log file "${eventLogName}"`);
+      this.caught(error, `--  Failed to archive log file "${eventLogName}"`);
       return { "error": error.name + ": " + error.message };
     }
   }
@@ -1388,14 +1401,14 @@ class EventLogManager {
    */
   async deleteEventLog(fileName) {
     try {
-      this.debug(`deleteEventLog -- Deleting log file "${fileName}"`);
+      this.debug(`-- Deleting log file "${fileName}"`);
       const response = await this.fsBrokerApi.deleteFile(fileName);
-      this.debug(`deleteEventLog --response: "${response}"`);
+      this.debug(`--response: "${response}"`);
 
       return response;
 
     } catch (error) {
-      this.caught(error, `deleteEventLog --  Failed to delete log file "${fileName}"`);
+      this.caught(error, `--  Failed to delete log file "${fileName}"`);
       return { "error": error.name + ": " + error.message };
     }
   }

@@ -1,15 +1,73 @@
 import { FileSystemBrokerAPI } from '../modules/FileSystemBroker/filesystem_broker_api.js';
 
-import { logProps, getExtensionId, getExtensionName, getI18nMsg, formatNowToDateTimeForFilename, formatMsToDateTime24HR, getMidnightMS } from '../utilities.js';
+import { logProps, getExtensionId, getExtensionName, getI18nMsg, formatNowToDateTimeForFilename, formatMsToDateTime24HR, getMidnightMS } from './utilities.js';
 
 export class FsbOptions {
+  #DEFAULT_OPTION_KEYS = [
+    'fsbExtensionAccessControlEnabled',
+    'fsbShowGrantExtensionAccessDialog',
+    'fsbShowOptionsWindowOnStartup', 
+    'fsbSkipOnboardingEnabled',
+    'fsbEnableConsoleLog',
+    'fsbEnableConsoleDebug',
+    'fsbEnableConsoleDebugTrace',
+    'fsbEnableConsoleWarn',
+    'fsbEnableConsoleErrorTrace',
+    'fsbEnableAccessLogging',
+    'fsbEnableAccessDeniedLogging',
+    'fsbEnableInternalMessageLogging',
+    'fsbEnableInternalMessageResultLogging',
+    'fsbEnableExternalMessageLogging',
+    'fsbEnableExternalMessageResultLogging',
+    'fsbEnableInternalEventLogging',
+    'fsbShowLoggingOptions',
+    'fsbAutoLogPurgeDays',
+    'fsbAutoRemoveUninstalledExtensionsDays',
+    'fsbShowOptionsHints',
+    'fsbShowOptionsActions',
+    'fsbShowExtensionChooserInstructions',
+    'fsbShowBackupManagerInstructions',
+    'fsbShowEventLogManagerInstructions'
+  ];
+
+  #DEFAULT_OPTION_VALUES = {
+    'fsbExtensionAccessControlEnabled':       true,
+    'fsbShowGrantExtensionAccessDialog':      false,
+    'fsbShowOptionsWindowOnStartup':          false,
+    'fsbSkipOnboardingEnabled':               false,
+    'fsbEnableConsoleLog':                    false,
+    'fsbEnableConsoleDebug':                  false,
+    'fsbEnableConsoleDebugTrace':             false,
+    'fsbEnableConsoleWarn':                   false,
+    'fsbEnableConsoleErrorTrace':             false,
+    'fsbEnableAccessLogging':                 false,
+    'fsbEnableAccessDeniedLogging':           true,
+    'fsbEnableInternalMessageLogging':        false,
+    'fsbEnableInternalMessageResultLogging':  true,
+    'fsbEnableExternalMessageLogging':        false,
+    'fsbEnableExternalMessageResultLogging':  true,
+    'fsbEnableInternalEventLogging':          true,
+    'fsbShowLoggingOptions':                  true,
+    'fsbAutoLogPurgeDays':                    14,
+    'fsbAutoRemoveUninstalledExtensionsDays': 2,
+    'fsbShowOptionsHints':                    true,
+    'fsbShowOptionsActions':                  true,
+    'fsbShowExtensionChooserInstructions':    true,
+    'fsbShowBackupManagerInstructions':       true,
+    'fsbShowEventLogManagerInstructions':     true
+  };
+
+
+
   constructor(logger, fsbEventLogger) {
     this.className      = this.constructor.name;
     this.extId          = getExtensionId();
     this.extName        = getExtensionName();
 
+    this.INFO           = false;
     this.LOG            = false;
     this.DEBUG          = false;
+    this.WARN           = false;
 
     this.logger         = logger;
     this.fsbEventLogger = fsbEventLogger;
@@ -20,122 +78,69 @@ export class FsbOptions {
 
     this.settingDefaultOptions = false;
 
-    this.defaultOptionKeys = [
-      'fsbExtensionAccessControlEnabled',
-      'fsbShowGrantExtensionAccessDialog',
-      'fsbShowOptionsWindowOnStartup', 
-      'fsbSkipOnboardingEnabled',
-      'fsbEnableConsoleLog',
-      'fsbEnableConsoleDebug',
-      'fsbEnableConsoleDebugTrace',
-      'fsbEnableConsoleWarn',
-      'fsbEnableConsoleErrorTrace',
-      'fsbEnableAccessLogging',
-      'fsbEnableAccessDeniedLogging',
-      'fsbEnableInternalMessageLogging',
-      'fsbEnableInternalMessageResultLogging',
-      'fsbEnableExternalMessageLogging',
-      'fsbEnableExternalMessageResultLogging',
-      'fsbEnableInternalEventLogging',
-      'fsbShowLoggingOptions',
-      'fsbAutoLogPurgeDays',
-      'fsbAutoRemoveUninstalledExtensionsDays',
-      'fsbShowOptionsHints',
-      'fsbShowOptionsActions',
-      'fsbShowExtensionChooserInstructions',
-      'fsbShowBackupManagerInstructions',
-      'fsbShowEventLogManagerInstructions'
-    ];
-
-    this.defaultOptionValues = {
-      'fsbExtensionAccessControlEnabled':       true,
-      'fsbShowGrantExtensionAccessDialog':      false,
-      'fsbShowOptionsWindowOnStartup':          false,
-      'fsbSkipOnboardingEnabled':               false,
-      'fsbEnableConsoleLog':                    false,
-      'fsbEnableConsoleDebug':                  false,
-      'fsbEnableConsoleDebugTrace':             false,
-      'fsbEnableConsoleWarn':                   false,
-      'fsbEnableConsoleErrorTrace':             false,
-      'fsbEnableAccessLogging':                 false,
-      'fsbEnableAccessDeniedLogging':           true,
-      'fsbEnableInternalMessageLogging':        false,
-      'fsbEnableInternalMessageResultLogging':  true,
-      'fsbEnableExternalMessageLogging':        false,
-      'fsbEnableExternalMessageResultLogging':  true,
-      'fsbEnableInternalEventLogging':          true,
-      'fsbShowLoggingOptions':                  true,
-      'fsbAutoLogPurgeDays':                    14,
-      'fsbAutoRemoveUninstalledExtensionsDays': 2,
-      'fsbShowOptionsHints':                    true,
-      'fsbShowOptionsActions':                  true,
-      'fsbShowExtensionChooserInstructions':    true,
-      'fsbShowBackupManagerInstructions':       true,
-      'fsbShowEventLogManagerInstructions':     true
-    };
+    Object.freeze(this.#DEFAULT_OPTION_KEYS);
+    Object.freeze(this.#DEFAULT_OPTION_VALUES);
   }
 
 
   
   log(...info) {
-    if (! this.LOG) return;
-    const msg = info.shift();
-    if (this.logger) {
-      this.logger.log(this.className + "#" + msg, ...info); // this adds the extension ID and Caller Info
-    } else {
-      console.log(this.extId + "." + this.className + "#" + msg, ...info);
+    if (this.LOG)  {
+      if (this.logger) {
+        this.logger.log(this.className, ...info); // this adds the extension ID and Caller Info
+      } else {
+        console.log(this.extId + "." + this.className, ...info);
+      }
     }
   }
   
   logAlways(...info) {
-    const msg = info.shift();
     if (this.logger) {
-      this.logger.logAlways(this.className + "#" + msg, ...info); // this adds the extension ID and Caller Info
+      this.logger.logAlways(this.className, ...info); // this adds the extension ID and Caller Info
     } else {
-      console.log(this.extId + "." + this.className + "#" + msg, ...info);
+      console.log(this.extId + "." + this.className, ...info);
     }
   }
 
   debug(...info) {
-    if (! this.DEBUG) return;
-    const msg = info.shift();
-    if (this.logger) {
-      this.logger.debug(this.className + "#" + msg, ...info); // this adds the extension ID and Caller Info
-    } else {
-      console.debug(this.extId + "." + this.className + "#" + msg, ...info);
+    if (this.DEBUG) {
+      if (this.logger) {
+        this.logger.debug(this.className, ...info); // this adds the extension ID and Caller Info
+      } else {
+        console.debug(this.extId + "." + this.className, ...info);
+      }
     }
   }
 
   debugAlways(...info) {
-    const msg = info.shift();
     if (this.logger) {
-      this.logger.debugAlways(this.className + "#" + msg, ...info); // this adds the extension ID and Caller Info
+      this.logger.debugAlways(this.className, ...info); // this adds the extension ID and Caller Info
     } else {
-      console.debug(this.extId + "." + this.className + "#" + msg, ...info);
+      console.debug(this.extId + "." + this.className, ...info);
     }
   }
 
   error(...info) {
-    const msg = info.shift();
     if (this.logger) {
-      this.logger.error(this.className + "#" + msg, ...info); // this adds the extension ID and Caller Info
+      this.logger.error(this.className, ...info); // this adds the extension ID and Caller Info
     } else {
-      console.error(this.extId + "." + this.className + "#" + msg, ...info);
+      console.error(this.extId + "." + this.className, ...info);
     }
   }
 
-  caught(e, ...info) {
+  caught(e, msg, ...info) {
     // always log exceptions
-    const msg = info.shift();
     if (this.logger) {
-      this.logger.error( this.className + "#" + msg,
+      this.logger.error( this.className,
+                         msg,
                          "\n- name:    " + e.name,
                          "\n- message: " + e.message,
                          "\n- stack:   " + e.stack,
                          ...info
                    );
     } else {
-      console.error( this.extId + "." + this.className + "#" + msg,
+      console.error( this.extId,
+                     msg,
                      "\n- name:    " + e.name,
                      "\n- message: " + e.message,
                      "\n- stack:   " + e.stack,
@@ -161,17 +166,17 @@ export class FsbOptions {
 
 
   async setupDefaultOptions() {
-    this.log("setupDefaultOptions -- begin");
+    this.log("-- begin");
 
-    const optionKeys = await messenger.storage.local.get(this.defaultOptionKeys);
-    this.log('setupDefaultOptions: locally stored options:',  optionKeys);
+    const optionKeys = await messenger.storage.local.get(this.#DEFAULT_OPTION_KEYS);
+    this.log('locally stored options:',  optionKeys);
 
-    for(const [optionKey, defaultValue] of Object.entries(this.defaultOptionValues)) {
+    for (const [optionKey, defaultValue] of Object.entries(this.#DEFAULT_OPTION_VALUES)) {
       if (!(optionKey in optionKeys)) {
         messenger.storage.local.set(
           { [optionKey] : defaultValue}
         );
-        this.log(`setupDefaultOptions: new option: [${optionKey}]: ${defaultValue}`);
+        this.log(`new option: [${optionKey}]: ${defaultValue}`);
       }
     }
     
@@ -181,10 +186,10 @@ export class FsbOptions {
 
     let defaultExtensionProps;
     if (! extensionsProps) {
-      this.logAlways("setupDefaultOptions: creating initial extensions properties");
+      this.logAlways("creating initial extensions properties");
       extensionsProps = {};
     } else {
-      this.log("setupDefaultOptions: got extensions properties");
+      this.log("got extensions properties");
       defaultExtensionProps = extensionsProps[this.extId];
     }
 
@@ -203,20 +208,32 @@ export class FsbOptions {
       };
 
       if (this.LOG) {
-        this.logAlways("setupDefaultOptions: creating default extension properties");
+        this.logAlways("creating default extension properties");
         logProps("", "setupDefaultOptions.defaultExtensionProps", defaultExtensionProps);
       }
       extensionsProps[this.extId] = defaultExtensionProps;
 
       if (this.LOG) {
         logProps("", `setupDefaultOptions.extensionsProps["${this.extId}"]`, extensionsProps[this.extId]);
-        this.logAlways(`setupDefaultOptions: and storing them -- length=${Object.keys(extensionsProps).length}`);
+        this.logAlways(`and storing them -- length=${Object.keys(extensionsProps).length}`);
         logProps("", "setupDefaultOptions.extensionProps", extensionsProps);
       }
       await this.storeExtensionsProps(extensionsProps);
     }
 
-    this.log("setupDefaultOptions -- end");
+    this.log("-- end");
+  }
+
+  getDefaultOptionNames() {
+    return this.#DEFAULT_OPTION_KEYS;
+  }
+
+  getDefaultOptions() {
+    return this.#DEFAULT_OPTION_VALUES;
+  }
+
+  isDefaultOption(optionName) {
+    return this.#DEFAULT_OPTION_KEYS.includes(optionName);
   }
 
 
@@ -391,25 +408,25 @@ export class FsbOptions {
     let   extensionsProps;
 
     if (this.DEBUG) {
-      this.debugAlways(`getExtensionsProps -- installedExtensions.length=${installedExtensions.length}`);
+      this.debugAlways(`-- installedExtensions.length=${installedExtensions.length}`);
       logProps("", "FSBOptions.getExtensionsProps.installedExtensions", installedExtensions);
     }
 
     if (! props) {
       // this is not an error if we're setting defaults
-      if (! this.settingDefaultOptions) this.error("getExtensionsProps -- failed to get 'extensionsProps' from local storage");
+      if (! this.settingDefaultOptions) this.error("-- failed to get 'extensionsProps' from local storage");
 
     } else {
       extensionsProps = props['extensionsProps'];
       if (! extensionsProps) {
-        if (! this.settingDefaultOptions) this.error("getExtensionsProps -- failed to get props['extensionsProps'] (extensionsProps) from local storage");
+        if (! this.settingDefaultOptions) this.error("-- failed to get props['extensionsProps'] (extensionsProps) from local storage");
 
       } else if (typeof extensionsProps !== 'object') {
-        if (! this.settingDefaultOptions) this.error("getExtensionsProps -- props['extensionsProps'](extensionsProps) is not a object");
+        if (! this.settingDefaultOptions) this.error("-- props['extensionsProps'](extensionsProps) is not a object");
 
       } else {
         if (this.DEBUG) {
-          this.debugAlways(`getExtensionsProps -- Object.keys(extensionsProps).length=${Object.keys(extensionsProps).length}`);
+          this.debugAlways(`-- Object.keys(extensionsProps).length=${Object.keys(extensionsProps).length}`);
           logProps("", "FSBOptions.getExtensionsProps.extensionsProps", extensionsProps);
         }
 
@@ -417,9 +434,9 @@ export class FsbOptions {
           if (installedExtension.type === 'extension') {
             const configured = extensionsProps.hasOwnProperty(installedExtension.id);
             if (! configured) {
-              this.debug(`getExtensionsProps -- Extension NOT configured - not found in extensionsProps: ID="${installedExtension.id}`);
+              this.debug(`-- Extension NOT configured - not found in extensionsProps: ID="${installedExtension.id}`);
             } else {
-              this.debug(`getExtensionsProps -- Extension IS configured - found in extensionsProps: ID="${installedExtension.id}`);
+              this.debug(`-- Extension IS configured - found in extensionsProps: ID="${installedExtension.id}`);
 
               const extensionProps       = extensionsProps[installedExtension.id];
               extensionProps.installed   = true; // this should have been 'configured'
@@ -436,7 +453,7 @@ export class FsbOptions {
         }
 
         if (this.DEBUG) {
-          this.debugAlways(`getExtensionsProps -- RETURNING Object.keys(extensionsProps).length=${Object.keys(extensionsProps).length}`);
+          this.debugAlways(`-- RETURNING Object.keys(extensionsProps).length=${Object.keys(extensionsProps).length}`);
           logProps("", "FSBOptions.getExtensionsProps.extensionsProps", extensionsProps);
         }
       }
@@ -449,17 +466,17 @@ export class FsbOptions {
     const extensionsProps = await this.getExtensionsProps();
 
     if (! extensionsProps) {
-      this.error("getExtensionsPropsSortedById -- getExtensionsProps() DIDN'T RETURN ANYTHING");
+      this.error("-- getExtensionsProps() DIDN'T RETURN ANYTHING");
     } else {
       if (this.LOG) {
-        this.log("getExtensionsPropsSortedById -- extensionsProps:");
+        this.log("-- extensionsProps:");
         logProps("", "FSBOptions.getExtensionsPropsSortedById.extensionsProps", extensionsProps);
       }
 
       const sorted = sortExtensionsPropsById(extensionsProps, true);
 
       if (this.LOG) {
-        this.log("getExtensionsPropsSortedById -- sorted:");
+        this.log("-- sorted:");
         logProps("", "FSBOptions.getExtensionsPropsSortedById.sorted", sorted);
       }
 
@@ -480,17 +497,17 @@ export class FsbOptions {
     const extensionsProps = await this.getExtensionsProps();
 
     if (! extensionsProps) {
-      this.error("getExtensionsPropsSortedByName -- getExtensionsProps() DIDN'T RETURN ANYTHING");
+      this.error("-- getExtensionsProps() DIDN'T RETURN ANYTHING");
     } else {
       if (this.LOG) {
-        this.log("getExtensionsPropsSortedByName -- extensionsProps:");
+        this.log("-- extensionsProps:");
         logProps("", "FSBOptions.getExtensionsPropsSortedByName.extensionsProps", extensionsProps);
       }
 
       const sorted =  sortExtensionsPropsByName(extensionsProps, true);
 
       if (this.LOG) {
-        this.log("getExtensionsPropsSortedByName -- sorted:");
+        this.log("-- sorted:");
         logProps("", "FSBOptions.getExtensionsPropsSortedByName.sorted", sorted);
       }
 
@@ -587,7 +604,7 @@ export class FsbOptions {
   // Delete the extensionProps for the Extension (not the Extension istself)
   // with the given extensionId and return it.
   async deleteExtension(extensionId) {
-    this.log(`deleteExtension -- begin extensionId="${extensionId}"`);
+    this.log(`-- begin extensionId="${extensionId}"`);
 
     let deleted;
     if (extensionId && (typeof extensionId === 'string') && extensionId.length > 0) {
@@ -596,7 +613,7 @@ export class FsbOptions {
         const props = allExtensionsProps[extensionId];
         if (! props) {
         } else {
-          this.log(`deleteExtension -- deleting extensionId="${extensionId}"`);
+          this.log(`-- deleting extensionId="${extensionId}"`);
           delete allExtensionsProps[extensionId];
           deleted = props;
           await this.storeExtensionsProps(allExtensionsProps);
@@ -604,7 +621,7 @@ export class FsbOptions {
       }
     }
 
-    this.log(`deleteExtension -- end extensionId="${extensionId}"`);
+    this.log(`-- end extensionId="${extensionId}"`);
     return deleted;
   }
 
@@ -639,14 +656,14 @@ export class FsbOptions {
     const removeBeforeTime = formatMsToDateTime24HR(removeBeforeMS);
     const parameters       = { 'numDays': numDays, "removeBeforeTime": removeBeforeTime };
 
-    this.debugAlways(`autoRemoveUninstalledExtensions -- begin -- numDays=${numDays}, removeBeforeMS=${removeBeforeMS}, removeBeforeTime="${removeBeforeTime}"`);
+    this.debugAlways(`-- begin -- numDays=${numDays}, removeBeforeMS=${removeBeforeMS}, removeBeforeTime="${removeBeforeTime}"`);
 
     if (this.fsbEventLogger) {
       await this.fsbEventLogger.logInternalEvent("autoRemoveUninstalledExtensions", "request", parameters, "");
     }
 
     if (numDays < 0) { // -1: auto-remove is disabled, 0: remove immediately
-      this.debugAlways("autoRemoveUninstalledExtensions -- Auto-Remove is Disabled");
+      this.debugAlways("-- Auto-Remove is Disabled");
       if (this.fsbEventLogger) {
         await this.fsbEventLogger.logInternalEvent("autoRemoveUninstalledExtensions", "success", parameters, "Auto-Remove is Disabled");
       }
@@ -668,14 +685,14 @@ export class FsbOptions {
         if (extProps.uninstalled) {
           var installedExtension = installedExtensionById[extensionId];
           if (installedExtension) {
-            this.debugAlways(`autoRemoveUninstalledExtensions -- Extension recorded as Uninstalled IS Installed (again?,) ID="${extensionId}"`);
+            this.debugAlways(`-- Extension recorded as Uninstalled IS Installed (again?,) ID="${extensionId}"`);
             extProps.uninstalled = false;
             delete extProps['uninstalledTimeMS'];
             delete extProps['uninstalledType'];
-            this.debugAlways(`autoRemoveUninstalledExtensions -- Recording Extension as NOT Uninstalled, ID="${extensionId}"`);
+            this.debugAlways(`-- Recording Extension as NOT Uninstalled, ID="${extensionId}"`);
             await this.storeExtensionPropsById(extensionId, extProps);
           } else {
-            this.debugAlways(`autoRemoveUninstalledExtensions -- Extension already recorded as Uninstalled, ID="${extensionId}"`);
+            this.debugAlways(`-- Extension already recorded as Uninstalled, ID="${extensionId}"`);
             notInstalled      = true;
             alreadyRecorded   = true;
             uninstalledTimeMS = extProps.uninstalledTimeMS;
@@ -684,9 +701,9 @@ export class FsbOptions {
         } else {
           var installedExtension = installedExtensionById[extensionId];
           if (installedExtension) {
-            this.debugAlways(`autoRemoveUninstalledExtensions -- Extension is still Installed, ID="${extensionId}"`);
+            this.debugAlways(`-- Extension is still Installed, ID="${extensionId}"`);
           } else {
-            this.debugAlways(`autoRemoveUninstalledExtensions -- Extension is no longer Installed, ID="${extensionId}"`);
+            this.debugAlways(`-- Extension is no longer Installed, ID="${extensionId}"`);
             notInstalled               = true;
             extProps.uninstalled       = true;
             extProps.uninstalledTimeMS = nowMS;
@@ -697,29 +714,29 @@ export class FsbOptions {
         if (notInstalled) {
           if (numDays == 0 || uninstalledTimeMS < removeBeforeMS) {
             if (numDays == 0) {
-              this.debugAlways(`autoRemoveUninstalledExtensions -- Immediately Removing Extension, ID="${extensionId}"`);
+              this.debugAlways(`-- Immediately Removing Extension, ID="${extensionId}"`);
             } else {
-              this.debugAlways(`autoRemoveUninstalledExtensions -- uninstalledTimeMS=${uninstalledTimeMS} removeBeforeMS=${removeBeforeMS} -- Removing Extension, ID="${extensionId}"`);
+              this.debugAlways(`-- uninstalledTimeMS=${uninstalledTimeMS} removeBeforeMS=${removeBeforeMS} -- Removing Extension, ID="${extensionId}"`);
             }
             await this.deleteExtension(extensionId);
             ++removedCount;
 
           } else if (alreadyRecorded) {
-            this.debugAlways(`autoRemoveUninstalledExtensions -- Extension already recorded as Uninstalled, ID="${extensionId}"`);
+            this.debugAlways(`-- Extension already recorded as Uninstalled, ID="${extensionId}"`);
           } else {
-            this.debugAlways(`autoRemoveUninstalledExtensions -- Recording Extension as Uninstalled, ID="${extensionId}"`);
+            this.debugAlways(`-- Recording Extension as Uninstalled, ID="${extensionId}"`);
             await this.storeExtensionPropsById(extensionId, extProps);
           }
         }
       }
 
-      this.debugAlways(`autoRemoveUninstalledExtensions -- removedCount=${removedCount}`);
+      this.debugAlways(`-- removedCount=${removedCount}`);
       if (this.fsbEventLogger) {
         await this.fsbEventLogger.logInternalEvent("autoRemoveUninstalledExtensions", "success", parameters, `removedCount=${removedCount}`);
       }
     }
 
-    this.debugAlways("autoRemoveUninstalledExtensions -- end");
+    this.debugAlways("-- end");
   }
 
 
@@ -807,7 +824,7 @@ export class FsbOptions {
   }
 
   async allowAccess(extensionId) {
-    this.debug(`allowAccess -- extensionId="${extensionId}"`);
+    this.debug(`-- extensionId="${extensionId}"`);
 
     if ((typeof extensionId === 'string') && extensionId.length > 0) {
       var installedExtension;
@@ -815,24 +832,24 @@ export class FsbOptions {
         installedExtension = await messenger.management.get(extensionId);
       } catch (error) {
         if (! error.message.startsWith("No such addon")) {
-          this.caught(error, "allowAccess");
+          this.caught(error, `Error getting Extension "${extensionId}"`);
         }
       }
 
       if (! installedExtension) {
-        this.error(`allowAccess -- Extension is not installed, ID="${extensionId}"`);
+        this.error(`-- Extension is not installed, ID="${extensionId}"`);
 
       } else {
         const props = await this.getExtensionPropsById(extensionId);
 
         if (props) {
-          this.debug(`allowAccess -- extensionId="${extensionId}" already has props, just change allowAccess and store`);
+          this.debug(`-- extensionId="${extensionId}" already has props, just change allowAccess and store`);
           props.allowAccess = true;
           await this.storeExtensionPropsById(extensionId, props);
           return true;
 
         } else {
-          this.debug(`allowAccess -- extensionId="${extensionId}" does not already have props, create new props and store`);
+          this.debug(`-- extensionId="${extensionId}" does not already have props, create new props and store`);
 
           const newProps = {
             'allowAccess': true,
@@ -845,7 +862,7 @@ export class FsbOptions {
             'version':     installedExtension.version,
             'versionName': installedExtension.versionName
           }
-          this.debug(`allowAccess -- extensionId="${extensionId}" New Props:`, newProps);
+          this.debug(`-- extensionId="${extensionId}" New Props:`, newProps);
 
           await this.storeExtensionPropsById(extensionId, newProps);
           return true;
@@ -857,7 +874,7 @@ export class FsbOptions {
   }
 
   async disallowAccess(extensionId) {
-    this.debug(`disallowAccess -- extensionId="${extensionId}"`);
+    this.debug(`-- extensionId="${extensionId}"`);
 
     if ((typeof extensionId === 'string') && extensionId.length > 0) {
       var installedExtension;
@@ -865,24 +882,24 @@ export class FsbOptions {
         installedExtension = await messenger.management.get(extensionId);
       } catch (error) {
         if (! error.message.startsWith("No such addon")) {
-          this.caught(error, "disallowAccess");
+          this.caught(error, `Error getting Extentsion "${extensionId}"`);
         }
       }
 
       if (! installedExtension) {
-        this.error(`allowAccess -- Extension is not installed, ID="${extensionId}"`);
+        this.error(`-- Extension is not installed, ID="${extensionId}"`);
 
       } else {
         const props = await this.getExtensionPropsById(extensionId);
 
         if (props) {
-          this.debug(`disallowAccess -- extensionId="${extensionId}" already has props, just change allowAccess and store`);
+          this.debug(`-- extensionId="${extensionId}" already has props, just change allowAccess and store`);
           props.allowAccess = false;
           await this.storeExtensionPropsById(extensionId, props);
           return true;
 
         } else {
-          this.debug(`disallowAccess -- extensionId="${extensionId}" does not already have props, create new props and store`);
+          this.debug(`-- extensionId="${extensionId}" does not already have props, create new props and store`);
 
           const newProps = {
             'allowAccess': false,
@@ -895,7 +912,7 @@ export class FsbOptions {
             'version':     installedExtension.version,
             'versionName': installedExtension.versionName
           }
-          this.debug(`disallowAccess -- extensionId="${extensionId}" New Props:`, newProps);
+          this.debug(`-- extensionId="${extensionId}" New Props:`, newProps);
 
           await this.storeExtensionPropsById(extensionId, newProps);
           return true;
@@ -942,22 +959,23 @@ export class FsbOptions {
    *         { "error":    string                          } If there was some error writing the file. The returned string gives the reason.
    */
   async backupToFile() {
+    const fileName = formatNowToDateTimeForFilename() + this.BACKUP_FILENAME_EXTENSION;
+
     try {
-      const fileName    = formatNowToDateTimeForFilename() + this.BACKUP_FILENAME_EXTENSION;
-      const allOptions  = await this.getAllOptions();
+      const allOptions = await this.getAllOptions();
 
       if (this.DEBUG) {
-        this.debugAlways(`backupToFile -- Backing up all options to file "${fileName}"`);
-        this.debugAlways("backupToFile -- Backing up", allOptions);
+        this.debugAlways(`-- Backing up all options to file "${fileName}"`);
+        this.debugAlways("-- Backing up", allOptions);
         logProps("", "allOptions", allOptions);
       }
       const response = await this.fsBrokerApi.writeObjectToJSONFile(fileName, allOptions);
-      this.debug(`backupToFile --response: "${response}"`);
+      this.debug(`--response: "${response}"`);
 
       return response;
 
     } catch (error) {
-      this.caught(error, "backupToFile -- Unexpected Error");
+      this.caught(error, `-- Failed to write options backup file "${fileName}"`);
       return { "error": error.name + ": " + error.message };
     }
   }
@@ -967,14 +985,14 @@ export class FsbOptions {
    */
   async listBackupFiles() {
     try {
-      this.debug(`listBackupFiles -- Getting list of options backup files with matchGlob "${this.BACKUP_FILENAME_MATCH_GLOB}"`);
+      this.debug(`-- Getting list of options backup files with matchGlob "${this.BACKUP_FILENAME_MATCH_GLOB}"`);
       const response = await this.fsBrokerApi.listFiles(this.BACKUP_FILENAME_MATCH_GLOB);
-      this.debug(`listBackupFiles --response: "${response}"`);
+      this.debug(`--response: "${response}"`);
 
       return response;
 
     } catch (error) {
-      this.caught(error, "listBackupFiles -- Unexpected Error");
+      this.caught(error, "-- Failed to get list of options backup files");
       return { "error": error.name + ": " + error.message };
     }
   }
@@ -984,14 +1002,14 @@ export class FsbOptions {
    */
   async listBackupFileInfo() {
     try {
-      this.debug(`listBackupFileInfo -- Getting list of options backup files with matchGlob "${this.BACKUP_FILENAME_MATCH_GLOB}"`);
+      this.debug(`-- Getting list of options backup files with matchGlob "${this.BACKUP_FILENAME_MATCH_GLOB}"`);
       const response = await this.fsBrokerApi.listFileInfo(this.BACKUP_FILENAME_MATCH_GLOB);
-      this.debug(`listBackupFileInfo --response: "${response}"`);
+      this.debug(`--response: "${response}"`);
 
       return response;
 
     } catch (error) {
-      this.caught(error, "listBackupFileInfo -- Unexpected Error");
+      this.caught(error, "-- Failed to get list info for options backup files");
       return { "error": error.name + ": " + error.message };
     }
   }
@@ -1002,14 +1020,14 @@ export class FsbOptions {
    */
   async readBackupFile(fileName) {
     try {
-      this.debug(`readBackupFile -- Reading options backup file "${fileName}"`);
+      this.debug(`-- Reading options backup file "${fileName}"`);
       const response = await this.fsBrokerApi.readObjectFromJSONFile(fileName);
-      this.debug(`readBackupFile --response: "${response}"`);
+      this.debug(`--response: "${response}"`);
 
       return response;
 
     } catch (error) {
-      this.caught(error, "readBackupFile -- Unexpected Error");
+      this.caught(error, `-- Failed to read options backup file "${fileName}"`);
       return { "error": error.name + ": " + error.message };
     }
   }
@@ -1019,13 +1037,13 @@ export class FsbOptions {
    *         { "error":    string                   } If there was some error reading the file or restoring options. The returned string gives the reason.
    */
   async readOptionsFromBackupAndRestore(fileName) {
-    this.debug(`readOptionsFromBackupAndRestore -- Reading options backup file "${fileName}"`);
+    this.debug(`-- Reading options backup file "${fileName}"`);
 
     const response = await this.readBackupFile(fileName);
 
     if (response && response.object) {
       if (this.DEBUG) {
-        this.debug(`readOptionsFromBackupAndRestore -- readBackupFile "${fileName}" -- DATA RETURNED:`);
+        this.debug(`-- readBackupFile "${fileName}" -- DATA RETURNED:`);
         logProps("", "readOptionsFromBackupAndRestore", response.object);
       }
 
@@ -1034,7 +1052,7 @@ export class FsbOptions {
       try {
         await messenger.storage.local.set(response.object);
       } catch (error) {
-        this.caught(`readOptionsFromBackupAndRestore -- Failed to restore options from file "${fileName}" -- messenger.storage.local.set() failed`);
+        this.caught(`-- Failed to restore options from file "${fileName}" -- messenger.storage.local.set() failed`);
         return { "error": `Failed to restore options from file "${fileName}" --  messenger.storage.local.set() failed` };
       }
     }
@@ -1048,29 +1066,29 @@ export class FsbOptions {
    * or if unable to restore the options into local storage
    */
   async getOptionsFromBackupAndRestore(fileName) {
-    this.debug(`getOptionsFromBackupAndRestore -- Reading options backup file "${fileName}"`);
+    this.debug(`-- Reading options backup file "${fileName}"`);
 
     const response = await this.readBackupFile(fileName);
 
     if (! response) {
-      this.error(`getOptionsFromBackupAndRestore -- readBackupFile "${fileName}" -- READ FILE ERROR: NO RESPONSE FROM FileSystemBroker`);
+      this.error(`-- readBackupFile "${fileName}" -- READ FILE ERROR: NO RESPONSE FROM FileSystemBroker`);
       throw new Error(`readBackupFile "${fileName}" -- READ FILE ERROR: NO RESPONSE FROM FileSystemBroker`);
     } else if (response.invalid) {
-      this.error(`getOptionsFromBackupAndRestore -- readBackupFile "${fileName}" -- READ FILE ERROR: ${response.invalid}`);
+      this.error(`-- readBackupFile "${fileName}" -- READ FILE ERROR: ${response.invalid}`);
       throw new Error(`readBackupFile "${fileName}" -- READ FILE ERROR: ${response.invalid}`);
     } else if (response.error) {
-      this.error(`getOptionsFromBackupAndRestore -- readBackupFile "${fileName}" -- READ FILE ERROR: ${response.error}`);
+      this.error(`-- readBackupFile "${fileName}" -- READ FILE ERROR: ${response.error}`);
       throw new Error(`readBackupFile "${fileName}" -- READ FILE ERROR: ${response.error}`);
     } else if (! response.fileName) {
-      this.error(`getOptionsFromBackupAndRestore -- readBackupFile "${fileName}" -- NO FILENAME RETURNED`);
+      this.error(`-- readBackupFile "${fileName}" -- NO FILENAME RETURNED`);
       throw new Error(`readBackupFile "${fileName}" -- NO FILENAME RETURNED`);
     } else if (! response.object) {
-      this.error(`getOptionsFromBackupAndRestore -- readBackupFile "${fileName}" -- NO DATA RETURNED`);
+      this.error(`-- readBackupFile "${fileName}" -- NO DATA RETURNED`);
       throw new Error(`readBackupFile "${fileName}" -- NO DATA RETURNED`);
     }
 
     if (this.DEBUG) {
-      this.debugAlways(`getOptionsFromBackupAndRestore -- readBackupFile "${fileName}" -- DATA RETURNED:`);
+      this.debugAlways(`-- readBackupFile "${fileName}" -- DATA RETURNED:`);
       logProps("", "getOptionsFromBackupAndRestore", response.object);
     }
 
@@ -1079,7 +1097,7 @@ export class FsbOptions {
     try {
       await messenger.storage.local.set(response.object);
     } catch (error) {
-      this.caught(`getOptionsFromBackupAndRestore -- Failed to restore options from file "${fileName}" -- messenger.storage.local.set() failed`);
+      this.caught(`-- Failed to restore options from file "${fileName}" -- messenger.storage.local.set() failed`);
       throw new Error(`Failed to restore options from file "${fileName}" --  messenger.storage.local.set() failed`);
     }
 
@@ -1092,14 +1110,14 @@ export class FsbOptions {
    */
   async deleteBackupFile(fileName) {
     try {
-      this.debug(`deleteBackupFile -- Deleting options backup file "${fileName}"`);
+      this.debug(`-- Deleting options backup file "${fileName}"`);
       const response = await this.fsBrokerApi.deleteFile(fileName);
-      this.debug(`deleteBackupFile --response: "${response}"`);
+      this.debug(`--response: "${response}"`);
 
       return response;
 
     } catch (error) {
-      this.caught(error, `deleteBackupFile --  Failed to delete options backup file "${fileName}"`);
+      this.caught(error, `--  Failed to delete options backup file "${fileName}"`);
       return { "error": error.name + ": " + error.message };
     }
   }

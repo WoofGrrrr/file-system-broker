@@ -326,8 +326,44 @@
   "options_fsbDevDeleteOldEventLogsButton.label": {
     "message": "Delete Old Event Logs"
   },
+  "options_fsbDevDeleteOldEventLogsOlderThanNumDaysLabel": {
+    "message": "older than"
+  },
+  "options_fsbDevDeleteOldEventLogsOlderThanDaysLabel": {
+    "message": "days"
+  },
+  "options_fsbDevDeleteOldEventLogsInNumMinutesLabel": {
+    "message": "in"
+  },
+  "options_fsbDevDeleteOldEventLogsInMinutesLabel": {
+    "message": "minutes"
+  },
+  "options_fsbDevDeleteOldEventLogsInNumSecondsLabel": {
+    "message": "and"
+  },
+  "options_fsbDevDeleteOldEventLogsInSecondsLabel": {
+    "message": "seconds"
+  },
   "options_fsbDevRemoveUninstalledExtensionsButton.label": {
-    "message": "Remove Uninstalled Extensions"
+    "message": "Remove Extensions"
+  },
+  "options_fsbDevRemoveExtensionsUninstalledMoreThanNumDaysAgoLabel": {
+    "message": "uninstalled more than"
+  },
+  "options_fsbDevRemoveExtensionsUninstalledMoreThanDaysAgoLabel": {
+    "message": "days ago"
+  },
+  "options_fsbDevremoveUninstalledExtensionsInNumMinutesLabel": {
+    "message": "in"
+  },
+  "options_fsbDevremoveUninstalledExtensionsInMinutesLabel": {
+    "message": "minutes"
+  },
+  "options_fsbDevremoveUninstalledExtensionsInNumSecondsLabel": {
+    "message": "and"
+  },
+  "options_fsbDevremoveUninstalledExtensionsInSecondsLabel": {
+    "message": "seconds"
   },
   "options_fsbDevDisplayOptionsAsPopupButton.label": {
     "message": "Display Options as Popup"
@@ -548,7 +584,10 @@
   "fsbEventLogManager_listHeader_fileTimeLastModified": {
     "message": "Time Last Modified"
   },
-  "fsbEventLogManager_listHeader_fileSize": {
+  "fsbEventLogManager_listHeader_fileSize_formatted": {
+    "message": "Size"
+  },
+  "fsbEventLogManager_listHeader_fileSize_bytes": {
     "message": "Size (bytes)"
   },
   "fsbEventLogManager_message_error_responseMessageFailed": {
@@ -574,6 +613,9 @@
   },
   "fsbEventLogViewerFileLastModifiedTime.label": {
     "message": "Last Modified:"
+  },
+  "fsbEventLogViewerFileSize.label": {
+    "message": "Size (bytes):"
   },
   "fsbEventLogViewerFileSize.label": {
     "message": "Size (bytes):"

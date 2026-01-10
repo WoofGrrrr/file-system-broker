@@ -322,7 +322,13 @@ input[type="checkbox"].open-close-check:not(checked) + label {
   width:     auto;
 }
 
-.filename-list-item-filesize { /* .filename-list-item > .filename-list-item-filesize - this is a <TD> */
+.filename-list-item-filesize-formatted { /* .filename-list-item > .filename-list-item-filesize-formatted - this is a <TD> */
+  min-width:  5em;
+  text-align: right;
+  width:      auto;
+}
+
+.filename-list-item-filesize-bytes { /* .filename-list-item > .filename-list-item-filesize-bytes - this is a <TD> */
   min-width:  5em;
   text-align: right;
   width:      auto;

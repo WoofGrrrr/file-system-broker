@@ -1,14 +1,16 @@
 import { Logger     } from '../modules/logger.js';
 import { FsbOptions } from '../modules/options.js';
-import { getI18nMsg, parseDocumentLocation } from '../utilities.js';
+import { getI18nMsg, parseDocumentLocation } from '../modules/utilities.js';
 
 class ConfirmDialog {
 
   constructor() {
     this.className     = this.constructor.name;
 
+    this.INFO          = false;
     this.LOG           = false;
     this.DEBUG         = false;
+    this.WARN          = false;
 
     this.logger        = new Logger();
     this.fsbOptionsApi = new FsbOptions(this.logger);
@@ -17,37 +19,30 @@ class ConfirmDialog {
 
 
   log(...info) {
-    if (! this.LOG) return;
-    const msg = info.shift();
-    this.logger.log(this.className + "#" + msg, ...info);
+    if (this.LOG) this.logger.log(this.className, ...info);
   }
 
   logAlways(...info) {
-    const msg = info.shift();
-    this.logger.logAlways(this.className + "#" + msg, ...info);
+    this.logger.logAlways(this.className, ...info);
   }
 
   debug(...info) {
-    if (! this.DEBUG) return;
-    const msg = info.shift();
-    this.logger.debug(this.className + "#" + msg, ...info);
+    if (this.DEBUG) this.logger.debug(this.className, ...info);
   }
 
   debugAlways(...info) {
-    const msg = info.shift();
-    this.logger.debugAlways(this.className + "#" + msg, ...info);
+    this.logger.debugAlways(this.className, ...info);
   }
 
   error(...info) {
     // always log errors
-    const msg = info.shift();
-    this.logger.error(this.className + "#" + msg, ...info);
+    this.logger.error(this.className, ...info);
   }
 
   caught(e, ...info) {
     // always log exceptions
-    const msg = info.shift();
-    this.logger.error( this.className + "#" + msg,
+    this.logger.error( this.className,
+                       msg,
                        "\n name:    " + e.name,
                        "\n message: " + e.message,
                        "\n stack:   " + e.stack,
@@ -164,7 +159,7 @@ class ConfirmDialog {
     const titleLabel = document.getElementById("ConfirmDialogTitleLabel");
     titleLabel.innerText = title;
 
-    this.debug( "run --"
+    this.debug( "--"
                 + `\n- message1="${message1}"`
                 + `\n- message2="${message2}"`
                 + `\n- message3="${message3}"`
@@ -270,7 +265,7 @@ class ConfirmDialog {
 
 
   async localizePage() {
-    this.debug("localizePage -- start");
+    this.debug("-- start");
 
     for (const el of document.querySelectorAll("[data-l10n-id]")) {
       const id = el.getAttribute("data-l10n-id");
@@ -290,13 +285,13 @@ class ConfirmDialog {
       el.insertAdjacentHTML('afterbegin', i18nMessage);
     }
 
-    this.debug("localizePage -- end");
+    this.debug("-- end");
   }
   
 
 
   async windowUnloading(e) {
-    if (this.DEBUG) this.debugAlways( "windowUnloading --- Window Unloading ---"
+    if (this.DEBUG) this.debugAlways( "--- Window Unloading ---"
                                       + `\n- window.screenTop=${window.screenTop}`
                                       + `\n- window.screenLeft=${window.screenLeft}`
                                       + `\n- window.outerWidth=${window.outerWidth}`
@@ -309,11 +304,11 @@ class ConfirmDialog {
       const bounds = await this.fsbOptionsApi.getWindowBounds("confirmDialogWindowBounds");
 
       if (! bounds) {
-        this.debugAlways("windowUnloading --- WINDOW UNLOADING --- Retrieve Stored Window Bounds --- FAILED TO GET Backup Manager Window Bounds ---");
+        this.debugAlways("--- WINDOW UNLOADING --- Retrieve Stored Window Bounds --- FAILED TO GET Backup Manager Window Bounds ---");
       } else if (typeof bounds !== 'object') {
-        this.debugAlways(`windowUnloading --- WINDOW UNLOADING --- Retrieve Stored Window Bounds --- Backup Manager Window Bounds IS NOT AN OBJECT: typeof='${typeof bounds}' ---`);
+        this.debugAlways(`--- WINDOW UNLOADING --- Retrieve Stored Window Bounds --- Backup Manager Window Bounds IS NOT AN OBJECT: typeof='${typeof bounds}' ---`);
       } else {
-        this.debugAlways( "windowUnloading --- Retrieve Stored Window Bounds ---"
+        this.debugAlways( "--- Retrieve Stored Window Bounds ---"
                           + `\n- bounds.top:    ${bounds.top}`
                           + `\n- bounds.left:   ${bounds.left}`
                           + `\n- bounds.width:  ${bounds.width}`
@@ -329,7 +324,7 @@ class ConfirmDialog {
 
 
   async windowRemoved(windowId, thisWindowId) {
-    this.debug(`windowRemoved -- windowId="${windowId}" thisWindowId="${thisWindowId}" `);
+    this.debug(`-- windowId="${windowId}" thisWindowId="${thisWindowId}" `);
 
 
     if (true) { // <==========================================================================================<<<
@@ -337,7 +332,7 @@ class ConfirmDialog {
       // they'll just have to listen for the onRemoved() event.
     } else {
       const responseMessage = "CLOSED";
-      this.debug(`windowRemoved -- Sending responseMessage="${responseMessage}"`);
+      this.debug(`-- Sending responseMessage="${responseMessage}"`);
 
       try { // just in case the window is not listening for windowRemoved (any more)
         // maybe not the best idea to do this... message receiver gets:
@@ -348,7 +343,7 @@ class ConfirmDialog {
       } catch (error) {
         // any need to tell the user???
         this.caught( error,
-                     "windowRemoved ##### SEND RESPONSE MESSAGE FAILED #####"
+                     "##### SEND RESPONSE MESSAGE FAILED #####"
                      + `\n- windowId="${windowId}"`
                      + `\n- thisWindowId="${thisWindowId}"`
                      + `\n- responseMessage="${responseMessage}"`
@@ -361,7 +356,7 @@ class ConfirmDialog {
 
 
   async buttonClicked(e) {
-    this.debug(`buttonClicked -- e.target.tagName="${e.target.tagName}" e.target.id="${e.target.id}"`);
+    this.debug(`-- e.target.tagName="${e.target.tagName}" e.target.id="${e.target.id}"`);
 
     e.preventDefault();
 
@@ -369,11 +364,11 @@ class ConfirmDialog {
     if (target.tagName === 'LABEL' && target.parentElement && target.parentElement.tagName === 'BUTTON') {
       target = target.parentElement;
     }
-    this.debug(`buttonClicked -- target.tagName="${target.tagName}" target.id="${target.id}" button-id="${target.getAttribute('button-id')}"`);
+    this.debug(`-- target.tagName="${target.tagName}" target.id="${target.id}" button-id="${target.getAttribute('button-id')}"`);
 
       // it's up to the caller what the button-id -- 'BUTTON_1', 'BUTTON_2', or 'BUTTON_3' -- means
     var responseMessage = target.getAttribute('button-id');
-    this.debug(`buttonClicked -- Sending responseMessage="${responseMessage}"`);
+    this.debug(`-- Sending responseMessage="${responseMessage}"`);
 
     try {
       await messenger.runtime.sendMessage(
@@ -382,12 +377,12 @@ class ConfirmDialog {
     } catch (error) {
       // any need to tell the user???
       this.caught( error,
-                   "buttonClicked ##### SEND RESPONSE MESSAGE FAILED #####"
+                   "##### SEND RESPONSE MESSAGE FAILED #####"
                    + `\n- responseMessage="${responseMessage}"`
                  );
     }
 
-    this.debug("buttonClicked -- Closing window");
+    this.debug("-- Closing window");
     window.close();
   }
 }

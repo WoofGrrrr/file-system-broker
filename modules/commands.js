@@ -1,6 +1,6 @@
 ////import { Options } from '../modules/options.js';
 ////import { Logger  } from '../modules/logger.js';
-import { formatMsToDateTime12HR, formatMsToDateTime24HR } from '../utilities.js';
+import { formatMsToDateTime12HR, formatMsToDateTime24HR } from './utilities.js';
 
 export class FileSystemBrokerCommands {
   /* one day I hope to use options to set the logging levels */
@@ -219,7 +219,7 @@ export class FileSystemBrokerCommands {
       } else {
         this.caught(error, `existsCommand -- Caught error while checking if file "${extensionId}" exists:`);
       }
-      return ( { "error": `Error Processing exists Command: ${error.command}`, "code": "500" } );
+      return ( { "error": `Error Processing exists Command: ${error.message}`, "code": "500" } );
     }
 
     return false;
@@ -251,7 +251,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `isRegularFileCommand -- Caught error while checking if file "${command.fileName}" exists and is a Regular File:`);
-      return ( { "error": `Error Processing isRegularFile Command: ${error.command}`, "code": "500" } );
+      return ( { "error": `Error Processing isRegularFile Command: ${error.message}`, "code": "500" } );
     }
 
     return false;
@@ -291,7 +291,7 @@ export class FileSystemBrokerCommands {
       } else {
         this.caught(error, `isDirectoryCommand -- Caught error while checking if file "${extensionId}" exists and is a Directory:`);
       }
-      return ( { "error": `Error Processing isDirectory Command: ${error.command}`, "code": "500" } );
+      return ( { "error": `Error Processing isDirectory Command: ${error.message}`, "code": "500" } );
     }
 
     return false;
@@ -340,7 +340,7 @@ export class FileSystemBrokerCommands {
       } else {
         this.caught(error, `hasFilesCommand -- Caught error while checking if File "${extensionId}" exists and is a Directory:`);
       }
-      return ( { "error": `Error Processing hasFiles Command: ${error.command}`, "code": "500" } );
+      return ( { "error": `Error Processing hasFiles Command: ${error.message}`, "code": "500" } );
     }
 
     try {
@@ -360,7 +360,7 @@ export class FileSystemBrokerCommands {
       } else {
         this.caught(error, `hasFilesCommand -- Caught error while checking if file "${extensionId}" contains files:`);
       }
-      return ( { "error": `Error Processing hasFiles Command: ${error.command}`, "code": "500" } );
+      return ( { "error": `Error Processing hasFiles Command: ${error.message}`, "code": "500" } );
     }
 
     return false;
@@ -409,7 +409,7 @@ export class FileSystemBrokerCommands {
       } else {
         this.caught(error, `getFileCountCommand -- Caught error while checking if file "${extensionId}" exists and is a Directory:`);
       }
-      return ( { "error": `Error Processing getFileCount Command: ${error.command}`, "code": "500" } );
+      return ( { "error": `Error Processing getFileCount Command: ${error.message}`, "code": "500" } );
     }
 
     try {
@@ -429,7 +429,7 @@ export class FileSystemBrokerCommands {
       } else {
         this.caught(error, `getFileCountCommand -- Caught error while getting the file count for Directory "${extensionId}":`);
       }
-      return ( { "error": `Error Processing getFileCount Command: ${error.command}`, "code": "500" } );
+      return ( { "error": `Error Processing getFileCount Command: ${error.message}`, "code": "500" } );
     }
 
     return false;
@@ -495,7 +495,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `writeFileCommand -- Caught error while writing file "${command.fileName}":`);
-      return ( { "error": `Error Processing writeFile Command: ${error.command}`, "code": "500" } );
+      return ( { "error": `Error Processing writeFile Command: ${error.message}`, "code": "500" } );
     }
 
     return false;
@@ -535,7 +535,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `replaceFileCommand -- Caught error while writing file "${command.fileName}":`);
-      return ( { "error": `Error Processing replaceFile Command: ${error.command}`, "code": "500" } );
+      return ( { "error": `Error Processing replaceFile Command: ${error.message}`, "code": "500" } );
     }
 
     return false;
@@ -575,7 +575,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `appendToFileCommand -- Caught error while writing file "${command.fileName}":`);
-      return ( { "error": `Error Processing appendToFile Command: ${error.command}`, "code": "500" } );
+      return ( { "error": `Error Processing appendToFile Command: ${error.message}`, "code": "500" } );
     }
 
     return false;
@@ -638,7 +638,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `writeJSONFileCommand -- Caught error while writing file "${command.fileName}":`);
-      return ( { "error": `Error Processing writeJSONFile Command: ${error.command}`, "code": "500" } );
+      return ( { "error": `Error Processing writeJSONFile Command: ${error.message}`, "code": "500" } );
     }
 
     return false;
@@ -702,7 +702,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `writeObjectToJSONFileCommand -- Caught error while writing file "${command.fileName}":`);
-      return ( { "error": `Error Processing writeObjectToJSONFile Command: ${error.command}`, "code": "500" } );
+      return ( { "error": `Error Processing writeObjectToJSONFile Command: ${error.message}`, "code": "500" } );
     }
 
     return false;
@@ -740,7 +740,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `readFileCommand -- Caught error while reading file "${command.fileName}":`);
-      return ( { "error": `Error Processing readFile Command: ${error.command}`, "code": "500" } );
+      return ( { "error": `Error Processing readFile Command: ${error.message}`, "code": "500" } );
     }
 
     return false;
@@ -779,7 +779,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `readJSONFileCommand -- Caught error while reading file "${command.fileName}":`);
-      return ( { "error": `Error Processing readJSONFile Command: ${error.command}`, "code": "500" } );
+      return ( { "error": `Error Processing readJSONFile Command: ${error.message}`, "code": "500" } );
     }
 
     return false;
@@ -817,7 +817,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `readObjectFromJSONFileCommand -- Caught error while reading file "${command.fileName}":`);
-      return ( { "error": `Error Processing readObjectFromJSONFile Command: ${error.command}`, "code": "500" } );
+      return ( { "error": `Error Processing readObjectFromJSONFile Command: ${error.message}`, "code": "500" } );
     }
 
     return false;
@@ -879,7 +879,7 @@ export class FileSystemBrokerCommands {
       } else {
         this.caught(error, `getFileInfoCommand -- Caught error while getting File Info for file "${extensionId}":`);
       }
-      return ( { "error": `Error Processing getFileInfo Command: ${error.command}`, "code": "500" } );
+      return ( { "error": `Error Processing getFileInfo Command: ${error.message}`, "code": "500" } );
     }
 
     return; // undefined .. maybe "invalid" instead???
@@ -931,7 +931,7 @@ export class FileSystemBrokerCommands {
       }
     } catch (error) {
       this.caught(error, `renameFileCommand -- Caught error getting info for From file "${command.fromFileName}":`);
-      return ( { "error": `Error Processing renameFile Command: ${error.command}`, "code": "500" } );
+      return ( { "error": `Error Processing renameFile Command: ${error.message}`, "code": "500" } );
     }
 
     var toFileOverwrite = false;
@@ -950,7 +950,7 @@ export class FileSystemBrokerCommands {
         }
       } catch (error) {
         this.caught(error, `renameFileCommand -- Caught error getting info for To file "${command.toFileName}":`);
-        return ( { "error": `Error Processing renameFile Command: ${error.command}`, "code": "500" } );
+        return ( { "error": `Error Processing renameFile Command: ${error.message}`, "code": "500" } );
       }
     }
 
@@ -959,7 +959,7 @@ export class FileSystemBrokerCommands {
       return ( { "fromFileName": command.fromFileName, "toFileName": command.toFileName, 'renamed': renamed } );
     } catch (error) {
       this.caught(error, `renameFileCommand -- Caught error renaming file "${command.fromFileName}" to "${command.toFileName}":`);
-      return ( { "error": `Error Processing renameFile Command: ${error.command}`, "code": "500" } );
+      return ( { "error": `Error Processing renameFile Command: ${error.message}`, "code": "500" } );
     }
 
     return; // undefined .. maybe "invalid" instead???
@@ -992,13 +992,8 @@ export class FileSystemBrokerCommands {
 
       const isRegularFile = await messenger.BrokerFileSystem.isRegularFile(extensionId, command.fileName);
       if (! isRegularFile) {
-        if (command.fileName) { // fileName is optional
-          this.debug(`deleteFileCommand -- File is not a Regular File: "${command.fileName}"`);
-          return ( { "invalid": `deleteFile Command: File is not a Regular File: "${command.fileName}"` } );
-        }
-
-        this.debug(`deleteFileCommand -- File is not a Regular File: "${extensionId}"`);
-        return ( { "invalid": `deleteFile Command: File is not a Regular File: "${extensionId}"` } );
+        this.debug(`deleteFileCommand -- File is not a Regular File: "${command.fileName}"`);
+        return ( { "invalid": `deleteFile Command: File is not a Regular File: "${command.fileName}"` } );
       }
 
       this.debug(`deleteFileCommand -- deleting file "${command.fileName}" for extension "${extensionId}"`);
@@ -1008,7 +1003,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `deleteFileCommand -- Caught error while deleting file "${command.fileName}":`);
-      return ( { "error": `Error Processing deleteFile Command: ${error.command}`, "code": "500" } );
+      return ( { "error": `Error Processing deleteFile Command: ${error.message}`, "code": "500" } );
     }
 
     return false;
@@ -1091,7 +1086,7 @@ export class FileSystemBrokerCommands {
       } else {
         this.caught(error, `deleteDirectoryCommand -- Caught error while deleting directory "${extensionId}":`);
       }
-      return ( { "error": `Error Processing deleteDirectory Command: ${error.command}`, "code": "500" } );
+      return ( { "error": `Error Processing deleteDirectory Command: ${error.message}`, "code": "500" } );
     }
 
     return false;
@@ -1110,7 +1105,7 @@ export class FileSystemBrokerCommands {
       }
     } catch (error) {
       this.caught(error, `makeDirectoryCommand -- Caught error while checking for existing file or directory "${extensionId}":`);
-      return ( { "error": `Error Processing makeDirectory Command: ${error.command}`, "code": "500" } );
+      return ( { "error": `Error Processing makeDirectory Command: ${error.message}`, "code": "500" } );
     }
 
     try {
@@ -1120,7 +1115,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `makeDirectoryCommand -- Caught error while creating directory "${extensionId}":`);
-      return ( { "error": `Error Processing makeDirectory Command: ${error.command}`, "code": "500" } );
+      return ( { "error": `Error Processing makeDirectory Command: ${error.message}`, "code": "500" } );
     }
 
     return false;
@@ -1152,7 +1147,7 @@ export class FileSystemBrokerCommands {
       }
     } catch (error) {
       this.caught(error, `hasFilesCommand -- Caught error while checking if File "${extensionId}" exists and is a Directory:`);
-      return ( { "error": `Error Processing listFiles Command: ${error.command}`, "code": "500" } );
+      return ( { "error": `Error Processing listFiles Command: ${error.message}`, "code": "500" } );
     }
 
     try {
@@ -1163,7 +1158,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `listFilesCommand -- Caught error while listing files for extension "${extensionId}":`);
-      return ( { "error": `Error Processing listFiles Command: ${error.command}`, "code": "500" } );
+      return ( { "error": `Error Processing listFiles Command: ${error.message}`, "code": "500" } );
     }
   }
 
@@ -1193,7 +1188,7 @@ export class FileSystemBrokerCommands {
       }
     } catch (error) {
       this.caught(error, `hasFilesCommand -- Caught error while checking if File "${extensionId}" exists and is a Directory:`);
-      return ( { "error": `Error Processing listFileInfo Command: ${error.command}`, "code": "500" } );
+      return ( { "error": `Error Processing listFileInfo Command: ${error.message}`, "code": "500" } );
     }
 
     try {
@@ -1204,7 +1199,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `listFileInfoCommand -- Caught error while listing files for extension "${extensionId}":`);
-      return ( { "error": `Error Processing listFileInfo Command: ${error.command}`, "code": "500" } );
+      return ( { "error": `Error Processing listFileInfo Command: ${error.message}`, "code": "500" } );
     }
   }
 
@@ -1234,7 +1229,7 @@ export class FileSystemBrokerCommands {
       }
     } catch (error) {
       this.caught(error, `hasFilesCommand -- Caught error while checking if File "${extensionId}" exists and is a Directory:`);
-      return ( { "error": `Error Processing list Command: ${error.command}`, "code": "500" } );
+      return ( { "error": `Error Processing list Command: ${error.message}`, "code": "500" } );
     }
 
     try {
@@ -1245,7 +1240,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `list -- Caught error while listing items for extension "${extensionId}":`);
-      return ( { "error": `Error Processing list Command: ${error.command}`, "code": "500" } );
+      return ( { "error": `Error Processing list Command: ${error.message}`, "code": "500" } );
     }
   }
 
@@ -1275,7 +1270,7 @@ export class FileSystemBrokerCommands {
       }
     } catch (error) {
       this.caught(error, `hasFilesCommand -- Caught error while checking if File "${extensionId}" exists and is a Directory:`);
-      return ( { "error": `Error Processing listInfo Command: ${error.command}`, "code": "500" } );
+      return ( { "error": `Error Processing listInfo Command: ${error.message}`, "code": "500" } );
     }
 
     try {
@@ -1286,7 +1281,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `listInfo -- Caught error while listing items for extension "${extensionId}":`);
-      return ( { "error": `Error Processing listInfo Command: ${error.command}`, "code": "500" } );
+      return ( { "error": `Error Processing listInfo Command: ${error.message}`, "code": "500" } );
     }
   }
 
@@ -1324,7 +1319,7 @@ export class FileSystemBrokerCommands {
       } else {
         this.caught(error, `getFullPathNameCommand -- Caught error while getting full pathname for file "${extensionId}":`);
       }
-      return ( { "error": `Error Processing getFullPathName Command: ${error.command}`, "code": "500" } );
+      return ( { "error": `Error Processing getFullPathName Command: ${error.message}`, "code": "500" } );
     }
 
     return false;
@@ -1351,7 +1346,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `isValidFileNameCommand -- Caught error while checking for valid fileName for file "${command.fileName}":`);
-      return ( { "error": `Error Processing isValidFileName Command: ${error.command}`, "code": "500" } );
+      return ( { "error": `Error Processing isValidFileName Command: ${error.message}`, "code": "500" } );
     }
 
     return false;
@@ -1378,7 +1373,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `isValidDirectoryNameCommand -- Caught error while checking for valid directoryName for directory "${command.directoryName}":`);
-      return ( { "error": `Error Processing isValidDirectoryName Command: ${error.command}`, "code": "500" } );
+      return ( { "error": `Error Processing isValidDirectoryName Command: ${error.message}`, "code": "500" } );
     }
 
     return false;
@@ -1397,7 +1392,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, "getFileSystemPathNameCommand -- Caught error while getting full pathName for FileSystem:");
-      return ( { "error": `Error Processing getFileSystemPathName Command: ${error.command}`, "code": "500" } );
+      return ( { "error": `Error Processing getFileSystemPathName Command: ${error.message}`, "code": "500" } );
     }
 
     return false;

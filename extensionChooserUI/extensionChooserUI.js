@@ -7,8 +7,10 @@ class ExtensionChooser {
   constructor() {
     this.className     = this.constructor.name;
 
+    this.INFO          = false;
     this.LOG           = false;
     this.DEBUG         = false;
+    this.WARN          = false;
 
     this.logger        = new Logger();
     this.fsbOptionsApi = new FsbOptions(this.logger);
@@ -18,38 +20,33 @@ class ExtensionChooser {
 //  this.boundFunction1 = this.extensionButtonClicked.bind(this); // this makes sure "extensionButtonClicked" can use "this"
   }
 
+
+
   log(...info) {
-    if (! this.LOG) return;
-    const msg = info.shift();
-    this.logger.log(this.className + '#' + msg, ...info);
+    if (this.LOG) this.logger.log(this.className, ...info);
   }
 
   logAlways(...info) {
-    const msg = info.shift();
-    this.logger.logAlways(this.className + '#' + msg, ...info);
+    this.logger.logAlways(this.className, ...info);
   }
 
   debug(...info) {
-    if (! this.DEBUG) return;
-    const msg = info.shift();
-    this.logger.debug(this.className + '#' + msg, ...info);
+    if (this.DEBUG) this.logger.debug(this.className, ...info);
   }
 
   debugAlways(...info) {
-    const msg = info.shift();
-    this.logger.debugAlways(this.className + '#' + msg, ...info);
+    this.logger.debugAlways(this.className, ...info);
   }
 
   error(...info) {
     // always log errors
-    const msg = info.shift();
-    this.logger.error(this.className + '#' + msg, ...info);
+    this.logger.error(this.className, ...info);
   }
   
-  caught(e, ...info) {
+  caught(e, msg, ...info) {
     // always log exceptions
-    const msg = info.shift();
-    this.logger.error( this.className + '#' + msg,
+    this.logger.error( this.className,
+                       msg,
                        "\n- name:    " + e.name,
                        "\n- message: " + e.message,
                        "\n- stack:   " + e.stack,
@@ -60,7 +57,7 @@ class ExtensionChooser {
 
 
   async run(e) {
-    this.debug("run -- begin");
+    this.debug("-- begin");
 
     ////window.onbeforeunload = (e) => this.windowUnloading(e);
     window.addEventListener("beforeunload", (e) => this.windowUnloading(e));
@@ -75,7 +72,7 @@ class ExtensionChooser {
 
     const domExtensionList = document.getElementById("fsbExtensionChooserExtensionList");
     if (! domExtensionList) {
-      this.debug("run -- failed to get domExtensionList");
+      this.debug("-- failed to get domExtensionList");
       // MABXXX DISPLAY MESSAGE TO USER
       return;
     }
@@ -83,7 +80,7 @@ class ExtensionChooser {
     const installedExtensions = await messenger.management.getAll();
     const allExtensionsProps  = await this.fsbOptionsApi.getExtensionsProps();
 
-    this.debug(`run -- installedExtensions.length=${installedExtensions.length} allExtensionsProps.length=${Object.keys(allExtensionsProps).length}`);
+    this.debug(`-- installedExtensions.length=${installedExtensions.length} allExtensionsProps.length=${Object.keys(allExtensionsProps).length}`);
 
     let count = 0;
     if (! installedExtensions) {
@@ -93,7 +90,7 @@ class ExtensionChooser {
       installedExtensions.sort((a, b) => a.name.localeCompare(b.name, { 'sensitity': 'base' } ));
 
       for (const extension of installedExtensions) {
-        this.debug( "run -- INSTALLED EXTENSION:"
+        this.debug( "-- INSTALLED EXTENSION:"
                     + `\n- id ............ "${extension.id}"`
                     + `\n- name .......... "${extension.name}"`
                     + `\n- shortName ..... "${extension.shortName}"`
@@ -102,11 +99,11 @@ class ExtensionChooser {
                     + `\n- description ... "${extension.description}"`
                   );
         if (extension.type !== 'extension') {
-          this.debug(`run -- SKIPPING: Installed Extension -- Type is not 'extension' -- extension.type="${extension.type}"`);
+          this.debug(`-- SKIPPING: Installed Extension -- Type is not 'extension' -- extension.type="${extension.type}"`);
 
         } else {
           const configured = allExtensionsProps.hasOwnProperty(extension.id);
-          if (configured) this.debug(`run -- Installed Extension is Already Configured -- extension.id="${extension.id}"`);
+          if (configured) this.debug(`-- Installed Extension is Already Configured -- extension.id="${extension.id}"`);
 
           const extensionListItemUI = this.buildExtensionListItemUI(extension, configured);
           domExtensionList.appendChild(extensionListItemUI);
@@ -131,21 +128,21 @@ class ExtensionChooser {
     addBtn.disabled = true;
     addBtn.addEventListener("click", (e) => this.addButtonClicked(e));
 
-    this.debug("run -- end");
+    this.debug("-- end");
   }
 
 
 
   async updateOptionsUI() {
-    this.debug("updateOptionsUI -- start");
+    this.debug("-- start");
 
     const options = await this.fsbOptionsApi.getAllOptions();
 
-    this.debug("updateOptionsUI -- sync options to UI");
+    this.debug("-- sync options to UI");
     for (const [optionName, optionValue] of Object.entries(options)) {
-      this.debug("updateOptionsUI -- option: ", optionName, "value: ", optionValue);
+      this.debug("-- option: ", optionName, "value: ", optionValue);
 
-      if (optionName in this.fsbOptionsApi.defaultOptionValues) {
+      if (this.fsbOptionsApi.isDefaultOption(optionName)) { // MABXXX WHY WHY WHY???
         const optionElement = document.getElementById(optionName);
 
         if (optionElement && optionElement.classList.contains("fsbGeneralOption")) {
@@ -165,13 +162,13 @@ class ExtensionChooser {
       }
     }
 
-    this.debug("updateOptionsUI -- end");
+    this.debug("-- end");
   }
 
 
 
   async localizePage() {
-    this.debug("localizePage -- start");
+    this.debug("-- start");
 
     for (const el of document.querySelectorAll("[data-l10n-id]")) {
       const id = el.getAttribute("data-l10n-id");
@@ -191,7 +188,7 @@ class ExtensionChooser {
       el.insertAdjacentHTML('afterbegin', i18nMessage);
     }
 
-    this.debug("localizePage -- end");
+    this.debug("-- end");
   }
 
 
@@ -201,7 +198,7 @@ class ExtensionChooser {
   // copied from optionsUI.js, so this does a lot that we don't really need for now.
   async optionChanged(e) {
     if (e == null) return;
-    this.debug(`optionChanged -- tagName="${e.target.tagName}" type="${e.target.type}" fsbGeneralOption? ${e.target.classList.contains("fsbGeneralOption")} id="${e.target.id}"`);
+    this.debug(`-- tagName="${e.target.tagName}" type="${e.target.type}" fsbGeneralOption? ${e.target.classList.contains("fsbGeneralOption")} id="${e.target.id}"`);
 
     var target = e.target;
     if ( target.tagName == "INPUT"
@@ -216,10 +213,10 @@ class ExtensionChooser {
 
       /* if it's a radio button, set the values for all the other buttons in the group to false */
       if (target.type == "radio") { // is it a radio button?
-        this.debug(`optionChanged -- radio buttton selected ${optionName}=<${optionValue}> - group=${target.name}`);
+        this.debug(`-- radio buttton selected ${optionName}=<${optionValue}> - group=${target.name}`);
 
         // first, set this option
-        this.debug(`optionChanged -- Setting Radio Option {[${optionName}]: ${optionValue}}`);
+        this.debug(`-- Setting Radio Option {[${optionName}]: ${optionValue}}`);
         await this.fsbOptionsApi.storeOption(
           { [optionName]: optionValue }
         );
@@ -229,15 +226,15 @@ class ExtensionChooser {
           const radioGroupName = target.name;
           const radioGroup = document.querySelectorAll(`input[type="radio"][name="${radioGroupName}"]`);
           if (! radioGroup) {
-            this.debug('optionChanged -- no radio group found');
+            this.debug('-- no radio group found');
           } else {
-            this.debug(`optionChanged -- radio group members length=${radioGroup.length}`);
+            this.debug(`-- radio group members length=${radioGroup.length}`);
             if (radioGroup.length < 2) {
-              this.debug('optionChanged -- no radio group members to reset (length < 2)');
+              this.debug('-- no radio group members to reset (length < 2)');
             } else {
               for (const radio of radioGroup) {
                 if (radio.id != optionName) { // don't un-check the one that fired
-                  this.debug(`optionChanged -- resetting radio button {[${radio.id}]: false}`);
+                  this.debug(`-- resetting radio button {[${radio.id}]: false}`);
                   await this.fsbOptionsApi.storeOption(
                     { [radio.id]: false }
                   );
@@ -247,7 +244,7 @@ class ExtensionChooser {
           }
         }
       } else { // since we already tested for it, it's got to be a checkbox
-        this.debug(`optionChanged -- Setting Checkbox Option {[${optionName}]: ${optionValue}}`);
+        this.debug(`-- Setting Checkbox Option {[${optionName}]: ${optionValue}}`);
         await this.fsbOptionsApi.storeOption(
           { [optionName]: optionValue }
         );
@@ -266,7 +263,7 @@ class ExtensionChooser {
       const optionName  = target.id;
       const optionValue = target.value;
 
-      this.debug(`optionChanged -- Setting Select Option {[${optionName}]: ${optionValue}}`);
+      this.debug(`-- Setting Select Option {[${optionName}]: ${optionValue}}`);
       await this.fsbOptionsApi.storeOption(
         { [optionName]: optionValue }
       );
@@ -276,7 +273,7 @@ class ExtensionChooser {
 
 
   showHideInstructions(show) {
-    this.debug(`showHideInstructions -- show=${show}`);
+    this.debug(`-- show=${show}`);
     const panel = document.getElementById("fsbExtensionChooserPopupInstructions");
     if (panel) {
       if (show) {
@@ -290,7 +287,7 @@ class ExtensionChooser {
 
 
   buildExtensionListItemUI(extension, configured) {
-    this.debug( "buildExtensionListItemUI -- BUILD LIST ITEM UI:"
+    this.debug( "-- BUILD LIST ITEM UI:"
                 + `\n- extension.name    = "${extension.name}"`
                 + `\n- extension.id      = "${extension.id}"`
                 + `\n- extension.enabled = ${extension.enabled}`
@@ -340,7 +337,7 @@ class ExtensionChooser {
 
 
   async windowUnloading(e) {
-    if (this.DEBUG) this.debugAlways( "windowUnloading --- Window Unloading ---"
+    if (this.DEBUG) this.debugAlways( "--- Window Unloading ---"
                                       + `\n- window.screenTop=${window.screenTop}`
                                       + `\n- window.screenLeft=${window.screenLeft}`
                                       + `\n- window.outerWidth=${window.outerWidth}`
@@ -353,11 +350,11 @@ class ExtensionChooser {
       let bounds = await this.fsbOptionsApi.getWindowBounds("extensionChooserWindowBounds");
 
       if (! bounds) {
-        this.debugAlways("windowUnloading --- WINDOW UNLOADING --- Retrieve Stored Window Bounds --- FAILED TO GET Extension Chooser Window Bounds ---");
+        this.debugAlways("--- WINDOW UNLOADING --- Retrieve Stored Window Bounds --- FAILED TO GET Extension Chooser Window Bounds ---");
       } else if (typeof bounds !== 'object') {
-        this.debugAlways(`windowUnloading --- WINDOW UNLOADING --- Retrieve Stored Window Bounds --- Extension Chooser Window Bounds IS NOT AN OBJECT: typeof='${typeof bounds}' ---`);
+        this.debugAlways(`--- WINDOW UNLOADING --- Retrieve Stored Window Bounds --- Extension Chooser Window Bounds IS NOT AN OBJECT: typeof='${typeof bounds}' ---`);
       } else {
-        this.debugAlways( "windowUnloading --- Retrieve Stored Window Bounds ---"
+        this.debugAlways( "--- Retrieve Stored Window Bounds ---"
                           + `\n- bounds.top:    ${bounds.top}`
                           + `\n- bounds.left:   ${bounds.left}`
                           + `\n- bounds.width:  ${bounds.width}`
@@ -380,10 +377,10 @@ class ExtensionChooser {
 ////e.stopPropagation();
 ////e.stopImmediatePropagation();
 
-    this.debug(`extensionClicked -- e.target.tagName="${e.target.tagName}"`);
+    this.debug(`-- e.target.tagName="${e.target.tagName}"`);
 
     if (e.target.tagName == "TR" || e.target.tagName == "TD") {
-      this.debug("extensionClicked -- TR or TD Clicked");
+      this.debug("-- TR or TD Clicked");
 
       let trElement = e.target;
       if (e.target.tagName == "TD") {
@@ -391,10 +388,10 @@ class ExtensionChooser {
       }
 
       if (! trElement) {
-        this.debug("extensionClicked -- Did NOT get our TR");
+        this.debug("-- Did NOT get our TR");
 
       } else {
-        this.debug(  "extensionClicked -- Got our TR --"
+        this.debug(  "-- Got our TR --"
                     + ` extension-list-item? ${trElement.classList.contains("extension-list-item")}`
                     + ` extension-configured? ${trElement.classList.contains("extension-configured")}`
                   );
@@ -403,7 +400,7 @@ class ExtensionChooser {
           const extensionId   = trElement.getAttribute("extensionId");
           const selected      = trElement.classList.contains('selected');
       
-          this.debug(`extensionlicked -- selected=${selected}  extensionName="${extensionName}" extensionId="${extensionId}"`);
+          this.debug(`-- selected=${selected}  extensionName="${extensionName}" extensionId="${extensionId}"`);
 
           if (! selected) {
             trElement.classList.add('selected');
@@ -456,7 +453,7 @@ class ExtensionChooser {
 
 
   async addButtonClicked(e) {
-    this.debug(`addButtonClicked -- e.target.tagName="${e.target.tagName}"`);
+    this.debug(`-- e.target.tagName="${e.target.tagName}"`);
 
     const addBtn = document.getElementById("fsbExtensionChooserPopupControlsAddButton");
     addBtn.disabled = true;
@@ -465,28 +462,28 @@ class ExtensionChooser {
 
     let count = 0;
     if (! domSelectedExtensionItemTRs) {
-      this.error("addButtonClicked -- NO EXTENSIONS SELECTED -- Save Button should have been disabled!!!");
+      this.error("-- NO EXTENSIONS SELECTED -- Save Button should have been disabled!!!");
 
     } else {
       for (const domExtensionItemTR of domSelectedExtensionItemTRs) {
-        this.debug(`addButtonClicked -- domExtensionItemTR=${domExtensionItemTR} domExtensionItemTR.tagName="${domExtensionItemTR.tagName}"`);
+        this.debug(`-- domExtensionItemTR=${domExtensionItemTR} domExtensionItemTR.tagName="${domExtensionItemTR.tagName}"`);
 
         const domExtensionId   = domExtensionItemTR.getAttribute("extensionId");
         const domExtensionName = domExtensionItemTR.getAttribute("extensionName");
 
-        this.debug(`addButtonClicked -- Adding Extension -- domExtensionId="${domExtensionId}" domExtensionName="${domExtensionName}"`);
+        this.debug(`-- Adding Extension -- domExtensionId="${domExtensionId}" domExtensionName="${domExtensionName}"`);
         const newExtensionProps = await this.fsbOptionsApi.addOrUpdateExtension(undefined, domExtensionId, domExtensionName, false);
         if (! newExtensionProps) {
-          this.debug(`addButtonClicked -- FAILED TO ADD EXTENSION -- domExtensionId="${domExtensionId}" domExtensionName="${domExtensionName}"`);
+          this.debug(`-- FAILED TO ADD EXTENSION -- domExtensionId="${domExtensionId}" domExtensionName="${domExtensionName}"`);
         } else {
-          this.debug(`addButtonClicked -- Extension Added -- newExtensionProps.id="${newExtensionProps.id}" newExtensionProps.name="${newExtensionProps.name}"`);
+          this.debug(`-- Extension Added -- newExtensionProps.id="${newExtensionProps.id}" newExtensionProps.name="${newExtensionProps.name}"`);
           count++;
         }
       }
     }
     const responseMessage = { 'ADDED': count };
 
-    this.debug(`addButtonClicked -- Sending responseMessage="${responseMessage}"`);
+    this.debug(`-- Sending responseMessage="${responseMessage}"`);
 
     let errors = 0;
     try {
@@ -495,7 +492,7 @@ class ExtensionChooser {
       );
     } catch (error) {
       this.caught( error, 
-                   "addButtonClicked ##### SEND RESPONSE MESSAGE FAILED #####"
+                   "##### SEND RESPONSE MESSAGE FAILED #####"
                    + `\n- responseMessage="${responseMessage}"`
                  );
       errors++;
@@ -506,7 +503,7 @@ class ExtensionChooser {
       // allow the user to see the message
 
     } else {
-      this.debug("addButtonClicked -- No Errors - closing window");
+      this.debug("-- No Errors - closing window");
       window.close();
     }
 
@@ -547,14 +544,14 @@ class ExtensionChooser {
 
 
   async cancelButtonClicked(e) {
-    this.debug(`cancelButtonClicked -- e.target.tagName="${e.target.tagName}"`);
+    this.debug(`-- e.target.tagName="${e.target.tagName}"`);
 
     this.canceled = true;
 
     // maybe not the best idea to do this... message receiver gets:
     //     Promise rejected after context unloaded: Actor 'Conduits' destroyed before query 'RuntimeMessage' was resolved
     let responseMessage = "CANCELED";
-    this.debug(`cancelButtonClicked -- Sending responseMessage="${responseMessage}"`);
+    this.debug(`-- Sending responseMessage="${responseMessage}"`);
 
     try {
       await messenger.runtime.sendMessage(
@@ -563,18 +560,18 @@ class ExtensionChooser {
     } catch (error) {
       // any need to tell the user???
       this.caught( error,
-                   "cancelButtonClicked ##### SEND RESPONSE MESSAGE FAILED #####"
+                   "##### SEND RESPONSE MESSAGE FAILED #####"
                    + `\n- responseMessage="${responseMessage}"`
                  );
     }
 
-    this.debug("cancelButtonClicked -- Closing window");
+    this.debug("-- Closing window");
     window.close();
   }
 
 
 
-//        this.debug(`run -- ADDING Installed Extension -- ext.id="${ext.id}" ext.name="${ext.name}"`);
+//        this.debug(`-- ADDING Installed Extension -- ext.id="${ext.id}" ext.name="${ext.name}"`);
 //
 //        const props = {
 //          'id':          ext.id,

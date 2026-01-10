@@ -1,6 +1,6 @@
 import { FileSystemBrokerAPI      } from '../modules/FileSystemBroker/filesystem_broker_api.js';
 import { FileSystemBrokerCommands } from '../modules/commands.js';
-import { getExtensionId, getExtensionName, formatMsToDateForFilename, formatMsToDateTime24HR, getMidnightMS } from '../utilities.js';
+import { getExtensionId, getExtensionName, formatMsToDateForFilename, formatMsToDateTime24HR, getMidnightMS, isValidFileName } from './utilities.js';
 
 
 export class FsbEventLogger {
@@ -9,8 +9,12 @@ export class FsbEventLogger {
     this.extId                           = getExtensionId();
     this.extName                         = getExtensionName();
 
+    this.INFO                            = false;
     this.LOG                             = false;
     this.DEBUG                           = false;
+    this.WARN                            = false;
+
+    this.LOG_DELETE_OLD_EVENT_LOGS       = true; // create event log entries when deleting old event logs?
 
     this.LOG_FILENAME_MATCH_GLOB         = "*.log";
     this.LOG_FILENAME_EXTENSION          = ".log";
@@ -26,37 +30,30 @@ export class FsbEventLogger {
 
 
   log(...info) {
-    if (! this.LOG) return;
-    const msg = info.shift();
-    this.logger.log(this.CLASS_NAME + '#' + msg, ...info);
+    if (this.LOG) this.logger.log(this.CLASS_NAME, ...info);
   }
 
   logAlways(...info) {
-    const msg = info.shift();
-    this.logger.logAlways(this.CLASS_NAME + '#' + msg, ...info);
+    this.logger.logAlways(this.CLASS_NAME, ...info);
   }
 
   debug(...info) {
-    if (! this.DEBUG) return;
-    const msg = info.shift();
-    this.logger.debug(this.CLASS_NAME + '#' + msg, ...info);
+    if (this.DEBUG) this.logger.debug(this.CLASS_NAME, ...info);
   }
 
   debugAlways(...info) {
-    const msg = info.shift();
-    this.logger.debugAlways(this.CLASS_NAME + '#' + msg, ...info);
+    this.logger.debugAlways(this.CLASS_NAME, ...info);
   }
 
   error(...info) {
     // always log errors
-    const msg = info.shift();
-    this.logger.error(this.CLASS_NAME + '#' + msg, ...info);
+    this.logger.error(this.CLASS_NAME, ...info);
   }
 
-  caught(e, ...info) {
+  caught(e, msg, ...info) {
     // always log errors
-    const msg = info.shift();
-    this.logger.error( this.CLASS_NAME + '#' + msg,
+    this.logger.error( this.CLASS_NAME,
+                       msg,
                        "\n- error.name:    " + e.name,
                        "\n- error.message: " + e.message,
                        "\n- error.stack:   " + e.stack,
@@ -98,7 +95,7 @@ export class FsbEventLogger {
     }
 
     // We cannot use writeObjectToJSONFile because it does not support APPEND modes
-    const json = JSON.stringify(logMsg) + "\n";
+    const json         = JSON.stringify(logMsg) + "\n";
     const bytesWritten = messenger.BrokerFileSystem.writeFile(this.extId, logFileName, json, "appendOrCreate" );
   }
 
@@ -118,7 +115,7 @@ export class FsbEventLogger {
     this.fsbCommandsApi.addCommandToObject(command, logMsg);
 
     // We cannot use writeObjectToJSONFile because it does not support APPEND modes
-    const json = JSON.stringify(logMsg) + "\n";
+    const json         = JSON.stringify(logMsg) + "\n";
     const bytesWritten = messenger.BrokerFileSystem.writeFile(this.extId, logFileName, json, "appendOrCreate" );
   }
 
@@ -140,7 +137,7 @@ export class FsbEventLogger {
     logMsg["result"] = formattedResult;
 
     // We cannot use writeObjectToJSONFile because it does not support APPEND modes
-    const json = JSON.stringify(logMsg) + "\n";
+    const json         = JSON.stringify(logMsg) + "\n";
     const bytesWritten = messenger.BrokerFileSystem.writeFile(this.extId, logFileName, json, "appendOrCreate" );
   }
 
@@ -149,22 +146,26 @@ export class FsbEventLogger {
   // if numDays == 0 just delete them all, regardless
   // if optional archives parameter is true, delete archived log files */
   //
-  // Does NOT use the FilSystemBroker API, so this MAY be called from background.js,
+  // Does NOT use the FileSystemBroker API, so this MAY be called from background.js,
   // where the message listeners are defined.
   async deleteOldEventLogs(numDays, archives) {
-    this.debugAlways(`deleteOldEventLogs -- begin -- numDays=${numDays} archives=${archives}`);
+    this.logAlways(`-- begin -- numDays=${numDays} archives=${archives}`);
 
-    const deleteArchives           = (typeof archives === 'boolean') ? archives : false;
-    const deleteFilesOlderThanMS   = (numDays == 0) ? 0  : getMidnightMS(Date.now(), -numDays);
-    const deleteFilesOlderThanTime = (numDays == 0) ? "" : formatMsToDateTime24HR(deleteFilesOlderThanMS);
+    const deleteArchives               = (typeof archives === 'boolean') ? archives : false;
+    const deleteFilesOlderThanMS       = (numDays == 0) ? 0  : getMidnightMS(Date.now(), -numDays);
+    const deleteFilesOlderThanDateTime = (numDays == 0) ? "" : formatMsToDateTime24HR(deleteFilesOlderThanMS);
 
     const parameters = (numDays == 0) ? { 'numDays': numDays, 'archives': deleteArchives }
-                                      : { 'numDays': numDays, 'olderThan': deleteFilesOlderThanTime, 'archives': deleteArchives };
+                                      : { 'numDays': numDays, 'olderThanMS': deleteFilesOlderThanMS, 'olderThanDateTime': deleteFilesOlderThanDateTime, 'archives': deleteArchives };
     await this.logInternalEvent("deleteOldEventLogs", "request", parameters, "");
-    
-    var   numDeleted       = 0;
+
+    var   numFiles        = 0;
+    var   numDeleted      = 0;
+    var   numDeleteFailed = 0;
+    var   numNotDeleted   = 0;
     const deletedFileNames = [];
     const fileInfo         = await this.getLogFileInfo(archives);
+
     if (! fileInfo) {
       // errors should already have been recorded in getLogFileInfo()
       await this.logInternalEvent("deleteOldEventLogs", "error", parameters, "Failed to get Log File Info");
@@ -173,51 +174,159 @@ export class FsbEventLogger {
       await this.logInternalEvent("deleteOldEventLogs", "success", parameters, "No Log Files");
 
     } else {
-      this.debugAlways(`deleteOldEventLogs -- Delete ${deleteArchives? "Archived " : ""}Log Files older than days=${numDays} ms=${deleteFilesOlderThanMS} time="${deleteFilesOlderThanTime}"`);
+      numFiles = fileInfo.length;
+
+      this.debug(`-- Delete ${deleteArchives? "Archived " : ""}Log Files older than days=${numDays} ms=${deleteFilesOlderThanMS} date+time="${deleteFilesOlderThanDateTime}"`);
 
       for (const info of fileInfo) {
-        if (true || this.DEBUG) {
-          if (numDays == 0) {
-            this.debugAlways(`deleteOldEventLogs -- file "${info.fileName}" numDays==0`);
+        // MABXXX using last modified time instead of creation time
+        // Windows doesn't seem to set creation time as I would expect
+////////const willDelete               = (numDays === 0) || (info.creationTime < deleteFilesOlderThanMS);
+        const willDelete               = (numDays === 0) || (info.lastModified < deleteFilesOlderThanMS);
+        const fileLastModifiedDateTime = formatMsToDateTime24HR(info.lastModified);
+
+        if (this.DEBUG) {
+          if (numDays === 0) {
+            this.debugAlways(`-- file "${info.fileName}" numDays==0 willDelete? ${willDelete}`);
           } else {
-            const fileCreationDateTime    = formatMsToDateTime24HR(info.creationTime);
-            const fileLasModifiedDateTime = formatMsToDateTime24HR(info.lastModified);
-            this.debugAlways(`deleteOldEventLogs -- file "${info.fileName}" -- creationTime: "${fileCreationDateTime}" (${info.creationTime}) -- lastModified: "${fileLasModifiedDateTime}" (${info.lastModified}) `);
+            const fileCreationDateTime = formatMsToDateTime24HR(info.creationTime);
+            this.debugAlways(
+                                `\n-- numDays ................ ${numDays}`
+                              + `\n-- fileName ............... "${info.fileName}"`
+                              + `\n-- deleteFilesOlderThan ... (${deleteFilesOlderThanMS}ms) "${deleteFilesOlderThanDateTime}"`
+                              + `\n-- creationTime ........... (${info.creationTime}ms) "${fileCreationDateTime}"`
+                              + `\n-- lastModified ........... (${info.lastModified}ms) "${fileLastModifiedDateTime}"`
+                              + `\n-- willDelete? ............ ${willDelete}`
+                            );
           }
         }
 
-        // MABXXX using last modified time instead of creation time
-        // Windows doesn't seem to set creation time as I would expect
-////////if (numDays == 0 || info.creationTime < deleteFilesOlderThanMS) {
-        if (numDays == 0 || info.lastModified < deleteFilesOlderThanMS) {
-          this.debugAlways(`deleteOldEventLogs -- Deleting file "${info.fileName}"`);
+        if (this.LOG_DELETE_OLD_EVENT_LOGS) {
+          const data = { 
+            "data":                         "1",
+            "numDays":                      numDays,
+            "fileName":                     info.fileName,
+            "deleteFilesOlderThanMS":       deleteFilesOlderThanMS,
+            "lastModifiedMS":               info.lastModified,
+            "deleteFilesOlderThanDateTime": deleteFilesOlderThanDateTime,
+            "fileLastModifiedDateTime":     fileLastModifiedDateTime,
+            "willDelete":                   willDelete
+          };
+          await this.logInternalEvent("deleteOldEventLogs", "DEBUG", data, "INFO");
+        }
+
+        if (willDelete) {
+          this.debug(`-- Deleting file "${info.fileName}"`);
+
+          if (this.LOG_DELETE_OLD_EVENT_LOGS) {
+            const data = { 
+              "data":                         "2",
+              "numDays":                      numDays,
+              "fileName":                     info.fileName,
+              "deleteFilesOlderThanMS":       deleteFilesOlderThanMS,
+              "lastModifiedMS":               info.lastModified,
+              "deleteFilesOlderThanDateTime": deleteFilesOlderThanDateTime,
+              "fileLastModifiedDateTime":     fileLastModifiedDateTime,
+              "willDelete":                   willDelete
+            };
+            await this.logInternalEvent("deleteOldEventLogs", "DEBUG", data, "DELETING");
+          }
+
           const response = await this.deleteLogFile(info.fileName);
           // errors should already have been recorded in deleteLogFile()
-          if (response.deleted) {
+          if (response && response.deleted) {
             numDeleted++;
             deletedFileNames.push(info.fileName);
+
+            if (this.LOG_DELETE_OLD_EVENT_LOGS) {
+              const data = { 
+                "data":                         "3",
+                "numDays":                      numDays,
+                "fileName":                     info.fileName,
+                "deleteFilesOlderThanMS":       deleteFilesOlderThanMS,
+                "lastModifiedMS":               info.lastModified,
+                "deleteFilesOlderThanDateTime": deleteFilesOlderThanDateTime,
+                "fileLastModifiedDateTime":     fileLastModifiedDateTime,
+                "willDelete":                   willDelete
+              };
+              await this.logInternalEvent("deleteOldEventLogs", "DEBUG", data, "DELETE SUCCEEDED");
+            }
+          } else {
+            // !response || response.error || response.invalid || !response.fileName || !response.deleted
+            if (this.LOG_DELETE_OLD_EVENT_LOGS) {
+              const data = { 
+                "data":                         "4",
+                "numDays":                      numDays,
+                "fileName":                     info.fileName,
+                "deleteFilesOlderThanMS":       deleteFilesOlderThanMS,
+                "lastModifiedMS":               info.lastModified,
+                "deleteFilesOlderThanDateTime": deleteFilesOlderThanDateTime,
+                "fileLastModifiedDateTime":     fileLastModifiedDateTime,
+                "willDelete":                   willDelete
+              };
+
+              var reason;
+              if (! response) {
+                reason = "No response from deleteFileCommand";
+              } else if (reponse.error) {
+                reason = `error: ${response.error}`;
+              } else if (reponse.invalid) {
+                reason = `invalid: ${response.invalid}`;
+              } else if (! reponse.fileName) {
+                reason = "No fileName returned from deleteFileCommand";
+              } else if (! reponse.deleted) {
+                reason = "deleteFileCommand did not return 'deleted===true'";
+              } else {
+                reason = "reason unknown";
+              }
+
+              await this.logInternalEvent("deleteOldEventLogs", "DEBUG", data, `DELETE FAILED: ${reason}`);
+            }
+
+            numDeleteFailed++;
+          }
+        } else {
+          if (this.LOG_DELETE_OLD_EVENT_LOGS) {
+            const data = { 
+              "data":                         "5",
+              "numDays":                      numDays,
+              "fileName":                     info.fileName,
+              "deleteFilesOlderThanMS":       deleteFilesOlderThanMS,
+              "lastModifiedMS":               info.lastModified,
+              "deleteFilesOlderThanDateTime": deleteFilesOlderThanDateTime,
+              "fileLastModifiedDateTime":     fileLastModifiedDateTime,
+              "willDelete":                   willDelete
+            };
+            await this.logInternalEvent("deleteOldEventLogs", "DEBUG", data, "WILL NOT DELETE");
+            numNotDeleted++;
           }
         }
       }
 
-      await this.logInternalEvent("deleteOldEventLogs", "success", parameters, `${numDeleted} Log Files deleted`);
+      await this.logInternalEvent( "deleteOldEventLogs",
+                                   "success",
+                                   parameters,
+                                   `Deleted: ${numDeleted}, Delete Failed: ${numDeleteFailed}, Not Deleted ${numNotDeleted}, Total: ${numFiles}`
+                                 );
     }
 
-    this.debugAlways(`deleteOldEventLogs -- end -- numDeleted: ${numDeleted}`);
+    this.logAlways(`-- end -- Deleted: ${numDeleted}, Delete Failed: ${numDeleteFailed}, Not Deleted ${numNotDeleted}, Total: ${numFiles}`);
 
     return deletedFileNames;
   }
 
+
+
   // if optional archives parameter is true, get archived log FileInfo
   //
-  // Does NOT use the FilSystemBroker API, so this MAY be called from background.js,
+  // Does NOT use the FileSystemBroker API, so this MAY be called from background.js,
   // where the message listeners are defined.
   async getLogFileInfo(archives) {
     const deleteArchives = (typeof archives === 'boolean') ? archives : false;
     const matchGLOB      = deleteArchives ? this.LOG_ARCHIVE_FILENAME_MATCH_GLOB : this.LOG_FILENAME_MATCH_GLOB;
     const parameters     = {  'archives': deleteArchives, 'matchGLOB': matchGLOB};
 
-    this.debugAlways(`getLogFileInfo -- archives=${archives} matchGLOB="${matchGLOB}"`);
+    this.debug(`-- archives=${archives} matchGLOB="${matchGLOB}"`);
     await this.logInternalEvent("getLogFileInfo", "request", parameters, "");
 
     var logFileInfo;
@@ -229,19 +338,21 @@ export class FsbEventLogger {
         await this.logInternalEvent("getLogFileInfo", "success", parameters, `Got ${logFileInfo.length} Log Files`);
       }
     } catch (error) {
-      this.caught(error, "getLogFileInfo");
+      this.caught(error, "Failed to get log file info");
       await this.logInternalEvent("getLogFileInfo", "error", parameters, `EXCEPTION -- ${error.name}: ${error.message}`);
     }
 
     return logFileInfo;
   }
 
+
+
   /* if optional archives parameter is true, list archived log FileInfo
    *
    * returns { "fileInfo": [],    "length": number } array of FileInfo - see the FileSystemBroker API README file
    *         { "error":    string                  } If there was some error getting the file info. The returned string gives the reason.
    *
-   * Uses the FilSystemBroker API, so this may NOT be called from background.js,
+   * Uses the FileSystemBroker API, so this may NOT be called from background.js,
    * where the listeners are defined.
    */
   async listLogFileInfo(archives) {
@@ -249,43 +360,94 @@ export class FsbEventLogger {
     const matchGLOB      = deleteArchives ? this.LOG_ARCHIVE_FILENAME_MATCH_GLOB : this.LOG_FILENAME_MATCH_GLOB;
 
     try {
-      this.debug(`listLogFileInfo -- Getting list of log files with matchGLOB "${matchGLOB}"`);
+      this.debug(`-- Getting list of log files with matchGLOB "${matchGLOB}"`);
       const response = await this.fsBrokerApi.listFileInfo(matchGLOB);
-      this.debug(`listLogFileInfo --response: "${response}"`);
+      this.debug(`--response: "${response}"`);
 
       return response;
 
     } catch (error) {
-      this.caught(error, "listLogFileInfo -- Unexpected Error");
+      this.caught(error, "Failed to list log file info");
       return { "error": error.name + ": " + error.message };
     }
   }
 
+
+
+  // Does NOT use the FileSystemBroker API, so this MAY be called from background.js,
+  // where the message listeners are defined.
   async deleteLogFile(fileName) {
     try {
-      this.debug(`deleteLogFile -- Deleting log file "${fileName}"`);
-      const response = await this.fsBrokerApi.deleteFile(fileName);
-      this.debug(`deleteLogFile --response: "${response}"`);
+      this.debug(`-- Deleting log file "${fileName}"`);
+//////const response = await this.fsBrokerApi.deleteFile(fileName); // "Could not establish connection. Receiving end does not exist." if called from background.js
+      const response = await this.deleteFileCommand(fileName);
+      this.debug("--response:", response);
 
       if (! response) {
-        this.error(`deleteLogFile -- FAILED TO DELETE LOG FILE -- NO RESPONSE RETURNED -- fileName="${fileName}"`);
+        this.error(`-- FAILED TO DELETE LOG FILE -- NO RESPONSE RETURNED -- fileName="${fileName}"`);
       } else if (response.invalid) {
-        this.error(`deleteLogFile -- FAILED TO DELETE LOG FILE -- INVALID RETURNED -- fileName="${fileName}" -- response.invalid="&{response.invalid}"`);
+        this.error(`-- FAILED TO DELETE LOG FILE -- INVALID RETURNED -- fileName="${fileName}" -- response.invalid="${response.invalid}"`);
       } else if (response.error) {
-        this.error(`deleteLogFile -- FAILED TO DELETE LOG FILE -- ERROR RETURNED -- fileName="${fileName}" -- response.error="&{response.error}"`);
+        this.error(`-- FAILED TO DELETE LOG FILE -- ERROR RETURNED -- fileName="${fileName}" -- response.error="${response.error}"`);
       } else if (! response.fileName) {
-        this.error(`deleteLogFile -- FAILED TO DELETE LOG FILE -- NO FILENAME RETURNED -- fileName="${fileName}"`);
+        this.error(`-- FAILED TO DELETE LOG FILE -- NO FILENAME RETURNED -- fileName="${fileName} response.fileName="${response.fileName}"`);
       } else if (! response.deleted) {
-        this.error(`deleteLogFile -- FAILED TO DELETE LOG FILE -- fileName="${fileName}" not deleted`);
+        this.error(`-- FAILED TO DELETE LOG FILE -- fileName="${fileName}" not deleted`);
       } else {
-        this.debug(`deleteLogFile -- Log File Deleted -- fileName="${response.fileName}" response.deleted="${response.deleted}"`);
+        this.log(`-- Log File Deleted -- fileName="${fileName}" response.fileName="${response.fileName}"`);
       }
 
       return response;
 
     } catch (error) {
-      this.caught(error, `deleteLogFile --  Failed to delete log file "${fileName}"`);
+      this.caught(error, `Failed to delete log file "${fileName}"`);
       return { "error": error.name + ": " + error.message };
     }
+  }
+
+
+
+  // Does NOT use the FileSystemBroker API, so this MAY be called from background.js,
+  // where the message listeners are defined.
+  async deleteFileCommand(fileName) { // copied from modules/commands.js and slightly modified
+    this.debug(`~~~~~~~~~~~~~~~~~~~~ fileName="${fileName}"`);
+
+    if (! fileName) {
+      this.error("-- No 'fileName' parameter");
+      return ( { "invalid": "deleteFile Command: no 'fileName' parameter" } );
+    }
+    if ((typeof fileName) !== 'string') {
+      this.error("-- 'fileName' parameter type is not 'string'");
+      return ( { "invalid": "deleteFile Command: 'fileName' parameter type must be 'string'" } );
+    }
+    if (! isValidFileName(fileName)) {
+      this.error(`-- 'fileName' parameter is invalid: "${fileName}"`);
+      return ( { "invalid": `deleteFile Command: 'fileName' parameter is invalid: "${fileName}"` } );
+    }
+
+    try {
+      const exists = await messenger.BrokerFileSystem.exists(this.extId, fileName);
+      if (! exists) {
+        this.error(`-- File does not exist: "${fileName}"`);
+        return ( { "invalid": `deleteFile Command: File does not exist: "${fileName}"` } );
+      }
+
+      const isRegularFile = await messenger.BrokerFileSystem.isRegularFile(this.extId, fileName);
+      if (! isRegularFile) {
+        this.error(`-- File is not a Regular File: "${fileName}"`);
+        return ( { "invalid": `deleteFile Command: File is not a Regular File: "${fileName}"` } );
+      }
+
+      this.debug(`-- deleting file "${fileName}" for extension "${this.extId}"`);
+      const deleted = await messenger.BrokerFileSystem.deleteFile(this.extId, fileName);
+      this.debug(`-- deleted=${deleted}`);
+      return ( { "fileName": fileName, "deleted": deleted } );
+
+    } catch (error) {
+      this.caught(error, `-- Caught error while deleting file "${fileName}":`);
+      return ( { "error": `Error Processing deleteFile Command: ${error.name}: ${error.message}`, "code": "500" } );
+    }
+
+    return false; // this should never happen
   }
 }
