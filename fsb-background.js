@@ -111,10 +111,10 @@ class FileSystemBroker {
       }
     }
 
-    messenger.runtime.onMessage.addListener(         (message)         => this.onMessageReceivedInternal(message)         );
-    messenger.runtime.onMessageExternal.addListener( (message, sender) => this.onMessageReceivedExternal(message, sender) );
-    messenger.management.onInstalled.addListener(    (extensionInfo)   => this.onExtensionInstalled(extensionInfo)        );
-    messenger.management.onUninstalled.addListener(  (extensionInfo)   => this.onExtensionUninstalled(extensionInfo)      );
+    messenger.runtime.onMessage.addListener(         async (message)         => this.onMessageReceivedInternal(message)         );
+    messenger.runtime.onMessageExternal.addListener( async (message, sender) => this.onMessageReceivedExternal(message, sender) );
+    messenger.management.onInstalled.addListener(    async (extensionInfo)   => this.onExtensionInstalled(extensionInfo)        );
+    messenger.management.onUninstalled.addListener(  async (extensionInfo)   => this.onExtensionUninstalled(extensionInfo)      );
 
     await this.setupMidnightTimeout();
 
@@ -667,7 +667,7 @@ class FileSystemBroker {
     // MABXXX PERHAPS THIS SHOULD BE DONE INSIDE confirmDialogPrompt() ???
 //  const focusListener = async (windowId) => this.windowFocusChanged(windowId, ourTabId, ourWindowId, confirmDialogWindow.id);
     const focusListener = null;
-//  messenger.windows.onFocusChanged.addListener(focusListener);
+//  messenger.windows.onFocusChanged.addListener(focusListener); // MABXXX async ???
 
     // ConfirmDialogResponse - expected:
     // - null     - the user closed the popup window        (set by our own windows.onRemoved listener - the defaultResponse sent to confirmDialogPrompt)
@@ -730,9 +730,8 @@ class FileSystemBroker {
     return new Promise(resolve => {
       var response = defaultResponse;
 
-      function windowRemovedListener(windowId) {
+      function windowRemovedListener(windowId) {   // MABXXX async ???
         if (windowId == confirmDialogWindowId) {
-
           messenger.runtime.onMessage.removeListener(messageListener);
           messenger.windows.onRemoved.removeListener(windowRemovedListener);
 //////////messenger.windows.onFocusChanged.removeListener(focusListener);
@@ -748,7 +747,7 @@ class FileSystemBroker {
        * - BUTTON_3 - the user clicked button 3          (sent by the ConfirmDialog window's button listener)
        * Save this ConfirmDialogResponse into response for resolve()
        */
-      function messageListener(request, sender, sendResponse) {
+      function messageListener(request, sender, sendResponse) {   // MABXXX async ???
         if (sender.tab && sender.tab.windowId == confirmDialogWindowId && request && request.hasOwnProperty("ConfirmDialogResponse")) {
           response = request.ConfirmDialogResponse;
         }
@@ -756,8 +755,8 @@ class FileSystemBroker {
         return false; // we're not sending any response 
       }
 
-      messenger.runtime.onMessage.addListener(messageListener);
-      messenger.windows.onRemoved.addListener(windowRemovedListener);
+      messenger.runtime.onMessage.addListener(messageListener);         // MABXXX async ???
+      messenger.windows.onRemoved.addListener(windowRemovedListener);   // MABXXX async ???
     });
   }
 
@@ -808,7 +807,7 @@ class FileSystemBroker {
 
 
 
-messenger.runtime.onInstalled.addListener(async ( { reason, previousVersion } ) => onInstalled(reason, previousVersion));
+messenger.runtime.onInstalled.addListener( async ( { reason, previousVersion } ) => onInstalled(reason, previousVersion));
 
 async function onInstalled(reason, previousVersion) {
   const extId   = getExtensionId("");
@@ -825,7 +824,7 @@ async function onInstalled(reason, previousVersion) {
 
 
 
-messenger.runtime.onStartup.addListener(async () => {
+messenger.runtime.onStartup.addListener( async () => {
   const extId   = getExtensionId("");
   const extName = getExtensionName("File System Broker");
   console.log(`${extId} === EXTENSION ${extName} STARTED === `); 
@@ -833,7 +832,7 @@ messenger.runtime.onStartup.addListener(async () => {
 
 
 
-messenger.runtime.onSuspend.addListener(async () => {
+messenger.runtime.onSuspend.addListener( async () => {
   const extId   = getExtensionId("");
   const extName = getExtensionName("File System Broker");
   console.log(`${extId} === EXTENSION ${extName} SUSPENDED === `); 
