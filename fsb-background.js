@@ -24,18 +24,19 @@ class FileSystemBroker {
   #LOG_REMOVE_UNINSTALLED_EXTENSIONS = true;
 
   #logger                            = new Logger();
-  #fsbCommandsApi                    = new FileSystemBrokerCommands(this.#logger);
   #fsbOptionsApi                     = new FsbOptions(this.#logger);
-  #fsbEventLogger                    = new FsbEventLogger(this.#fsbOptionsApi, this.#logger);
+  #fsbCommandsApi                    = new FileSystemBrokerCommands(this.#logger, this.#fsbOptionsApi);
+  #fsbEventLogger                    = new FsbEventLogger(this.#logger, this.#fsbOptionsApi, this.#fsbCommandsApi);
 
   #midnightTimeout;
-  #firstTime = true;
-  #midnightEventDispatcher = new EventTarget();
+  #firstMidnightTimeout              = true;
+  #midnightEventDispatcher           = new EventTarget();
 
 
 
   constructor() {
     this.#fsbOptionsApi.setEventLogger(this.#fsbEventLogger);
+    this.#fsbCommandsApi.setEventLogger(this.#fsbEventLogger);
     this.#midnightEventDispatcher.addEventListener('midnight', (e) => this.onMidnight(e));
   }
 
@@ -144,8 +145,8 @@ class FileSystemBroker {
     this.#midnightTimeout = setTimeout( () => this.midnightTimerTimedOut(delayMS, nowMS), delayMS);
     if (this.#LOG_MIDNIGHT_EVENTS) await this.#fsbEventLogger.logInternalEvent("setupMidnightTimeout", "success", parameters, "");
 
-//  if (this.#firstTime) {
-//    this.#firstTime = false;
+//  if (this.#firstMidnightTimeout) {
+//    this.firstMidnightTimeout = false;
 //    this.#midnightTimeout = setTimeout( () => this.#midnightTimerTimedOut(10000, nowMS), 10000);
 //    if (this.#LOG_MIDNIGHT_EVENTS) await this.#fsbEventLogger.logInternalEvent("setupMidnightTimeout", "success", { 'delay': 10000 }, "TEST 10000");
 //  }
@@ -217,13 +218,39 @@ class FileSystemBroker {
   }
 
   async autoRemoveUninstalledExtensions() {
-    const numDays = await this.#fsbOptionsApi.getAutoRemoveUninstalledExtensionsDays(2);
-    this.debug("-- numDays: ", numDays);
+    const numDays                    = await this.#fsbOptionsApi.getAutoRemoveUninstalledExtensionsDays(2);
+    const deleteExtensionDirectories = await this.#fsbOptionsApi.isEnabledOnRemoveExtensionDeleteDirectory();
+    this.debug(`-- numDays=${ numDays}, deleteExtensionDirectories=${deleteExtensionDirectories}`);
 
-    const parameters = { 'numDays': numDays };
+    const parameters = {
+      'numDays':                    numDays,
+      'deleteExtensionDirectories': deleteExtensionDirectories,
+    };
     if (this.#LOG_REMOVE_UNINSTALLED_EXTENSIONS) await this.#fsbEventLogger.logInternalEvent("autoRemoveUninstalledExtensions", "request", parameters, "");
 
-    await this.#fsbOptionsApi.autoRemoveUninstalledExtensions(numDays); // this event is already logged inside call
+    const removedExtensionIds = await this.#fsbOptionsApi.autoRemoveUninstalledExtensions(numDays); // this event is already logged inside call
+    this.debug(`-- Extensions removed: ${removedExtensionIds ? removedExtensionIds.length : 0}`);
+
+    if (! deleteExtensionDirectories) {
+      this.debug("-- NOT Deleting Extension Directories");
+    } else {
+
+      if (! removedExtensionIds || removedExtensionIds.length < 1) {
+        this.debug("-- NO Extension Directories to delete");
+      } else {
+
+        this.debug("-- Extension Directories to delete: ${removedExtensions.length}\n", removedExtensionIds);
+        const deleteParams = { 'count': removedExtensionIds.length };
+        if (this.#LOG_REMOVE_UNINSTALLED_EXTENSIONS) await this.#fsbEventLogger.logInternalEvent("deleteExtensionDirectories", "request", deleteParams, "");
+
+        for (const removedExtId of removedExtensionIds) {
+          const result = await this.#fsbCommandsApi.deleteExtensionDirectory(removedExtId);// a shortcut to just calling fsbCommandsApi.processInternalCommand()
+          // do we care about the result?
+        }
+
+        if (this.#LOG_REMOVE_UNINSTALLED_EXTENSIONS) await this.#fsbEventLogger.logInternalEvent("deleteExtensionDirectories", "success", deleteParams, "");
+      }
+    }
 
     if (this.#LOG_REMOVE_UNINSTALLED_EXTENSIONS) await this.#fsbEventLogger.logInternalEvent("autoRemoveUninstalledExtensions", "success", parameters, "");
   }
@@ -297,36 +324,30 @@ class FileSystemBroker {
       logProps("", "onMessageReceivedInternal.message", message);
     }
 
+    if (! message.hasOwnProperty('Command')) {
+      //this.logAlways( "-- Received Unknown Internal Message --", message);
+//    return { "error": "Invalid Request: Message has no Command Object",
+//             "code": "400"
+//           };
+      return false;
+    }
+
+    return await this.#fsbCommandsApi.processInternalCommand(nowMS, message.Command, this.#extId);
+  }
+
+  async XXXprocessInternalCommand(timeMS, Command, extensionId) {
+    const formattedParameters = this.#fsbCommandsApi.formatParameters(Command);
+
+    if (await this.#fsbOptionsApi.isEnabledInternalMessageLogging()) {
+      this.logAlways( "-- Processing Internal Command --" // MABXXX do this in logCommand???
+                      + `\n- command="${Command.command}"`
+                      + `\n- parameters: ${formattedParameters}`
+                    );
+      this.#fsbEventLogger.logCommand(timeMS, "INTERNAL", Command);
+    }
+
     try {
-      // These are INTERNAL Messages:
-//    if (message.hasOwnProperty('ExtensionChooserResponse')) return false; // This is a response message that the ExtensionChooser sends back to OptionsUI
-//    if (message.hasOwnProperty('ConfirmDialogResponse'))    return false; // This is a response message that the ConfirmDialog sends back
-//    if (message.hasOwnProperty('BackupManagerResponse'))    return false; // This is a response message that the BackupManager sends back to OptionsUI
-//    if (message.hasOwnProperty('EventLogManagerResponse'))  return false; // This is a response message that the EventLogManager sends back to OptionsUI
-//    if (message.hasOwnProperty('EventLogViewerResponse'))   return false; // This is a response message that the EventLogViewer sends back to EventLogManager
-//
-//    BUT... now that we have the 'Command' key for commands, we don't need to deal with this anymore
-
-      if (! message.hasOwnProperty('Command')) {
-        //this.logAlways( "-- Received Unknown Internal Message --", message);
-//      return { "error": "Invalid Request: Message has no Command Object",
-//               "code": "400"
-//             };
-        return false;
-      }
-
-      const formattedParameters = this.#fsbCommandsApi.formatParameters(message.Command);
-
-      if (await this.#fsbOptionsApi.isEnabledInternalMessageLogging()) {
-        this.logAlways( "-- Received Internal Message --" // MABXXX do this in logCommand???
-                        + `\n- message.command="${message.Command.command}"`
-////////////////////////+ `\n- message.Command.fileName="${message.Command.fileName}"`
-                        + `\n- parameters: ${formattedParameters}`
-                      );
-        this.#fsbEventLogger.logCommand(nowMS, "INTERNAL", message.Command);
-      }
-
-      const result = await this.#fsbCommandsApi.processCommand(message.Command, this.#extId);
+      const result = await this.#fsbCommandsApi.processCommand(Command, extensionId);
 
       if (! result) {
         this.error("-- NO COMMAND RESULT", message);
@@ -335,22 +356,21 @@ class FileSystemBroker {
                };
       } else {
         if (await this.#fsbOptionsApi.isEnabledInternalMessageResultLogging()) {
-          const formattedResult = this.#fsbCommandsApi.formatCommandResult(message.Command, result);
+          const formattedResult = this.#fsbCommandsApi.formatCommandResult(Command, result);
           this.logAlways( "-- RESULT"
                           + "\n- INTERNAL"
-                          + `\n- Command="${message.Command.command}"`
-//////////////////////////+ `\n- FileName="${message.Command.fileName}"`
+                          + `\n- Command="${Command.command}"`
                           + `\n- parameters: ${formattedParameters}`
                           + `\n- result: ${formattedResult}`
                         );
-          this.#fsbEventLogger.logCommandResult(nowMS, "INTERNAL", message.Command, result);
+          this.#fsbEventLogger.logCommandResult(timeMS, "INTERNAL", Command, result);
         }
       }
 
       return result;
 
     } catch (error) {
-      this.caught(error, "Error Receiving Internal Message - Code 500");
+      this.caught(error, "Error Processing Internal Command - Code 500");
       return { "error": "Internal Error", "code":  "500" };
     }
   }
@@ -534,8 +554,8 @@ class FileSystemBroker {
           this.debugAlways(`-- Uninstalled Extension IS Configured: id="${extensionInfo.id}", autoRemoveNumDays=${autoRemoveNumDays}`);
 
           if (autoRemoveNumDays == 0) {
-            this.debugAlways(`-- Uninstalled Extension IS Configured, Removing: id="${extensionInfo.id}"`);
-            await this.#fsbOptionsApi.deleteExtension(extensionInfo.id);
+            this.debugAlways(`-- Uninstalled Extension IS Configured, Immediately Removing: id="${extensionInfo.id}"`);
+            await this.#fsbOptionsApi.removeExtension(extensionInfo.id);
 
           } else {
             this.debugAlways(`-- Uninstalled Extension IS Configured, Marking as Uninstalled: id="${extensionInfo.id}"`);

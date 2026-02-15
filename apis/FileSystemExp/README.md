@@ -13,7 +13,7 @@ This API is an enhancement to the original API from the webext-support repositor
 
 This enhancement provides a number of additional functions and features.
 
-As an "Experiments API", in order to use ths API, it requires that you accept granting
+As an "Experiments API", in order to use it, it requires that you accept granting
 full access to your system to Thunderbird.  This is considered by many to compromise
 a computer's security.
 
@@ -95,8 +95,8 @@ __Sub-directories are not currently supported.__
 
   + exists - does a file exist?
   + isRegularFile - does a file exist and is it a Regular file, i.e. NOT a Directory or "other"?
-  + isDirectory - does a file exist and is it a Directory, i.e. NOT a Regular file or a a ""other"?
-  + hasFiles - does a Directory have any items (Files, Directories, or "Other") in it?
+  + isDirectory - does a file exist and is it a Directory, i.e. NOT a Regular file or "other"?
+  + hasFiles - does a Directory contains any items (Files, Directories, or "Other") in it?
   + getFileCount- how many items (Files, Directories, or "Other") does a Directory have in it?
   + writeFile - write text into a file in file system storage
   + replaceFile - write text into a file in file system storage, replacing any file that already exists

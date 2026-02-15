@@ -77,6 +77,9 @@ command message to this extension by calling the Web Extension function:
   + isValidFileName - is a fileName valid?
   + isValidDirectoryName - is a directoryName valid?
   + getFileSystemPathName - returns the full pathName of the system directory on which this API operates
+  + extensionStats - returns a JavaScript object that contains information about the directory for an extension and its contents
+  + fsbListInfo -            list FileInfo objects for all items - Reguar files, Directories, and "other" - in the directory on which this API operates
+
 
 <br>
 <br>
@@ -138,7 +141,7 @@ To use it in your extension
 
 ## The Messaging API
 
-In addition to using the FileSystemBroker API, an extension can directly send Command Messages to this extension and await the responses.
+In addition to using the FileSystemBroker API, above, an extension can directly send Command Messages to this extension and await the responses.
 
 Here is a simple example to check if a file named "file1.txt" exists:
 ```
@@ -146,8 +149,8 @@ Here is a simple example to check if a file named "file1.txt" exists:
       .
       .
       .
-    let response;
-    let exists = false;
+    var response;
+    var exists = false;
     try {
       const message = { "Command": { "command": "exists", "fileName": "file1.text" } };
       response = await messenger.runtime.sendMessage(FILE_SYSTEM_BROKER_EXTENSION_ID, message);
@@ -285,6 +288,8 @@ in mind.
 
 <br>
 <br>
+<br>
+<br>
 
 ## These Are The Commands And Their Responses:
 
@@ -298,10 +303,15 @@ in mind.
                      Returns "granted" if the caller has been granted
                      permission to use FileSystemBroker, "denied" if not.
 
-<br>
 
+### exists(extensionId [, fileName])
 
-#### exists - Determine if an item (Regular File, Directory, or "other") with a given fileName exists in the caller-specific directory (named like the caller's Extension ID)
+    Returns true if a file with the given fileName exists
+    in the directory for the extensionId.
+
+    The fileName parameter is optional.  If it is not
+    provided, returns true if the directory for the
+    given extensionId exists.
 
     command message: { "Command": { "command": "exits" [, "fileName": string] } }
 
@@ -321,6 +331,7 @@ in mind.
     or if the operating system had a problem processing the command.
 
 <br>
+<br>
 
 
 #### isRegularFile - Determine if a file with a given fileName exists in the caller-specific directory (named like the caller's Extension ID) and is a Regular File
@@ -334,6 +345,7 @@ in mind.
     Returns an "error" response if the file's full pathName is > 255 characters
     or if the operating system had a problem processing the command.
 
+<br>
 <br>
 
 
@@ -358,6 +370,7 @@ in mind.
 
     Sub-directories are not supported at this time (there is no method to create one.)
 
+<br>
 <br>
 
 
@@ -385,6 +398,7 @@ in mind.
     Sub-directories are not supported at this time (there is no method to create one.)
 
 <br>
+<br>
 
 
 #### getFileCount - Determine if a directory with a given directoryName exists in the caller-specific directory (named like the caller's Extension ID) and is a Directory, and returns the number of files and/or sub-directories it contains
@@ -411,6 +425,7 @@ in mind.
     Sub-directories are not supported at this time (there is no method to create one.)
 
 <br>
+<br>
 
 
 #### makeDirectory - Create the caller-specific directory (named like the caller's Extension ID)
@@ -426,6 +441,7 @@ in mind.
 
     Sub-directories are not supported at this time, thus a directoryName parameter is not provided.
 
+<br>
 <br>
 
 
@@ -451,6 +467,7 @@ in mind.
     or if the operating system had a problem processing the command.
 
 <br>
+<br>
 
 
 #### replaceFile - Write the given data to the file with the given fileName in the caller-specific directory (named like the caller's Extension ID), like writeFile using "writeMode": "overwrite"
@@ -466,6 +483,7 @@ in mind.
     or if the operating system had a problem processing the command.
 
 <br>
+<br>
 
 
 #### appendToFile - Write the given data to the file with the given fileName in the caller-specific directory (named like the caller's Extension ID), like writeFile using "writeMode": "appendOrCreate"
@@ -480,6 +498,7 @@ in mind.
     Returns an "error" response if the file's full pathName is > 255 characters
     or if the operating system had a problem processing the command.
 
+<br>
 <br>
 
 
@@ -503,6 +522,7 @@ in mind.
     or if the operating system had a problem processing the command.
 
 <br>
+<br>
 
 
 #### writeObjectToJSONFile - Convert the given object to JSON and write it to a JSON file with the given fileName in the caller-specific directory (named like the caller's Extension ID)
@@ -525,6 +545,7 @@ in mind.
     or if the operating system had a problem processing the command.
 
 <br>
+<br>
 
 
 #### readFile - Read the file with the given fileName in the caller-specific directory (named like the caller's Extension ID) and return the contents
@@ -539,6 +560,7 @@ in mind.
     Returns an "error" response if the file's full pathName is > 255 characters
     or if the operating system had a problem processing the command.
 
+<br>
 <br>
 
 
@@ -555,6 +577,7 @@ in mind.
     or if the operating system had a problem processing the command.
 
 <br>
+<br>
 
 
 #### readObjectFromJSONFile - Read the JSON file with the given fileName in the caller-specific directory (named like the caller's Extension ID) and return the contents as a JavaScript object
@@ -569,6 +592,7 @@ in mind.
     Returns an "error" response if the file's full pathName is > 255 characters
     or if the operating system had a problem processing the command.
 
+<br>
 <br>
 
 
@@ -603,6 +627,7 @@ in mind.
     or if the operating system had a problem processing the command.
 
 <br>
+<br>
 
 
 #### renameFile - Renames a Regular file in the caller-specific directory (named like the caller's Extension ID)
@@ -622,6 +647,7 @@ in mind.
     or if the operating system had a problem processing the command.
 
 <br>
+<br>
 
 
 #### deleteFile - Delete the Regular file with the given fileName in the caller-specific directory (named like the caller's Extension ID)
@@ -636,6 +662,7 @@ in mind.
     Returns an "error" response if the file's full pathName is > 255 characters
     or if the operating system had a problem processing the command.
 
+<br>
 <br>
 
 
@@ -671,6 +698,7 @@ in mind.
     Sub-directories are not supported at this time (there is no method to create one.)
 
 <br>
+<br>
 
 
 #### listFiles - Return the fileNames of only the Regular Files - not Directories or Other files - in the caller-specific directory (named like the caller's Extension ID), optionally filtering by matching the fileNames to the given GLOB string
@@ -689,7 +717,7 @@ in mind.
     thus a directoryName parameter is not provided.
 
 <br>
-
+<br>
 
 #### listFileInfo - Return FileInfo objects for only the Regular Files - not Directories or Other files - in the caller-specific directory (named like the caller's Extension ID), optionally filtering by matching the fileNames to the given GLOB string
 
@@ -717,6 +745,7 @@ in mind.
     thus a directoryName parameter is not provided.
 
 <br>
+<br>
 
 
 #### list - Return the fileNames of the items (all types - Regular, Directory, and Other) in the caller-specific directory (named like the caller's Extension ID), optionally filtering by matching the fileNames to the given GLOB string
@@ -734,6 +763,7 @@ in mind.
     Sub-directories are not supported at this time (there is no method to create one,)
     thus a directoryName parameter is not provided.
 
+<br>
 <br>
 
 
@@ -763,6 +793,7 @@ in mind.
     thus a directoryName parameter is not provided.
 
 <br>
+<br>
 
 
 #### getFullPathName - Return the full path name for the given fileName in the caller-specific directory (named like the caller's Extension ID)
@@ -785,6 +816,7 @@ in mind.
     what the full pathname would be.
 
 <br>
+<br>
 
 
 #### isValidFileName - Determine if the given fileName is valid
@@ -798,6 +830,7 @@ in mind.
     The file with the given fileName need not actually exist.  This command merely checks
     if the given string is a valid fileName.
 
+<br>
 <br>
 
 
@@ -813,6 +846,7 @@ in mind.
     if the given string is a valid directoryName.
 
 <br>
+<br>
 
 
 ####  getFileSystemPathName - Returns the full pathName of the directory that this API uses for the calling extension.
@@ -821,6 +855,184 @@ in mind.
 
     response:        { "pathName": string }
 
+<br>
+<br>
+
+
+### stats( ['parammeters': { ['includeChildInfo': boolean] ['types': array of string] ] )
+
+    Returns a JavaScript object that contains information
+    about the directory and the items in the directory
+    for the given extensionId.
+<br>
+<br>
+    The 'parameters' parameter is optional. If it is not
+    provided, information for each child is NOT included
+    in the result.
+<br>
+<br>
+    The parameters.includeChildInfo parameter is optional.
+    If it is not provided, it defaults to false. If true, the
+    object returned includes information for each child
+    item.
+<br>
+<br>
+    The parameters.types parameter is optional and is allowed
+    only when parameters.includeChildInfo is true.  This is
+    an array of String containing one or more item types:
+<br>
+      'regular', 'directory', 'other', 'unknown', 'error'
+<br>
+    If given, only the information for items whose type is
+    listed in this array will be returned.
+<br>
+    The default is ALL types.
+<br>
+<br>
+    The returned object:
+    
+```
+      { extensionId: {
+          stats: {
+                   'includeChildInfo':               boolean:          incoming parameter
+                   'types':                          array of string:  incoming parameter (OPTIONAL: only if includeChildInfo is true)
+                   'dirName':                        string:           directory name
+                   'dirPath':                        string:           directory fulle pathName
+                   'children':                       integer:          total number of child items
+                   'regular':                        integer:          number of child items with type 'regular'
+                   'directory':                      integer:          number of child items with type 'directory'
+                   'other':                          integer:          number of child items with type 'other'
+                   'unknown':                        integer:          number of child items with type none of the three above
+                   'error':                          integer:          number of child items whose types could not be determined
+                   'earliestChildCreationTime':      integer:          earliest Creation Time      of all child items (OS-dependent) in MS (undefined if no children)
+                   'latestChildCreationTime':        integer:          latest   Creation Time      of all child items (OS-dependent) in MS (undefined if no children)
+                   'earliestChildLastAccessedTime':  integer:          earliest Last Accessed Time of all child items (OS-dependent) in MS (undefined if no children)
+                   'latestChildLastAccessedTime':    integer:          latest   Last Accessed Time of all child items (OS-dependent) in MS (undefined if no children)
+                   'earliestChildLastModifiedTime':  integer:          earliest Last Modified Time of all child items (OS-dependent) in MS (undefined if no children)
+                   'latestChildLastModifiedTime':    integer:          latest   Last Modified Time of all child items (OS-dependent) in MS (undefined if no children)
+                   'smallestSize':                   integer:          smallest size (bytes) of all child items with type 'regular' (-1 if none)
+                   'largestSize':                    integer:          largest size (bytes) of all child items with type 'regular' (-1 if none)
+                   'totalSize':                      integer:          total of sizes (bytes) of all child items with type 'regular'
+                   [ 'childInfo': ]                  array of object {                 (OPTIONAL: only if includeChildInfo is true)
+                                                       'name'                string:   item name
+                                                       'type'                string:   item type - 'regular', 'directory', 'other', 'unknown', 'error'
+                                                       'path'                string:   item full pathName
+                                                       'creationTime':       integer:  Creation Time      (OS-dependent) in MS
+                                                       'lastAccessedTime':   integer:  Last Accessed Time (OS-dependent) in MS
+                                                       'lastModifiedTime':   integer:  Last Modified Time (OS-dependent) in MS
+                                                       [ 'size': ]           integer:  file size (bytes) (OPTIONAL: only for items with type 'regular')
+                                                     }
+                 }
+          }
+      }
+```
+
+<br>
+    Returns "invalid" if parameters is provided and is not an object,
+<br>
+    or if paramaters.includeChildInfo is provided and is not boolean,
+<br>
+    or if paramaters.types is provided and is not an Array that contains the expected values.
+<br>
+<br>
+    Reurns "error" if the file's full pathName is > 255 characters,
+<br>
+    or if there is an operating system error.
+
+<br>
+<br>
+<br>
+
+### fsbListInfo( [ parameters: { ['matchGLOB': matchGLOB] ['types': types] } ] ) (INTERNAL USE ONLY)
+
+    Returns an array of FileInfo for the items in the top-directory
+    on which this extension operates.
+<br>
+<br>
+    If the optional parameters.matchGLOB parameter is given, only
+    the information for items whose names match the given GLOB will
+    be returned.
+<br>
+<br>
+    If the optional parameters.types array parameter is given,
+    only the information for items whose type is listed in the
+    parameters.types array will be returned. paramaters.types
+    is an array of one or more of:
+<br>
+      'regular', 'directory, 'other'.
+<br>
+    The default is ALL types.
+<br>
+<br>
+    FileInfo has these entries:
+    - fileName:     the fileName
+    - path:         the full pathname
+    - type:         "regular", "directory", or "other"
+    - size:         for a Regular File, the size in bytes, otherwise -1
+    - creationTime  (Windows and MacOS only): milliseconds since 1970-01-01T00:00:00.000Z
+    - lastAccessed: milliseconds since 1970-01-01T00:00:00.000Z
+    - lastModified: milliseconds since 1970-01-01T00:00:00.000Z
+    - permissions:  expressed as a UNIX file mode (for Windows, the 'user', 'group', and 'other' parts will always be identical)
+<br>
+<br>
+    If the Directory does not exist, it will be created and an
+    empty array is returned.
+<br>
+<br>
+    Returns "invalid" if parameters is provided and is not an object,
+<br>
+    or if paramaters.matchGLOB is provided and is not a String,
+<br>
+    or if paramaters.types is provided and is not an Array that contains the expected values
+<br>
+<br>
+    Returns "error" if the directory's full pathName is > 255 characters,
+<br>
+    or if there is an operating system error.
+<br>
+<br>
+
+### fsbList( [ parameters: { ['matchGLOB': matchGLOB] ['types': types] } ] ) (INTERNAL USE ONLY)
+
+    Returns an array listing information for the items
+    in the top-directory on which this extension operates.
+<br>
+<br>
+    If the optional parameters.matchGLOB parameter is given, only
+    the information for items whose names match the given GLOB will
+    be returned.
+<br>
+<br>
+    If the optional parameters.types array parameter is given,
+    only the information for items whose type is listed in the
+    parameters.types array will be returned. paramaters.types
+    is an array of one or more of:
+<br>
+      'regular', 'directory, 'other'.
+<br>
+    The default is ALL types.
+<br>
+<br>
+    The items in the returned array are object
+    { 'name': itemName, 'type' itemType }
+<br>
+<br>
+    If the Directory does not exist, it will be created and an
+    empty array is returned.
+<br>
+<br>
+    Returns "invalid" if parameters is provided and is not an object,
+<br>
+    or if paramaters.matchGLOB is provided and is not a String,
+<br>
+    or if paramaters.types is provided and is not an Array that contains the expected values
+<br>
+<br>
+    Returns "error" if the directory's full pathName is > 255 characters,
+<br>
+    or if there is an operating system error.
+
+<br>
 <br>
 <br>
 <br>

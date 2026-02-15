@@ -96,10 +96,10 @@
     "message": "Deny Selected"
   },
   "options_fsbDeleteSelectedButtonsLabel": {
-    "message": "Delete the SELECTED Extensions"
+    "message": "Remove the SELECTED Extensions"
   },
   "options_fsbDeleteSelectedButton.label": {
-    "message": "Delete Selected"
+    "message": "Remove Selected"
   },
   "options_fsbAddNewExtensionButtonsLabel": {
     "message": "Add a NEW Extension to the list"
@@ -135,7 +135,7 @@
     "message": "Un-Check the checkboxes to Deny the SELECTED Extensions access to FileSystemBroker"
   },
   "options_fsbDeleteSelectedButton.tooltip": {
-    "message": "Delete the SELECTED Extensions from the list"
+    "message": "Remove the SELECTED Extensions from the list"
   },
   "options_fsbAddNewExtensionButton.tooltip": {
     "message": "Add a NEW Extension to the list"
@@ -153,7 +153,7 @@
     "message": "Edit the information for this Extension"
   },
   "options_button_deleteExtension.tooltip": {
-    "message": "Delete this Extension from the list"
+    "message": "Remove this Extension from the list"
   },
   "options_fsbExtensionEditTitleAddMode": {
     "message": "Add New Extension Information"
@@ -222,7 +222,7 @@
     "message": "Log Internal Events"
   },
   "options_fsbAutoLogPurgeDaysSelect.label": {
-    "message": "Automatically delete Event Logs older than"
+    "message": "Automatically Remove Event Logs older than"
   },
   "options_fsbAutoLogPurgeDaysSelect_optionNone": {
     "message": "disabled"
@@ -305,6 +305,9 @@
   "options_fsbAutoRemoveUninstalledExtensionsDaysSelect_30Days": {
     "message": "for more than 30 days"
   },
+  "options_fsbOnRemoveExtensionDeleteDirectoryCheck.label": {
+    "message": "When Removing an Extension, also delete it's Directory"
+  },
   "options_fsbEnableExternalMessageResultLoggingCheck.label": {
     "message": "Log External Command Results"
   },
@@ -378,7 +381,7 @@
     "message": "Internal Error - Editor Mode is not set"
   },
   "options_message_error_extensionDeleteFailed": {
-    "message": "Internal Error - Extension Delete Failed"
+    "message": "Internal Error - Extension Removal Failed"
   },
   "options_message_error_": {
     "message": ""

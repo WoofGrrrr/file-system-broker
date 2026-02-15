@@ -27,7 +27,8 @@ export class FsbOptions {
     'fsbShowOptionsActions',
     'fsbShowExtensionChooserInstructions',
     'fsbShowBackupManagerInstructions',
-    'fsbShowEventLogManagerInstructions'
+    'fsbShowEventLogManagerInstructions',
+    'fsbOnRemoveExtensionDeleteDirectory',
   ];
 
   #DEFAULT_OPTION_VALUES = {
@@ -54,7 +55,8 @@ export class FsbOptions {
     'fsbShowOptionsActions':                  true,
     'fsbShowExtensionChooserInstructions':    true,
     'fsbShowBackupManagerInstructions':       true,
-    'fsbShowEventLogManagerInstructions':     true
+    'fsbShowEventLogManagerInstructions':     true,
+    'fsbOnRemoveExtensionDeleteDirectory':    true,
   };
 
 
@@ -324,6 +326,11 @@ export class FsbOptions {
 
   async isEnabledShowEventLogManagerInstructions() {
     return this.isEnabledOption('fsbShowEventLogManagerInstructions', true);
+  }
+
+  async isEnabledOnRemoveExtensionDeleteDirectory() {
+    const KEY = 'fsbOnRemoveExtensionDeleteDirectory';
+    return this.isEnabledOption(KEY, true);
   }
 
   async isEnabledOption(key, defaultValue) {
@@ -603,7 +610,7 @@ export class FsbOptions {
 
   // Delete the extensionProps for the Extension (not the Extension istself)
   // with the given extensionId and return it.
-  async deleteExtension(extensionId) {
+  async removeExtension(extensionId) {
     this.log(`-- begin extensionId="${extensionId}"`);
 
     let deleted;
@@ -625,11 +632,13 @@ export class FsbOptions {
     return deleted;
   }
 
-  // Delete the extensionProps for the Extensions
-  // with the given extensionIds
-  // and return a count of how many were actually deleted
-  async deleteSelectedExtensions(extensionIds) {
-    let count = 0;
+  // Remove the extensionProps for the Extensions with the given extensionIds
+  // and return the props of those that were actually deleted
+  async removeExtensions(extensionIds, ignoreLocks) {
+    var   deletedLocked         = (typeof ignoreLocks) === 'boolean' ? ignoreLocks : false;
+    const removedExtensionProps = [];
+    var   count                 = 0;
+
     if (extensionIds && extensionIds.length > 0) {
       const allExtensionsProps = await this.getExtensionsProps();
       if (allExtensionsProps) {
@@ -637,15 +646,18 @@ export class FsbOptions {
           if (extensionId && (typeof extensionId === 'string') && extensionId.length > 0) {
             const props = allExtensionsProps[extensionId];
             if (props) {
+              removedExtensionProps.push(props);
               count++;
               delete allExtensionsProps[extensionId];
             }
           }
         }
+
         if (count > 0) await this.storeExtensionsProps(allExtensionsProps);
       }
     }
-    return count;
+
+    return removedExtensionProps;
   }
 
 
@@ -655,6 +667,9 @@ export class FsbOptions {
     const removeBeforeMS   = getMidnightMS(nowMS, -numDays - 1);
     const removeBeforeTime = formatMsToDateTime24HR(removeBeforeMS);
     const parameters       = { 'numDays': numDays, "removeBeforeTime": removeBeforeTime };
+
+    const removedExtensions = [];
+    var   removedCount      = 0;
 
     this.debugAlways(`-- begin -- numDays=${numDays}, removeBeforeMS=${removeBeforeMS}, removeBeforeTime="${removeBeforeTime}"`);
 
@@ -669,7 +684,6 @@ export class FsbOptions {
       }
 
     } else {
-      var   removedCount           = 0;
       const installedExtensionById = [];
       const installedExtensions    = await messenger.management.getAll();
       for (const ext of installedExtensions) {
@@ -718,7 +732,8 @@ export class FsbOptions {
             } else {
               this.debugAlways(`-- uninstalledTimeMS=${uninstalledTimeMS} removeBeforeMS=${removeBeforeMS} -- Removing Extension, ID="${extensionId}"`);
             }
-            await this.deleteExtension(extensionId);
+            await this.removeExtension(extensionId);
+            removedExtenions.push(extensionId);
             ++removedCount;
 
           } else if (alreadyRecorded) {
@@ -729,14 +744,16 @@ export class FsbOptions {
           }
         }
       }
+    }
 
-      this.debugAlways(`-- removedCount=${removedCount}`);
-      if (this.fsbEventLogger) {
-        await this.fsbEventLogger.logInternalEvent("autoRemoveUninstalledExtensions", "success", parameters, `removedCount=${removedCount}`);
-      }
+    this.debugAlways(`-- removedCount=${removedCount}`);
+    if (this.fsbEventLogger) {
+      await this.fsbEventLogger.logInternalEvent("autoRemoveUninstalledExtensions", "success", parameters, `removedCount=${removedCount}`);
     }
 
     this.debugAlways("-- end");
+
+    return removedExtensions;
   }
 
 

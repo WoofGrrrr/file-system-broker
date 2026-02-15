@@ -1,6 +1,8 @@
-import { FsbOptions                } from '../modules/options.js';
 import { Logger                    } from '../modules/logger.js';
+import { FsbOptions                } from '../modules/options.js';
+import { FileSystemBrokerCommands  } from '../modules/commands.js';
 import { FsbEventLogger            } from '../modules/event_logger.js';
+import { FileSystemBrokerAPI       } from '../modules/FileSystemBroker/filesystem_broker_api.js';
 import { FileSystemBrokerSelfTests } from '../modules/selftests.js';
 import { logProps, getExtensionId, getI18nMsg, parseDocumentLocation, formatMsToDateTime12HR } from '../modules/utilities.js';
 
@@ -9,20 +11,20 @@ class OptionsUI {
 
   constructor() {
     this.className                                  = this.constructor.name;
+    this.extId                                      = getExtensionId();
 
     this.INFO                                       = false;
     this.LOG                                        = false;
     this.DEBUG                                      = false;
     this.WARN                                       = false;
 
-    this.extId                                      = getExtensionId();
-
     this.logger                                     = new Logger();
     this.fsbOptionsApi                              = new FsbOptions(this.logger);
-    this.fsbEventLogger                             = new FsbEventLogger(this.fsbOptionsApi, this.logger);
-    this.fsbSelfTestApi                             = new FileSystemBrokerSelfTests(this.logger);
-
+    this.fsbCommandsApi                             = new FileSystemBrokerCommands(this.logger, this.fsbOptionsApi);
+    this.fsbEventLogger                             = new FsbEventLogger(this.logger, this.fsbOptionsApi, this.fsbCommandsApi);
+    this.fsBrokerApi                                = new FileSystemBrokerAPI();
     this.fsbOptionsApi.setEventLogger(this.fsbEventLogger);
+    this.fsbCommandsApi.setEventLogger(this.fsbEventLogger);
 
     this.windowMode                                 = false; // are we running in a popup window??? (from the windowMode parameter in our URL)
     this.windowModeRequestedBy                      = undefined;
@@ -145,6 +147,34 @@ class OptionsUI {
         }
       }
     }
+    
+    var parameters;
+
+    parameters = { 'includeChildInfo': true };
+    const stats1 = await this.fsBrokerApi.stats(parameters); // get statitics for our own extension directory
+    this.debugAlways("\n\n========== EXTENSION STATS1 ==========\n", stats1, "\n\n========== EXTENSION STATS1 ==========\n\n");
+    
+    parameters = { 'includeChildInfo': true, 'types': ['regular'] };
+    const stats2 = await this.fsBrokerApi.stats(parameters); // get statitics for our own extension directory
+    this.debugAlways("\n\n========== EXTENSION STATS2 ==========\n", stats2, "\n\n========== EXTENSION STATS2 ==========\n\n");
+    
+    parameters = { 'matchGLOB': '*', 'types': ['directory','regular'] };
+    const info1 = await this.fsBrokerApi.fsbListInfo(parameters); // using messaging
+    this.debugAlways("\n\n========== FSB INFO1 ==========\n", info1, "\n\n========== FSB INFO1 ==========\n\n");
+    const info2 = await this.fsbCommandsApi.fsbListInfo(parameters); // direct call, no messaging
+    this.debugAlways("\n\n========== FSB INFO2 ==========\n", info2, "\n\n========== FSB INFO2 ==========\n\n");
+
+    parameters = { 'matchGLOB': '*', 'types': ['directory','regular'] };
+    const list1 = await this.fsBrokerApi.fsbList(parameters); // using messaging
+    this.debugAlways("\n\n========== FSB LIST1 ==========\n", list1, "\n\n========== FSB LIST1 ==========\n\n");
+    const list2 = await this.fsbCommandsApi.fsbList(parameters); // direct call, no messaging
+    this.debugAlways("\n\n========== FSB LIST2 ==========\n", list2, "\n\n========== FSB LIST2 ==========\n\n");
+
+    parameters = { 'matchGLOB': '*', 'types': ['directory'] };
+    const list3 = await this.fsBrokerApi.fsbList(parameters); // using messaging
+    this.debugAlways("\n\n========== FSB LIST3 ==========\n", list3, "\n\n========== FSB LIST3 ==========\n\n");
+    const list4 = await this.fsbCommandsApi.fsbList(parameters); // direct call, no messaging
+    this.debugAlways("\n\n========== FSB LIST4 ==========\n", list4, "\n\n========== FSB LIST4 ==========\n\n");
 
     await this.localizePage();
     await this.applyTooltips(document);
@@ -1078,6 +1108,7 @@ class OptionsUI {
           }
         }
       } else { // since we already tested for it, it's got to be a checkbox
+
         this.debug(`-- Setting Checkbox Option {[${optionName}]: ${optionValue}}`);
         await this.fsbOptionsApi.storeOption(
           { [optionName]: optionValue }
@@ -1766,7 +1797,9 @@ this.debugAlways(`-- LABEL CLICKED, FOR ELEMENT FOUND -- id="${target.getAttribu
 
     this.resetErrors();
 
-    await this.fsbSelfTestApi.runSelfTests();
+    const fsbSelfTestApi  = new FileSystemBrokerSelfTests(this.logger);
+
+    await fsbSelfTestApi.runSelfTests();
   }
 
 
@@ -2631,16 +2664,21 @@ this.debugAlways(`-- LABEL CLICKED, FOR ELEMENT FOUND -- id="${target.getAttribu
       this.debug(`-- Extension is LOCKED`);
 
     } else {
-      // returns the props for the Extension that was deleted or 'undefined' if not
-      const deleted = await this.fsbOptionsApi.deleteExtension(extensionId);
+      // returns the props for the Extension that was removed or 'undefined' if not
+      const removedExtensionProps = await this.fsbOptionsApi.removeExtension(extensionId);
 
-      if (! deleted) {
+      if (! removedExtensionProps) {
         this.error(`-- EXTENSION NOT DELETED extensionId="${extensionId}"`);
         this.setErrorFor("fsbExtensionOptionsTitle", "options_message_error_extensionDeleteFailed");
 
       } else {
-        this.debug(`-- Extension Deleted extensionId="${extensionId}" deleted.id="${deleted.id}"` );
+        this.debug(`-- Extension Deleted extensionId="${extensionId}" removedExtensionProps.id="${removedExtensionProps.id}"` );
         extensionTR.remove();
+        const deleteExtensionDirectories = await this.fsbOptionsApi.isEnabledOnRemoveExtensionDeleteDirectory();
+        if (deleteExtensionDirectories) {
+          const result = await this.fsbCommandsApi.deleteExtensionDirectory(extensionId); // this method is a shortcut to just calling fsbCommandsApi.processInternalCommand()
+          // do we care about the result?
+        }
       }
     }
   }
@@ -3385,24 +3423,37 @@ this.debugAlways(`-- LABEL CLICKED, FOR ELEMENT FOUND -- id="${target.getAttribu
     this.debug("-- begin");
 
     const selectedExtensionIds = this.getSelectedExtensionIds();
+
     this.debug(`-- selectedExtensionIds.length=${selectedExtensionIds.length}`);
 
-    const count = await this.fsbOptionsApi.deleteSelectedExtensions(selectedExtensionIds);
-
-    for (const extensionId of selectedExtensionIds) {
-      this.debug(`-- extensionId="${extensionId}"`);
-      const selectorTR      = `tr.extension-list-item[extensionId='${extensionId}']`;
+    const extensionIdsToRemove = [];
+    for (const selectedExtId of selectedExtensionIds) {
+      this.debug(`-- extensionId="${selectedExtId}"`);
+      const selectorTR      = `tr.extension-list-item[extensionId='${selectedExtId}']`;
       const extensionItemTR = document.querySelector(selectorTR);
 
       if (! extensionItemTR) {
         this.debug(`-- FAILED TO SELECT TR "${selectorTR}"`);
-
       } else if (extensionItemTR.classList.contains("extension-locked")) {
         this.debug(`-- Extension is LOCKED`);
-
       } else {
-        this.debug(`-- Removing TR for Extension extensionId="${extensionId}"`);
+        extensionIdsToRemove.push(selectedExtId);
         extensionItemTR.remove();
+      }
+    }
+
+    this.debug(`-- extensionIdsToRemove.length=${extensionIdsToRemove.length}`);
+
+    const deletedExtensionProps = await this.fsbOptionsApi.removeExtensions(extensionIdsToRemove, false); // ignoreLocks=false: do not delete locked extensions
+
+    this.debug(`-- deleted from identityProps: ${deletedExtensionProps.length}`);
+
+    const deleteExtensionDirectories = await this.fsbOptionsApi.isEnabledOnRemoveExtensionDeleteDirectory();
+    if (deleteExtensionDirectories) {
+      for (const extId of extensionIdsToRemove) {
+        this.debug(`-- deleting extension directory, extensionId="${extId}"`);
+        const result = await this.fsbCommandsApi.deleteExtensionDirectory(extId) // this method is a shortcut to just calling fsbCommandsApi.processInternalCommand();
+        // do we care about the result?
       }
     }
 

@@ -1,3 +1,5 @@
+import { getExtensionId } from '../utilities.js';
+
 /*
  * This file is provided by the WoofGrrrr GitHub repository at
  * https://github.com/WoofGrrrr/file-system-broker
@@ -13,7 +15,7 @@
  *   . isDirectory
  *   . hasFiles
  *   . getFileCount
- *   . writeFile (with optional writeMode, one of 'overwrite', 'replace', 'append', 'appendOrCreate', 
+ *   . writeFile (with optional writeMode, one of 'overwrite', 'replace', 'append', 'appendOrCreate',
  *   . replaceFile (writeFile with writeMode = 'overwrite')
  *   . appendToFile (writeFile with writeMode = 'appendOrCreate')
  *   . writeJSONFile
@@ -34,6 +36,9 @@
  *   . isValidFileName
  *   . isValidDirectoryName
  *   . getFileSystemPathName
+ *   . stats
+ *   . fsbListInfo - with optional fileName match GLOB MABXXX MAYBE NOT IN THIS API??? INTERNAL-ONLY COMMAND
+ *   . fsbList - MABXXX MAYBE NOT IN THIS API??? INTERNAL-ONLY COMMAND
  *
  * ** A fileName may not contain these characters:
  *      < (less than)
@@ -60,7 +65,7 @@
  * ** A fileName may not be longer than 64 characters
  *
  * ** A total filePath may not be longer than 255 characters
- * 
+ *
  *
  *
  * Version v0.9.0-beta-1
@@ -270,10 +275,37 @@ export class FileSystemBrokerAPI {
     return await this.sendFSBrokerCommand( { "command": "getFileSystemPathName" } );
   }
 
+  async stats(parameters) {
+    var Command;
+    if (parameters === null || typeof parameters === 'undefined') {
+      Command = { "command": "stats", };
+    } else {
+      Command = { "command": "stats", "parameters": parameters, };
+    }
+
+    return await this.sendFSBrokerCommand(Command);
+  }
+
+  async fsbListInfo(matchGLOB) { // MABXXX MAYBE NOT IN THIS API??? INTERNAL-ONLY COMMAND
+    if (matchGLOB === null || typeof matchGLOB === 'undefined') {
+      return await this.sendFSBrokerCommand( { "command": "fsbListInfo" } );
+    } else {
+      return await this.sendFSBrokerCommand( { "command": "fsbListInfo", "matchGLOB": matchGLOB, } )
+    }
+  }
+
+  async fsbList(parameters) { // MABXXX MAYBE NOT IN THIS API??? INTERNAL-ONLY COMMAND
+    if (parameters === null || typeof parameters === 'undefined') {
+      return await this.sendFSBrokerCommand( { "command": "fsbList" } );
+    } else {
+      return await this.sendFSBrokerCommand( { "command": "fsbList", "parameters": parameters, } )
+    }
+  }
+
 
 
   async sendFSBrokerCommand(command) {
-    this.debug(`sendFSBrokerCommand -- sending command command.command="${command.command}" to Extension "${this.FILE_SYSTEM_BROKER_EXTENSION_ID}"`);
+    this.debug(`sendFSBrokerCommand -- sending command command.command="${command.command}" to Extension "${this.FILE_SYSTEM_BROKER_EXTENSION_ID}",\nCOMMAND: `, command);
     let response;
     try {
       const message = { "Command": command };

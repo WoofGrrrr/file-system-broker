@@ -4,7 +4,7 @@ import { getExtensionId, getExtensionName, formatMsToDateForFilename, formatMsTo
 
 
 export class FsbEventLogger {
-  constructor(fsbOptionsApi, logger) {
+  constructor(logger, fsbOptionsApi, fsbCommandsApi) {
     this.CLASS_NAME                      = this.constructor.name;
     this.extId                           = getExtensionId();
     this.extName                         = getExtensionName();
@@ -23,7 +23,7 @@ export class FsbEventLogger {
 
     this.logger                          = logger;
     this.fsbOptionsApi                   = fsbOptionsApi;
-    this.fsbCommandsApi                  = new FileSystemBrokerCommands(this.logger);
+    this.fsbCommandsApi                  = fsbCommandsApi;
     this.fsBrokerApi                     = new FileSystemBrokerAPI();
   }
 
@@ -203,7 +203,7 @@ export class FsbEventLogger {
 
         if (this.LOG_DELETE_OLD_EVENT_LOGS) {
           const data = { 
-            "data":                         "1",
+            "step":                         "1",
             "numDays":                      numDays,
             "fileName":                     info.fileName,
             "deleteFilesOlderThanMS":       deleteFilesOlderThanMS,
@@ -220,7 +220,7 @@ export class FsbEventLogger {
 
           if (this.LOG_DELETE_OLD_EVENT_LOGS) {
             const data = { 
-              "data":                         "2",
+              "step":                         "2",
               "numDays":                      numDays,
               "fileName":                     info.fileName,
               "deleteFilesOlderThanMS":       deleteFilesOlderThanMS,
@@ -240,7 +240,7 @@ export class FsbEventLogger {
 
             if (this.LOG_DELETE_OLD_EVENT_LOGS) {
               const data = { 
-                "data":                         "3",
+                "step":                         "3",
                 "numDays":                      numDays,
                 "fileName":                     info.fileName,
                 "deleteFilesOlderThanMS":       deleteFilesOlderThanMS,
@@ -255,7 +255,7 @@ export class FsbEventLogger {
             // !response || response.error || response.invalid || !response.fileName || !response.deleted
             if (this.LOG_DELETE_OLD_EVENT_LOGS) {
               const data = { 
-                "data":                         "4",
+                "step":                         "4",
                 "numDays":                      numDays,
                 "fileName":                     info.fileName,
                 "deleteFilesOlderThanMS":       deleteFilesOlderThanMS,
@@ -288,7 +288,7 @@ export class FsbEventLogger {
         } else {
           if (this.LOG_DELETE_OLD_EVENT_LOGS) {
             const data = { 
-              "data":                         "5",
+              "step":                         "5",
               "numDays":                      numDays,
               "fileName":                     info.fileName,
               "deleteFilesOlderThanMS":       deleteFilesOlderThanMS,

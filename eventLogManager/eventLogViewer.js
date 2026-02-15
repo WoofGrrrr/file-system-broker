@@ -1,6 +1,6 @@
-import { FileSystemBrokerAPI } from '../modules/FileSystemBroker/filesystem_broker_api.js';
-import { FsbOptions          } from '../modules/options.js';
 import { Logger              } from '../modules/logger.js';
+import { FsbOptions          } from '../modules/options.js';
+import { FileSystemBrokerAPI } from '../modules/FileSystemBroker/filesystem_broker_api.js';
 import { parseDocumentLocation, getI18nMsg, formatMsToDateTime24HR , formatMsToDateTime12HR } from '../modules/utilities.js';
 
 
@@ -31,6 +31,8 @@ class EventLogViewer {
     this.logFileInfo;
     this.canceled      = false;
 
+    this.logLineItemClickTimeout   = null;  // for detecting single- vs double-click
+    this.LOG_LINE_ITEM_CLICK_DELAY = 500;   // 500ms, 1/2 second (the JavaScript runtime does not guarantee this time - it's single-threaded)
 
     this.i18nText_filterByTimeHourSelect_optionNone   = getI18nMsg( "fsbEventLogViewer_filterByTimeHourSelect_optionNone",   "--"         );
     this.i18nText_filterByTimeMinuteSelect_optionNone = getI18nMsg( "fsbEventLogViewer_filterByTimeMinuteSelect_optionNone", "--"         );
@@ -170,6 +172,8 @@ class EventLogViewer {
 
     const doneBtn = document.getElementById("fsbEventLogViewerDoneButton");
     doneBtn.addEventListener("click", (e) => this.doneButtonClicked(e));
+
+////document.addEventListener( "click",  (e) => this.somethingClicked(e) );  // something got clicked
   }
 
 
@@ -423,6 +427,8 @@ class EventLogViewer {
   buildLogLineItemUI(logLineData) {
     const logLineItemTR = document.createElement('tr');
       logLineItemTR.classList.add('event-line-item');
+      logLineItemTR.addEventListener( "click",    (e) => this.logLineItemClicked(e)       );
+      logLineItemTR.addEventListener( "dblclick", (e) => this.logLineItemDoubleClicked(e) );
 
       // these will make filtering easier
       logLineItemTR.setAttribute( 'timeMS',  logLineData.timeMS  );
@@ -556,6 +562,95 @@ class EventLogViewer {
     option.value       = value;
     option.textContent = text;
     select.appendChild(option);
+  }
+
+
+
+  // a event-line-item (TR or TD) was clicked
+  async logLineItemClicked(e) {
+    if (! e) return;
+
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
+    this.debug(`-- e.target.tagName="${e.target.tagName}"`);
+
+    if (e.target.tagName == 'TR' || e.target.tagName == 'TD') {
+      this.debug("-- TR or TD Clicked");
+
+      // there's a reason for not simply using closest('tr') but I just don't remember
+      let trElement;
+      if (e.target.tagName == 'TR') {
+        trElement = e.target;
+      } else if (e.target.tagName == 'TD' && e.target.parentElement && e.target.parentElement.tagName == 'TR') {
+        trElement = e.target.parentElement;
+      }
+
+      if (! trElement) {
+        this.debug("-- Did NOT get our TR");
+      } else if (! trElement.classList.contains("event-line-item")) {
+        this.debug("-- TR does NOT have class 'event-line-item'");
+      } else {
+        this.debug(`-- Got TR.event-line-item LOG_LINE_ITEM_CLICK_DELAY=${this.LOG_LINE_ITEM_CLICK_DELAY}`);
+        this.logLineItemClickTimeout = setTimeout( () => this.logLineItemSingleClicked( e, trElement, Date.now() ), this.LOG_LINE_ITEM_CLICK_DELAY );
+      }
+    }
+  }
+
+  async logLineItemSingleClicked(e, trElement, timerSetMS) {
+    const timeout = this.logLineItemClickTimeout;
+    this.logLineItemClickTimeout = null;
+    if (timeout) {
+      clearTimeout(timeout);
+
+      const wasSelected = trElement.classList.contains('selected');
+
+      this.debug(`-- GOT SINGLE-CLICK ON TR: wasSelected=${wasSelected}`);
+
+      if (! wasSelected) {
+        trElement.classList.add('selected');
+      } else {
+        trElement.classList.remove('selected');
+      }
+
+//////this.updateUIOnSelectionChanged();
+    }
+  }
+
+  async logLineItemDoubleClicked(e) {
+    const timeout = this.logLineItemClickTimeout;
+    this.logLineItemClickTimeout = null;
+    if (timeout) {
+      clearTimeout(timeout); // why is clearTimeout() not working???
+      this.debug("-- GOT DOUBLE-CLICK -- cleared Timeout", timeout);
+    }
+
+    if (! e) return;
+
+    this.debug(`-- GOT DOUBLE-CLICK -- e.target.tagName="${e.target.tagName}" e.detail=${e.detail}`);
+
+    if (e.detail == 2 && (e.target.tagName == 'TR' || e.target.tagName == 'TD')) {
+      this.debug("-- TR or TD Double-Clicked");
+
+      // there's a reason for not simply using closest('tr') but I just don't remember
+      let trElement;
+      if (e.target.tagName == 'TR') {
+        trElement = e.target;
+      } else if (e.target.tagName == 'TD' && e.target.parentElement && e.target.parentElement.tagName == 'TR') {
+        trElement = e.target.parentElement;
+      }
+
+      if (! trElement) {
+        this.error("-- NO TR ELEMENT");
+      } else {
+        this.debug("-- GOT TR ELEMENT");
+//      if (! trElement.classList.contains("event-line-item")) {
+//        this.error("-- TR ELEMENT DOES NOT HAVE CLASS 'event-line-item'");
+//      } else {
+//////////await this.showEventLogViewer(fileName);
+//      }
+      }
+    }
   }
 
 

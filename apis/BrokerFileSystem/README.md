@@ -77,19 +77,25 @@ __Sub-directories are currently not supported.__
   + readFile - return the contents of a file as a strimg
   + readJSONFile - return the contents of a JSON file as text
   + readObjectFromJSONFile - return the JSON contents of a JSON file as a JavaScript Object
-  + makeDirectory - make the directory for the calling extension
+  + makeDirectory - make the directory for the calling extension.  Cannot make sub-directories.
   + getFileInfo - return a FileInfo object containing the attributes for a file
   + renameFile - rename a Regular file
   + deleteFile - delete a Regular file
   + deleteDirectory - delete a Directory
   + listFiles - list the fileNames of only Regular files in a directory
-  + listFileInfo - list FileInfo ibjects for only the Regular files in a directory
+  + listFileInfo - list FileInfo objects for only the Regular files in a directory
   + list - list fileNames of all items - Reguar files, Directories, and "other" - in a directory
   + listInfo - list FileInfo ibjects for all items - Reguar files, Directories, and "other" - in a directory
   + getFullPathName - return the full system pathName for a file
   + isValidFileName - is a fileName valid?
   + isValidDirectoryName - is a directoryName valid?
   + getFileSystemPathName - return the full pathName of the system directory on which this API operates
+  + stats - returns a JavaScript object that contains information about the directory for an extension and its contents
+  + fsbListInfo - return a list of FileInfo objects for all items - Reguar files, Directories, and "other" - in the directory on which this API operates (INTERNAL USE ONLY!!!)
+  + fsbList - list of the fileNames of all items - Reguar files, Directories, and "other" - in the directory on which this API operates (INTERNAL USE ONLY!!!)
+
+<br>
+<br>
 
 ### exists(extensionId [, fileName])
 
@@ -104,6 +110,8 @@ __Sub-directories are currently not supported.__
     or if the file's full pathName is > 255 characters,
     or if there is an operating system error.
 
+<br>
+<br>
 
 ### isRegularFile(extensionId, fileName)
 
@@ -115,6 +123,8 @@ __Sub-directories are currently not supported.__
     or if the file's full pathName is > 255 characters,
     or if there is an operating system error.
 
+<br>
+<br>
 
 ### isDirectory(extensionId [, directoryName])
 
@@ -132,6 +142,8 @@ __Sub-directories are currently not supported.__
 
     Sub-directories are currently not supported.
 
+<br>
+<br>
 
 ### hasFiles(extensionId [, directoryName])
 
@@ -152,6 +164,8 @@ __Sub-directories are currently not supported.__
 
     Sub-directories are currently not supported.
 
+<br>
+<br>
 
 ### getFileCount(extensionId [, directoryName])
 
@@ -172,6 +186,8 @@ __Sub-directories are currently not supported.__
 
     Sub-directories are currently not supported.
 
+<br>
+<br>
 
 ### readFile(extensionId, fileName)
 
@@ -184,6 +200,8 @@ __Sub-directories are currently not supported.__
     or if the file does not exist,
     or if there is an operating system error. 
 
+<br>
+<br>
 
 ### readJSONFile(extensionId, fileName)
 
@@ -196,6 +214,8 @@ __Sub-directories are currently not supported.__
     or if the file does not exist,
     or if there is an operating system error. 
 
+<br>
+<br>
 
 ### readObjectFromJSONFile(extensionId, fileName)
 
@@ -208,6 +228,8 @@ __Sub-directories are currently not supported.__
     or if the file does not exist,
     or if there is an operating system error. 
 
+<br>
+<br>
 
 ###  writeFile(extensionId, fileName, data [,writeMode])
 
@@ -230,6 +252,8 @@ __Sub-directories are currently not supported.__
     or if the file's existence does not match the writeMode criteria listed above,
     or if there is an operating system error.
 
+<br>
+<br>
 
 ###  replaceFile(extensionId, fileName, data)
 
@@ -245,6 +269,8 @@ __Sub-directories are currently not supported.__
     or if the file's full pathName > 255 characters,
     or if there is an operating system error.
 
+<br>
+<br>
 
 ###  appendToFile(extensionId, fileName, data)
 
@@ -261,6 +287,8 @@ __Sub-directories are currently not supported.__
     or if the file's full pathName > 255 characters,
     or if there is an operating system error.
 
+<br>
+<br>
 
 ###  writeJSONFile(extensionId, fileName, data [,writeMode])
 
@@ -280,6 +308,8 @@ __Sub-directories are currently not supported.__
     or if the file's existence does not match the writeMode criteria listed above,
     or if there is an operating system error.
 
+<br>
+<br>
 
 ###  writeObjectToJSONFile(extensionId, fileName, object [,writeMode])
 
@@ -299,6 +329,8 @@ __Sub-directories are currently not supported.__
     or if the file's existence does not match the writeMode criteria listed above,
     or if there is an operating system error.
 
+<br>
+<br>
 
 ###  deleteFile(extensionId, fileName)
 
@@ -313,6 +345,8 @@ __Sub-directories are currently not supported.__
     or if the file is not a Regular File,
     or if there is an operating system error.
 
+<br>
+<br>
 
 ###  deleteDirectory(extensionId [, directoryName] [, recursive])
 
@@ -342,6 +376,8 @@ __Sub-directories are currently not supported.__
 
     Sub-directories are currently not supported.
 
+<br>
+<br>
 
 ###  makeDirectory(extensionId)
 
@@ -357,6 +393,8 @@ __Sub-directories are currently not supported.__
     Sub-directories are currently not supported, thus a
     directoryName parameter is not currently supported.
 
+<br>
+<br>
 
 ###  getFileInfo(extensionId [, fileName])
 
@@ -381,6 +419,8 @@ __Sub-directories are currently not supported.__
     or if the file's full pathName is > 255 characters,
     or if there is an operating system error.
 
+<br>
+<br>
 
 ###  renameFile(extensionId, fromFileName, toFileName[, overwrite])
 
@@ -397,6 +437,8 @@ __Sub-directories are currently not supported.__
     or if overwrite is not true and the file named by toFileName already exists,
     or if there is an operating system error.
 
+<br>
+<br>
 
 
 ###  listFiles(extensionId [, matchGLOB])
@@ -419,6 +461,8 @@ __Sub-directories are currently not supported.__
     Sub-directories are currently not supported, thus a
     directoryName parameter is not currently supported.
 
+<br>
+<br>
 
 ###  listFileInfo(extensionId [, matchGLOB])
 
@@ -450,6 +494,8 @@ __Sub-directories are currently not supported.__
     Sub-directories are currently not supported, thus a
     directoryName parameter is not currently supported.
 
+<br>
+<br>
 
 ###  list(extensionId [, matchGLOB])
 
@@ -471,6 +517,8 @@ __Sub-directories are currently not supported.__
     Sub-directories are currently not supported, thus a
     directoryName parameter is not currently supported.
 
+<br>
+<br>
 
 ###  listInfo(extensionId [, matchGLOB])
 
@@ -502,6 +550,8 @@ __Sub-directories are currently not supported.__
     Sub-directories are currently not supported, thus a
     directoryName parameter is not currently supported.
 
+<br>
+<br>
 
 ###  getFullPathName(extensionId [, fileName])
 
@@ -514,16 +564,199 @@ __Sub-directories are currently not supported.__
     Throws if the extensionId or fileName is invalid,
     or if there is an operating system error.
 
+<br>
+<br>
 
 ###  isValidFileName(fileName)
 
     Returns true if the given fileName is a valid file name.
 
+<br>
+<br>
 
 ###  isValidDirectoryName(directoryName)
 
     Returns true if the given directoryName is a valid directory name.
 
+<br>
+<br>
+
 ### getFileSystemPathName
 
     Returns the full pathName of the system directory on which this API operates.
+
+<br>
+<br>
+
+### stats( extensionId [, 'parameters': ['includeChildInfo': boolean] ['types': array of String] ] )
+
+    Returns a JavaScript object that contains information
+    about the directory and the items in the directory
+    for the given extensionId.
+<br>
+<br>
+    The 'parameters' parameter is optional. If it is not
+    provided, information for each child is NOT included
+    in the result.
+<br>
+<br>
+    The parameters.includeChildInfo parameter is optional.
+    If it is not provided, it defaults to false. If true, the
+    object returned includes information for each child
+    item.
+<br>
+<br>
+    The parameters.types parameter is optional and is allowed
+    only when parameters.includeChildInfo is true.  This is
+    an array of String containing one or more item types:
+<br>
+      'regular', 'directory', 'other', 'unknown', 'error'
+<br>
+    If given, only the information for items whose type is
+    listed in this array will be returned.
+<br>
+    The default is ALL types.
+<br>
+<br>
+    The returned object:
+```
+      { extensionId: {
+          stats: {
+                   'includeChildInfo':               boolean:          incoming parameter
+                   'types':                          array of string:  incoming parameter (OPTIONAL: only if includeChildInfo is true)
+                   'dirName':                        string:           directory name
+                   'dirPath':                        string:           directory fulle pathName
+                   'children':                       integer:          total number of child items
+                   'regular':                        integer:          number of child items with type 'regular'
+                   'directory':                      integer:          number of child items with type 'directory'
+                   'other':                          integer:          number of child items with type 'other'
+                   'unknown':                        integer:          number of child items with type none of the three above
+                   'error':                          integer:          number of child items whose types could not be determined
+                   'earliestChildCreationTime':      integer:          earliest Creation Time      of all child items (OS-dependent) in MS (undefined if no children)
+                   'latestChildCreationTime':        integer:          latest   Creation Time      of all child items (OS-dependent) in MS (undefined if no children)
+                   'earliestChildLastAccessedTime':  integer:          earliest Last Accessed Time of all child items (OS-dependent) in MS (undefined if no children)
+                   'latestChildLastAccessedTime':    integer:          latest   Last Accessed Time of all child items (OS-dependent) in MS (undefined if no children)
+                   'earliestChildLastModifiedTime':  integer:          earliest Last Modified Time of all child items (OS-dependent) in MS (undefined if no children)
+                   'latestChildLastModifiedTime':    integer:          latest   Last Modified Time of all child items (OS-dependent) in MS (undefined if no children)
+                   'smallestSize':                   integer:          smallest size (bytes) of all child items with type 'regular' (-1 if none)
+                   'largestSize':                    integer:          largest size (bytes) of all child items with type 'regular' (-1 if none)
+                   'totalSize':                      integer:          total of sizes (bytes) of all child items with type 'regular'
+                   [ 'childInfo': ]                  array of object {                 (OPTIONAL: only if includeChildInfo is true)
+                                                       'name'                string:   item name
+                                                       'type'                string:   item type - 'regular', 'directory', 'other', 'unknown', 'error'
+                                                       'path'                string:   item full pathName
+                                                       'creationTime':       integer:  Creation Time      (OS-dependent) in MS
+                                                       'lastAccessedTime':   integer:  Last Accessed Time (OS-dependent) in MS
+                                                       'lastModifiedTime':   integer:  Last Modified Time (OS-dependent) in MS
+                                                       [ 'size': ]           integer:  file size (bytes) (OPTIONAL: only for items with type 'regular')
+                                                     }
+                 }
+          }
+      }
+
+```
+<br>
+<br>
+    Throws if a parameter is invalid,
+<br>
+    or if the extension directory's full pathName is > 255 characters,
+<br>
+    or if there is an operating system error.
+
+<br>
+<br>
+<br>
+
+###  fsbListInfo( [ parameters: { ['matchGLOB': matchGLOB] ['types': types] } ] ) (INTERNAL USE ONLY)
+
+    Returns an array of FileInfo objects listing the File Info for the
+    items (all types) in the top-directory on which this extension
+    operates.
+<br>
+<br>
+    If the optional parameters.matchGLOB parameter is given, only
+    the information for items whose names match the given GLOB will
+    be returned.
+<br>
+<br>
+    If the optional parameters.types array parameter is given,
+    only the information for items whose type is listed in the
+    parameters.types array will be returned. paramaters.types
+    is an array of one or more of:
+<br>
+      'regular', 'directory, 'other'.
+<br>
+    The default it ALL types.
+<br>
+<br>
+    If the Directory does not exist, it will be created and an
+    empty array is returned.
+<br>
+<br>
+
+    FileInfo has these entries:
+    - fileName:     the fileName
+    - path:         the full pathname
+    - type:         "regular", "directory", or "other"
+    - size:         for a Regular File, the size in bytes, otherwise -1
+    - creationTime  (Windows and MacOS only): milliseconds since 1970-01-01T00:00:00.000Z
+    - lastAccessed: milliseconds since 1970-01-01T00:00:00.000Z
+    - lastModified: milliseconds since 1970-01-01T00:00:00.000Z
+    - permissions:  expressed as a UNIX file mode (for Windows, the 'user', 'group', and 'other' parts will always be identical)
+<br>
+<br>
+    Throws if the directory's full pathName is > 255 characters,
+<br>
+    or if parameters is provided and is not an object,
+<br>
+    or if paramaters.matchGLOB is provided and is not a String,
+<br>
+    or if paramaters.types is provided and is not an Array that contains the expected values,
+<br>
+    or if there is an operating system error.
+<br>
+
+<br>
+<br>
+<br>
+
+###  fsbList( [ parameters: { ['matchGLOB': matchGLOB] ['types': types] } ] ) (INTERNAL USE ONLY)
+
+    Returns an array listing information for the items
+    in the top-directory on which this extension operates.
+<br>
+<br>
+    If the optional parameters.matchGLOB parameter is given, only
+    the information for items whose names match the given GLOB will
+    be returned.
+<br>
+<br>
+    If the optional parameters.types array parameter is given,
+    only the information for items whose type is listed in the
+    parameters.types array will be returned. paramaters.types
+    is an array of one or more of:
+<br>
+      'regular', 'directory, 'other'.
+<br>
+    The default it ALL types.
+<br>
+<br>
+    The items in the returned array are object:
+<br>
+    { 'name': itemName, 'type' itemType }
+<br>
+<br>
+    If the Directory does not exist, it will be created and an
+    empty array is returned.
+<br>
+<br>
+    Throws if the directory's full pathName is > 255 characters,
+<br>
+    or if parameters is provided and is not an object,
+<br>
+    or if paramaters.matchGLOB is provided and is not a String,
+<br>
+    or if paramaters.types is provided and is not an Array that contains the expected values,
+<br>
+    or if there is an operating system error.
+<br>

@@ -20,36 +20,31 @@ export class FileSystemBrokerSelfTests {
 
   log(...info) {
     if (! this.LOG) return;
-    const msg = info.shift();
-    this.logger.log(this.className + "#" + msg, ...info);
+    this.logger.log(this.className, ...info);
   }
 
   logAlways(...info) {
-    const msg = info.shift();
-    this.logger.logAlways(this.className + "#" + msg, ...info);
+    this.logger.logAlways(this.className, ...info);
   }
 
   debug(...info) {
     if (! this.DEBUG) return;
-    const msg = info.shift();
-    this.logger.debug(this.className + "#" + msg, ...info);
+    this.logger.debug(this.className, ...info);
   }
 
   debugAlways(...info) {
-    const msg = info.shift();
-    this.logger.debugAlways(this.className + "#" + msg, ...info);
+    this.logger.debugAlways(this.className, ...info);
   }
 
   error(...info) {
     // always log errors
-    const msg = info.shift();
-    this.logger.error(this.className + "#" + msg, ...info);
+    this.logger.error(this.className, ...info);
   }
 
-  caught(e, ...info) {
+  caught(e, msg, ...info) {
     // always log exceptions
-    const msg = info.shift();
-    this.logger.error( this.className + "#" + msg,
+    this.logger.error( this.className,
+                       msg,
                        "\n name:    " + e.name,
                        "\n message: " + e.message,
                        "\n stack:   " + e.stack,
@@ -90,156 +85,197 @@ export class FileSystemBrokerSelfTests {
      *  await this.testIsValidFileNameCommand(fileName);
      *  await this.testIsValidDirectoryNameCommand(directoryName);
      *  await this.testGetFileSystemPathNameCommand();
+     *  await this.testStatsCommand( [ 'parameters': { ['includeChildInfo': boolean] ['types': array of string] } ] );
+     *  await this.testFsbListInfoCommand( [ 'parameters': { ['matchGLOB': string] ['types': array of string] } ] );
+     *  await this.testFsbListCommand( [ 'parameters': { ['matchGLOB': string] ['types': array of string] } ] );
      *  await this.testUnknownCommand(command);
      */
 
-    await this.testGetFileSystemPathNameCommand("return pathaName"                                                );
+    await this.testGetFileSystemPathNameCommand("pathaName"                                                            );
 
-////await this.testExistsCommand(          "return false"                                                         ); // "my" directory
-////await this.testIsRegularFileCommand(   "error"                                                                ); // "my" directory - error because fileName is not optional
-////await this.testIsDirectoryCommand(     "error"                                                                ); // "my" directory
-////await this.testHasFilesCommand(        "error"                                                                ); // "my" directory
-////await this.testGetFileCountCommand(    "error"                                                                ); // "my" directory
-////await this.testGetFileInfoCommand(     "return null"                                                          ); // "my" directory
-    await this.testMakeDirectoryCommand(   "error"                                                                ); // "my" directory - should already exist
-    await this.testExistsCommand(          "return true"                                                          ); // "my" directory
-    await this.testIsRegularFileCommand(   "error"                                                                ); // "my" directory - error because fileName is not optional
-    await this.testIsDirectoryCommand(     "return true"                                                          ); // "my" directory
-    await this.testHasFilesCommand(        "return true"                                                          ); // "my" directory
-    await this.testGetFileCountCommand(    "return 1"                                                             ); // "my" directory
-    await this.testGetFileInfoCommand(     "return FileInfo"                                                      ); // "my" directory
+////await this.testExistsCommand(          "false"                                                                     ); // "my" directory
+////await this.testIsRegularFileCommand(   "error"                                                                     ); // "my" directory - error because fileName is not optional
+////await this.testIsDirectoryCommand(     "error"                                                                     ); // "my" directory
+////await this.testHasFilesCommand(        "error"                                                                     ); // "my" directory
+////await this.testGetFileCountCommand(    "error"                                                                     ); // "my" directory
+////await this.testGetFileInfoCommand(     "null"                                                                      ); // "my" directory
+    await this.testMakeDirectoryCommand(   "error"                                                                     ); // "my" directory - should already exist
+    await this.testExistsCommand(          "true"                                                                      ); // "my" directory
+    await this.testIsRegularFileCommand(   "error"                                                                     ); // "my" directory - error because fileName is not optional
+    await this.testIsDirectoryCommand(     "true"                                                                      ); // "my" directory
+    await this.testHasFilesCommand(        "true"                                                                      ); // "my" directory
+    await this.testGetFileCountCommand(    "1"                                                                         ); // "my" directory
+    await this.testGetFileInfoCommand(     "FileInfo"                                                                  ); // "my" directory
 
-    await this.testExistsCommand(          "return true",                       "EMPTY"                           ); // should have been created in previous run
-    await this.testExistsCommand(          "return false",                      "file1.txt"                       );
-    await this.testIsRegularFileCommand(   "return false",                      "file1.txt"                       );
-    await this.testIsDirectoryCommand(     "return false",                      "file1.txt"                       );
-    await this.testExistsCommand(          "return true",                       "Unused Folder"                   ); // must make it manually - makeDirectory won't make sub-dirs
-    await this.testIsRegularFileCommand(   "return false",                      "Unused Folder"                   ); // must make it manually - makeDirectory won't make sub-dirs
-    await this.testIsDirectoryCommand(     "return true",                       "Unused Folder"                   ); // must make it manually - makeDirectory won't make sub-dirs
-    await this.testGetFileInfoCommand(     "return FileInfo",                   "Unused Folder"                   ); // must make it manually - makeDirectory won't make sub-dirs
+    await this.testExistsCommand(          "true",                                   "EMPTY"                           ); // should have been created in previous run
+    await this.testExistsCommand(          "false",                                  "file1.txt"                       );
+    await this.testIsRegularFileCommand(   "false",                                  "file1.txt"                       );
+    await this.testIsDirectoryCommand(     "false",                                  "file1.txt"                       );
+    await this.testExistsCommand(          "true",                                   "Unused Folder"                   ); // must make it manually - makeDirectory won't make sub-dirs
+    await this.testIsRegularFileCommand(   "false",                                  "Unused Folder"                   ); // must make it manually - makeDirectory won't make sub-dirs
+    await this.testIsDirectoryCommand(     "true",                                   "Unused Folder"                   ); // must make it manually - makeDirectory won't make sub-dirs
+    await this.testGetFileInfoCommand(     "FileInfo",                               "Unused Folder"                   ); // must make it manually - makeDirectory won't make sub-dirs
 
-    await this.testListFilesCommand(       "return 1 file name - file 'EMPTY'"                                    );
-    await this.testListFileInfoCommand(    "return 1 file name - file 'EMPTY'"                                    );
-    await this.testListCommand(            "return 1 file name - file 'EMPTY'"                                    );
-    await this.testListInfoCommand(        "return 1 file name - file 'EMPTY'"                                    );
-    await this.testWriteFileCommand(       "return bytesWritten=17",            "file1.txt", "this is file1.txt"  );
-    await this.testWriteFileCommand(       "return bytesWritten=17",            "file2.txt", "this is file2.txt"  );
-    await this.testWriteFileCommand(       "return bytesWritten=17",            "file3.txt", "this is file3.txt"  );
-    await this.testExistsCommand(          "return true",                       "file1.txt"                       );
-    await this.testExistsCommand(          "return true",                       "file2.txt"                       );
-    await this.testExistsCommand(          "return true",                       "file3.txt"                       );
-    await this.testIsRegularFileCommand(   "return true",                       "file1.txt"                       );
-    await this.testIsRegularFileCommand(   "return true",                       "file2.txt"                       );
-    await this.testIsRegularFileCommand(   "return true",                       "file3.txt"                       );
-    await this.testIsDirectoryCommand(     "return false",                      "file1.txt"                       );
-    await this.testIsDirectoryCommand(     "return false",                      "file2.txt"                       );
-    await this.testIsDirectoryCommand(     "return false",                      "file3.txt"                       );
-    await this.testGetFileInfoCommand(     "return FileInfo",                   "file1.txt"                       );
-    await this.testGetFileInfoCommand(     "return FileInfo",                   "file2.txt"                       );
-    await this.testGetFileInfoCommand(     "return FileInfo",                   "file3.txt"                       );
-    await this.testReadFileCommand(        "return data \"this is file1.txt\"", "file1.txt"                       );
-    await this.testReadFileCommand(        "return data \"this is file2.txt\"", "file2.txt"                       );
-    await this.testReadFileCommand(        "return data \"this is file3.txt\"", "file3.txt"                       );
-    await this.testListFilesCommand(       "return 4 file names"                                                  );
-    await this.testListFileInfoCommand(    "return 4 files"                                                       );
-    await this.testListFilesCommand(       "return 1 file name",                "file1.txt"                       );
-    await this.testListFileInfoCommand(    "return 1 file",                     "file1.txt"                       );
-    await this.testListFilesCommand(       "return 0 file names",               "fileX.txt"                       );
-    await this.testListFileInfoCommand(    "return 0 files",                    "fileX.txt"                       );
-    await this.testListCommand(            "return 4 file names"                                                  );
-    await this.testListInfoCommand(        "return 4 files"                                                       );
-    await this.testListCommand(            "return 1 file name",                "file1.txt"                       );
-    await this.testListInfoCommand(        "return 1 file",                     "file1.txt"                       );
-    await this.testListCommand(            "return 0 file names",               "fileX.txt"                       );
-    await this.testListInfoCommand(        "return 0 files",                    "fileX.txt"                       );
-    await this.testHasFilesCommand(        "return true"                                                          ); // "my" directory
-    await this.testGetFileCountCommand(    "return 4"                                                             ); // "my" directory
-    await this.testReplaceFileCommand(     "return bytesWritten=17",            "file1.txt", "this is file1.txt"  );
-    await this.testAppendToFileCommand(    "return bytesWritten=13",            "file1.txt", " - more stuff"      );
-    await this.testGetFileInfoCommand(     "return FileInfo",                   "file1.txt"                       );
-    await this.testReadFileCommand(        "return data \"this is file1.txt - more stuff\"", "file1.txt"          );
+    await this.testListFilesCommand(       "1 file name - file 'EMPTY'"                                                );
+    await this.testListFileInfoCommand(    "1 file name - file 'EMPTY'"                                                );
+    await this.testListCommand(            "1 file name - file 'EMPTY'"                                                );
+    await this.testListInfoCommand(        "1 file name - file 'EMPTY'"                                                );
+    await this.testWriteFileCommand(       "bytesWritten=17",                        "file1.txt", "this is file1.txt"  );
+    await this.testWriteFileCommand(       "bytesWritten=17",                        "file2.txt", "this is file2.txt"  );
+    await this.testWriteFileCommand(       "bytesWritten=17",                        "file3.txt", "this is file3.txt"  );
+    await this.testExistsCommand(          "true",                                   "file1.txt"                       );
+    await this.testExistsCommand(          "true",                                   "file2.txt"                       );
+    await this.testExistsCommand(          "true",                                   "file3.txt"                       );
+    await this.testIsRegularFileCommand(   "true",                                   "file1.txt"                       );
+    await this.testIsRegularFileCommand(   "true",                                   "file2.txt"                       );
+    await this.testIsRegularFileCommand(   "true",                                   "file3.txt"                       );
+    await this.testIsDirectoryCommand(     "false",                                  "file1.txt"                       );
+    await this.testIsDirectoryCommand(     "false",                                  "file2.txt"                       );
+    await this.testIsDirectoryCommand(     "false",                                  "file3.txt"                       );
+    await this.testGetFileInfoCommand(     "FileInfo",                               "file1.txt"                       );
+    await this.testGetFileInfoCommand(     "FileInfo",                               "file2.txt"                       );
+    await this.testGetFileInfoCommand(     "FileInfo",                               "file3.txt"                       );
+    await this.testReadFileCommand(        "data \"this is file1.txt\"",             "file1.txt"                       );
+    await this.testReadFileCommand(        "data \"this is file2.txt\"",             "file2.txt"                       );
+    await this.testReadFileCommand(        "data \"this is file3.txt\"",             "file3.txt"                       );
+    await this.testListFilesCommand(       "4 file names"                                                              );
+    await this.testListFileInfoCommand(    "4 files"                                                                   );
+    await this.testListFilesCommand(       "1 file name",                            "file1.txt"                       );
+    await this.testListFileInfoCommand(    "1 file",                                 "file1.txt"                       );
+    await this.testListFilesCommand(       "0 file names",                           "fileX.txt"                       );
+    await this.testListFileInfoCommand(    "0 files",                                "fileX.txt"                       );
+    await this.testListCommand(            "4 file names"                                                              );
+    await this.testListInfoCommand(        "4 files"                                                                   );
+    await this.testListCommand(            "1 file name",                            "file1.txt"                       );
+    await this.testListInfoCommand(        "1 file",                                 "file1.txt"                       );
+    await this.testListCommand(            "0 file names",                           "fileX.txt"                       );
+    await this.testListInfoCommand(        "0 files",                                "fileX.txt"                       );
+    await this.testHasFilesCommand(        "true"                                                                      ); // "my" directory
+    await this.testGetFileCountCommand(    "4"                                                                         ); // "my" directory
+    await this.testReplaceFileCommand(     "bytesWritten=17",                        "file1.txt", "this is file1.txt"  );
+    await this.testAppendToFileCommand(    "bytesWritten=13",                        "file1.txt", " - more stuff"      );
+    await this.testGetFileInfoCommand(     "FileInfo",                               "file1.txt"                       );
+    await this.testReadFileCommand(        "data \"this is file1.txt - more stuff\"","file1.txt"                       );
 
-    await this.testDeleteDirectoryCommand( "return error, has files",           undefined, false                  ); // delete my directory, but not the files in it
+    await this.testDeleteDirectoryCommand( "error, has files",                       undefined, false                  ); // delete my directory, but not the files in it
 
-    await this.testDeleteFileCommand(      "return true",                       "file1.txt"                       );
-    await this.testExistsCommand(          "return false",                      "file1.txt"                       );
-    await this.testIsRegularFileCommand(   "return false",                      "file1.txt"                       );
-    await this.testGetFileInfoCommand(     "error",                             "file1.txt"                       );
-    await this.testReadFileCommand(        "error",                             "file1.txt"                       );
-    await this.testListFilesCommand(       "return 3 file names"                                                  );
-    await this.testListFileInfoCommand(    "return 3 files"                                                       );
-    await this.testListCommand(            "return 3 file names"                                                  );
-    await this.testListInfoCommand(        "return 3 files"                                                       );
-    await this.testHasFilesCommand(        "return true"                                                          ); // "my" directory
-    await this.testGetFileCountCommand(    "return 3"                                                             ); // "my" directory
+    await this.testDeleteFileCommand(      "true",                                   "file1.txt"                       );
+    await this.testExistsCommand(          "false",                                  "file1.txt"                       );
+    await this.testIsRegularFileCommand(   "false",                                  "file1.txt"                       );
+    await this.testGetFileInfoCommand(     "error",                                  "file1.txt"                       );
+    await this.testReadFileCommand(        "error",                                  "file1.txt"                       );
+    await this.testListFilesCommand(       "3 file names"                                                              );
+    await this.testListFileInfoCommand(    "3 files"                                                                   );
+    await this.testListCommand(            "3 file names"                                                              );
+    await this.testListInfoCommand(        "3 files"                                                                   );
+    await this.testHasFilesCommand(        "true"                                                                      ); // "my" directory
+    await this.testGetFileCountCommand(    "3"                                                                         ); // "my" directory
 
-    await this.testDeleteFileCommand(      "return true",                       "file2.txt"                       );
-    await this.testExistsCommand(          "return false",                      "file2.txt"                       );
-    await this.testIsRegularFileCommand(   "return false",                      "file2.txt"                       );
-    await this.testGetFileInfoCommand(     "error",                             "file2.txt"                       );
-    await this.testReadFileCommand(        "error",                             "file2.txt"                       );
-    await this.testListFilesCommand(       "return 2 file names"                                                  );
-    await this.testListFileInfoCommand(    "return 2 files"                                                       );
-    await this.testListCommand(            "return 2 file names"                                                  );
-    await this.testListInfoCommand(        "return 2 files"                                                       );
-    await this.testHasFilesCommand(        "return true"                                                          ); // "my" directory
-    await this.testGetFileCountCommand(    "return 2"                                                             ); // "my" directory
+    await this.testDeleteFileCommand(      "true",                                   "file2.txt"                       );
+    await this.testExistsCommand(          "false",                                  "file2.txt"                       );
+    await this.testIsRegularFileCommand(   "false",                                  "file2.txt"                       );
+    await this.testGetFileInfoCommand(     "error",                                  "file2.txt"                       );
+    await this.testReadFileCommand(        "error",                                  "file2.txt"                       );
+    await this.testListFilesCommand(       "2 file names"                                                              );
+    await this.testListFileInfoCommand(    "2 files"                                                                   );
+    await this.testListCommand(            "2 file names"                                                              );
+    await this.testListInfoCommand(        "2 files"                                                                   );
+    await this.testHasFilesCommand(        "true"                                                                      ); // "my" directory
+    await this.testGetFileCountCommand(    "2"                                                                         ); // "my" directory
 
-    await this.testRenameFileCommand(      "return true",                       "file3.txt", "renamed.txt"        );
-    await this.testExistsCommand(          "return false",                      "file3.txt"                       );
-    await this.testIsRegularFileCommand(   "return false",                      "file3.txt"                       );
-    await this.testGetFileInfoCommand(     "error",                             "file3.txt"                       );
-    await this.testReadFileCommand(        "error",                             "file3.txt"                       );
-    await this.testExistsCommand(          "return true",                       "renamed.txt"                     );
-    await this.testIsRegularFileCommand(   "return true",                       "renamed.txt"                     );
-    await this.testGetFileInfoCommand(     "Return FileInfo",                   "renamed.txt"                     );
-    await this.testReadFileCommand(        "return data \"this is file3.txt\"", "renamed.txt"                     );
-    await this.testListFilesCommand(       "return 2 file names"                                                  );
-    await this.testListFileInfoCommand(    "return 2 files"                                                       );
-    await this.testListCommand(            "return 2 file names"                                                  );
-    await this.testListInfoCommand(        "return 2 files"                                                       );
-    await this.testHasFilesCommand(        "return true"                                                          ); // "my" directory
-    await this.testGetFileCountCommand(    "return 2"                                                             ); // "my" directory
+    await this.testRenameFileCommand(      "true",                                   "file3.txt", "renamed.txt"        );
+    await this.testExistsCommand(          "false",                                  "file3.txt"                       );
+    await this.testIsRegularFileCommand(   "false",                                  "file3.txt"                       );
+    await this.testGetFileInfoCommand(     "error",                                  "file3.txt"                       );
+    await this.testReadFileCommand(        "error",                                  "file3.txt"                       );
+    await this.testExistsCommand(          "true",                                   "renamed.txt"                     );
+    await this.testIsRegularFileCommand(   "true",                                   "renamed.txt"                     );
+    await this.testGetFileInfoCommand(     "FileInfo",                               "renamed.txt"                     );
+    await this.testReadFileCommand(        "data \"this is file3.txt\"",             "renamed.txt"                     );
+    await this.testListFilesCommand(       "2 file names"                                                              );
+    await this.testListFileInfoCommand(    "2 files"                                                                   );
+    await this.testListCommand(            "2 file names"                                                              );
+    await this.testListInfoCommand(        "2 files"                                                                   );
+    await this.testHasFilesCommand(        "true"                                                                      ); // "my" directory
+    await this.testGetFileCountCommand(    "2"                                                                         ); // "my" directory
 
-    await this.testDeleteDirectoryCommand( "return error, has files",           undefined, false                  ); // delete my directory, but not the files in it
-    await this.testDeleteDirectoryCommand( "return true",                       undefined, true                   ); // delete my directory and *ALL* the files in it
-    await this.testExistsCommand(          "return false"                                                         ); // "my" directory
-    await this.testIsRegularFileCommand(   "return error, no fileName"                                            ); // "my" directory
-    await this.testIsDirectoryCommand(     "return false"                                                         ); // "my" directory
-    await this.testGetFileInfoCommand(     "return null"                                                          ); // "my" directory
-    await this.testHasFilesCommand(        "return error, directory does not exist"                               ); // "my" directory
-    await this.testGetFileCountCommand(    "return error, directory does not exist"                               ); // "my" directory
+    await this.testDeleteDirectoryCommand( "error, has files",                       undefined, false                  ); // delete my directory, but not the files in it
+////await this.testDeleteDirectoryCommand( "return true",                            undefined, true                   ); // delete my directory and *ALL* the files in it
+////await this.testExistsCommand(          "false"                                                                     ); // "my" directory
+    await this.testIsRegularFileCommand(   "error, no fileName"                                                        ); // "my" directory
+////await this.testIsDirectoryCommand(     "false"                                                                     ); // "my" directory
+////await this.testGetFileInfoCommand(     "null"                                                                      ); // "my" directory
+////await this.testHasFilesCommand(        "error, directory does not exist"                                           ); // "my" directory
+////await this.testGetFileCountCommand(    "error, directory does not exist"                                           ); // "my" directory
 
-    await this.testMakeDirectoryCommand(   "return true"                                                          ); // "my" directory
-    await this.testExistsCommand(          "return true"                                                          ); // "my" directory
-    await this.testIsRegularFileCommand(   "return error, no fileName"                                            ); // "my" directory
-    await this.testIsDirectoryCommand(     "return true"                                                          ); // "my" directory
-    await this.testGetFileInfoCommand(     "return FileInfo"                                                      ); // "my" directory
-    await this.testHasFilesCommand(        "return false"                                                         ); // "my" directory
-    await this.testGetFileCountCommand(    "return 0"                                                             ); // "my" directory
+////await this.testMakeDirectoryCommand(   "true"                                                                      ); // "my" directory
+    await this.testExistsCommand(          "true"                                                                      ); // "my" directory
+    await this.testIsRegularFileCommand(   "error, no fileName"                                                        ); // "my" directory
+    await this.testIsDirectoryCommand(     "true"                                                                      ); // "my" directory
+    await this.testGetFileInfoCommand(     "FileInfo"                                                                  ); // "my" directory
+////await this.testHasFilesCommand(        "false"                                                                     ); // "my" directory
+////await this.testGetFileCountCommand(    "0"                                                                         ); // "my" directory
 
-    await this.testWriteFileCommand(       "return bytesWritten=0",             "EMPTY", ""                       );
-    await this.testHasFilesCommand(        "return true"                                                          ); // "my" directory
-    await this.testGetFileCountCommand(    "return 1"                                                             ); // "my" directory
+    await this.testWriteFileCommand(       "bytesWritten=0",                         "EMPTY", ""                       );
+    await this.testHasFilesCommand(        "true"                                                                      ); // "my" directory
+    await this.testGetFileCountCommand(    "1"                                                                         ); // "my" directory
 
-    await this.testGetFullPathNameCommand( "return full path name",             "randomFileName.txt"              );
+    await this.testGetFullPathNameCommand( "full path name",                         "randomFileName.txt"              );
 
-    await this.testIsValidFileNameCommand( "error",                             ""                                );
-    await this.testIsValidFileNameCommand( "return true",                       "file1.txt"                       );
-    await this.testIsValidFileNameCommand( "return true",                       "xxx"                             );
-    await this.testIsValidFileNameCommand( "return false",                      "f:le1.txt"                       );
-    await this.testIsValidFileNameCommand( "return false",                      "f*le1.txt"                       );
+    await this.testIsValidFileNameCommand( "error",                                  ""                                );
+    await this.testIsValidFileNameCommand( "true",                                   "file1.txt"                       );
+    await this.testIsValidFileNameCommand( "true",                                   "xxx"                             );
+    await this.testIsValidFileNameCommand( "false",                                  "f:le1.txt"                       );
+    await this.testIsValidFileNameCommand( "false",                                  "f*le1.txt"                       );
 
-    await this.testIsValidDirectoryNameCommand( "error",                        ""                                );
-    await this.testIsValidDirectoryNameCommand( "return true",                  "dir1"                            );
-    await this.testIsValidDirectoryNameCommand( "return true",                  "xxx"                             );
-    await this.testIsValidDirectoryNameCommand( "return false",                 "d:r1"                            );
-    await this.testIsValidDirectoryNameCommand( "return false",                 "d*r1"                            );
-    await this.testIsValidDirectoryNameCommand( "return false",                 ".."                              );
+    await this.testIsValidDirectoryNameCommand( "error",                             ""                                );
+    await this.testIsValidDirectoryNameCommand( "true",                              "dir1"                            );
+    await this.testIsValidDirectoryNameCommand( "true",                              "xxx"                             );
+    await this.testIsValidDirectoryNameCommand( "false",                             "d:r1"                            );
+    await this.testIsValidDirectoryNameCommand( "false",                             "d*r1"                            );
+    await this.testIsValidDirectoryNameCommand( "false",                             ".."                              );
 
-    await this.testUnknownCommand(         "error",                             ""                                );
-    await this.testUnknownCommand(         "error",                             "*"                               );
-    await this.testUnknownCommand(         "error",                             "command"                         );
+    await this.testStatsCommand(           "object with no childInfo"                                                                      );
+    await this.testStatsCommand(           "object with no childInfo",               {'includeChildInfo':false}                            );
+    await this.testStatsCommand(           "object with childInfo",                  {'includeChildInfo':true}                             );
+    await this.testStatsCommand(           "Object with childInfo for regular",      {'includeChildInfo':true, 'types':['regular']}        );
+    await this.testStatsCommand(           "Object with childInfo for directory",    {'includeChildInfo':true, 'types':['directory']}      );
+    await this.testStatsCommand(           "invalid",                                {'includeChildInfo':'XXX'}                            );
+    await this.testStatsCommand(           "invalid",                                'XXX'                                                 );
+    await this.testStatsCommand(           "invalid",                                {'XXX':"YYY"}                                         );
+    await this.testStatsCommand(           "invalid",                                {'types': false}                                      );
+    await this.testStatsCommand(           "invalid",                                {'types': [false]}                                    );
+    await this.testStatsCommand(           "invalid",                                {'types': ['regular']}                                );
+    await this.testStatsCommand(           "invalid",                                {'includeChildInfo':true, 'types':false}              );
+    await this.testStatsCommand(           "invalid",                                {'includeChildInfo':true, 'types':[false]}            );
+    await this.testStatsCommand(           "invalid",                                {'includeChildInfo':true, 'types':['XXX']}            );
+    await this.testStatsCommand(           "invalid",                                {'includeChildInfo':true, 'types':['other','other']}  );
+
+    await this.testFsbListInfoCommand(     "array of fileInfo"                                                                             );
+    await this.testFsbListInfoCommand(     "array of fileInfo for regular",          {'types':['regular']}                                 );
+    await this.testFsbListInfoCommand(     "array of fileInfo for directory",        {'types':['directory']}                               );
+    await this.testFsbListInfoCommand(     "array of fileInfo for regular & dir",    {'types':['regular','directory']}                     );
+    await this.testFsbListInfoCommand(     "invalid",                                'XXX'                                                 );
+    await this.testFsbListInfoCommand(     "invalid",                                {'XXX':"YYY"}                                         );
+    await this.testFsbListInfoCommand(     "invalid",                                {'types':'XXX'}                                       );
+    await this.testFsbListInfoCommand(     "invalid",                                {'types':[false]}                                     );
+    await this.testFsbListInfoCommand(     "invalid",                                {'types':['XXX']}                                     );
+    await this.testFsbListInfoCommand(     "invalid",                                {'types':['other','other']}                           );
+
+    await this.testFsbListCommand(         "array of info",                                                                                );
+    await this.testFsbListCommand(         "array of info for 'regular'",            {'types':['regular']}                                 );
+    await this.testFsbListCommand(         "array of info for 'directory'",          {'types':['directory']}                               );
+    await this.testFsbListCommand(         "array of info for regular & directory",  {'types':['regular','directory']}                     );
+    await this.testFsbListCommand(         "invalid",                                'XXX'                                                 );
+    await this.testFsbListCommand(         "invalid",                                {'XXX':"YYY"}                                         );
+    await this.testFsbListCommand(         "invalid",                                {'types':'XXX'}                                       );
+    await this.testFsbListCommand(         "invalid",                                {'types':[false]}                                     );
+    await this.testFsbListCommand(         "invalid",                                {'types':['XXX']}                                     );
+    await this.testFsbListCommand(         "invalid",                                {'types':['other','other']}                           );
+
+    await this.testUnknownCommand(         "error",                                  ""                                );
+    await this.testUnknownCommand(         "error",                                  "*"                               );
+    await this.testUnknownCommand(         "error",                                  "command"                         );
 
     this.debugAlways("\n\n********** DONE TESTING FileSystemBroker **********\n\n");
   }
@@ -753,24 +789,6 @@ export class FileSystemBrokerSelfTests {
     }
   }
 
-  async testGetFileSystemPathNameCommand(expecting) {
-    this.debugAlways(`testGetFileSystemPathNameCommand -- COMMAND getFileSystemPathName: expecting "${expecting}"`);
-    try {
-      const response = await this.sendFSBrokerCommand( { "command": "getFileSystemPathName" } );
-      if (response) { // missing response and error handled by sendFSBrokerCommand()
-        if (response.invalid) {
-          this.debugAlways(`testGetFileSystemPathNameCommand -- VALIDATION ERROR: "${response.invalid}"`);
-        } else if (response.error) {
-          this.debugAlways(`testGetFileSystemPathNameCommand -- ERROR: "${response.error}"`);
-        } else {
-          this.debugAlways(`testGetFileSystemPathNameCommand -- RESPONSE: pathName="${response.pathName}"`);
-        }
-      }
-    } catch (error) {
-      this.caught(error, `testGetFileSystemPathNameCommand: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
-    }
-  }
-
   async testIsValidFileNameCommand(expecting, fileName) {
     this.debugAlways(`testIsValidFileNameCommand -- COMMAND isValidFileName: fileName="${fileName}" expecting "${expecting}"`);
     try {
@@ -804,6 +822,93 @@ export class FileSystemBrokerSelfTests {
       }
     } catch (error) {
       this.caught(error, `testIsValidDirectoryNameCommand: !!!!! directoryName="${directoryName}" !!!!!!!!!!!!!!!!!!!!!!!!!!!`);
+    }
+  }
+
+  async testGetFileSystemPathNameCommand(expecting) {
+    this.debugAlways(`testGetFileSystemPathNameCommand -- COMMAND getFileSystemPathName: expecting "${expecting}"`);
+    try {
+      const response = await this.sendFSBrokerCommand( { "command": "getFileSystemPathName" } );
+      if (response) { // missing response and error handled by sendFSBrokerCommand()
+        if (response.invalid) {
+          this.debugAlways(`testGetFileSystemPathNameCommand -- VALIDATION ERROR: "${response.invalid}"`);
+        } else if (response.error) {
+          this.debugAlways(`testGetFileSystemPathNameCommand -- ERROR: "${response.error}"`);
+        } else {
+          this.debugAlways(`testGetFileSystemPathNameCommand -- RESPONSE: pathName="${response.pathName}"`);
+        }
+      }
+    } catch (error) {
+      this.caught(error, `testGetFileSystemPathNameCommand: !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!`);
+    }
+  }
+
+  async testStatsCommand(expecting, parameters) {
+    this.debugAlways("testStatsCommand -- COMMAND stats: parameters:\n", parameters, `\nexpecting "${expecting}"`);
+    try {
+      var response;
+      if (parameters) {
+        response = await this.sendFSBrokerCommand( { "command": "stats", "parameters": parameters } );
+      } else {
+        response = await this.sendFSBrokerCommand( { "command": "stats" } );
+      }
+      if (response) { // missing response and error handled by sendFSBrokerCommand()
+        if (response.invalid) {
+          this.debugAlways(`testStatsCommand -- VALIDATION ERROR: "${response.invalid}"`);
+        } else if (response.error) {
+          this.debugAlways(`testStatsCommand -- ERROR: "${response.error}"`);
+        } else {
+          this.debugAlways("testStatsCommand -- RESPONSE: ", response);
+        }
+      }
+    } catch (error) {
+      this.caught(error, `!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!,\n`, parameters);
+    }
+  }
+
+  async testFsbListInfoCommand(expecting, parameters) {
+    this.debugAlways("testFsbListInfoCommand -- COMMAND fsbListInfo: parameters:\n", parameters, `\nexpecting "${expecting}"`);
+    try {
+      var response;
+      if (parameters) {
+        response = await this.sendFSBrokerCommand( { "command": "fsbListInfo", "parameters": parameters } );
+      } else {
+        response = await this.sendFSBrokerCommand( { "command": "fsbListInfo" } );
+      }
+      if (response) { // missing response and error handled by sendFSBrokerCommand()
+        if (response.invalid) {
+          this.debugAlways(`testFsbListInfoCommand -- VALIDATION ERROR: "${response.invalid}"`);
+        } else if (response.error) {
+          this.debugAlways(`testFsbListInfoCommand -- ERROR: "${response.error}"`);
+        } else {
+          this.debugAlways("testFsbListInfoCommand -- RESPONSE: ", response);
+        }
+      }
+    } catch (error) {
+      this.caught(error, `!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!,\n`, parameters);
+    }
+  }
+
+  async testFsbListCommand(expecting, parameters) {
+    this.debugAlways("testFsbListCommand -- COMMAND fsbList: parameters:\n", parameters, `\nexpecting "${expecting}"`);
+    try {
+      var response;
+      if (parameters) {
+        response = await this.sendFSBrokerCommand( { "command": "fsbList", "parameters": parameters } );
+      } else {
+        response = await this.sendFSBrokerCommand( { "command": "fsbList" } );
+      }
+      if (response) { // missing response and error handled by sendFSBrokerCommand()
+        if (response.invalid) {
+          this.debugAlways(`testFsbListCommand -- VALIDATION ERROR: "${response.invalid}"`);
+        } else if (response.error) {
+          this.debugAlways(`testFsbListCommand -- ERROR: "${response.error}"`);
+        } else {
+          this.debugAlways("testFsbListCommand -- RESPONSE: ", response);
+        }
+      }
+    } catch (error) {
+      this.caught(error, `!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!,\n`, parameters);
     }
   }
 

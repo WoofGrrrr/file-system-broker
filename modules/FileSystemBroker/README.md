@@ -144,6 +144,10 @@ Use something like the following code in your JavaScript:
   + isValidFileName -        is a fileName valid?
   + isValidDirectoryName -   is a directoryName valid?
   + getFileSystemPathName -  returns the full pathName of the top-level system directory on which this API operates (in the users profile)
+  + stats -                  get information about the extension's directory and the items in that directory
+  + fsbListInfo -            list FileInfo objects for all items - Reguar files, Directories, and "other" - in the directory on which this API operates MABXXX MAYBE NOT IN THIS API
+  + fsbList -                list info for items in the directory on which this API operates MABXXX MAYBE NOT IN THIS API
+
 
 
 #### All functions are asynchronous (async.) They all return a JavaScript object.
@@ -203,6 +207,9 @@ Use something like the following code in your JavaScript:
 
 ## A Description of Each Function:
 
+<br>
+<br>
+
 ### access()
 
     Determine if the caller is granted permission to access FileSystemBroker.
@@ -210,6 +217,9 @@ Use something like the following code in your JavaScript:
     Returns:        { "access": string }
 
     "accces" is "granted" if the caller has permission, "denied" if not.
+
+<br>
+<br>
 
 ### exists( [fileName] )
 
@@ -233,6 +243,9 @@ Use something like the following code in your JavaScript:
     is > 255 characters or if the operating system had a problem
     processing the command.
 
+<br>
+<br>
+
 ### isRegularFile(fileName)
 
     Returns true if a file with the given fileName exists
@@ -247,6 +260,9 @@ Use something like the following code in your JavaScript:
     Returns an "error" response if the file's full pathName
     is > 255 characters or if the operating system had a problem
     processing the function.
+
+<br>
+<br>
 
 
 ### isDirectory( [directoryName] )
@@ -272,6 +288,9 @@ Use something like the following code in your JavaScript:
     processing the function.
 
     sub-directories are not supported at this time.  There is no method to create one.
+
+<br>
+<br>
 
 
 ### hasFiles( [ directoryName] )
@@ -300,6 +319,9 @@ Use something like the following code in your JavaScript:
     processing the function.
 
     sub-directories are not supported at this time.  There is no method to create one.
+
+<br>
+<br>
 
 
 ### getFileCount( [directoryName] )
@@ -331,6 +353,9 @@ Use something like the following code in your JavaScript:
 
     sub-directories are not supported at this time.  There is no method to create one.
 
+<br>
+<br>
+
 
 ### readFile(fileName)
 
@@ -346,6 +371,9 @@ Use something like the following code in your JavaScript:
     Returns an "error" response if the file's full pathName
     is > 255 characters or if the operating system had a problem
     processing the function.
+
+<br>
+<br>
 
 
 ### readJSONFile(fileName)
@@ -363,6 +391,9 @@ Use something like the following code in your JavaScript:
     is > 255 characters or if the operating system had a problem
     processing the function.
 
+<br>
+<br>
+
 
 ### readObjectFromJSONFile(fileName)
 
@@ -379,8 +410,11 @@ Use something like the following code in your JavaScript:
     is > 255 characters or if the operating system had a problem
     processing the function.
 
+<br>
+<br>
 
-###  writeFile(fileName, data [,writeMode])
+
+### writeFile(fileName, data [,writeMode])
 
     Writes the UTF8-Encoded data to the file with the given
     fileName in the directory with the name of the ID of the
@@ -404,8 +438,11 @@ Use something like the following code in your JavaScript:
     is > 255 characters or if the operating system had a problem
     processing the function.
 
+<br>
+<br>
 
-###  replaceFile(fileName, data)
+
+### replaceFile(fileName, data)
 
     Writes the data with UTF-8 encoding into file with the given
     fileName in the directory with the name of the ID of the
@@ -422,8 +459,11 @@ Use something like the following code in your JavaScript:
     is > 255 characters or if the operating system had a problem
     processing the function.
 
+<br>
+<br>
 
-###  appendToFile(fileName, data)
+
+### appendToFile(fileName, data)
 
     Appends the UTF8-Encoded data to the end of the file with the given
     fileName in the directory with the name of the ID of the
@@ -441,8 +481,11 @@ Use something like the following code in your JavaScript:
     is > 255 characters or if the operating system had a problem
     processing the function.
 
+<br>
+<br>
 
-###  writeJSONFile(fileName, data [,writeMode])
+
+### writeJSONFile(fileName, data [,writeMode])
 
     Writes the data, a string with UTF-8 encoding, as JSON to the file
     with the given fileName, in the directory with the name of the ID of the
@@ -464,8 +507,11 @@ Use something like the following code in your JavaScript:
     is > 255 characters or if the operating system had a problem
     processing the function.
 
+<br>
+<br>
 
-###  writeObjectToJSONFile(fileName, object [,writeMode])
+
+### writeObjectToJSONFile(fileName, object [,writeMode])
 
     Writes object, a JavaScript object, as JSON to the file with
     the given fileName, in the directory with the name of the
@@ -487,8 +533,11 @@ Use something like the following code in your JavaScript:
     is > 255 characters or if the operating system had a problem
     processing the function.
 
+<br>
+<br>
 
-###  deleteFile(fileName)
+
+### deleteFile(fileName)
 
     Deletes the file with the given fileName in the directory
     with the name of the ID of the calling extension.
@@ -502,8 +551,11 @@ Use something like the following code in your JavaScript:
     is > 255 characters or if the operating system had a problem
     processing the function.
 
+<br>
+<br>
 
-###  deleteDirectory( [directoryName] [, recursive] )
+
+### deleteDirectory( [directoryName] [, recursive] )
 
     Deletes the directory with the given directoryName in the
     directory with the name of the ID of the calling extension.
@@ -533,8 +585,11 @@ Use something like the following code in your JavaScript:
 
     sub-directories are not supported at this time.  There is no method to create one.
 
+<br>
+<br>
 
-###  makeDirectory()
+
+### makeDirectory()
 
     Creates the directory with the name of the ID of the calling extension.
 
@@ -548,8 +603,11 @@ Use something like the following code in your JavaScript:
 
     sub-directories are not supported at this time.  There is no method to create one.
 
+<br>
+<br>
 
-###  getFileInfo( [fileName] )
+
+### getFileInfo( [fileName] )
 
     Returns the FileInfo for the file with the given fileName
     or undefined if the file does not exist.
@@ -581,8 +639,11 @@ Use something like the following code in your JavaScript:
     is > 255 characters or if the operating system had a problem
     processing the function.
 
+<br>
+<br>
 
-###  renameFile( fromFileName, toFileName[, overwrite] )
+
+### renameFile( fromFileName, toFileName[, overwrite] )
 
     Renames a regular file.
 
@@ -600,8 +661,11 @@ Use something like the following code in your JavaScript:
     Returns an "error" response if either file's full pathName is > 255 characters,
     or if the operating system had a problem processing the function.
 
+<br>
+<br>
 
-###  listFiles( [matchGLOB] )
+
+### listFiles( [matchGLOB] )
 
     Returns an array of String listing the fileNames of only the
     Regular Files in the directory with the name of the ID of
@@ -627,8 +691,11 @@ Use something like the following code in your JavaScript:
 
     sub-directories are not supported at this time.  There is no method to create one.
 
+<br>
+<br>
 
-###  listFileInfo( [matchGLOB] )
+
+### listFileInfo( [matchGLOB] )
 
     Returns an array of FileInfo listing the FileInfo of only the
     Regular Files in the directory with the name of the ID of
@@ -664,8 +731,11 @@ Use something like the following code in your JavaScript:
 
     sub-directories are not supported at this time.  There is no method to create one.
 
+<br>
+<br>
 
-###  list( [ matchGLOB] )
+
+### list( [ matchGLOB] )
 
     Returns an array of String listing the fileNames of all items
     (any type - Regular, Directory, or Other) in the directory with
@@ -691,8 +761,11 @@ Use something like the following code in your JavaScript:
 
     sub-directories are not supported at this time.  There is no method to create one.
 
+<br>
+<br>
 
-###  listInfo( [ matchGLOB] )
+
+### listInfo( [ matchGLOB] )
 
     Returns an array of FileInfo listing the FileInfo for all items
     (any type - Regular, Directory, or Other) in the directory with
@@ -728,8 +801,11 @@ Use something like the following code in your JavaScript:
 
     sub-directories are not supported at this time.  There is no method to create one.
 
+<br>
+<br>
 
-###  getFullPathName( [fileName] )
+
+### getFullPathName( [fileName] )
 
     Returns the Full pathName of the file with the given fileName
     in the directory for the given extensionId. (The file need
@@ -747,8 +823,11 @@ Use something like the following code in your JavaScript:
 
     Returns an "invalid" response if the fileName parameter is invalid.
 
+<br>
+<br>
 
-###  isValidFileName(fileName)
+
+### isValidFileName(fileName)
 
     Returns true if the given fileName is a valid File name.
     (The file need not actually exist.)
@@ -757,8 +836,11 @@ Use something like the following code in your JavaScript:
 
     Returns an "invalid" response if the fileName parameter is not provided or is not a String.
 
+<br>
+<br>
 
-###  isValidDirectoryName(directoryName)
+
+### isValidDirectoryName(directoryName)
 
     Returns true if the given directoryName is a valid Directory name.
     (The directory need not actually exist.)
@@ -767,9 +849,191 @@ Use something like the following code in your JavaScript:
 
     Returns an "invalid" response if the directoryName parameter is not provided or is not a String.
 
+<br>
+<br>
 
-###  getFileSystemPathName()
+
+### getFileSystemPathName()
 
     Returns the full pathName of the system directory on which this API operates.
 
     Returns:        { "pathName": string }
+
+<br>
+<br>
+<br>
+
+### stats( ['parammeters': { ['includeChildInfo': boolean] ['types': array of string] ] )
+
+    Returns a JavaScript object that contains information
+    about the directory and the items in the directory
+    for the given extensionId.
+<br>
+<br>
+    The 'parameters' parameter is optional. If it is not
+    provided, information for each child is NOT included
+    in the result.
+<br>
+<br>
+    The parameters.includeChildInfo parameter is optional.
+    If it is not provided, it defaults to false. If true, the
+    object returned includes information for each child
+    item.
+<br>
+<br>
+    The parameters.types parameter is optional and is allowed
+    only when parameters.includeChildInfo is true.  This is
+    an array of String containing one or more item types:
+<br>
+      'regular', 'directory', 'other', 'unknown', 'error'
+<br>
+    If given, only the information for items whose type is
+    listed in this array will be returned.
+<br>
+    The default is ALL types.
+<br>
+<br>
+    The returned object:
+```
+      { extensionId: {
+          stats: {
+                   'includeChildInfo':               boolean:          incoming parameter
+                   'types':                          array of string:  incoming parameter (OPTIONAL: only if includeChildInfo is true)
+                   'dirName':                        string:           directory name
+                   'dirPath':                        string:           directory fulle pathName
+                   'children':                       integer:          total number of child items
+                   'regular':                        integer:          number of child items with type 'regular'
+                   'directory':                      integer:          number of child items with type 'directory'
+                   'other':                          integer:          number of child items with type 'other'
+                   'unknown':                        integer:          number of child items with type none of the three above
+                   'error':                          integer:          number of child items whose types could not be determined
+                   'earliestChildCreationTime':      integer:          earliest Creation Time      of all child items (OS-dependent) in MS (undefined if no children)
+                   'latestChildCreationTime':        integer:          latest   Creation Time      of all child items (OS-dependent) in MS (undefined if no children)
+                   'earliestChildLastAccessedTime':  integer:          earliest Last Accessed Time of all child items (OS-dependent) in MS (undefined if no children)
+                   'latestChildLastAccessedTime':    integer:          latest   Last Accessed Time of all child items (OS-dependent) in MS (undefined if no children)
+                   'earliestChildLastModifiedTime':  integer:          earliest Last Modified Time of all child items (OS-dependent) in MS (undefined if no children)
+                   'latestChildLastModifiedTime':    integer:          latest   Last Modified Time of all child items (OS-dependent) in MS (undefined if no children)
+                   'smallestSize':                   integer:          smallest size (bytes) of all child items with type 'regular' (-1 if none)
+                   'largestSize':                    integer:          largest size (bytes) of all child items with type 'regular' (-1 if none)
+                   'totalSize':                      integer:          total of sizes (bytes) of all child items with type 'regular'
+                   [ 'childInfo': ]                  array of object {                 (OPTIONAL: only if includeChildInfo is true)
+                                                       'name'                string:   item name
+                                                       'type'                string:   item type - 'regular', 'directory', 'other', 'unknown', 'error'
+                                                       'path'                string:   item full pathName
+                                                       'creationTime':       integer:  Creation Time      (OS-dependent) in MS
+                                                       'lastAccessedTime':   integer:  Last Accessed Time (OS-dependent) in MS
+                                                       'lastModifiedTime':   integer:  Last Modified Time (OS-dependent) in MS
+                                                       [ 'size': ]           integer:  file size (bytes) (OPTIONAL: only for items with type 'regular')
+                                                     }
+                 }
+          }
+      }
+```
+<br>
+<br>
+    Returns "invalid" if parameters is provided and is not an object,
+<br>
+    or if paramaters.includeChildInfo is provided and is not boolean,
+<br>
+    or if paramaters.types is provided and is not an Array that contains the expected values.
+<br>
+<br>
+    Reurns "error" if the file's full pathName is > 255 characters,
+<br>
+    or if there is an operating system error.
+
+<br>
+<br>
+<br>
+
+### fsbListInfo( [ parameters: { ['matchGLOB': matchGLOB] ['types': types] } ] ) (INTERNAL USE ONLY)
+
+    Returns an array of FileInfo objects listing the File Info for the
+    items  in the top-directory on which this extension
+    operates.
+<br>
+<br>
+    If the optional parameters.matchGLOB parameter is given, only
+    the information for items whose names match the given GLOB will
+    be returned.
+<br>
+<br>
+    If the optional parameters.types array parameter is given,
+    only the information for items whose type is listed in the
+    parameters.types array will be returned. paramaters.types
+    is an array of one or more of:
+<br>
+      'regular', 'directory, 'other'
+<br>
+    The default is ALL types.
+<br>
+<br>
+    If the Directory does not exist, it will be created and an
+    empty array is returned.
+<br>
+<br>
+    FileInfo has these entries:
+    - fileName:     the fileName
+    - path:         the full pathname
+    - type:         "regular", "directory", or "other"
+    - size:         for a Regular File, the size in bytes, otherwise -1
+    - creationTime  (Windows and MacOS only): milliseconds since 1970-01-01T00:00:00.000Z
+    - lastAccessed: milliseconds since 1970-01-01T00:00:00.000Z
+    - lastModified: milliseconds since 1970-01-01T00:00:00.000Z
+    - permissions:  expressed as a UNIX file mode (for Windows, the 'user', 'group', and 'other' parts will always be identical)
+<br>
+<br>
+    Returns "invalid" if parameters is provided and is not an object,
+<br>
+    or if paramaters.matchGLOB is provided and is not a String,
+<br>
+    or if paramaters.types is provided and is not an Array that contains the expected values
+<br>
+<br>
+    Returns "error" if the directory's full pathName is > 255 characters,
+<br>
+    or if there is an operating system error.
+<br>
+<br>
+<br>
+
+### fsbList( [ parameters: { ['matchGLOB': matchGLOB] ['types': types] } ] ) (INTERNAL USE ONLY)
+
+    Returns an array listing information for the items
+    in the top-directory on which this extension operates.
+<br>
+<br>
+    If the optional parameters.matchGLOB parameter is given, only
+    the information for items whose names match the given GLOB will
+    be returned.
+<br>
+<br>
+    If the optional parameters.types array parameter is given,
+    only the information for items whose type is listed in the
+    parameters.types array will be returned. paramaters.types
+    is an array of one or more of:
+<br>
+      'regular', 'directory, 'other'
+<br>
+    The default is ALL types.
+<br>
+<br>
+    The items in the returned array are object
+<br>
+    { 'name': itemName, 'type' itemType }
+<br>
+<br>
+    If the Directory does not exist, it will be created and an
+    empty array is returned.
+<br>
+<br>
+    Returns "invalid" if parameters is provided and is not an object,
+<br>
+    or if paramaters.matchGLOB is provided and is not a String,
+<br>
+    or if paramaters.types is provided and is not an Array that contains the expected values
+<br>
+<br>
+    Returns "error" if the directory's full pathName is > 255 characters,
+<br>
+    or if there is an operating system error.

@@ -84,9 +84,9 @@
   --list-item-disabled-border-color:             rgb(  20,  20,  24 );
   --list-item-disabled-color:                    rgb( 170, 190, 200 );
   --list-item-disabled-text-decoration-color:    rgb(   0,   0,   0 );
-  --list-item-disabled-text-decoration-style:    solid;
+  --list-item-disabled-text-decoration-style:    dotted;
   --list-item-disabled-text-decoration-line:     line-through;
-  --list-item-disabled-text-decoration:          var(--list-item-disabled-text-decoration-line) var(--list-item-disabled-text-decoration-style) var(--list-item-disabled-text-decoration-color);
+  --list-item-disabled-text-decoration:          var(--list-item-disabled-text-decoration-line) var(--list-item-disabled-text-decoration-style) var(--list-item-disabled-text-decoration-color) 1px;
 
 
 
@@ -115,7 +115,7 @@
 
   --extension-disabled-background-color:           var(--list-item-disabled-background-color);
   --extension-disabled-border-color:               var(--list-item-disabled-border-color);
-  --extension-disabled-color:                      var(--list-item-disabled-color);
+  --extension-disabled-color:                      RED; /* var(--list-item-disabled-color);*/
 /*--extension-disabled-status-dot-border-color:    rgb( 150, 150, 150 ); /* NOT USING */
 /*--extension-disabled-status-dot-color:           rgb( 100, 100, 100 ); /* NOT USING */
   --extension-disabled-text-decoration-color:      var(--list-item-disabled-text-decoration-color);
@@ -123,7 +123,7 @@
   --extension-disabled-text-decoration-line:       var(--list-item-disabled-text-decoration-line);
   --extension-disabled-text-decoration:            var(--extension-disabled-text-decoration-line) var(--extension-disabled-text-decoration-style) var(--extension-disabled-text-decoration-color);
   --extension-disabled-text-shadow-color:          rgb(  20,  20,  20 );
-  --extension-disabled-text-shadow:                1px 1px var(--extension-disabled-text-shadow-color);
+  --extension-disabled-text-shadow:                -1px -1px var(--extension-disabled-text-shadow-color);
 
   --extension-hover-background-color:              var(--list-item-hover-background-color);
   --extension-hover-background-image:              linear-gradient(rgba(80,80,80,0.6) 20%, rgba(150,150,150,0.8) 80%);

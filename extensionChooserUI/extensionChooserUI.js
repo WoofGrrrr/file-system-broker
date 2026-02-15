@@ -90,16 +90,22 @@ class ExtensionChooser {
       installedExtensions.sort((a, b) => a.name.localeCompare(b.name, { 'sensitity': 'base' } ));
 
       for (const extension of installedExtensions) {
-        this.debug( "-- INSTALLED EXTENSION:"
-                    + `\n- id ............ "${extension.id}"`
-                    + `\n- name .......... "${extension.name}"`
-                    + `\n- shortName ..... "${extension.shortName}"`
-                    + `\n- type .......... "${extension.type}"`
-                    + `\n- enabled ....... ${extension.enabled}`
-                    + `\n- description ... "${extension.description}"`
+        this.debug( "\n--- INSTALLED EXTENSION:",
+                    `\n- id ............ "${extension.id}"`,
+                    `\n- name .......... "${extension.name}"`,
+                    `\n- shortName ..... "${extension.shortName}"`,
+                    `\n- type .......... "${extension.type}"`,
+                    `\n- installType ... "${extension.installType}"`,
+                    `\n- version ....... "${extension.version}"`,
+                    `\n- versionName ... "${extension.versionName}"`,
+                    `\n- enabled ....... ${extension.enabled}`,
+                    `\n- description ... "${extension.description}"`,
                   );
         if (extension.type !== 'extension') {
           this.debug(`-- SKIPPING: Installed Extension -- Type is not 'extension' -- extension.type="${extension.type}"`);
+
+        } else if (extension.id.endsWith("@search.mozilla.org")) {
+          this.debug(`-- SKIPPING: Installed Extension -- id ends with "@search.mozilla.org" -- extension.id="${extension.id}"`);
 
         } else {
           const configured = allExtensionsProps.hasOwnProperty(extension.id);

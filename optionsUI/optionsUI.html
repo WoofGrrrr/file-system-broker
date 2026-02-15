@@ -37,11 +37,23 @@
           <div id="fsbShowGrantExtensionAccessDialogCheckPanel" class="option-panel">
             <input id="fsbShowGrantExtensionAccessDialog" class="fsbGeneralOption" type="checkbox"/>
             <label for="fsbShowGrantExtensionAccessDialog" data-l10n-id="options_fsbShowGrantExtensionAccessDialogCheck.label">
-              options_fsbShowGrantExtensionAccessDialogdCheck.label
+              options_fsbShowGrantExtensionAccessDialogCheck.label
             </label>
           </div>
 
-          <div id="fsbExtensionOptionsButtonPanel" class="option">
+          <div class="option-panel">
+            <label for="fsbAutoRemoveUninstalledExtensionsDays" data-l10n-id="options_fsbAutoRemoveUninstalledExtensionsDaysSelect.label"></label>
+            <select id="fsbAutoRemoveUninstalledExtensionsDays" class="fsbGeneralOption"></select>
+          </div>
+
+          <div id="fsbOnRemoveExtensionDeleteDirectoryCheckPanel" class="option-panel">
+            <input id="fsbOnRemoveExtensionDeleteDirectory" class="fsbGeneralOption" type="checkbox"/>
+            <label for="fsbOnRemoveExtensionDeleteDirectory" data-l10n-id="options_fsbOnRemoveExtensionDeleteDirectoryCheck.label">
+              options_fsbOnRemoveExtensionDeleteDirectoryCheck.label
+            </label>
+          </div>
+
+          <div id="fsbExtensionOptionsButtonPanel" class="button-panel">
             <button id="fsbShowBackupManagerButton">
               <label for="fsbShowBackupManagerButton"
                      data-l10n-id="options_fsbExtensionOptionsButtonBackupManager.label"
@@ -56,11 +68,6 @@
                 options_fsbExtensionOptionsButtonEventLogManager.label
               </label>
             </button>
-          </div>
-
-          <div class="option-panel">
-            <label for="fsbAutoRemoveUninstalledExtensionsDays" data-l10n-id="options_fsbAutoRemoveUninstalledExtensionsDaysSelect.label"></label>
-            <select id="fsbAutoRemoveUninstalledExtensionsDays" class="fsbGeneralOption"></select>
           </div>
 
           <div id="fsbLoggingOptionsPanel">

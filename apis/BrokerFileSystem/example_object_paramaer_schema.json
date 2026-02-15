@@ -1,0 +1,88 @@
+{
+  "id": "ValidatedConfig",
+  "type": "object",
+  "properties": {
+    "version": { 
+      "type": "integer", 
+      "minimum": 1 
+    },
+    "mode": { 
+      "type": "string", 
+      "enum": ["fast", "secure", "legacy"] 
+    },
+    "apiKey": { 
+      "type": "string", 
+      "pattern": "^[A-Z0-9]{16}$" 
+    }
+  },
+  "required": ["version", "mode"],
+  "additionalProperties": false
+}
+
+
+[
+  {
+    "namespace": "complexApi",
+    "types": [
+      {
+        "id": "NotificationRequest",
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^msg_[a-f0-9]{8}$",
+            "description": "Must be 'msg_' followed by 8 hex characters."
+          },
+          "priority": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 5,
+            "default": 1
+          },
+          "payload": {
+            "type": "object",
+            "properties": {
+              "type": { "enum": ["text", "html", "action"] },
+              "content": { "type": "string", "minLength": 1 },
+              "buttons": {
+                "type": "array",
+                "maxItems": 3,
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "label": { "type": "string" },
+                    "callbackId": { "type": "string" }
+                  },
+                  "required": ["label", "callbackId"],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": ["type", "content"]
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": { "type": "string" },
+            "description": "Allows any number of key-value pairs, but values must be strings."
+          }
+        },
+        "required": ["id", "payload"],
+        "additionalProperties": false
+      }
+    ],
+    "functions": [
+      {
+        "name": "sendNotification",
+        "type": "function",
+        "async": true,
+        "parameters": [
+          {
+            "name": "request",
+            "$ref": "NotificationRequest"
+          }
+        ]
+      }
+    ]
+  }
+]
+

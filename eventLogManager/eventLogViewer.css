@@ -227,8 +227,23 @@ option {
   -moz-appearance:  none;
 }
 
-.event-line-item:is(.filter-by-time, .filter-by-sender, .filter-by-type, .filter-by-command, .filter-by-status) {
+tr.event-line-item:is(.filter-by-time, .filter-by-sender, .filter-by-type, .filter-by-command, .filter-by-status) {
   display:          NONE;
+}
+
+tr.event-line-item.selected > td.event-line-data {
+  background-color: var(--list-item-selected-background-color);
+  border-color:     var(--list-item-selected-border-color);
+  color:            var(--list-item-selected-color);
+  text-shadow:      1px 1px var(--list-item-selected-text-shadow-color);
+}
+
+tr.event-line-item:hover > td.event-line-data {
+  background-color: var(--list-item-hover-background-color);
+  background-image: var(--list-item-hover-background-image);
+  border-color:     var(--list-item-hover-border-color);
+  color:            var(--list-item-hover-color);
+  text-shadow:      1px 1px var(--list-item-hover-text-shadow-color);
 }
 
 

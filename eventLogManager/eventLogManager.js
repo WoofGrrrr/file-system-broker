@@ -1,7 +1,8 @@
-import { FileSystemBrokerAPI } from '../modules/FileSystemBroker/filesystem_broker_api.js';
-import { FsbOptions          } from '../modules/options.js';
-import { Logger              } from '../modules/logger.js';
-import { FsbEventLogger      } from '../modules/event_logger.js';
+import { Logger                   } from '../modules/logger.js';
+import { FsbOptions               } from '../modules/options.js';
+import { FileSystemBrokerAPI      } from '../modules/FileSystemBroker/filesystem_broker_api.js';
+import { FileSystemBrokerCommands } from '../modules/commands.js';
+import { FsbEventLogger           } from '../modules/event_logger.js';
 import { getI18nMsg, formatMsToDateTime24HR, formatMsToDateTime12HR, formatMsToTimeForFilename } from '../modules/utilities.js';
 
 
@@ -23,8 +24,12 @@ class EventLogManager {
 
     this.logger                      = new Logger();
     this.fsbOptionsApi               = new FsbOptions(this.logger);
+    this.fsbCommandsApi              = new FileSystemBrokerCommands(this.logger, this.fsbOptionsApi);
+    this.fsbEventLogger              = new FsbEventLogger(this.logger, this.fsbOptionsApi, this.fsbCommandsApi);
     this.fsBrokerApi                 = new FileSystemBrokerAPI();
-    this.fsbEventLogger              = new FsbEventLogger(this.fsbOptionsApi, this.logger);
+
+    this.fsbOptionsApi.setEventLogger(this.fsbEventLogger);
+    this.fsbCommandsApi.setEventLogger(this.fsbEventLogger);
 
     this.LIST_MODE_LOGS              = 'logs';
     this.LIST_MODE_ARCHIVES          = 'archives';

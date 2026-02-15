@@ -1,97 +1,326 @@
-////import { Options } from '../modules/options.js';
-////import { Logger  } from '../modules/logger.js';
-import { formatMsToDateTime12HR, formatMsToDateTime24HR } from './utilities.js';
+///import { Logger  } from '../modules/logger.js';
+///import { FsbOptions     } from '../modules/options.js';
+///import { FsbEventLogger } from '../modules/event_logger.js';
+import { getExtensionId, formatMsToDateTime12HR, formatMsToDateTime24HR } from './utilities.js';
 
 export class FileSystemBrokerCommands {
   /* one day I hope to use options to set the logging levels */
 
-  constructor(logger) {
-    this.CLASS_NAME    = this.constructor.name;
+  #CLASS_NAME   = this.constructor.name;
+  #EXTENSION_ID = getExtensionId();
 
-    this.LOG           = false;
-    this.DEBUG         = false;
+  #LOG          = false;
+  #DEBUG        = false;
 
-    this.logger        = logger;
-////this.fsbOptionsApi = new Options(this.logger);
+  #logger;
+  #fsbOptionsApi;
+  #fsbEventLogger;
 
-    this.commands = [
-      "access",
-      "exists",
-      "isRegularFile",
-      "isDirectory",
-      "hasFiles",
-      "getFileCount",
-      "writeFile",
-      "replaceFile",
-      "appendToFile",
-      "writeJSONFile",
-      "writeObjectToJSONFile",
-      "readFile",
-      "readJSONFile",
-      "readObjectFromJSONFile",
-      "makeDirectory",
-      "getFileInfo",
-      "renameFile",
-      "deleteFile",
-      "deleteDirectory",
-      "listFiles",
-      "listFileInfo",
-      "list",
-      "listInfo",
-      "getFullPathName",
-      "isValidFileName",
-      "isValidDirectoryName",
-      "getFileSystemPathName"
-    ];
-    Object.freeze(this.commands);
+
+  static #commands = [
+    "access",
+    "exists",
+    "isRegularFile",
+    "isDirectory",
+    "hasFiles",
+    "getFileCount",
+    "writeFile",
+    "replaceFile",
+    "appendToFile",
+    "writeJSONFile",
+    "writeObjectToJSONFile",
+    "readFile",
+    "readJSONFile",
+    "readObjectFromJSONFile",
+    "makeDirectory",
+    "getFileInfo",
+    "renameFile",
+    "deleteFile",
+    "deleteDirectory",
+    "listFiles",
+    "listFileInfo",
+    "list",
+    "listInfo",
+    "getFullPathName",
+    "isValidFileName",
+    "isValidDirectoryName",
+    "getFileSystemPathName",
+    "stats",
+    "fsbListInfo",          // This is an INTERNAL-ONLY Command!!!
+    "fsbList",              // This is an INTERNAL-ONLY Command!!!
+  ];
+
+  static x = Object.freeze(FileSystemBrokerCommands.#commands);
+
+
+
+  constructor(logger, optionsApi) { // Logger, FsbOptions
+    this.#logger         = logger;
+    this.#fsbOptionsApi  = optionsApi;
+  }
+
+  setEventLogger(eventLogger) { // FsbEventLogger
+    this.#fsbEventLogger = eventLogger;
   }
 
 
 
   log(...info) {
-    if (! this.LOG) return;
-    const msg = info.shift();
-    this.logger.log(this.CLASS_NAME + "#" + msg, ...info);
+    if (! this.#LOG) return;
+    this.#logger.log(this.#CLASS_NAME, ...info);
   }
 
   logAlways(...info) {
-    const msg = info.shift();
-    this.logger.logAlways(this.CLASS_NAME + "#" + msg, ...info);
+    this.#logger.logAlways(this.#CLASS_NAME, ...info);
   }
 
   debug(...info) {
-    if (! this.DEBUG) return;
-    const msg = info.shift();
-    this.logger.debug(this.CLASS_NAME + "#" + msg, ...info);
+    if (! this.#DEBUG) return;
+    this.#logger.debug(this.#CLASS_NAME, ...info);
   }
 
   debugAlways(...info) {
-    const msg = info.shift();
-    this.logger.debugAlways(this.CLASS_NAME + "#" + msg, ...info);
+    this.#logger.debugAlways(this.#CLASS_NAME, ...info);
   }
 
   error(...info) {
     // always log errors
-    const msg = info.shift();
-    this.logger.error(this.CLASS_NAME + "#" + msg, ...info);
+    this.#logger.error(this.#CLASS_NAME, ...info);
   }
 
-  caught(e, ...info) {
+  caught(e, msg, ...info) {
     // always log exceptions
-    const msg = info.shift();
-    this.logger.error( this.CLASS_NAME + "#" + msg,
-                       "\n name:    " + e.name,
-                       "\n command: " + e.message,
-                       "\n stack:   " + e.stack,
-                       ...info
-                     );
+    this.#logger.error( this.#CLASS_NAME,
+                        msg,
+                        "\n name:    " + e.name,
+                        "\n message: " + e.message,
+                        "\n stack:   " + e.stack,
+                        ...info
+                      );
   }
 
 
 
-  getCommandList() {
-    return this.commands;
+  static getCommandList() {
+    return this.#commands;
   }
+
+
+
+  async processInternalCommand(timeMS, Command, extensionId) {
+    var formattedParameters;
+
+    if (await this.#fsbOptionsApi.isEnabledInternalMessageLogging()) {
+      formattedParameters = this.formatParameters(Command);
+
+      this.logAlways( "\n--- Processing Internal Command ---",              // MABXXX do this in logCommand???
+                      `\n- command="${Command.command}"`,
+                      `\n- parameters: ${formattedParameters}`,
+                      "\n- raw parameters:", Command.parameters,
+                    );
+      if (this.#fsbEventLogger) this.#fsbEventLogger.logCommand(timeMS, "INTERNAL", Command);
+    }
+
+    try {
+      const result = await this.processCommand(Command, extensionId);
+
+      if (! result) {
+        this.error("-- NO COMMAND RESULT", message);
+        return { "error": "Failed to get a Command Result",
+                 "code":  "500"
+               };
+      } else {
+        if (await this.#fsbOptionsApi.isEnabledInternalMessageResultLogging()) {
+          const formattedResult = this.formatCommandResult(Command, result);
+          this.logAlways( "\n--- RESULT ---",
+                          "\n- INTERNAL",
+                          `\n- Command="${Command.command}"`,
+                          `\n- result: ${formattedResult}`,
+                          `\n- parameters: ${formattedParameters}`,
+                          "\n- raw parameters:", Command.parameters,
+                        );
+          if (this.#fsbEventLogger) this.#fsbEventLogger.logCommandResult(timeMS, "INTERNAL", Command, result);
+        }
+      }
+
+      return result;
+
+    } catch (error) {
+      this.caught(error, "Error Processing Internal Command - Code 500");
+      return { "error": "Internal Error", "code":  "500" };
+    }
+  }
+
+
+
+
+
+  // This method is a shortcut for just calling processInternalCommand(),
+  // but it creates the Command object for you,
+  // it uses this.#extensionID as the extensionId,
+  // and it DOES NOT use messaging.
+  //
+  // Since extensionId === this.#extensionID, it will delete a file only
+  // in the top-most File System directory.
+  //
+  // It DOES do complete pre-validation using direct calls to the messenger.FileSystemBroker API.
+  // BUT WHY??? processInternalCommand() -> processCommand() -> fsbDeleteFileCommand() does validation as well.
+  //
+  // You can use this when you cannot use messaging to run the command
+  // like it would do if you were to use the the FileSystemBrokerAPI class
+  // (not the same as messenger.FileSystemBrokerAPI.)
+  async deleteFile(fileName) { // copied from modules/commands.js and slightly modified
+    const nowMS = Date.now();
+    this.debug(`~~~~~~~~~~~~~~~~~~~~ fileName="${fileName}"`);
+
+    if (! fileName) {
+      this.error("-- No 'fileName' parameter");
+      return ( { "invalid": "deleteFile no 'fileName' parameter" } );
+    }
+    if ((typeof fileName) !== 'string') {
+      this.error("-- 'fileName' parameter type is not 'string'");
+      return ( { "invalid": "deleteFile: 'fileName' parameter type must be 'string'" } );
+    }
+    if (! isValidFileName(fileName)) {
+      this.error(`-- 'fileName' parameter is invalid: "${fileName}"`);
+      return ( { "invalid": `deleteFile: 'fileName' parameter is invalid: "${fileName}"` } );
+    }
+
+    try {
+      const exists = await messenger.BrokerFileSystem.exists(this.EXTENSION_ID, fileName); // <-------------- direct call to FileSystemBroker API!!!
+      if (! exists) {
+        this.error(`-- File does not exist: "${fileName}"`);
+        return ( { "invalid": `deleteFile: File does not exist: "${fileName}"` } );
+      }
+
+      const isRegularFile = await messenger.BrokerFileSystem.isRegularFile(this.EXTENSION_ID, fileName); // <-------------- direct call to FileSystemBroker API!!!
+      if (! isRegularFile) {
+        this.error(`-- File is not a Regular File: "${fileName}"`);
+        return ( { "invalid": `deleteFile: File is not a Regular File: "${fileName}"` } );
+      }
+
+      this.debug(`-- deleting file "${fileName}" for extension "${this.EXTENSION_ID}"`);
+      const Command = {
+        'command':  'deleteFile',
+        'fileName': fileName,
+      };
+
+      const result = await this.processInternalCommand(nowMS, Command, this.#EXTENSION_ID); // <-------------- **NOT** direct call to FileSystemBroker API!!!
+  
+      return result;
+
+    } catch (error) {
+      this.caught(error, `-- Caught error while deleting file "${fileName}":`);
+      return ( { "error": `Error Processing deleteFile: ${error.name}: ${error.message}`, "code": "500" } );
+    }
+
+    return false; // this should never happen
+  }
+
+
+
+  // This method is a shortcut for just calling processInternalCommand(),
+  // but it creates the Command object for you,
+  // it uses this.#extensionID as the extensionId,
+  // it sets 'recursive' and 'returnNotExist' to true,
+  // and it DOES NOT use messaging.
+  //
+  // Since extensionId === this.#extensionID, it will delete a directory only
+  // in the top-most File System directory.
+  //
+  // It does not return invalid/error if the directory for the extension does not exist.
+  // If the directory does not exist, it instead returns:
+  //    { "directoryName": extensionId, 'deleted': false, 'exists': false }
+  // NOTE: The Experiments API does not do this.
+  //
+  // You can use this when you cannot use messaging to run the command
+  // like it would do if you were to use the the FileSystemBrokerAPI class
+  // (not the same as messenger.FileSystemBrokerAPI.)
+  async deleteExtensionDirectory(extensionId) {
+    const nowMS = Date.now();
+    const Command = {
+      'command':        'deleteDirectory',
+      'recursive':      true,
+      'returnNotExist': true, // no invalid/error response if it does not exist
+    };
+
+    // full validation is done in processInternalCommand() -> processCommand() -> deleteDirectoryCommand()
+    const result = await this.processInternalCommand(nowMS, Command, extensionId);
+
+    return result;
+  }
+
+
+
+  // This method is a shortcut for just calling processInternalCommand(),
+  // but it creates the Command object for you,
+  // it uses this.#extensionID as the extensionId,
+  // and it DOES NOT use messaging.
+  //
+  // Since extensionId === this.#extensionID, it will list files only
+  // in the top-most File System directory.
+  //
+  // fsbListInfo is an INTERNAL-ONLY COMMAND, so the extensionId MUST BE this.#EXTENSION_ID
+  // (see fsbListInfoCommand() below)
+  //
+  // You can use this when you cannot use messaging to run the command
+  // like it would do if you were to use the the FileSystemBrokerAPI class
+  // (not the same as messenger.FileSystemBrokerAPI.)
+  async fsbListInfo(parameters) {
+    const nowMS = Date.now();
+    const Command = {
+      'command': 'fsbListInfo',
+    };
+
+    // full validation is done in processInternalCommand() -> processCommand() -> fsbListInfoCommand()
+    if (parameters && (typeof parameters) !== 'object') {
+      this.error(`fsbListInfo -- 'parameters' parameter is not type 'object', type='${(typeof parameters)}'`);
+      return ( { "invalid": `fsbListInfo: 'parameter' parameter is not type 'object', type='${(typeof parameters)}'` } );
+    } else if (parameters) {
+      Command['parameters'] = parameters;
+    }
+
+    const result = await this.processInternalCommand(nowMS, Command, this.#EXTENSION_ID);
+
+    return result;
+  }
+
+
+
+  // This method is a shortcut for just calling processInternalCommand(),
+  // but it creates the Command object for you,
+  // it uses this.#extensionID as the extensionId,
+  // and it DOES NOT use messaging.
+  //
+  // Since extensionId === this.#extensionID, it will list files only
+  // in the top-most File System directory.
+  //
+  // fsbList is an INTERNAL-ONLY COMMAND, so the extensionId MUST BE this.#EXTENSION_ID
+  // (see fsbListCommand() below)
+  //
+  // You can use this when you cannot use messaging to run the command
+  // like it would do if you were to use the the FileSystemBrokerAPI class
+  // (not the same as messenger.FileSystemBrokerAPI.)
+  async fsbList(parameters) {
+    const nowMS = Date.now();
+    const Command = {
+      'command': 'fsbList',
+    };
+
+    // full validation is done in processInternalCommand() -> processCommand() -> fsbListCommand()
+    if (parameters && (typeof parameters) !== 'object') {
+      this.error(`fsbList -- 'parameters' parameter is not an 'object', type='${(typeof parameters)}'`);
+      return ( { "invalid": `fsbList: 'parameters' parameter is not an 'object', type='${(typeof parameters)}'` } );
+    } else if (parameters) {
+      Command['parameters'] = parameters;
+    }
+
+    const result = await this.processInternalCommand(nowMS, Command, this.#EXTENSION_ID);
+
+    return result;
+  }
+
+
 
 
 
@@ -99,13 +328,13 @@ export class FileSystemBrokerCommands {
     if (! command) {
       this.error("processCommand -- No Command parameter");
       return ( { "error": "Invalid Request: No Command.command parameter", "code": "400" } );
-    } else if (typeof command !== 'object') {
+    } else if ((typeof command) !== 'object') {
       this.error("processCommand -- Command parameter is not an object");
       return ( { "error": "Invalid Request: Command.command parameter is not an object", "code": "400" } );
     } else if (! command.command) {
       this.error("processCommand -- Command has no command parameter");
       return ( { "error": "Invalid Request: Command has no command parameter", "code": "400" } );
-    } else if (typeof command.command !== 'string') {
+    } else if ((typeof command.command) !== 'string') {
       this.error(`processCommand -- Command.command parameter is NOT A STRING`);
       return ( { "error": "Invalid Request: Invalid Command - Command.command parameter is not a String", "code": "400" } );
     }
@@ -113,7 +342,7 @@ export class FileSystemBrokerCommands {
     if (! extensionId) {
       this.error("processCommand -- No extensionId");
       return ( { "error": "Invalid Request: Invalid Command - no extensionId parameter", "code": "400" } );
-    } else if (typeof extensionId !== 'string') {
+    } else if ((typeof extensionId) !== 'string') {
       this.error("processCommand -- extensionId parameter is NOT A STRING");
       return ( { "error": "Invalid Request: Invalid Command", "code": "400" } );
     } else if (! this.checkValidExtensionId(extensionId)) {
@@ -121,10 +350,6 @@ export class FileSystemBrokerCommands {
       return ( { "error": "Invalid Request: Invalid Command", "code": "400" } );
     }
 
-    // MABXXX Use an Object where key is command name and value is another object
-    //        with key "process" and value function process()
-    //        & key "formatResult" and value function formatResult()
-    //        etc
     switch(command.command) {
       case "access": // this command must be handled where access control is handled, which is in background.js for now
         return { "access": "unknown" };
@@ -180,6 +405,12 @@ export class FileSystemBrokerCommands {
         return this.isValidDirectoryNameCommand(command, extensionId);
       case "getFileSystemPathName":
         return this.getFileSystemPathNameCommand(command, extensionId);
+      case "stats":
+        return this.statsCommand(command, extensionId);
+      case "fsbListInfo":
+        return this.fsbListInfoCommand(command, extensionId);
+      case "fsbList":
+        return this.fsbListCommand(command, extensionId);
     }
 
     return this.unknownCommand(command, extensionId);
@@ -244,13 +475,13 @@ export class FileSystemBrokerCommands {
     }
 
     try {
-      this.debug(`isRegularFileCommand -- checking if file "${command.fileName}" exists and is a Regular File for extension "${extensionId}"`);
+      this.debug(`isRegularFileCommand -- checking if Item "${command.fileName}" exists and is a Regular File for extension "${extensionId}"`);
       const isRegularFile = await messenger.BrokerFileSystem.isRegularFile(extensionId, command.fileName);
       this.debug(`isRegularFileCommand -- fileName="${command.fileName}" isRegularFile=${isRegularFile}`);
       return ( { "fileName": command.fileName, "isRegularFile": isRegularFile } );
 
     } catch (error) {
-      this.caught(error, `isRegularFileCommand -- Caught error while checking if file "${command.fileName}" exists and is a Regular File:`);
+      this.caught(error, `isRegularFileCommand -- Caught error while checking if Item "${command.fileName}" exists and is a Regular File:`);
       return ( { "error": `Error Processing isRegularFile Command: ${error.message}`, "code": "500" } );
     }
 
@@ -275,7 +506,7 @@ export class FileSystemBrokerCommands {
     }
 
     try {
-      this.debug(`isDirectoryCommand -- checking if file "${command.directoryName}" exists and is a Directory for extension "${extensionId}"`);
+      this.debug(`isDirectoryCommand -- checking if Item "${command.directoryName}" exists and is a Directory for extension "${extensionId}"`);
       const isDirectory = await messenger.BrokerFileSystem.isDirectory(extensionId, command.directoryName);
       if (command.directoryName) { // directoryName is optional
         this.debug(`isDirectoryCommand -- directoryName="${command.directoryName}" isDirectory=${isDirectory}`);
@@ -287,9 +518,9 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       if (command.directoryName) { // directoryName is optional
-        this.caught(error, `isDirectoryCommand -- Caught error while checking if file "${command.directoryName}" exists and is a Directory:`);
+        this.caught(error, `isDirectoryCommand -- Caught error while checking if Item "${command.directoryName}" exists and is a Directory:`);
       } else {
-        this.caught(error, `isDirectoryCommand -- Caught error while checking if file "${extensionId}" exists and is a Directory:`);
+        this.caught(error, `isDirectoryCommand -- Caught error while checking if Item "${extensionId}" exists and is a Directory:`);
       }
       return ( { "error": `Error Processing isDirectory Command: ${error.message}`, "code": "500" } );
     }
@@ -336,9 +567,9 @@ export class FileSystemBrokerCommands {
       }
     } catch (error) {
       if (command.directoryName) { // directoryName is optional
-        this.caught(error, `hasFilesCommand -- Caught error while checking if File "${command.directoryName}" for extension "${extensionId}" exists and is a Directory:`);
+        this.caught(error, `hasFilesCommand -- Caught error while checking if Item "${command.directoryName}" for extension "${extensionId}" exists and is a Directory:`);
       } else {
-        this.caught(error, `hasFilesCommand -- Caught error while checking if File "${extensionId}" exists and is a Directory:`);
+        this.caught(error, `hasFilesCommand -- Caught error while checking if Item "${extensionId}" exists and is a Directory:`);
       }
       return ( { "error": `Error Processing hasFiles Command: ${error.message}`, "code": "500" } );
     }
@@ -405,9 +636,9 @@ export class FileSystemBrokerCommands {
       }
     } catch (error) {
       if (command.directoryName) { // directoryName is optional
-        this.caught(error, `getFileCountCommand -- Caught error while checking if file "${command.directoryName}" for extention "${extensionId}" exists and is a Directory:`);
+        this.caught(error, `getFileCountCommand -- Caught error while checking if Item "${command.directoryName}" for extention "${extensionId}" exists and is a Directory:`);
       } else {
-        this.caught(error, `getFileCountCommand -- Caught error while checking if file "${extensionId}" exists and is a Directory:`);
+        this.caught(error, `getFileCountCommand -- Caught error while checking if Item "${extensionId}" exists and is a Directory:`);
       }
       return ( { "error": `Error Processing getFileCount Command: ${error.message}`, "code": "500" } );
     }
@@ -448,7 +679,7 @@ export class FileSystemBrokerCommands {
       return ( { "invalid": "writeFile Command: 'fileName' parameter type must be 'string'" } );
     }
 
-    if (typeof command.data === 'undefined' || command.data == null) {
+    if ((typeof command.data) === 'undefined' || command.data == null) {
       this.debug("writeFileCommand -- Message has no 'data' parameter");
       return ( { "invalid": "writeFile Command: no 'data' parameter" } );
     } else if ((typeof command.data) !== 'string') {
@@ -514,7 +745,7 @@ export class FileSystemBrokerCommands {
       return ( { "invalid": "replaceFile Command: 'fileName' parameter type must be 'string'" } );
     }
 
-    if (typeof command.data === 'undefined' || command.data == null) {
+    if ((typeof command.data) === 'undefined' || command.data == null) {
       this.debug("replaceFileCommand -- Message has no 'data' parameter");
       return ( { "invalid": "replaceFile Command: no 'data' parameter" } );
     } else if ((typeof command.data) !== 'string') {
@@ -554,7 +785,7 @@ export class FileSystemBrokerCommands {
       return ( { "invalid": "appendToFile Command: 'fileName' parameter type must be 'string'" } );
     }
 
-    if (typeof command.data === 'undefined' || command.data == null) {
+    if ((typeof command.data) === 'undefined' || command.data == null) {
       this.debug("appendToFileCommand -- Message has no 'data' parameter");
       return ( { "invalid": "appendToFile Command: no 'data' parameter" } );
     } else if ((typeof command.data) !== 'string') {
@@ -594,7 +825,7 @@ export class FileSystemBrokerCommands {
       return ( { "invalid": "writeJSONFile Command: 'fileName' parameter type must be 'string'" } );
     }
 
-    if (typeof command.data === 'undefined' || command.data == null) {
+    if ((typeof command.data) === 'undefined' || command.data == null) {
       this.debug("writeJSONFileCommand -- Message has no 'data' parameter");
       return ( { "invalid": "writeJSONFile Command: no 'data' parameter" } );
     } else if ((typeof command.data) !== 'string') {
@@ -657,7 +888,7 @@ export class FileSystemBrokerCommands {
       return ( { "invalid": "writeObjectToJSONFile Command: 'fileName' parameter type must be 'string'" } );
     }
 
-    if (typeof command.object === 'undefined' || command.object == null) {
+    if ((typeof command.object) === 'undefined' || command.object == null) {
       this.debug("writeObjectToJSONFileCommand -- Message has no 'object' parameter");
       return ( { "invalid": "writeObjectToJSONFile Command: no 'object' parameter" } );
     } else if ((typeof command.object) !== 'object') {
@@ -733,6 +964,12 @@ export class FileSystemBrokerCommands {
         return ( { "invalid": `readFile Command: File does not exist: "${command.fileName}"` } );
       }
 
+      const isRegularFile = await messenger.BrokerFileSystem.isRegularFile(extensionId, command.fileName);
+      if (! exists) {
+        this.debug(`readFileCommand -- File is not a Regular File: "${command.fileName}"`);
+        return ( { "invalid": `readFile Command: File is not a Regular File: "${command.fileName}"` } );
+      }
+
       this.debug(`readFileCommand -- reading from file "${command.fileName}" from the directory for extension "${extensionId}"`);
       const data = await messenger.BrokerFileSystem.readFile(extensionId, command.fileName);
       this.debug(`readFileCommand -- fileName="${ command.fileName}" data.length=${data.length}`);
@@ -769,6 +1006,12 @@ export class FileSystemBrokerCommands {
       if (! exists) {
         this.debug(`readJSONFileCommand -- File does not exist: "${command.fileName}"`);
         return ( { "invalid": `readJSONFile Command: File does not exist: "${command.fileName}"` } );
+      }
+
+      const isRegularFile = await messenger.BrokerFileSystem.isRegularFile(extensionId, command.fileName);
+      if (! exists) {
+        this.debug(`readJSONFileCommand -- File is not a Regular File: "${command.fileName}"`);
+        return ( { "invalid": `readJSONFile Command: File is not a Regular File: "${command.fileName}"` } );
       }
 
       this.debug(`readJSONFileCommand -- reading from file "${command.fileName}" from the directory for extension "${extensionId}"`);
@@ -808,6 +1051,12 @@ export class FileSystemBrokerCommands {
       if (! exists) {
         this.debug(`readObjectFromJSONFileCommand -- File does not exist: "${command.fileName}"`);
         return ( { "invalid": `readObjectFromJSONFile Command: File does not exist: "${command.fileName}"` } );
+      }
+
+      const isRegularFile = await messenger.BrokerFileSystem.isRegularFile(extensionId, command.fileName);
+      if (! exists) {
+        this.debug(`readObjectFromJSONFileCommand -- File is not a Regular File: "${command.fileName}"`);
+        return ( { "invalid": `readObjectFromJSONFile Command: File is not a Regular File: "${command.fileName}"` } );
       }
 
       this.debug(`readObjectFromJSONFileCommand -- reading from file "${command.fileName}" from the directory for extension "${extensionId}"`);
@@ -935,7 +1184,7 @@ export class FileSystemBrokerCommands {
     }
 
     var toFileOverwrite = false;
-    if (typeof command.overwrite !== 'undefined') { // optional, schema.json makes sure it's boolean
+    if (command.overwrite !== null && (typeof command.overwrite) !== 'undefined') {
       toFileOverwrite = command.overwrite;
     }
     this.debug(`renameFileCommand -- (typeof command.overwrite)='${(typeof command.overwrite)}' command.overwrite=${command.overwrite} toFileOverwrite=${toFileOverwrite}`);
@@ -983,11 +1232,23 @@ export class FileSystemBrokerCommands {
       return ( { "invalid": `deleteFile Command: 'fileName' parameter is invalid: "${command.fileName}"` } );
     }
 
+    var returnNotExist = false;
+    if ((typeof command.returnNotExist) === 'boolean') {
+      returnNotExist = command.returnNotExist;
+    } else if (command.returnNotExist !== null && (typeof command.returnNotExist) !== 'undefined') {
+      this.debug(`deleteFileCommand -- Message 'returnNotExist' parameter type is not 'boolean'. It is '${typeof command.returnNotExist}'`);
+      return ( { "invalid": `deleteFile Command: 'returnNotExist' parameter must be type 'boolean'. It is '${typeof command.returnNotExist}'` } );
+    }
+
     try {
       const exists = await messenger.BrokerFileSystem.exists(extensionId, command.fileName);
       if (! exists) {
         this.debug(`deleteFileCommand -- File does not exist: "${command.fileName}"`);
-        return ( { "invalid": `deleteFile Command: File does not exist: "${command.fileName}"` } );
+        if (returnNotExist) {
+          return ( { "fileName": command.fileName, "deleted": false, "exists": false } );
+        } else {
+          return ( { "invalid": `deleteFile Command: File does not exist: "${command.fileName}"` } );
+        }
       }
 
       const isRegularFile = await messenger.BrokerFileSystem.isRegularFile(extensionId, command.fileName);
@@ -1029,21 +1290,43 @@ export class FileSystemBrokerCommands {
     var recursive = false;
     if ((typeof command.recursive) === 'boolean') {
       recursive = command.recursive;
-    } else if ((typeof command.recursive) !== 'undefined') {
+    } else if (command.recursive !== null && (typeof command.recursive) !== 'undefined') {
       this.debug(`deleteDirectoryCommand -- Message 'recursive' parameter type is not 'boolean'. It is '${typeof command.recursive}'`);
-      return ( { "invalid": `deleteDirectory Command: 'recursive' parameter must be type 'boolean'. It is '${typeof command.recursive}'`  } );
+      return ( { "invalid": `deleteDirectory Command: 'recursive' parameter must be type 'boolean'. It is '${typeof command.recursive}'` } );
+    }
+
+    // NOTE: The Experiments API does not do this:
+    var returnNotExist = false;
+    if ((typeof command.returnNotExist) === 'boolean') {
+      returnNotExist = command.returnNotExist;
+    } else if (command.returnNotExist !== null && (typeof command.returnNotExist) !== 'undefined') {
+      this.debug(`deleteDirectoryCommand -- Message 'returnNotExist' parameter type is not 'boolean'. It is '${typeof command.returnNotExist}'`);
+      return ( { "invalid": `deleteDirectory Command: 'returnNotExist' parameter must be type 'boolean'. It is '${typeof command.returnNotExist}'` } );
     }
 
     try {
       const exists = await messenger.BrokerFileSystem.exists(extensionId, command.directoryName);
       if (! exists) {
-        if (command.directoryName) { // directoryName is optional
-          this.debug(`deleteDirectoryCommand -- Directory does not exist: "${command.directoryName}"`);
-          return ( { "invalid": `deleteDirectory Command: Directory does not exist: "${command.directoryName}"` } );
-        }
+        if (returnNotExist) {
+          if (command.directoryName) { // directoryName is optional
+            this.debug(`deleteDirectoryCommand -- Directory does not exist: "${command.directoryName}"`);
+            // NOTE: The Experiments API does not do this:
+            return ( { "directoryName": command.directoryName, "deleted": false, "exists": false } );
+          }
 
-        this.debug(`deleteDirectoryCommand -- Directory does not exist: "${extensionId}"`);
-        return ( { "invalid": `deleteDirectory Command: Directory does not exist: "${extensionId}"` } );
+          this.debug(`deleteDirectoryCommand -- Directory does not exist: "${extensionId}"`);
+          // NOTE: The Experiments API does not do this:
+          return ( { "directoryName": extensionId, "deleted": false, "exists": false } );
+
+        } else {
+          if (command.directoryName) { // directoryName is optional
+            this.debug(`deleteDirectoryCommand -- Directory does not exist: "${command.directoryName}"`);
+            return ( { "invalid": `deleteDirectory Command: Directory does not exist: "${command.directoryName}"` } );
+          }
+
+          this.debug(`deleteDirectoryCommand -- Directory does not exist: "${extensionId}"`);
+          return ( { "invalid": `deleteDirectory Command: Directory does not exist: "${extensionId}"` } );
+        }
       }
 
       const isDirectory = await messenger.BrokerFileSystem.isDirectory(extensionId, command.directoryName);
@@ -1128,8 +1411,8 @@ export class FileSystemBrokerCommands {
 
     if (command.matchGLOB) {
       if ((typeof command.matchGLOB) !== 'string') {
-        this.debug("listFiles -- Message 'matchGLOB' parameter type is not 'string'");
-        return ( { "invalid": "listFiles Command: 'matchGLOB' parameter type must be 'string'" } );
+        this.debug(`listFilesCommand -- Message 'matchGLOB' parameter type is not 'string', type='${(typeof command.matchGLOB)}'`);
+        return ( { "invalid": `listFiles Command: 'matchGLOB' parameter type must be 'string', type='${(typeof command.matchGLOB)}'` } );
       }
     }
 
@@ -1146,7 +1429,7 @@ export class FileSystemBrokerCommands {
         return ( { "invalid": `listFiles Command: File is not a Directory: "${extensionId}"` } );
       }
     } catch (error) {
-      this.caught(error, `hasFilesCommand -- Caught error while checking if File "${extensionId}" exists and is a Directory:`);
+      this.caught(error, `hasFilesCommand -- Caught error while checking if Item "${extensionId}" exists and is a Directory:`);
       return ( { "error": `Error Processing listFiles Command: ${error.message}`, "code": "500" } );
     }
 
@@ -1169,8 +1452,8 @@ export class FileSystemBrokerCommands {
 
     if (command.matchGLOB) {
       if ((typeof command.matchGLOB) !== 'string') {
-        this.debug("listFileInfo -- Message 'matchGLOB' parameter type is not 'string'");
-        return ( { "invalid": "listFileInfo Command: 'matchGLOB' parameter type must be 'string'" } );
+        this.debug(`listFileInfoCommand -- Message 'matchGLOB' parameter type is not 'string', type='${(typeof command.matchGLOB)}'`);
+        return ( { "invalid": `listFileInfo Command: 'matchGLOB' parameter type must be 'string', type='${(typeof command.matchGLOB)}'` } );
       }
     }
 
@@ -1187,7 +1470,7 @@ export class FileSystemBrokerCommands {
         return ( { "invalid": `listFileInfo Command: File is not a Directory: "${extensionId}"` } );
       }
     } catch (error) {
-      this.caught(error, `hasFilesCommand -- Caught error while checking if File "${extensionId}" exists and is a Directory:`);
+      this.caught(error, `hasFilesCommand -- Caught error while checking if Item "${extensionId}" exists and is a Directory:`);
       return ( { "error": `Error Processing listFileInfo Command: ${error.message}`, "code": "500" } );
     }
 
@@ -1210,8 +1493,8 @@ export class FileSystemBrokerCommands {
 
     if (command.matchGLOB) {
       if ((typeof command.matchGLOB) !== 'string') {
-        this.debug("list -- Message 'matchGLOB' parameter type is not 'string'");
-        return ( { "invalid": "list Command: 'matchGLOB' parameter type must be 'string'" } );
+        this.debug(`listCommand -- Message 'matchGLOB' parameter type is not 'string', type='${(typeof command.matchGLOB)}'`);
+        return ( { "invalid": `list Command: 'matchGLOB' parameter type must be 'string', type='${(typeof command.matchGLOB)}'` } );
       }
     }
 
@@ -1228,7 +1511,7 @@ export class FileSystemBrokerCommands {
         return ( { "invalid": `list Command: File is not a Directory: "${extensionId}"` } );
       }
     } catch (error) {
-      this.caught(error, `hasFilesCommand -- Caught error while checking if File "${extensionId}" exists and is a Directory:`);
+      this.caught(error, `hasFilesCommand -- Caught error while checking if Item "${extensionId}" exists and is a Directory:`);
       return ( { "error": `Error Processing list Command: ${error.message}`, "code": "500" } );
     }
 
@@ -1251,8 +1534,8 @@ export class FileSystemBrokerCommands {
 
     if (command.matchGLOB) {
       if ((typeof command.matchGLOB) !== 'string') {
-        this.debug("listInfo -- Message 'matchGLOB' parameter type is not 'string'");
-        return ( { "invalid": "listInfo Command: 'matchGLOB' parameter type must be 'string'" } );
+        this.debug(`listInfoCommand -- Message 'matchGLOB' parameter type is not 'string', type='${(typeof command.matchGLOB)}'`);
+        return ( { "invalid": `listInfo Command: 'matchGLOB' parameter type must be 'string', type='${(typeof command.matchGLOB)}'` } );
       }
     }
 
@@ -1269,7 +1552,7 @@ export class FileSystemBrokerCommands {
         return ( { "invalid": `listInfo Command: File is not a Directory: "${extensionId}"` } );
       }
     } catch (error) {
-      this.caught(error, `hasFilesCommand -- Caught error while checking if File "${extensionId}" exists and is a Directory:`);
+      this.caught(error, `hasFilesCommand -- Caught error while checking if Item "${extensionId}" exists and is a Directory:`);
       return ( { "error": `Error Processing listInfo Command: ${error.message}`, "code": "500" } );
     }
 
@@ -1400,6 +1683,286 @@ export class FileSystemBrokerCommands {
 
 
 
+  async statsCommand(command, extensionId) {
+    this.debug(`stats ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nCOMMAND: `, command);
+
+    const parameters = command.parameters;
+    if (parameters) {
+      if ((typeof parameters) !== 'object') {
+        this.debug(`statsCommand -- 'parameters' parameter type is not 'object': "${typeof parameters}"`);
+        return ( { "invalid": `stats Command: 'parameters' parameter type must be 'object': type='${(typeof parameters)}'` } );
+      }
+      const badKey = this.checkStatsCmdParms(parameters);
+      if (badKey) {
+        this.debug(`statsCommand -- 'parameters' parameter has invalid key: "${badKey}"`);
+        return ( { "invalid": `stats Command: 'parameters' parameter has invalid key: '${badKey}'` } );
+      }
+    }
+
+    var includeChildInfo = parameters?.includeChildInfo;
+    if (includeChildInfo == null || (typeof includeChildInfo) === 'undefined') {
+      includeChildInfo = false;
+    } else if ((typeof includeChildInfo) !== 'boolean') {
+      this.debug(`statsCommand -- 'parameters.includeChildInfo' type is not 'boolean': '${typeof includeChildInfo}'` );
+      return ( { "invalid": `stats Command: 'parameters.includeChlidInfo' type must be 'boolean': type='${typeof includeChildInfo}'` } );
+    }
+
+    var types = parameters?.types;
+    if (types == null && (typeof types) === 'undefined') {
+      // this is ok
+    } else if (! includeChildInfo) {
+      this.debug("statsCommand -- 'parameters.types' parameter is not allowed when 'parameters.includeChildInfo is not 'true'");
+      return ( { "invalid": "stats -- 'parameters.types' parameter is not allowed when 'parameters.includeChildInfo' is not 'true'" } );
+    } else if ((typeof types) !== 'object') {
+      this.debug(`statsCommand -- Invalid 'parameters.types' parameter type - Must be 'object': type='${(typeof types)}'`);
+      return ( { "invalid": `stats -- Invalid 'parameters.types' parameter type - Must be 'object': type='${(typeof types)}'` } );
+    } else if (! Array.isArray(types)) {
+      this.debug("statsCommand -- Invalid 'parameters.types' parameter type - Must be an Array");
+      return ( { "invalid": "stats -- 'Invalid 'parameters.types' parameter type - Must be an Array" } );
+    } else if (types.length < 1) {
+      this.debug("statsCommand -- Invalid 'parameters.types' Array parameter is empty");
+      return ( { "invalid": "stats -- 'parameters.types' Array parameter is empty" } );
+    } else if (types.length > 3) {
+      this.debug(`statsCommand -- Invalid 'parameters.types' Array parameter length > 3: ${types.length}`);
+      return ( { "invalid": `stats -- 'parameters.types' Array parameter length > 3: ${types.length}` } );
+    } else {
+      const badType = this.checkStatsItemTypes(types); // we don't check for repeats, but schema.json does
+      if (badType) {
+        this.debug(`fsbStats -- 'types' parameter contains an invalid value: "${badType}"`);
+        return ( { "invalid": `Stats Command: 'parameters.types'  parameter contains an invalid value: "${badType}"` } );
+      }
+      // this is ok
+    }
+
+    try {
+      const exists = await messenger.BrokerFileSystem.exists(extensionId);
+      if (! exists) {
+        this.debug(`statsCommand -- Directory does not exist: "${extensionId}"`);
+        return ( { "invalid": `stats Command: Extension Directory does not exist: "${extensionId}"` } );
+      }
+
+      const isDirectory = await messenger.BrokerFileSystem.isDirectory(extensionId);
+      if (! isDirectory) {
+        this.debug(`statsCommand -- File is not a Directory: "${extensionId}"`);
+        return ( { "invalid": `stats Command: Extension Directory is not a Directory: "${extensionId}"` } );
+      }
+    } catch (error) {
+      this.caught(error, `statsCommand -- Caught error while checking if Item "${extensionId}" exists and is a Directory:`);
+      return ( { "error": `Error Processing stats Command: ${error.message}`, "code": "500" } );
+    }
+
+    try {
+      this.debug(`statsCommand -- getting stats for extension "${extensionId}"`);
+this.debug(
+  "\n\n++++++++++stats++++++++++",
+  `\n extensionId type='${(typeof extensionId)}' value=${extensionId} :::`, extensionId,
+  `\n includeChildInfo type='${(typeof includeChildInfo)}' value=${includeChildInfo} :::`, includeChildInfo,
+  `\n types type='${(typeof types)}' value=${types} :::`, types,
+  "\n\n++++++++++stats++++++++++\n\n",
+);
+      const stats = await messenger.BrokerFileSystem.stats(extensionId, parameters);
+      this.debug(`statsCommand -- stats.extenstionId=${stats.extenstionId}\n`, stats);
+
+      const response = { 'stats': stats };
+      if (parameters) response['parameters'] = parameters;
+      return response;
+
+    } catch (error) {
+      this.caught(error, `statsCommand -- Caught error getting stats for extension "${extensionId}":`);
+      return ( { "error": `Error Processing stats Command: ${error.message}`, "code": "500" } );
+    }
+  }
+
+
+
+  // MABXXX THIS IS AN INTERNAL-ONLY COMMAND!!!
+  async fsbListInfoCommand(command, extensionId) {
+    this.debug(`fsbListInfo ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ matchGLOB="${command.matchGLOB}"`);
+
+    if (this.#EXTENSION_ID !== extensionId) {
+      this.error(`fsbListInfoCommand -- THIS IS AN INTERNAL-ONLY COMMAND!  But it was requested by "${extensionId}"`);
+      return ( { "error": "fsbListInfo: Unknown Command" } );
+    }
+
+    const parameters = command.parameters;
+    if (parameters) {
+      if ((typeof parameters) !== 'object') {
+        this.debug(`fsbListCommand -- Message 'parameters' parameter type is not 'object', type='${(typeof parameters)}'`);
+        return ( { "invalid": `fsbList Command: 'parameters' parameter type must be 'object', type='${(typeof parameters)}'` } );
+      }
+      const badKey = this.checkListCmdParms(parameters);
+      if (badKey) {
+        this.debug(`fsbListInfoCommand -- 'parameters' parameter has invalid key: "${badKey}"`);
+        return ( { "invalid": `fsbListInfo Command: 'parameters' parameter has invalid key: '${badKey}'` } );
+      }
+    }
+
+    const types = parameters?.types;
+    if (types == null || (typeof types) === 'undefined') {
+      // this is ok
+    } else if ((typeof types) !== 'object') {
+      this.debug(`fsbList -- Invalid 'types' parameter type - Must be 'object': type='${(typeof types)}'`);
+      return ( { "invalid": `fsbList Command: 'parameters.types' parameter type must be 'object', type='${(typeof types)}'` } );
+    } else if (! Array.isArray(types)) {
+      this.debug("fsbList -- Invalid 'types' parameter type - Must be an Array");
+      return ( { "invalid": `fsbList Command: 'parameters.types' parameter type must be be an Array` } );
+    } else if (types.length < 1) {
+      this.debug("fsbList -- Invalid 'types' Array parameter is empty");
+      return ( { "invalid": "fsbList Command: 'parameters.types' Array parameter is empty" } );
+      throw new ExtensionError("BrokerFileSystem.fsbList -- 'types' Array parameter is empty");
+    } else if (types.length > 3) {
+      this.debug(`fsbList -- Invalid 'types' Array parameter has length > 3: ${types.length}`);
+      return ( { "invalid": `fsbList Command: 'parameters.types' Array parameter is has length > 3: ${types.length}` } );
+    } else {
+      const badType = this.checkListItemTypes(types); // we don't check for repeats, but schema.json does
+      if (badType) {
+        this.debug(`fsbListInfo -- 'types' parameter contains an invalid value: "${badType}"`);
+        return ( { "invalid": `fsbListInfo Command: 'parameters.types'  parameter contains an invalid value: "${badType}"` } );
+      }
+      // this is ok
+    } 
+
+    const matchGLOB = parameters?.matchGLOB;
+    if (matchGLOB) {
+      if ((typeof matchGLOB) !== 'string') {
+        this.debug(`fsbListInfoCommand -- Message 'matchGLOB' parameter type is not 'string', type='${(typeof matchGLOB)}'`);
+        return ( { "invalid": `fsbListInfo Command: 'matchGLOB' parameter type must be 'string', type='${(typeof matchGLOB)}'` } );
+      }
+    }
+
+//  MABXXX DO WE HAVE A REAL extensionId TO DO ANY OF THIS!!! MABXXX
+//
+//         And if the directory doesn't exist,
+//         it gets created by the API anyway.
+//
+//  try {
+//    const exists = await messenger.BrokerFileSystem.exists(extensionId);
+//    if (! exists) {
+//      this.debug(`fsbListInfoCommand -- Directory does not exist: "${extensionId}"`);
+//      return ( { "invalid": `fsbListInfo Command: Directory does not exist: "${extensionId}"` } );
+//    }
+//
+//    const isDirectory = await messenger.BrokerFileSystem.isDirectory(extensionId);
+//    if (! isDirectory) {
+//      this.debug(`fsbListInfoCommand -- File is not a Directory: "${extensionId}"`);
+//      return ( { "invalid": `fsbListInfo Command: File is not a Directory: "${extensionId}"` } );
+//    }
+//  } catch (error) {
+//    this.caught(error, `fsbListInfoCommand -- Caught error while checking if Item "${extensionId}" exists and is a Directory:`);
+//    return ( { "error": `Error Processing fsbListInfo Command: ${error.message}`, "code": "500" } );
+//  }
+
+    try {
+      this.debug(`fsbListInfoCommand -- getting FileInfo of items for the Extension FileSystem`);
+      const fileInfo = await messenger.BrokerFileSystem.fsbListInfo(parameters);  // NOTE: No extensionId!!!
+      this.debug(`fsbListInfoCommand -- fileInfo.length=${fileInfo.length}`);
+
+      const response = { "fileInfo": fileInfo, "length": fileInfo.length };
+      if (parameters) response['parameters'] = parameters;
+      return response;
+
+    } catch (error) {
+      this.caught(error, `fsbListInfoCommand -- Caught error while listing items for the Extension FileSystem`);
+      return ( { "error": `Error Processing fsbListInfo Command: ${error.message}`, "code": "500" } );
+    }
+  }
+
+
+
+  // MABXXX THIS IS AN INTERNAL-ONLY COMMAND!!!
+  async fsbListCommand(command, extensionId) {
+    this.debug(`fsbList ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ matchGLOB="${command.matchGLOB}"`);
+
+    if (this.#EXTENSION_ID !== extensionId) {
+      this.error(`fsbListCommand -- THIS IS AN INTERNAL-ONLY COMMAND!  But it was requested by "${extensionId}"`);
+      return ( { "error": "fsbList: Unknown Command" } );
+    }
+
+    const parameters = command.parameters;
+    if (parameters) {
+      if (parameters && (typeof parameters) !== 'object') {
+        this.debug(`fsbListCommand -- Message 'parameters' parameter type is not 'object', type='${(typeof parameters)}'`);
+        return ( { "invalid": `fsbList Command: 'parameters' parameter type must be 'object', type='${(typeof parameters)}'` } );
+      }
+      const badKey = this.checkListCmdParms(parameters);
+      if (badKey) {
+        this.debug(`fsbListCommand -- 'parameters' parameter has invalid key: "${badKey}"`);
+        return ( { "invalid": `fsbListCommand: 'parameters' parameter has invalid key: '${badKey}'` } );
+      }
+    }
+
+    const types = parameters?.types;
+    if (types == null || (typeof types) === 'undefined') {
+      // this is ok
+    } else if ((typeof types) !== 'object') {
+      this.debug(`fsbList -- Invalid 'types' parameter type - Must be 'object': type='${(typeof types)}'`);
+      return ( { "invalid": `fsbList Command: 'parameters.types' parameter type must be 'object', type='${(typeof types)}'` } );
+    } else if (! Array.isArray(types)) {
+      this.debug("fsbList -- Invalid 'types' parameter type - Must be an Array");
+      return ( { "invalid": `fsbList Command: 'parameters.types' parameter type must be be an Array` } );
+    } else if (types.length < 1) {
+      this.debug("fsbList -- Invalid 'types' Array parameter is empty");
+      return ( { "invalid": "fsbList Command: 'parameters.types' Array parameter is empty" } );
+      throw new ExtensionError("BrokerFileSystem.fsbList -- 'types' Array parameter is empty");
+    } else if (types.length > 3) {
+      this.debug(`fsbList -- Invalid 'types' Array parameter has length > 3: ${types.length}`);
+      return ( { "invalid": `fsbList Command: 'parameters.types' Array parameter is has length > 3: ${types.length}` } );
+    } else {
+      const badType = this.checkListItemTypes(types); // we don't check for repeats, but schema.json does
+      if (badType) {
+        this.debug(`fsbList -- 'types' parameter contains an invalid value: "${badType}"`);
+        return ( { "invalid": `fsbList Command: 'parameters.types'  parameter contains an invalid value: "${badType}"` } );
+      }
+      // this is ok
+    } 
+
+    const matchGLOB = parameters?.matchGLOB;
+    if (matchGLOB) {
+      if ((typeof matchGLOB) !== 'string') {
+        this.debug(`fsbListInfoCommand -- Message 'matchGLOB' parameter type is not 'string', type='${(typeof matchGLOB)}'`);
+        return ( { "invalid": `fsbListInfo Command: 'matchGLOB' parameter type must be 'string', type='${(typeof matchGLOB)}'` } );
+      }
+    }
+
+//  MABXXX DO WE HAVE A REAL extensionId TO DO ANY OF THIS!!! MABXXX
+//
+//         And if the directory doesn't exist,
+//         it gets created by the API anyway.
+//
+//  try {
+//    const exists = await messenger.BrokerFileSystem.exists(extensionId);
+//    if (! exists) {
+//      this.debug(`fsbListCommand -- Directory does not exist: "${extensionId}"`);
+//      return ( { "invalid": `fsbList Command: Directory does not exist: "${extensionId}"` } );
+//    }
+//
+//    const isDirectory = await messenger.BrokerFileSystem.isDirectory(extensionId);
+//    if (! isDirectory) {
+//      this.debug(`fsbListCommand -- File is not a Directory: "${extensionId}"`);
+//      return ( { "invalid": `fsbList Command: File is not a Directory: "${extensionId}"` } );
+//    }
+//  } catch (error) {
+//    this.caught(error, `fsbListCommand -- Caught error while checking if Item "${extensionId}" exists and is a Directory:`);
+//    return ( { "error": `Error Processing fsbList Command: ${error.message}`, "code": "500" } );
+//  }
+
+    try {
+      this.debug(`fsbListCommand -- getting fileNames of items for the Extension FileSystem`);
+      const list = await messenger.BrokerFileSystem.fsbList(parameters);  // NOTE: No extensionId!!!
+      this.debug(`fsbListCommand -- list.length=${list.length}`);
+
+      const response = { "list": list, "length": list.length };
+      if (parameters) response['parameters'] = parameters;
+      return response;
+
+    } catch (error) {
+      this.caught(error, `fsbListCommand -- Caught error while listing items for the Extension FileSystem`);
+      return ( { "error": `Error Processing fsbList Command: ${error.message}`, "code": "500" } );
+    }
+  }
+
+
+
   async unknownCommand(command, extensionId) {
     this.debug(`unknownCommand ~~~~~~~~~~~~~~~~~~~~ command.command="${command.command}"`);
 
@@ -1423,34 +1986,47 @@ export class FileSystemBrokerCommands {
   //   otherwise use (key + ":object.entries.length") as the key and object.entries.length as the value
   addCommandToObject(command, toObject) {
     // why for the love of puppies is (typeof null) === 'object'???
-    if (command == null || toObject == null || typeof command !== 'object' || typeof toObject !== 'object') {
+    if (command == null || toObject == null || (typeof command) !== 'object' || (typeof toObject) !== 'object') {
       // MABXXX
     } else {
       for (const [key, value] of Object.entries(command)) {
-        if (key === 'data' && typeof value === 'string') {
+        if (key === 'data' && (typeof value) === 'string') {
           // if data string value is "short" (<=25) we put value
           if (value.length <= 25) {
             toObject[key] = value;
           } else {
             toObject[`${key}:string.length`] = value.length; // length because data could be huge!
           }
-        } else if (value != null && typeof value === 'object') {
+        } else if (value && (typeof value) === 'object') {
           if (Array.isArray(value)) { // no commands currently take arrays as parameters, but wth?
             // if array is "short" (<=5) we put elements, otherwise we put length
             if (value.length <= 5) {
               var valueList = '';
-              for (var i=0; i<5; ++i) {
+              const limit = value.length > 5 ? 5 : value.length;
+              for (var i=0; i<limit; ++i) {
                 const v = value[i]; // doesn't work if v is object
                 if (i > 0) valueList += ", ";
-                if (typeof v === 'string') {
-                  valueList += "[" + i + "]='" + v + "'" // what if string is long?;
+                if ((typeof v) === 'string') {
+                  if (v.length > 10) {
+                    valueList += "[" + i + `]=stgring[${v.length}]`;
+                  } else {
+                    valueList += "[" + i + "]='" + v + "'"
+                  }
+                } else if (v == null) {
+                  valueList += "[" + i + "]=null";
+                } else if ((typeof v) === 'undefined') {
+                  valueList += "[" + i + "]=undefined";
+                } else if (Array.isArray(v)) {
+                  valueList += "[" + i + `]=array[${v.length}]`;
+                } else if ((typeof v) === 'object') {
+                  valueList += "[" + i + "]=object";
                 } else {
                   valueList += "[" + i + "]=" + v;
                 }
               }
-              toObject[`${key}:array`] = valueList;
+              toObject[`${key}[${value.length}]`] = valueList;
             } else {
-              toObject[`${key}:array.length`] = value.length;
+              toObject[`${key}[${value.length}]`] = value.length;
             }
           } else {
             // if entries is "short" (<=5) we put entries, otherwise we put length
@@ -1460,7 +2036,7 @@ export class FileSystemBrokerCommands {
               var i = 0;
               for (const [k, v] of entries) { // doesn't work if v is object
                 if (++i > 1) valueList += ", ";
-                if (typeof v === 'string') {
+                if ((typeof v) === 'string') {
                   valueList += "'" + k + "': '" + v + "'"; // what if string is long?
                 } else {
                   valueList += "'" + k + "': " + v;
@@ -1471,7 +2047,7 @@ export class FileSystemBrokerCommands {
               toObject[`${key}:object.entries.length`] = entries.length;
             }
           }
-        } else if (typeof value === 'string') {
+        } else if ((typeof value) === 'string') {
           // if value is "short" (<=25) we put value
           if (value.length <= 25) {
             toObject[key] = value;
@@ -1497,7 +2073,7 @@ export class FileSystemBrokerCommands {
   formatParameters(command) {
     this.debug(`formatParameters -- (typeof command): '${typeof command}'`);
 
-    if (typeof command !== 'object') {
+    if ((typeof command) !== 'object') {
       this.error(`formatParameters -- (typeof command) is not 'object': '${typeof command}'`);
       this.debug(`formatParameters -- returning: '(command unavailable)'`);
       return "(command unavailable)";
@@ -1510,71 +2086,81 @@ export class FileSystemBrokerCommands {
 
       if (++idx > 1) formatted += ', ';
 
-      if (key === 'data' && typeof value === 'string') {
+      if (key === 'data' && (typeof value) === 'string') {
         // if data string value is "short" (<=25) we put value
         if (value.length <= 25) {
-          formatted += key + '="' + value + '"';
+          formatted += `${key}="${value}"`;
         } else {
-          formatted += key + ': string';
+          formatted += `${key}: string(${value.length})`;
         }
-      } else if (value != null && typeof value === 'object') {
+      } else if (value && (typeof value) === 'object') {
         if (Array.isArray(value)) { // no commands currently take arrays as parameters, but wth?
+          formatted += `${key}:array[${value.length}]`;
           // if array is "short" (<=5) we put elements, otherwise we put length
           if (value.length <= 5) {
             var valueList = '';
-            for (var i=0; i<5; ++i) {
+            const limit = value.length > 5 ? 5 : value.length;
+            for (var i=0; i<limit; ++i) {
               const v = value[i];
               if (i > 0) valueList += ", ";
-              if (typeof v === 'string') {
+              if ((typeof v) === 'string') {
                 if (v.length <= 25) {
-                  valueList += "[" + i + "]='" + v + "'";
+                  valueList += `[${i}]="${v}"`;
                 } else {
-                  valueList += "[" + i + "]: string";
+                  valueList += `[${i}]: string[${v.length}]`;
                 }  
-              } else if (typeof v === 'object') {
-                valueList += "[" + i + "]: object";
+              } else if (v == null) {
+                valueList += `[${i}]: null`;
+              } else if (Array.isArray(v)) {
+                valueList += `[${i}]: array[${v.length}]`;
+              } else if ((typeof v) === 'object') {
+                valueList += `[${i}]: object`;
               } else {
-                valueList += "[" + i + "]=" + v;
+                valueList += `[${i}]=${v}`;
               }
             }
-            formatted += key + ' array: ' + valueList;
+            formatted += ': ' + valueList;
           } else {
-            formatted += key + ' array.length=' + value.length;
-            
+            // already done above
           }
         } else {
           // if entries is "short" (<=5) we put entries, otherwise we put length
           const entries = Object.entries(value);
+          formatted += `${key}: object[${entries.length}]`;
           if (entries.length > 0 && entries.length <= 5) {
             var valueList = '';
             var i = 0;
             for (const [k, v] of entries) {
               if (++i > 1) valueList += ", ";
-              if (typeof v === 'string') {
+              if ((typeof v) === 'string') {
                 if (v.length <= 25) {
-                  valueList += "'" + k + "': '" + v + "'";
+                  valueList += `${k}: "${v}"`;
                 } else {
-                  valueList += "'" + k + "': string";
+                  valueList += `${k}: string(${v.length})`;
                 }
-              } else if (typeof v === 'object') {
-                valueList += "'" + k + "': object";
+              } else if (v == null) {
+                valueList += `${k}: null`;
+              } else if (Array.isArray(v)) {
+                valueList += `${k}: array[${v.length}]`;
+              } else if ((typeof v) === 'object') {
+                valueList += `${k}: object`;
               } else {
-                valueList += "'" + k + "': " + v;
+                valueList += `${k}: ${v}`;
               }
             }
-            formatted += key + ' object.entries: ' + valueList;
+            formatted += ': ' + valueList;
           } else {
-            formatted += key + ' object.entries.length=' + entries.length;
+            // already done above
           }
         }
-      } else if (typeof value === 'string') {
+      } else if ((typeof value) === 'string') {
         if (value.length <= 25) {
-          formatted += key + '="' + value + '"';
+          formatted += `${key}="${value}"`;
         } else {
-          formatted += key + ': string';
+          formatted += `${key}: string(${value.length})`;
         }
       } else {
-        formatted += key + '=' + value;
+        formatted += `${key}=${value}`;
       }
     }
 
@@ -1585,7 +2171,7 @@ export class FileSystemBrokerCommands {
 
 
   formatCommandResult(command, result) {
-    if (typeof command !== 'object' || typeof result !== 'object') {
+    if ((typeof command) !== 'object' || (typeof result) !== 'object') {
       this.error(`formatCommandResult -- Invalid Parameter Types: (typeof command)='${typeof command}' (typeof result)='${typeof result}'`);
       return "(result unavailable)";
 
@@ -1633,7 +2219,7 @@ export class FileSystemBrokerCommands {
 //            var idx = 0;
 //            for (const [k, v] of entries) { // doesn't work if v is object
 //              if (++idx > 1) valueList += ", ";
-//              if (typeof v === 'string') {
+//              if ((typeof v) === 'string') {
 //                valueList += "'" + k + "': '" + v + "'"; // what if string is long?
 //              } else {
 //                valueList += "'" + k + "': " + v;
@@ -1685,10 +2271,108 @@ export class FileSystemBrokerCommands {
           return "valid=" + result.valid;
         case "getFileSystemPathName":
           return "pathName=" + result.pathName;
+        case "stats":
+          if (result.stats && (typeof result.stats) === 'object') {
+            var resultEntries = Object.entries(result.stats);
+            if (resultEntries.length < 1) {
+              // return "(NO stats)"; // fall through to below
+            } else if (resultEntries.length > 1) { // there should only be one
+              return `stats entries=${entries.length}`;
+            } else {
+              var out = '';
+              for (const [extId, stats] of resultEntries) { // limited to exactly one by the tests above
+                if (out.length > 0) out += " || ";
+                if (stats && (typeof stats) === 'object') {
+                  out +=   ` extensionId="${extId}":`
+                         + ` dirname="${stats.dirName}"`
+                         + ` children="${stats.children}"`
+                         + ` regular="${stats.regular}"`
+                         + ` directory="${stats.directory}"`
+                         + ` other="${stats.other}"`
+                         + ` unknown="${stats.unknown}"`
+                         + ` weeoe="${stats.weeoe}"`
+                         + ` size="${stats.size}"`;
+                } else {
+                  out += "(not an object)";
+                }
+              }
+              return out;
+            }
+          }
+          return "(NO stats)";
+        case "fsbListInfo":
+          return result.fileInfo  ? "fileInfo.length=" + result.fileInfo.length  : "(NO fileInfo)";
+        case "fsbList":
+          return result.list  ? "list.length=" + result.list.length  : "(NO list)";
       }
 
       return "Unknown Command:" + command.command;
     }
+  }
+
+
+
+
+  checkStatsCmdParms(parms) {
+    for (const key of Object.keys(parms)) {
+      switch (key) {
+        case 'includeChildInfo':
+        case 'types':
+          break;
+        default:
+          return key;
+      }
+    }
+  }
+
+  checkListCmdParms(parms) {
+    for (const key of Object.keys(parms)) {
+      switch (key) {
+        case 'matchGLOB':
+        case 'types':
+          break;
+        default:
+          return key;
+      }
+    }
+  }
+
+  checkStatsItemTypes(itemTypes) {
+    for (const itemType of itemTypes) {
+      if (typeof itemType !== 'string') return '(not a string)';
+      if (! this.checkStatsItemType(itemType)) return itemType;
+    }
+  }
+
+  checkStatsItemType(itemType) {
+    switch (itemType) {
+      case 'regular':
+      case 'directory':
+      case 'other':
+      case 'unknown':
+      case 'error':
+        return true;
+    }
+
+    return false;
+  }
+
+  checkListItemTypes(itemTypes) {
+    for (const itemType of itemTypes) {
+      if (typeof itemType !== 'string') return '(not a string)';
+      if (! this.checkListItemType(itemType)) return itemType;
+    }
+  }
+
+  checkListItemType(itemType) {
+    switch (itemType) {
+      case 'regular':
+      case 'directory':
+      case 'other':
+        return true;
+    }
+
+    return false;
   }
 
 
@@ -1724,7 +2408,7 @@ export class FileSystemBrokerCommands {
    * NO MORE THAN 64 CHARACTERS
    */
   checkValidFileName(filename) {
-    if (typeof filename !== 'string') return false;
+    if ((typeof filename) !== 'string') return false;
 
     const ILLEGAL_CHARS = /[<>:"/\\|?*\x00-\x1F]/g;
     if (ILLEGAL_CHARS.test(filename)) return false;
@@ -1739,7 +2423,7 @@ export class FileSystemBrokerCommands {
   }
 
   checkValidDirName(dirname) {
-    if (typeof dirname !== 'string') return false;
+    if ((typeof dirname) !== 'string') return false;
 
     const ILLEGAL_CHARS = /[<>:"/\\|?*\x00-\x1F]/g;
     if (ILLEGAL_CHARS.test(dirname)) return false;
@@ -1781,8 +2465,8 @@ export class FileSystemBrokerCommands {
    * NO MORE THAN *64* CHARACTERS
    */
   checkValidExtensionId(extensionId) {
-    if (typeof extensionId !== 'string' || extensionId.length < 1 || extensionId.length > 64) return false;
-    
+    if ((typeof extensionId) !== 'string' || extensionId.length < 1 || extensionId.length > 64) return false;
+
     const ILLEGAL_CHARS = /[<>:"/\\|?*\x00-\x1F]/g; // will be used as part of a directoryName, so no OS-restricted chars
     if (ILLEGAL_CHARS.test(extensionId)) return false;
 
@@ -1814,7 +2498,7 @@ export class FileSystemBrokerCommands {
 
 
   checkWriteMode(writeMode) {
-    if (typeof writeMode !== 'string') return false;
+    if ((typeof writeMode) !== 'string') return false;
 
     switch (writeMode) {
       case 'overwrite':
@@ -1826,5 +2510,4 @@ export class FileSystemBrokerCommands {
 
     return false;
   }
-
 }
