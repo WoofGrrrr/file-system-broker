@@ -14,7 +14,7 @@ export class FsbEventLogger {
     this.DEBUG                           = false;
     this.WARN                            = false;
 
-    this.LOG_DELETE_OLD_EVENT_LOGS       = true; // create event log entries when deleting old event logs?
+    this.LOG_DELETE_OLD_EVENT_LOGS       = false; // create event log entries when deleting old event logs?
 
     this.LOG_FILENAME_MATCH_GLOB         = "*.log";
     this.LOG_FILENAME_EXTENSION          = ".log";
@@ -75,11 +75,9 @@ export class FsbEventLogger {
   async logEvent(senderId, eventType, stat, parameters, description) {
     const timeMS        = Date.now();
     const logFileName   = formatMsToDateForFilename(timeMS) + this.LOG_FILENAME_EXTENSION;
-    const formattedTime = formatMsToDateTime24HR(timeMS);
 
     const logMsg = {
       "timeMS":     timeMS,
-      "time":       formattedTime,
       "sender":     senderId,
       "type":       "event",
       "command":    eventType,
@@ -103,11 +101,9 @@ export class FsbEventLogger {
 
   async logCommand(timeMS, senderId, command) {
     const logFileName   = formatMsToDateForFilename(timeMS) + this.LOG_FILENAME_EXTENSION;
-    const formattedTime = formatMsToDateTime24HR(timeMS);
 
     const logMsg = {
       "timeMS": timeMS,
-      "time":   formattedTime,
       "sender": senderId,
       "type":   "command",
       "status": "request"
@@ -123,12 +119,10 @@ export class FsbEventLogger {
 
   async logCommandResult(timeMS, senderId, command, result) {
     const logFileName     = formatMsToDateForFilename(timeMS) + this.LOG_FILENAME_EXTENSION;
-    const formattedTime   = formatMsToDateTime24HR(timeMS);
     const formattedResult = (typeof result === 'object') ? this.fsbCommandsApi.formatCommandResult(command, result) : result; // MABXXX handle string vs object inside the function
 
     const logMsg = {
       "timeMS": timeMS,
-      "time":   formattedTime,
       "sender": senderId,
       "type":   "result",
       "status": result.error ? "error" : result.invalid ? "invalid" : "success"

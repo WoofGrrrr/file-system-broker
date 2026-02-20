@@ -25,7 +25,7 @@ class EventLogManager {
     this.logger                      = new Logger();
     this.fsbOptionsApi               = new FsbOptions(this.logger);
     this.fsbCommandsApi              = new FileSystemBrokerCommands(this.logger, this.fsbOptionsApi);
-    this.fsbEventLogger              = new FsbEventLogger(this.logger, this.fsbOptionsApi, this.fsbCommandsApi);
+    this.fsbEventLogger              = new FsbEventLogger(this.logger, this.fsbOptionsApi, this.fsbCommandsApi); // <---- this is why we new fsbCommandsApi
     this.fsBrokerApi                 = new FileSystemBrokerAPI();
 
     this.fsbOptionsApi.setEventLogger(this.fsbEventLogger);

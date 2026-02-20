@@ -39,6 +39,7 @@ import { getExtensionId } from '../utilities.js';
  *   . stats
  *   . fsbListInfo - with optional fileName match GLOB MABXXX MAYBE NOT IN THIS API??? INTERNAL-ONLY COMMAND
  *   . fsbList - MABXXX MAYBE NOT IN THIS API??? INTERNAL-ONLY COMMAND
+ *   . fsStats - MABXXX MAYBE NOT IN THIS API??? INTERNAL-ONLY COMMAND
  *
  * ** A fileName may not contain these characters:
  *      < (less than)
@@ -286,11 +287,11 @@ export class FileSystemBrokerAPI {
     return await this.sendFSBrokerCommand(Command);
   }
 
-  async fsbListInfo(matchGLOB) { // MABXXX MAYBE NOT IN THIS API??? INTERNAL-ONLY COMMAND
-    if (matchGLOB === null || typeof matchGLOB === 'undefined') {
+  async fsbListInfo(parameters) { // MABXXX MAYBE NOT IN THIS API??? INTERNAL-ONLY COMMAND
+    if (parameters === null || typeof parameters === 'undefined') {
       return await this.sendFSBrokerCommand( { "command": "fsbListInfo" } );
     } else {
-      return await this.sendFSBrokerCommand( { "command": "fsbListInfo", "matchGLOB": matchGLOB, } )
+      return await this.sendFSBrokerCommand( { "command": "fsbListInfo", "parameters": parameters, } )
     }
   }
 
@@ -300,6 +301,21 @@ export class FileSystemBrokerAPI {
     } else {
       return await this.sendFSBrokerCommand( { "command": "fsbList", "parameters": parameters, } )
     }
+  }
+
+  async fsbStats() { // MABXXX MAYBE NOT IN THIS API??? INTERNAL-ONLY COMMAND
+    return await this.sendFSBrokerCommand( { "command": "fsbStats" } );
+  }
+
+  async fsbDeleteDirectory(directoryName, parameters) { // MABXXX MAYBE NOT IN THIS API??? INTERNAL-ONLY COMMAND
+    var Command;
+    if (parameters === null || typeof parameters === 'undefined') {
+      Command = { "command": "fsbDeleteDirectory", "directoryName": directoryName };
+    } else {
+      Command = { "command": "fsbDeleteDirectory", "directoryName": directoryName, "parameters": parameters };
+    }
+    this.debug("\n--------------------> fsbDeleteDirectory Sending Command:\n", Command);
+    return await this.sendFSBrokerCommand(Command);
   }
 
 

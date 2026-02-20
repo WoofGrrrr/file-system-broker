@@ -18,6 +18,8 @@ class OptionsUI {
     this.DEBUG                                      = false;
     this.WARN                                       = false;
 
+    this.EXTENSIONS_STATS_COL_SPAN                  = 4;
+
     this.logger                                     = new Logger();
     this.fsbOptionsApi                              = new FsbOptions(this.logger);
     this.fsbCommandsApi                             = new FileSystemBrokerCommands(this.logger, this.fsbOptionsApi);
@@ -34,6 +36,9 @@ class OptionsUI {
     this.editorEditExtensionId                      = undefined;
 
     this.prevFocusedWindow                          = undefined;
+
+    this.showExtensionStats                         = false;
+    this.fsbStats;
 
     this.extensionOptionsTitleClickTimeout          = null;  // for detecting single- vs double-click
     this.EXTENSION_OPTIONS_TITLE_CLICK_DELAY        = 500;   // 500ms, 1/2 second (the JavaScript runtime does not guarantee this time - it's single-threaded)
@@ -56,6 +61,10 @@ class OptionsUI {
 
     this.extensionListHeaderTextId                                         = getI18nMsg("options_fsbExtensionListHeaderTextId.label");
     this.extensionListHeaderTextName                                       = getI18nMsg("options_fsbExtensionListHeaderTextName.label");
+    this.extensionListHeaderTextDirExists                                  = getI18nMsg("options_fsbExtensionListHeaderTextDirExists.label"); // I18n
+    this.extensionListHeaderTextItemCount                                  = getI18nMsg("options_fsbExtensionListHeaderTextItemCount.label");   // I18n
+    this.extensionListHeaderTextTotalSizeFmt                               = getI18nMsg("options_fsbExtensionListHeaderTextTotalSizeFmt.label");   // I18n
+    this.extensionListHeaderTextTotalSizeBytes                             = getI18nMsg("options_fsbExtensionListHeaderTextTotalSizeBytes.label"); // I18n
 
     this.extensionListEditorTitleAddMode                                   = getI18nMsg("options_fsbExtensionEditTitleAddMode");
     this.extensionListEditorTitleEditMode                                  = getI18nMsg("options_fsbExtensionEditTitleEditMode");
@@ -148,33 +157,40 @@ class OptionsUI {
       }
     }
     
-    var parameters;
+    if (false) {
+      var parameters;
 
-    parameters = { 'includeChildInfo': true };
-    const stats1 = await this.fsBrokerApi.stats(parameters); // get statitics for our own extension directory
-    this.debugAlways("\n\n========== EXTENSION STATS1 ==========\n", stats1, "\n\n========== EXTENSION STATS1 ==========\n\n");
-    
-    parameters = { 'includeChildInfo': true, 'types': ['regular'] };
-    const stats2 = await this.fsBrokerApi.stats(parameters); // get statitics for our own extension directory
-    this.debugAlways("\n\n========== EXTENSION STATS2 ==========\n", stats2, "\n\n========== EXTENSION STATS2 ==========\n\n");
-    
-    parameters = { 'matchGLOB': '*', 'types': ['directory','regular'] };
-    const info1 = await this.fsBrokerApi.fsbListInfo(parameters); // using messaging
-    this.debugAlways("\n\n========== FSB INFO1 ==========\n", info1, "\n\n========== FSB INFO1 ==========\n\n");
-    const info2 = await this.fsbCommandsApi.fsbListInfo(parameters); // direct call, no messaging
-    this.debugAlways("\n\n========== FSB INFO2 ==========\n", info2, "\n\n========== FSB INFO2 ==========\n\n");
+      parameters = { 'includeChildInfo': true };
+      const stats1 = await this.fsBrokerApi.stats(parameters); // get statitics for our own extension directory
+      this.debugAlways("\n\n========== EXTENSION STATS1 ==========\n", stats1, "\n\n========== EXTENSION STATS1 ==========\n\n");
+      
+      parameters = { 'includeChildInfo': true, 'types': ['regular'] };
+      const stats2 = await this.fsBrokerApi.stats(parameters); // get statitics for our own extension directory
+      this.debugAlways("\n\n========== EXTENSION STATS2 ==========\n", stats2, "\n\n========== EXTENSION STATS2 ==========\n\n");
+      
+      parameters = { 'matchGLOB': '*', 'types': ['directory','regular'] };
+      const info1 = await this.fsBrokerApi.fsbListInfo(parameters); // using messaging
+      this.debugAlways("\n\n========== FSB INFO1 ==========\n", info1, "\n\n========== FSB INFO1 ==========\n\n");
+      const info2 = await this.fsbCommandsApi.fsbListInfo(parameters); // direct call, no messaging
+      this.debugAlways("\n\n========== FSB INFO2 ==========\n", info2, "\n\n========== FSB INFO2 ==========\n\n");
 
-    parameters = { 'matchGLOB': '*', 'types': ['directory','regular'] };
-    const list1 = await this.fsBrokerApi.fsbList(parameters); // using messaging
-    this.debugAlways("\n\n========== FSB LIST1 ==========\n", list1, "\n\n========== FSB LIST1 ==========\n\n");
-    const list2 = await this.fsbCommandsApi.fsbList(parameters); // direct call, no messaging
-    this.debugAlways("\n\n========== FSB LIST2 ==========\n", list2, "\n\n========== FSB LIST2 ==========\n\n");
+      parameters = { 'matchGLOB': '*', 'types': ['directory','regular'] };
+      const list1 = await this.fsBrokerApi.fsbList(parameters); // using messaging
+      this.debugAlways("\n\n========== FSB LIST1 ==========\n", list1, "\n\n========== FSB LIST1 ==========\n\n");
+      const list2 = await this.fsbCommandsApi.fsbList(parameters); // direct call, no messaging
+      this.debugAlways("\n\n========== FSB LIST2 ==========\n", list2, "\n\n========== FSB LIST2 ==========\n\n");
 
-    parameters = { 'matchGLOB': '*', 'types': ['directory'] };
-    const list3 = await this.fsBrokerApi.fsbList(parameters); // using messaging
-    this.debugAlways("\n\n========== FSB LIST3 ==========\n", list3, "\n\n========== FSB LIST3 ==========\n\n");
-    const list4 = await this.fsbCommandsApi.fsbList(parameters); // direct call, no messaging
-    this.debugAlways("\n\n========== FSB LIST4 ==========\n", list4, "\n\n========== FSB LIST4 ==========\n\n");
+      parameters = { 'matchGLOB': '*', 'types': ['directory'] };
+      const list3 = await this.fsBrokerApi.fsbList(parameters); // using messaging
+      this.debugAlways("\n\n========== FSB LIST3 ==========\n", list3, "\n\n========== FSB LIST3 ==========\n\n");
+      const list4 = await this.fsbCommandsApi.fsbList(parameters); // direct call, no messaging
+      this.debugAlways("\n\n========== FSB LIST4 ==========\n", list4, "\n\n========== FSB LIST4 ==========\n\n");
+
+      const fsbStats1 = await this.fsBrokerApi.fsbStats(); // using messaging
+      this.debugAlways("\n\n========== FSB STATS1 ==========\n", fsbStats1, "\n\n========== FSB STATS1 ==========\n\n");
+      const fsbStats2 = await this.fsbCommandsApi.fsbStats(); // direct call, no messaging
+      this.debugAlways("\n\n========== FSB STATS2 ==========\n", fsbStats2, "\n\n========== FSB STATS2 ==========\n\n");
+    }
 
     await this.localizePage();
     await this.applyTooltips(document);
@@ -578,6 +594,13 @@ class OptionsUI {
     loadingDiv.appendChild( document.createTextNode(i18nMessage) );
     domFsbExtensionList.appendChild(loadingDiv);
 
+    // get extension stats
+    const response = await this.fsbCommandsApi.fsbStats();
+    if (response && response.stats && (typeof response.stats) === 'object') {
+      this.showExtensionStats = true;
+      this.fsbStats = response.stats;
+    }
+
     // Remove the "Loading Extension IDs List" DIV and build the actual List UI
     domFsbExtensionList.innerHTML = '';
 
@@ -611,7 +634,9 @@ class OptionsUI {
       for (const [extensionId, extensionProps] of Object.entries(allExtensionsProps)) {
         this.debug(`-- adding Extension -- extensionId="${extensionId}"`);
 
-        const extensionListItemUI = this.buildExtensionListItemUI(extensionId, extensionProps);
+        var extDirStats = (this.fsbStats && (extensionId in this.fsbStats)) ? this.fsbStats[extensionId] : null;
+         
+        const extensionListItemUI = await this.buildExtensionListItemUI(extensionId, extensionProps, extDirStats);
         domFsbExtensionList.appendChild(extensionListItemUI);
 
         this.debug(`-- finished adding Extension -- extensionId="${extensionId}"`);
@@ -647,6 +672,36 @@ class OptionsUI {
           extensionIdLabel.appendChild( document.createTextNode(this.extensionListHeaderTextId) );
         extensionIdTH.appendChild(extensionIdLabel);
       thead.appendChild(extensionIdTH);
+
+      if (this.showExtensionStats) {
+        const extensionDirExistsTH = document.createElement("th");
+          extensionDirExistsTH.classList.add("extension-head-data");     // extension-head-item > extension-head-data
+          const extensionDirExistsLabel = document.createElement("label");
+            extensionDirExistsLabel.appendChild( document.createTextNode(this.extensionListHeaderTextDirExists) );
+          extensionDirExistsTH.appendChild(extensionDirExistsLabel);
+        thead.appendChild(extensionDirExistsTH);
+
+        const extensionItemCountTH = document.createElement("th");
+          extensionItemCountTH.classList.add("extension-head-data");  // extension-head-item > extension-head-data
+          const extensionItemCountLabel = document.createElement("label");
+            extensionItemCountLabel.appendChild( document.createTextNode(this.extensionListHeaderTextItemCount) );
+          extensionItemCountTH.appendChild(extensionItemCountLabel);
+        thead.appendChild(extensionItemCountTH);
+
+        const extensionTotalSizeFmtTH = document.createElement("th");
+          extensionTotalSizeFmtTH.classList.add("extension-head-data");  // extension-head-item > extension-head-data
+          const extensionTotalSizeFmtLabel = document.createElement("label");
+            extensionTotalSizeFmtLabel.appendChild( document.createTextNode(this.extensionListHeaderTextTotalSizeFmt) );
+          extensionTotalSizeFmtTH.appendChild(extensionTotalSizeFmtLabel);
+        thead.appendChild(extensionTotalSizeFmtTH);
+
+        const extensionTotalSizeBytesTH = document.createElement("th");
+          extensionTotalSizeBytesTH.classList.add("extension-head-data");// extension-head-item > extension-head-data
+          const extensionTotalSizeBytesLabel = document.createElement("label");
+            extensionTotalSizeBytesLabel.appendChild( document.createTextNode(this.extensionListHeaderTextTotalSizeBytes) );
+          extensionTotalSizeBytesTH.appendChild(extensionTotalSizeBytesLabel);
+        thead.appendChild(extensionTotalSizeBytesTH);
+      }
 
 //    const controlsRightTH = document.createElement("th");
 //      controlsRightTH.classList.add("extension-head-controls-right");  // extension-head-item > extension-head-controls-right
@@ -700,9 +755,12 @@ class OptionsUI {
       extensionEditTitleTR.classList.add("extension-edit-title-item");              // extension-edit-title_item
       extensionEditTitleTR.classList.add('display-none');                           // HIDE the Row - turn ON display: none
 
+      var span = 3;
+      if (this.showExtensionStats) span += this.EXTENSIONS_STATS_COL_SPAN;
+
       // Create Extension Title Text element and add it to the row
       const extensionTitleTextTD = document.createElement("td");
-        extensionTitleTextTD.setAttribute("colspan", "3");
+        extensionTitleTextTD.setAttribute("colspan", span.toString());
         extensionTitleTextTD.classList.add("extension-edit-title-data");            // extension-edit-title-item > extension-edit-title-data
         const extensionTitleTextLabel = document.createElement("label");
           extensionTitleTextLabel.setAttribute("id", "extension_edit_title_text");  // extension-edit-title-item > extension-edit-title-data > #extension_edit_text
@@ -759,6 +817,13 @@ class OptionsUI {
           extensionIdText.classList.add("no-css");                            // Tell userContent.css NOT to change me!!!
         extensionIdTD.appendChild(extensionIdText);
       extensionEditTR.appendChild(extensionIdTD);
+
+      if (this.showExtensionStats) {
+        const extensionStatsTD = document.createElement("td");
+          extensionStatsTD.classList.add("extension-edit-data");             // extension-edit-item > extension-edit-data
+          extensionStatsTD.setAttribute("colspan", this.EXTENSIONS_STATS_COL_SPAN.toString());
+        extensionEditTR.appendChild(extensionStatsTD);
+      }
 
       // Create controls-right element and add it to the row
       const controlsRightTD = document.createElement("td");
@@ -829,6 +894,13 @@ class OptionsUI {
         extensionIdTD.appendChild(extensionIdErrorLabel);
       extensionEditErrorTR.appendChild(extensionIdTD);
 
+      if (this.showExtensionStats) {
+        const extensionStatsTD = document.createElement("td");
+          extensionStatsTD.classList.add("extension-edit-error-data");             // extension-edit-error-item > extension-edit-error-data
+          extensionStatsTD.setAttribute("colspan", this.EXTENSIONS_STATS_COL_SPAN.toString());
+        extensionEditErrorTR.appendChild(extensionStatsTD);
+      }
+
       // Create controls-right element and add it to the row
       const emptyRightTD = document.createElement("td");
         emptyRightTD.classList.add("extension-edit-error-empty");                   // extension-edit-error-item > extension-edit-error-empty
@@ -839,7 +911,8 @@ class OptionsUI {
 
 
 
-  buildExtensionListItemUI(extensionId, props) {
+  // async just because of formatFileSize()
+  async buildExtensionListItemUI(extensionId, props, extDirStats) {
     const extensionIdFromProps = ( !props || typeof props.id          !== 'string'  ) ? ''    : props.id;
     const extensionName        = ( !props || typeof props.name        !== 'string'  ) ? ''    : props.name;
     const description          = ( !props || typeof props.description !== 'string'  ) ? ''    : props.description;
@@ -902,15 +975,64 @@ class OptionsUI {
       const extensionNameTD = document.createElement("td");
         extensionNameTD.classList.add("extension-list-data");           // extension-list-item > extension-list-data
         extensionNameTD.classList.add("extension-list-name");           // extension-list-item > extension-list-name
-        extensionNameTD.appendChild(document.createTextNode(extensionName));
+        extensionNameTD.appendChild( document.createTextNode(extensionName) );
       extensionTR.appendChild(extensionNameTD);
 
       // Create Extension Id element and add it to the row
       const extensionIdTD = document.createElement("td");
         extensionIdTD.classList.add("extension-list-data");             // extension-list-item > extension-list-data
         extensionIdTD.classList.add("extension-list-id");               // extension-list-item > extension-list-id
-        extensionIdTD.appendChild(document.createTextNode(extensionId));
+        extensionIdTD.appendChild( document.createTextNode(extensionId) );
       extensionTR.appendChild(extensionIdTD);
+
+      if (this.showExtensionStats) {
+        // Create Extension DirectoryExists element and add it to the row
+        const extensionDirExistsTD = document.createElement("td");
+          extensionDirExistsTD.classList.add("extension-list-data");             // extension-list-item > extension-list-data
+          extensionDirExistsTD.classList.add("extension-list-stats-dir-exists"); // extension-list-item > extension-list-stats-dir-exists
+          if (extDirStats) {
+            extensionDirExistsTD.appendChild( document.createTextNode("+++") );
+          } else {
+            extensionDirExistsTD.appendChild( document.createTextNode("---") );
+          }
+        extensionTR.appendChild(extensionDirExistsTD);
+
+        // Create Extension TotalSize (formatted) element and add it to the row
+        const extensionItemCountTD = document.createElement("td");
+          extensionItemCountTD.classList.add("extension-list-data");             // extension-list-item > extension-list-data
+          extensionItemCountTD.classList.add("extension-list-stats-item-count"); // extension-list-item > extension-list-stats-item-count
+          extensionItemCountTD.classList.add("data-numeric");                    // extension-list-item > data-numeric
+          if (extDirStats) {
+            extensionItemCountTD.appendChild( document.createTextNode( extDirStats.count_children.toString() ) );
+          } else {
+            extensionItemCountTD.appendChild( document.createTextNode("-") );
+          }
+        extensionTR.appendChild(extensionItemCountTD);
+
+        // Create Extension TotalSize (formatted) element and add it to the row
+        const extensionTotalSizeFmtTD = document.createElement("td");
+          extensionTotalSizeFmtTD.classList.add("extension-list-data");                 // extension-list-item > extension-list-data
+          extensionTotalSizeFmtTD.classList.add("extension-list-stats-total-size-fmt"); // extension-list-item > extension-list-stats-total-size-fmt
+          extensionTotalSizeFmtTD.classList.add("data-numeric");                        // extension-list-item > data-numeric
+          if (extDirStats) {
+            extensionTotalSizeFmtTD.appendChild( document.createTextNode( await messenger.messengerUtilities.formatFileSize( extDirStats.size_total ) ) );
+          } else {
+            extensionTotalSizeFmtTD.appendChild( document.createTextNode("-") );
+          }
+        extensionTR.appendChild(extensionTotalSizeFmtTD);
+
+        // Create Extension TotalSize (in bytes) element and add it to the row
+        const extensionTotalSizeBytesTD = document.createElement("td");
+          extensionTotalSizeBytesTD.classList.add("extension-list-data");                   // extension-list-item > extension-list-data
+          extensionTotalSizeBytesTD.classList.add("extension-list-stats-total-size-bytes"); // extension-list-item > extension-list-stats-total-size-bytes
+          extensionTotalSizeBytesTD.classList.add("data-numeric");                          // extension-list-item > data-numeric
+          if (extDirStats) {
+            extensionTotalSizeBytesTD.appendChild( document.createTextNode( extDirStats.size_total.toString() ) );
+          } else {
+            extensionTotalSizeBytesTD.appendChild( document.createTextNode("-") );
+          }
+        extensionTR.appendChild(extensionTotalSizeBytesTD);
+      }
 
       // Create controls-right element and add it to the row
       const controlsRightTD = document.createElement("td");
@@ -968,7 +1090,7 @@ class OptionsUI {
 
     const domFsbExtensionList = document.getElementById("fsbExtensionList");
 
-    const extensionTR = this.buildExtensionListItemUI(extensionId, extensionProps);
+    const extensionTR = await this.buildExtensionListItemUI(extensionId, extensionProps);
 
     var inserted = false;
     const domExtensionListItems = domFsbExtensionList.children;
@@ -1691,6 +1813,9 @@ this.debugAlways(`-- LABEL CLICKED, FOR ELEMENT FOUND -- id="${target.getAttribu
             break;
           case "fsbShowEventLogManagerButton":
             await this.showEventLogManager(e);
+            break;
+          case "fsbShowStatsManagerButton":
+            await this.showStatsManager(e);
             break;
           case "fsbDeleteSelectedButton":
             await this.deleteSelectedExtensions(e);
@@ -3179,7 +3304,159 @@ this.debugAlways(`-- LABEL CLICKED, FOR ELEMENT FOUND -- id="${target.getAttribu
 
 
 
+  async showStatsManager(e) {
+    e.preventDefault();
+
+    this.debug("-- begin");
+
+    var   popupLeft   = 100;
+    var   popupTop    = 100;
+    var   popupHeight = 900;
+    var   popupWidth  = 600;
+    const mainWindow  = await messenger.windows.getCurrent();
+
+    if (! mainWindow) {
+      this.debug("-- DID NOT GET THE CURRENT (MAIN, mail:3pane) WINDOW!!! ---");
+
+    } else {
+      this.debug( "-- Got the Current (Main, mail:3pane) Window:"
+                  + `\n- mainWindow.top=${mainWindow.top}`
+                  + `\n- mainWindow.left=${mainWindow.left}`
+                  + `\n- mainWindow.height=${mainWindow.height}`
+                  + `\n- mainWindow.width=${mainWindow.width}`
+                );
+      popupTop  = mainWindow.top  + 100;
+      popupLeft = mainWindow.left + 100;
+      if (mainWindow.height - 200 > popupHeight) popupHeight = mainWindow.Height - 200;   // make it higher, but not shorter
+////////if (mainWindow.Width  - 200 > popupWidth)  popupWidth  = mainWindow.Width  - 200;   // make it wider,  but not narrower --- eh, don't need it wider
+    }
+
+    const bounds = await this.fsbOptionsApi.getWindowBounds("statsManagerWindowBounds");
+
+    if (! bounds) {
+      this.debug("-- no previous window bounds");
+    } else if (typeof bounds !== 'object') {
+      this.error(`-- PREVIOUS WINDOW BOUNDS IS NOT AN OBJECT: typeof='${typeof bounds}' #####`);
+    } else {
+      this.debug( "-- restoring previous window bounds:"
+                  + `\n- bounds.top=${bounds.top}`
+                  + `\n- bounds.left=${bounds.left}`
+                  + `\n- bounds.width=${bounds.width}`
+                  + `\n- bounds.height=${bounds.height}`
+                );
+      popupTop    = bounds.top;
+      popupLeft   = bounds.left;
+      popupWidth  = bounds.width;
+      popupHeight = bounds.height;
+    }
+
+
+
+    // window.id does not exist.  how do we get our own window id???
+    var   ourTabId;
+    var   ourWindowId;
+    const currentTab = await messenger.tabs.getCurrent();
+    if (! currentTab) {
+      this.debug("-- messenger.tabs.getCurrent() didn't return a Tab");
+    } else {
+      this.debug(`-- currentTab.id="${currentTab.id}" currentTab.windowId="${currentTab.windowId}"`);
+      ourTabId    = currentTab.id;
+      ourWindowId = currentTab.windowId;
+    }
+
+
+
+    const statsManagerUrl    = messenger.runtime.getURL("../statsManager/statsManager.html");
+    const statsManagerWindow = await messenger.windows.create(
+      {
+        url:                 statsManagerUrl,
+        type:                "popup",
+        titlePreface:        getI18nMsg("options_fsbOptionsTitle") + " - ",
+        top:                 popupTop,
+        left:                popupLeft,
+        height:              popupHeight,
+        width:               popupWidth,
+        allowScriptsToClose: true,
+      }
+    );
+
+    this.debug( "-- Stats Manager Popup Window Created --"
+                + `\n-from ourTabId="${ourTabId}"`
+                + `\n-from ourWindowId="${ourWindowId}"`
+                + `\n-statsManagerWindow.id="${statsManagerWindow.id}"`
+////////////////+ `\n-URL="${statsManagerUrl}"`
+              );
+
+    // Re-focus on the statsManager window when our window gets focus
+    // MABXXX PERHAPS THIS SHOULD BE DONE INSIDE statsManagerPrompt() ???
+    const focusListener = async (windowId) => this.windowFocusChanged(windowId, ourTabId, ourWindowId, statsManagerWindow.id);
+    messenger.windows.onFocusChanged.addListener(focusListener);
+ 
+    // StatsManagerResponse - expected:
+    // - null                     - the user closed the popup window               (set by our own windows.onRemoved listener - the defaultResponse sent to statsManagerPrompt)
+    // - CLOSED                   - the user closed the popup window               (sent by the StatsManager window's window.onClosed listener)
+    // - DONE                     - the user clicked the Done button               (sent by the StatsManager window's Done button listener)
+
+    const statsManagerResponse = await this.statsManagerPrompt(statsManagerWindow.id, focusListener, null);
+    this.debug(`-- StatsManager statsManagerResponse="${statsManagerResponse}"`);
+
+    // NOW UPDATE THE UI!!!
+    switch (statsManagerResponse) {
+      case 'DONE':
+      case 'CLOSED':
+      case null:
+        break;
+      default:
+    }
+  }
+
+
+
+  async statsManagerPrompt(statsManagerWindowId, focusListener, defaultResponse) {
+    try {
+      await messenger.windows.get(statsManagerWindowId);
+    } catch (error) {
+      // Window does not exist, assume closed.
+      this.caught(error, "-- PERHAPS WINDOW CLOSED???");
+      return defaultResponse;
+    }
+
+    return new Promise(resolve => {
+      var response = defaultResponse;
+
+      function windowRemovedListener(windowId) {
+        if (windowId == statsManagerWindowId) {
+
+          messenger.runtime.onMessage.removeListener(messageListener);
+          messenger.windows.onRemoved.removeListener(windowRemovedListener);
+          messenger.windows.onFocusChanged.removeListener(focusListener);
+
+          resolve(response);
+        }
+      }
+
+      /* The StatsManager sends a message as StatsManagerResponse:
+       *  - CLOSED                   - the user closed the popup window               (sent by the StatsManager window's window.onClosed listener)
+       *  - DONE                     - the user clicked the Done button               (sent by the StatsManager window's Done button listener)
+       * Save this StatsManagerResponse into response for resolve()
+       */
+      function messageListener(request, sender, sendResponse) {
+        if (sender.tab && sender.tab.windowId == statsManagerWindowId && request && request.hasOwnProperty("StatsManagerResponse")) {
+          response = request.StatsManagerResponse;
+        }
+        return false; // we're not sending any response
+      }
+
+      messenger.runtime.onMessage.addListener(messageListener);
+      messenger.windows.onRemoved.addListener(windowRemovedListener);
+    });
+  }
+
+
+
   async windowFocusChanged(windowId, creatorTabId, creatorWindowId, extensionChooserWindowId) {
+    if (true) return; // this whole thing is messed up
+
     const lastFocusedWindow = await messenger.windows.getLastFocused();
     var   lastFocusedWindowId;
     if (lastFocusedWindow) lastFocusedWindowId = lastFocusedWindow.id;
@@ -3203,7 +3480,7 @@ this.debugAlways(`-- LABEL CLICKED, FOR ELEMENT FOUND -- id="${target.getAttribu
          && extensionChooserWindowId != this.prevFocusedWindowId
        )
     {
-      this.debug( "-- Creator Window got focus, bring Extension Chooserr Window into focus above it --"
+      this.debug( "-- Creator Window got focus, bring Extension Chooser Window into focus above it --"
                   + "\n- creatorTabId="             + creatorTabId
                   + "\n- creatorWindowId="          + creatorWindowId
                   + "\n- extensionChooserWindowId=" + extensionChooserWindowId

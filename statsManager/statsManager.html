@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html language="en">
+
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <title data-l10n-id="fsbStatsManager_pageTitle">Identity Manager Plus</title>
+    <link rel="stylesheet" href="./statsManager.css" type="text/css" >
+    <script type="module" src="./statsManager.js" defer></script>
+  </head>
+
+  <body>
+    <div id="fsbStatsManager">
+      <div id="fsbStatsManagerTitlePanel" data-l10n-id="fsbStatsManager_title">
+        Statistics Manager <!-- don't put anyting inside this <div> because localization will replace it -->
+      </div>
+
+      <div id="fsbStatsManagerTitleMessagesPanel" class="messages-panel" messages-for="fsbStatsManagerTitlePanel" msg="false">
+       <div class="stats-error" msg-for="fsbStatsManagerTitlePanel" error="false">
+          <span class="stats-error-icon-large"><img src="../images/icons/forbidden_16x16.png"/></span>
+          <label class="stats-error-text" msg-for="fsbStatsManagerTitlePanel"></label>
+        </div>
+
+        <div class="stats-msg" msg-for="fsbStatsManagerTitlePanel" error="false">
+<!--      <span class="stats-msg-icon-large"><img src="../images/icons/forbidden_16x16.png"/></span> -->
+          <label class="stats-msg-text" msg-for="fsbStatsManagerTitlePanel"></label>
+        </div>
+      </div>
+
+      <div id="fsbStatsManagerInstructionsPanel">
+        <div>
+          <input id="fsbShowStatsManagerInstructions" type="checkbox" class="fsbGeneralOption open-close-check">
+          <label for="fsbShowStatsManagerInstructions"></label>
+          <label for="fsbShowStatsManagerInstructions" data-l10n-id="fsbStatsManagerInstructions.label"></label>
+        </div>
+
+        <div id="fsbStatsManagerInstructions" class="options-open-close-panel">
+          <ul class="compact-list">
+            <li><label data-l10n-id="fsbStatsManager_instructions_1">Click on a Directory to Select it - it will be highlighted</label></li>
+            <li><label data-l10n-id="fsbStatsManager_instructions_2">Click again to De-select it</label></li>
+<!--        <li><label data-l10n-id="fsbStatsManager_instructions_3">Double-click on a Directory to list the Items in it</label></li> -->
+            <li><label data-l10n-id="fsbStatsManager_instructions_4">Click the Delete button to delete the selected Directories</label></li>
+          <ul>
+        </div>
+
+        <div class="messages-panel" messages-for="fsbStatsManagerInstructions" msg="false">
+          <div class="stats-error" error-for="fsbStatsManagerInstructions" error="false">
+            <span class="stats-error-icon-large"><img src="../images/icons/forbidden_16x16.png"/></span>
+            <label class="stats-error-text" error-for="fsbStatsManagerInstructions"></label>
+          </div>
+
+          <div class="stats-msg" msg-for="fsbStatsManagerInstructions" error="false">
+<!--        <span class="stats-msg-icon-large"><img src="../images/icons/forbidden_16x16.png"/></span> -->
+            <label class="stats-msg-text" msg-for="fsbStatsManagerInstructions"></label>
+          </div>
+        </div>
+      </div>
+
+      <div id="fsbStatsManagerDirectoryListWrapper">
+        <table id="fsbStatsManagerDirectoryList">
+        </table>
+      </div>
+
+      <div id="fsbStatsManagerControlsPanel">
+        <div id="fsbStatsManagerControlsButtonPanel">
+          <button id="fsbStatsManagerDeleteButton" data-l10n-id="fsbStatsManager_deleteButton">Delete</button>
+          <button id="fsbStatsManagerRefreshButton" data-l10n-id="fsbStatsManager_refreshButton">Refresh List</button>
+          <button id="fsbStatsManagerDoneButton" data-l10n-id="fsbStatsManager_doneButton">Done</button>
+        </div>
+        <div id="fsbStatsManagerControlsPanelSpacerRight"></div>
+      </div>
+
+      <div id="fsbStatsManagerLeftSpacer"></div>
+      <div id="fsbStatsManagerRightSpacer"></div>
+      <div id="fsbStatsManagerBottomSpacer"></div>
+    </div>
+  </body>
+
+</html>

@@ -45,6 +45,8 @@
  *   . stats
  *   . fsbListInfo
  *   . fsbList
+ *   . fsbStats
+ *   . fsbDeleteDirectory
  *
  * ** A fileName may not contain these characters:
  *      <
@@ -1674,42 +1676,6 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
         // optional 'parameters' parameter must be object - schema.json makes sure of this
         // optional parameters.includeChildInfo must be a boolean - schema.json makes sure of this
         // optional parameters.types must be an array of String - schema.json makes sure of this
-        //
-        // returns:
-        //
-        //   { extensionId: {
-        //       stats: {
-        //                'includeChildInfo':               boolean:          incoming parameter
-        //                'types':                          array of string:  incoming parameter (OPTIONAL: only if includeChildInfo is true)
-        //                'dirName':                        string:           directory name
-        //                'dirPath':                        string:           directory fulle pathName
-        //                'children':                       integer:          total number of child items
-        //                'regular':                        integer:          number of child items with type 'regular'
-        //                'directory':                      integer:          number of child items with type 'directory'
-        //                'other':                          integer:          number of child items with type 'other'
-        //                'unknown':                        integer:          number of child items with type none of the three above
-        //                'error':                          integer:          number of child items whose types could not be determined
-        //                'earliestChildCreationTime':      integer:          earliest Creation Time      of all child items (OS-dependent) in MS (undefined if no children)
-        //                'latestChildCreationTime':        integer:          latest   Creation Time      of all child items (OS-dependent) in MS (undefined if no children)
-        //                'earliestChildLastAccessedTime':  integer:          earliest Last Accessed Time of all child items (OS-dependent) in MS (undefined if no children)
-        //                'latestChildLastAccessedTime':    integer:          latest   Last Accessed Time of all child items (OS-dependent) in MS (undefined if no children)
-        //                'earliestChildLastModifiedTime':  integer:          earliest Last Modified Time of all child items (OS-dependent) in MS (undefined if no children)
-        //                'latestChildLastModifiedTime':    integer:          latest   Last Modified Time of all child items (OS-dependent) in MS (undefined if no children)
-        //                'smallestSize':                   integer:          smallest size (bytes) of all child items with type 'regular' (-1 if none)
-        //                'largestSize':                    integer:          largest size (bytes) of all child items with type 'regular' (-1 if none)
-        //                'totalSize':                      integer:          total of sizes (bytes) of all child items with type 'regular'
-        //                [ 'childInfo': ]                  array of object {                 (OPTIONAL: only if includeChildInfo is true)
-        //                                                    'name'                string:   item name
-        //                                                    'type'                string:   item type - 'regular', 'directory', 'other', 'unknown', 'error'
-        //                                                    'path'                string:   item full pathName
-        //                                                    'creationTime':       integer:  Creation Time      (OS-dependent) in MS
-        //                                                    'lastAccessedTime':   integer:  Last Accessed Time (OS-dependent) in MS
-        //                                                    'lastModifiedTime':   integer:  Last Modified Time (OS-dependent) in MS
-        //                                                    [ 'size': ]           integer:  file size (bytes) (OPTIONAL: only for items with type 'regular')
-        //                                                  }
-        //              }
-        //       }
-        //   }
         async stats(extensionId, parameters) {
           if (! checkExtensionId(extensionId)) { // the ID of the extension for which the call is being made
             debug(`stats -- extensionId is invalid: "${extensionId}"`);
@@ -1754,333 +1720,35 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
             // this is ok
           }
 
-if (true) {
-  try { // MABXXX try/catch ???
-          const response = await getStatsForDir(context, "stats", extensionId, includeChildInfo, types);
-          if (! response) {
-            debug(`stats -- Failed to get response from getStatsForDir():  "${extensionId}"`);
-            // MABXXX return "error" response instead???
-            throw new ExtensionError(`BrokerFileSystem.stats -- Failed to get stats for Extension: "${extensionId}"`);
+          try { // MABXXX try/catch ???
+            const response = await getStatsForDir(context, "stats", extensionId, includeChildInfo, types);
+            if (! response) {
+              debug(`stats -- Failed to get response from getStatsForDir():  "${extensionId}"`);
+              // MABXXX return "error" response instead???
+              throw new ExtensionError(`BrokerFileSystem.stats -- Failed to get stats for Extension: "${extensionId}"`);
 
-          } else if (response.error) {
-            debug(`stats -- 'error' response from getStatsForDir(): "${response.error}"`);
-            return response;
+            } else if (response.error) {
+              debug(`stats -- 'error' response from getStatsForDir(): "${response.error}"`);
+              return response;
 
-          } else if (response.invalid) {
-            debug(`stats -- 'invalid' response from getStatsForDir(): "${response.invalid}"`);
-            return response;
+            } else if (response.invalid) {
+              debug(`stats -- 'invalid' response from getStatsForDir(): "${response.invalid}"`);
+              return response;
 
-          } else if (! response.stats) {
-            debug(`stats -- No 'stats' response from getStatsForDir(): "${response.invalid}"`);
-            // MABXXX return "error" response instead???
-            throw new ExtensionError(`BrokerFileSystem.stats -- Failed to get stats for Extension: "${extensionId}"`);
+            } else if (! response.stats) {
+              debug(`stats -- No 'stats' response from getStatsForDir(): "${response.invalid}"`);
+              // MABXXX return "error" response instead???
+              throw new ExtensionError(`BrokerFileSystem.stats -- Failed to get stats for Extension: "${extensionId}"`);
 
-          } else {
-            const result = {};
-            result[extensionId] = response.stats;
-            return result;
-          }
-  } catch (error) {
-    caught(error, "stats -- UNEXPECTED ERROR", `Extension "${extensionId}"`);
-  }
-} else {
-
-          const dirPath = buildPathName(context, extensionId);
-          if (! checkPathName(dirPath)) {
-            throw new ExtensionError(`BrokerFileSystem.stats  -- dirPath is invalid: "${dirPath}"`);
-          }
-
-          var exists = false;
-          try {
-            exists = await IOUtils.exists(dirPath); // returns Promise<boolean>
+            } else {
+              const result = {};
+              result[extensionId] = response.stats;
+              return result;
+            }
           } catch (error) {
-            caught(error, "stats -- FILE SYSTEM ERROR", `Calling IOUtils.exists() checking existence of Directory for Extension "${extensionId}" at "${dirPath}"`);
-            throw new ExtensionError(`BrokerFileSystem.stats -- Error checking existence of Directory for Extension "${extensionId}" at "${dirPath}"`);
+            caught(error, "stats -- UNEXPECTED ERROR", `Extension "${extensionId}"`); // MABXXX RETURN WHAT???
           }
-
-          if (! exists) {
-            return {}; //MABXXX
-          }
-
-          var dirFileInfo;
-          try {
-            debug(`stats  -- calling IOUtils.stat - dirPath="${dirPath}"`);
-            dirFileInfo = await IOUtils.stat(dirPath); // returns Promise<FileInfo>
-          } catch (error) { // sometimes stat() throws even though exists() returns true.  I don't know why.  Bugzilla #1962918
-            caught(error, "stats -- FILE SYSTEM ERROR", `Calling stat() checking if Item named for Extension "${extensionId}" at "${dirPath}" is a Directory`);
-            if (error.name !== 'NotFoundError') {
-              throw new ExtensionError(`BrokerFileSystem.stats  -- Error checking if Item named for Extension "${extensionId}" at "${dirPath}" is a Directory`);
-            }
-          }
-
-          if (! dirFileInfo) {
-            debug(error, "stats -- ERROR", `Unable to get FileInfo for Item named for Extension "${extensionId}" at "${dirPath}", is it a Directory?`);
-            throw new ExtensionError(`BrokerFileSystem.stats  -- Error checking if Item named for Extension "${extensionId}" at "${dirPath}" is a Directory`);
-          }
-          if (dirFileInfo.type !== 'directory') { // enum FileType { "regular", "directory", "other" };
-            // MABXXX SHOULD THIS REALLY BE AN ERROR OR JUST EMPTY INFO???
-            debug(error, "stats -- ERROR", `Item named for Extension "${extensionId}" at "${dirPath}" is NOT a Directory`);
-            throw new ExtensionError(`BrokerFileSystem.stats  -- Error: Item named for Extension "${extensionId}" at "${dirPath}" is NOT a Directory`);
-          }
-
-          var children;
-          try {
-            debug(`stats -- calling IOUtils.getChildren - dirPath="${dirPath}"`);
-            children = await IOUtils.getChildren(dirPath, {"ignoreAbsent": true}); // returns Promise<sequence<DOMString>> // NOTE: ignoreAbsent
-          } catch (error) {
-            caught(error, "stats -- FILE SYSTEM ERROR", `Calling IOUtils.getChildren() getting children of Directory for Extension "${extensionId}" at "${dirPath}"`);
-            throw new ExtensionError(`BrokerFileSystem.stats -- Error getting children of Directory for Extension "${extensionId}" at "${dirPath}"`);
-          }
-
-          var   numChildren       = 0;
-          var   numRegularFiles   = 0;
-          var   numDirs           = 0;
-          var   numOtherFiles     = 0;
-          var   numUnknown        = 0;
-          var   numError          = 0;
-          var   smallestSize      = -1; // to indicate first 'regular' item size not yet obtained // should this be undefined when no children?
-          var   largestSize       = -1; // to indicate first 'regular' item size not yet obtained // should this be undefined when no children?
-          var   totalSize         = 0;                                                            // should this be undefined when no children?
-
-          var   creationTime      = dirFileInfo.creationTime;
-          var   lastAccessedTime  = dirFileInfo.lastAccessed;
-          var   lastModifiedTime  = dirFileInfo.lastModified;
-
-          var   earliestChildCreationTime;     // undefined when no children
-          var   latestChildCreationTime;       // undefined when no children
-          var   earliestChildLastAccessedTime; // undefined when no children
-          var   latestChildLastAccessedTime;   // undefined when no children
-          var   earliestChildLastModifiedTime; // undefined when no children
-          var   latestChildLastModifiedTime;   // undefined when no children
-          var   childInfo;                     // undefined when no children
-
-          if (children) {
-            numChildren                   = children.length;
-            earliestChildCreationTime     = -1; // to indicate first child creation time not yet obtained
-            latestChildCreationTime       = -1; // to indicate first child creation time not yet obtained
-            earliestChildLastAccessedTime = -1; // to indicate first child last accessed time not yet obtained
-            latestChildLastAccessedTime   = -1; // to indicate first child last accessed time not yet obtained
-            earliestChildLastModifiedTime = -1; // to indicate first child last modified time not yet obtained
-            latestChildLastModifiedTime   = -1; // to indicate first child last modified time not yet obtained
-            smallestSize                  = -1; // to indicate first child size not yet obtained
-            largestSize                   = -1; // to indicate first child size not yet obtained
-            totalSize                     = 0;
-            childInfo                     = [];
-
-            for (const childPath of children) {
-              const childName = PathUtils.filename(childPath);
-
-              var fileInfo
-              try {
-                fileInfo = await IOUtils.stat(childPath); // returns Promise<FileInfo>
-              } catch (error) { // sometimes stat() throws even though exists() returns true.  I don't know why.  Bugzilla #1962918
-                caught(error, "stats -- FILE SYSTEM ERROR", `Calling stat() getting FileInfo for Item "${childPath}" for Extension "${extensionId}"`);
-                if (error.name !== 'NotFoundError') {
-                  throw new ExtensionError(`BrokerFileSystem.stats -- Error getting File Information for Item "${childPath}" for Extension "${extensionId}"`);
-                }
-              }
-
-              if (! fileInfo) {
-                numError++;
-                error(`stats -- Unable to get File Information for "${childPath}" for Extension "${extensionId}"`);
-                if (includeChildInfo) {
-                  const info = {
-                    'name': childName,
-                    'path': childPath,
-                    'type': 'error',
-                  };
-                  childInfo.push(info);
-                }
-              } else {
-                var info;
-                if (includeChildInfo) {
-                  info = {
-                    'name':             childName,
-                    'path':             childPath,
-                    'type':             fileInfo.type,
-                    'creationTime':     fileInfo.creationTime,
-                    'lastAccessedTime': fileInfo.lastAccessed,
-                    'lastModifiedTime': fileInfo.lastModified,
-                  };
-                }
-
-                earliestChildCreationTime     = (earliestChildCreationTime     < 0) ? fileInfo.creationTime : Math.min( fileInfo.creationTime, earliestChildCreationTime     );
-                latestChildCreationTime       = (latestChildCreationTime       < 0) ? fileInfo.creationTime : Math.max( fileInfo.creationTime, latestChildCreationTime       );
-                earliestChildLastAccessedTime = (earliestChildLastAccessedTime < 0) ? fileInfo.lastAccessed : Math.min( fileInfo.lastAccessed, earliestChildLastAccessedTime );
-                latestChildLastAccessedTime   = (latestChildLastAccessedTime   < 0) ? fileInfo.lastAccessed : Math.max( fileInfo.lastAccessed, latestChildLastAccessedTime   );
-                earliestChildLastModifiedTime = (earliestChildLastModifiedTime < 0) ? fileInfo.lastModified : Math.min( fileInfo.lastModified, earliestChildLastModifiedTime );
-                latestChildLastModifiedTime   = (latestChildLastModifiedTime   < 0) ? fileInfo.lastModified : Math.max( fileInfo.lastModified, latestChildLastModifiedTime   );
-
-                // fileInfo.type:  enum FileType { "regular", "directory", "other" }
-                switch (fileInfo.type) {
-                  case 'regular': {
-                    numRegularFiles++;
-                    smallestSize = (smallestSize < 0) ? fileInfo.size : Math.min( fileInfo.size, smallestSize );
-                    largestSize  = (largestSize  < 0) ? fileInfo.size : Math.max( fileInfo.size, largestSize  );
-                    totalSize += fileInfo.size;
-                    if (includeChildInfo && (! types || types.includes('regular'))) {
-                      info['size'] = fileInfo.size;
-                      childInfo.push(info);
-                    }
-                    break;
-                  }
-
-                  case 'directory': {
-                    numDirs++;
-                    if (includeChildInfo && (! types || types.includes('directory'))) {
-                      childInfo.push(info);
-                    }
-                    break;
-                  }
-
-                  case 'other': {
-                    numOtherFiles++;
-                    if (includeChildInfo && (! types || types.includes('other'))) {
-                      childInfo.push(info);
-                    }
-                    break;
-                  }
-
-                  default: {
-                    numUnknown++;
-                    error(`stats -- Unknown Type for file "${childPath}" for Extension "${extensionId}": "${fileInfo.type}"`);
-                    if (includeChildInfo) {
-                      info['type'] = 'unknown';
-                      childInfo.push(info);
-                    }
-                  }
-                }
-              }
-            }
-          }
-
-          const stats = {
-            'includeChildInfo': includeChildInfo,
-            'dirPath':                       dirPath,
-            'dirName':                       extensionId,
-            'children':                      numChildren,
-            'regular':                       numRegularFiles,
-            'directory':                     numDirs,
-            'other':                         numOtherFiles,
-            'unknown':                       numUnknown,
-            'error':                         numError,
-            'earliestChildCreationTime':     earliestChildCreationTime,
-            'latestChildCreationTime':       latestChildCreationTime,
-            'earliestChildLastAccessedTime': earliestChildLastAccessedTime,
-            'latestChildLastAccessedTime':   latestChildLastAccessedTime,
-            'earliestChildLastModifiedTime': earliestChildLastModifiedTime,
-            'latestChildLastModifiedTime':   latestChildLastModifiedTime,
-            'smallestSize':                  smallestSize,
-            'largestSize':                   largestSize,
-            'totalSize':                     totalSize,
-          };
-          if (includeChildInfo) {
-            stats.childInfo = childInfo;
-            if (types) {
-              stats['types'] = types;
-            }
-          }
-
-          const result = {};
-          result[extensionId] = stats;
-
-          return result;
-}
         }, // END async stats()
-
-
-
-        // returns array of FileInfo for all (matching) items
-        // optional matchGLOB must be a String - schema.json makes sure of this
-        async XXXfsbListInfo(matchGLOB) {
-          const FSB_DIR_NAME = "BrokerFileSystem";
-          const dirPath      = buildFileSystemPathName();
-
-          var matchRegExp;
-          if (matchGLOB) {
-            if ((typeof matchGLOB) !== 'string') {
-              debug(`listFiles -- Invalid 'matchGLOB parameter - it must be 'string': '${(typeof matchGLOB)}'`);
-              throw new ExtensionError(`BrokerFileSystem.listFiles -- Invalid 'matchGLOB parameter - it must be 'string': '${(typeof matchGLOB)}'`);
-            }
-            matchRegExp = globToRegExp(matchGLOB);
-          }
-
-          debug(`fsbListInfo -- calling IOUtils.exists - dirPath="${dirPath}"`);
-          var exists = false;
-          try {
-            exists = await IOUtils.exists(dirPath); // returns Promise<boolean>
-          } catch (error) {
-            caught(error, "fsbListInfo -- FILE SYSTEM ERROR", `Calling IOUtils.exists() Checking for existence of Directory "${FSB_DIR_NAME}" at "${dirPath}"`);
-            throw new ExtensionError(`BrokerFileSystem.fsbListInfo -- Error checking existence of Directory "${FSB_DIR_NAME}" at "${dirPath}"`);
-          }
-
-          if (! exists) {
-            try {
-              debug(`fsbListInfo -- calling IOUtils.makeDirectory - dirPath="${dirPath}"`);
-              await IOUtils.makeDirectory(dirPath, {"createAncestors": true, "ignoreExisting": true}); // returns Promise<undefined> // NOTE: ignoreExisting: true
-              return [];
-
-            } catch (error) {
-              caught(error, "fsbListInfo -- FILE SYSTEM ERROR", `Calling IOUtils.makeDirectory() to create Directory "${FSB_DIR_NAME}" at "${dirPath}"`);
-              throw new ExtensionError(`BrokerFileSystem.fsbListInfo -- Failed to create Directory "${FSB_DIR_NAME}" at "${dirPath}"`);
-            }
-          } else {
-
-            debug(`fsbListInfo -- calling IOUtils.stat - dirPath="${dirPath}"`);
-
-            var dirFileInfo;
-            try {
-              dirFileInfo = await IOUtils.stat(dirPath); // returns Promise<FileInfo>
-            } catch (error) { // sometimes stat() throws even though exists() returns true.  I don't know why.  Bugzilla #1962918
-              caught(error, "fsbListInfo -- FILE SYSTEM ERROR", `calling stat() for Item "${FSB_DIR_NAME}" at "${dirPath}"`);
-              if (error.name !== 'NotFoundError') {
-                throw new ExtensionError(`BrokerFileSystem.fsbListInfo -- Error getting information for Item "${FSB_DIR_NAME}" at "${dirPath}"`);
-              }
-            }
-            if (! dirFileInfo) {
-              throw new ExtensionError(`BrokerFileSystem.fsbListInfo Unable to get file type for Directory "${FSB_DIR_NAME}" at "${dirPath}" - is it a Directory?`);
-            } else if (dirFileInfo.type !== 'directory') { // enum FileType { "regular", "directory", "other" };
-              throw new ExtensionError(`BrokerFileSystem.fsbListInfo Directory "${FSB_DIR_NAME}" at "${dirPath}" is not a Directory - FileInfo.type="${dirFileInfo.type}"`);
-            }
-
-            debug(`fsbListInfo -- calling IOUtils.getChildren - dirPath="${dirPath}"`);
-            var children;
-            try {
-              children = await IOUtils.getChildren(dirPath, {"ignoreAbsent": true}); // returns Promise<sequence<DOMString>> // NOTE: ignoreAbsent
-            } catch (error) {
-              caught(error, "fsbListInfo -- FILE SYSTEM ERROR", `Calling IOUtils.getChildren() for Directory "${FSB_DIR_NAME}" at "${dirPath}"`);
-              throw new ExtensionError(`BrokerFileSystem.fsbListInfo -- Error listing Items in Directory "${FSB_DIR_NAME}" at "${dirPath}"`);
-            }
-
-            const fileInfo = [];
-            if (children) {
-              for (const itemPath of children) {
-                const itemName = PathUtils.filename(itemPath);
-                if (! matchRegExp || matchRegExp.test(itemName)) {
-                  var stat
-                  try {
-                    stat = await IOUtils.stat(itemPath); // returns Promise<FileInfo>
-                  } catch (error) { // sometimes stat() throws even though exists() returns true.  I don't know why.  Bugzilla #1962918
-                    caught(error, "fsbListInfo -- FILE SYSTEM ERROR", `Calling stats() for Item "${itemName}" "${itemPath}"`);
-                    if (error.name !== 'NotFoundError') {
-                      throw new ExtensionError(`BrokerFileSystem.fsbListInfo -- Error getting information for Item "${itemName}" "${itemPath}"`);
-                    }
-                  }
-
-                  if (! stat) {
-                    throw new ExtensionError(`BrokerFileSystem.fsbListInfo Unable to get file type for Item "${itemName}" at "${dirPath}" - is it a File?`);
-                  } else {
-                    stat.fileName = itemName; // should be simply 'name'
-                    fileInfo.push(stat);
-                  }
-                }
-              }
-            }
-
-            return fileInfo; // return array of FileInfo
-
-          }
-        }, // END async XXXfsbListInfo(B)
 
 
 
@@ -2332,6 +2000,209 @@ if (true) {
           }
         }, // END async fsbList()
 
+
+
+        async fsbStats() {
+          const FSB_DIR_NAME = "BrokerFileSystem";
+          const dirPath      = buildFileSystemPathName();
+
+          debug(`fsbStats -- calling IOUtils.exists - dirPath="${dirPath}"`);
+          var exists = false;
+          try {
+            exists = await IOUtils.exists(dirPath); // returns Promise<boolean>
+          } catch (error) {
+            caught(error, "fsbStats -- FILE SYSTEM ERROR", `Calling IOUtils.exists() for Item "${FSB_DIR_NAME}" at "${dirPath}"`);
+            throw new ExtensionError(`BrokerFileSystem.fsbStats -- Error checking for existence of Item "${FSB_DIR_NAME}" at "${dirPath}"`);
+          }
+
+          if (! exists) {
+            try {
+              debug(`fsbStats -- calling IOUtils.makeDirectory - dirPath="${dirPath}"`);
+              await IOUtils.makeDirectory(dirPath, {"createAncestors": true, "ignoreExisting": true}); // returns Promise<undefined> // NOTE: ignoreExisting: true
+              return [];
+
+            } catch (error) {
+              caught(error, "fsbStats -- FILE SYSTEM ERROR", `Calling IOUtils.makeDirectory() for Directory "${FSB_DIR_NAME}" at "${dirPath}"`);
+              throw new ExtensionError(`BrokerFileSystem.fsbStats -- Failed to create Directory "${FSB_DIR_NAME}" at "${dirPath}"`);
+            }
+          } else {
+
+            debug(`fsbStats -- calling IOUtils.stat - dirPath="${dirPath}"`);
+            var dirFileInfo;
+            try {
+              dirFileInfo = await IOUtils.stat(dirPath); // returns Promise<FileInfo>
+            } catch (error) { // sometimes stat() throws even though exists() returns true.  I don't know why.  Bugzilla #1962918
+              caught(error, "fsbStats -- FILE SYSTEM ERROR", `Calling stat() for Item "${FSB_DIR_NAME}" at "${dirPath}"`);
+              if (error.name !== 'NotFoundError') {
+                throw new ExtensionError(`BrokerFileSystem.fsbStats -- Error getting information for Item "${FSB_DIR_NAME}" at at "${dirPath}"`);
+              }
+            }
+
+            if (! dirFileInfo) {
+              throw new ExtensionError(`BrokerFileSystem.fsbStats Unable to get file type for Directory "${FSB_DIR_NAME}" at "${dirPath}" - is it a Directory?`);
+            } else if (dirFileInfo.type !== 'directory') { // enum FileType { "regular", "directory", "other" };
+              throw new ExtensionError(`BrokerFileSystem.fsbStats Directory "${FSB_DIR_NAME}" at "${dirPath}" is not a Directory - FileInfo.type="${dirFileInfo.type}"`);
+            }
+
+            debug(`fsbStats -- calling IOUtils.getChildren - dirPath="${dirPath}"`);
+            var children;
+            try {
+              children = await IOUtils.getChildren(dirPath, {"ignoreAbsent": true}); // returns Promise<sequence<DOMString>> // NOTE: ignoreAbsent
+            } catch (error) {
+              caught(error, "fsbStats -- FILE SYSTEM ERROR", `Calling IOUtils.getChildren() for Directory "${FSB_DIR_NAME}" at "${dirPath}"`);
+              throw new ExtensionError(`BrokerFileSystem.fsbStats -- Error listing files in Directory "${FSB_DIR_NAME}" at "${dirPath}"`);
+            }
+
+            const statsByDirectoryName = [];
+            if (children) {
+              for (const itemPath of children) {
+                const itemName = PathUtils.filename(itemPath);
+
+                var fileInfo
+                try {
+                  fileInfo = await IOUtils.stat(itemPath); // returns Promise<FileInfo>
+                } catch (error) { // sometimes stat() throws even though exists() returns true.  I don't know why.  Bugzilla #1962918
+                  caught(error, "fsbStats -- FILE SYSTEM ERROR", `Calling stat() for Item "${itemName}" at "${itemPath}"`);
+                  if (error.name !== 'NotFoundError') {
+                    throw new ExtensionError(`BrokerFileSystem.fsbStats -- Error listing items "${FSB_DIR_NAME}" at "${dirPath}"`);
+                  }
+                }
+
+                if (! fileInfo) {
+                  throw new ExtensionError(`BrokerFileSystem.fsbStats Unable to get item type for Item "${itemName}" at "${itemPath}"`);
+
+                } else if (fileInfo.type === 'directory') {
+                  const dirFileInfo = fileInfo;
+                  const dirPath     = itemPath;
+                  const dirName     = itemName;
+                  const response    = await getStatsForDirFileInfo(context, 'fsbStats', dirName, dirPath, dirFileInfo, false); // includeChildInfo=false, types=undefined
+
+                  var dirStats = {
+                    'dirName': dirName,
+                    'dirPath': dirPath,
+                  }
+
+                  if (! response) {
+                    error(`fsbStats -- Failed to get response from getStatsForDir():  "${dirName}"`);
+                    dirStats['error'] = 'Unable to get data';
+                  } else if (response.error) {
+                    error(`fsbStats -- 'error' response from getStatsForDir(): "${response.error}"`);
+                    dirStats['error'] = response.error;
+                  } else if (response.invalid) {
+                    error(`fsbStats -- 'invalid' response from getStatsForDir(): "${response.invalid}"`);
+                    dirStats['error'] = response.invalid;
+                  } else if (! response.stats) {
+                    error(`fsbStats -- No 'stats' response from getStatsForDir(): "${dirName}"`);
+                    dirStats['error'] = 'Unable to get data';
+                  } else {
+                    dirStats = response.stats;
+                    delete dirStats['includeChildInfo'];
+                  }
+
+                  statsByDirectoryName[dirName] = dirStats;
+                }
+              }
+            }
+
+            return statsByDirectoryName; // return array of stats indexed by directory name
+
+          }
+        }, // END async fsbStats()
+
+
+
+        // returns boolean
+        async fsbDeleteDirectory(directoryName, parameters) { /* directoryName MUST BE A DIRECTORY */
+          if (! directoryName) {
+            debug("fsbDeleteDirectory -- directoryName is missing");
+            throw new ExtensionError("BrokerFileSystem.fsbDeleteDirectory -- directoryName is required");
+          } else if (! checkDirectoryName(directoryName)) {
+            debug(`fsbDeleteDirectory -- directoryName is invalid: "${directoryName}"`);
+            throw new ExtensionError(`BrokerFileSystem.fsbDeleteDirectory -- directoryName is invalid: "${directoryName}"`);
+          }
+
+          var recursive = parameters?.recursive;
+          if (parameters !== null && (typeof parameters) !== 'object') {
+            debug(`fsbDeleteDirectory -- Invalid 'parameters' parameter - it must be 'object': '${(typeof parameters)}'`);
+            throw new ExtensionError(`BrokerFileSystem.fsbDeleteDirectory -- Invalid 'parameters' parameter - it must be 'object': '${(typeof parameters)}'`);
+          } else if (typeof recursive === 'undefined') {
+            recursive = false;
+          } else if (typeof recursive !== 'boolean') {
+            debug(`fsbDeleteDirectory -- 'parameters.recursive' parameter is not 'boolean': "${typeof recursive}"`);
+            throw new ExtensionError(`BrokerFileSystem.fsbDeleteDirectory -- 'parameters.recursive' parameter is not 'boolean': "${typeof recursive}"`);
+          }
+
+          const dirPath = PathUtils.join(buildFileSystemPathName(), directoryName);
+          debug(`fsbDeleteDirectory -- calling IOUtils.exists - dirPath="${dirPath}"`);
+          var exists;
+          try {
+            exists = await IOUtils.exists(dirPath); // returns Promise<boolean>
+          } catch (error) {
+            caught(error, "fsbDeleteDirectory -- FILE SYSTEM ERROR", `Calling IOUtils.exists() on Item "${directoryName}" at "${dirPath}"`);
+            throw new ExtensionError(`BrokerFileSystem.fsbDeleteDirectory -- Error checking existence of Item "${directoryName}" at "${dirPath}"`);
+          }
+
+          if (! exists) {
+            // MABXXX AND??? SHOULD THROW INSTEAD OF RETURNING false BELOW???
+            // MABXXX this should be controlled by a parameter
+          } else {
+            debug(`fsbDeleteDirectory -- calling IOUtils.stat - dirPath="${dirPath}"`);
+            let fileInfo;
+            try {
+              fileInfo = await IOUtils.stat(dirPath); // returns Promise<FileInfo>
+            } catch (error) { // sometimes stat() throws even though exists() returns true.  I don't know why.  Bugzilla #1962918
+              caught(error, "fsbDeleteDirectory -- FILE SYSTEM ERROR", `Calling stat() for Item "${directoryName}" at "${dirPath}"`);
+              if (error.name !== 'NotFoundError') {
+                throw new ExtensionError(`BrokerFileSystem.fsbDeleteDirectory -- Error getting information for Item "${directoryName}" at "${dirPath}"`);
+              }
+            }
+
+            if (! fileInfo) {
+              debug(`fsbDeleteDirectory --  Unable to get file type for File "${directoryName}" at "${dirPath}" - is it a Directory?`);
+              throw new ExtensionError(`BrokerFileSystem.fsbDeleteDirectory -- Unable to get item type for Item "${directoryName}" at "${dirPath}" - is it a Directory?`);
+
+            } else if (fileInfo.type !== 'directory') { // enum FileType { "regular", "directory", "other" };
+              throw new ExtensionError(`BrokerFileSystem.fsbDeleteDirectory -- Item "${directoryName}" at "${dirPath}" is not a Directory`);
+
+            } else {
+              if (! recursive) {
+                debug(`fsbDeleteDirectory -- calling IOUtils.hasChildren = dirPath="${dirPath}"`);
+                let hasChildren
+                try {
+                  hasChildren = await IOUtils.hasChildren(dirPath, {"ignoreAbsent": true}); // returns Promise<sequence<DOMString>> // NOTE: ignoreAbsent
+                } catch (error) {
+                  caught(error, "fsbDeleteDirectory -- FILE SYSTEM ERROR", `Calling IOUtils.hasChildren() for Directory "${directoryName}" at "${dirPath}"`);
+                  throw new ExtensionError(`BrokerFileSystem.fsbDeleteDirectory -- Unable to check if Directory has files for "${directoryName}" at  "${dirPath}"`);
+                }
+
+                if (hasChildren) {
+                  debug(`fsbDeleteDirectory --  Cannot delete Directory "${directoryName}" at "${dirPath}" - it has files`);
+                  throw new ExtensionError(`BrokerFileSystem.fsbDeleteDirectory -- Cannot delete Directory "${directoryName}" at "${dirPath}" - it  has files`);
+                }
+              }
+
+              try {
+                debug(`fsbDeleteDirectory -- calling IOUtils.remove - dirPath="${dirPath}"`);
+                await IOUtils.remove(dirPath, {"ignoreAbsent": true, "recursive": recursive, "retryReadOnly": true}); // returns Promise<undefined> // NOTE: retryReadOnly
+                debug(`fsbDeleteDirectory -- calling IOUtils.exists - dirPath="${dirPath}"`);
+              } catch (error) {
+                caught(error, "fsbDeleteDirectory -- FILE SYSTEM ERROR", `Calling IOUtils.remove() for Directory "${directoryName}" at "${dirPath}"`);
+                throw new ExtensionError(`BrokerFileSystem.fsbDeleteDirectory -- Error deleting Directory "${directoryName}" at "${dirPath}"`);
+              }
+
+              try {
+                const existsAfterDelete = await IOUtils.exists(dirPath); // returns Promise<boolean> // MABXXX try/catch
+                return ! existsAfterDelete;
+              } catch (error) {
+                caught(error, "fsbDeleteDirectory -- FILE SYSTEM ERROR", `Calling IOUtils.exists() for Directory "${directoryName}" at "${dirPath}"`);
+                throw new ExtensionError(`BrokerFileSystem.fsbDeleteDirectory -- Making sure of deletion of Directory "${directoryName}" at "${dirPath}"`);
+              }
+            }
+          }
+
+          return false; // MABXXX maybe should throw instead
+        },
+
       }
     };
   }
@@ -2432,6 +2303,10 @@ async function getStatsForDir(context, cmd, dirName, includeChildInfo, types) {
     return ( { 'error': `Internal Error - BrokerFileSystem.${cmd} -- getStatsForDir(): Item "${dirName}" at path "${dirPath}" is NOT a directory` } );
   }
 
+  return await getStatsForDirFileInfo(context, cmd, dirName, dirPath, dirFileInfo, includeChildInfo, types);
+}
+
+async function getStatsForDirFileInfo(context, cmd, dirName, dirPath, dirFileInfo, includeChildInfo, types) {
   var children;
   try {
     debug(`BrokerFileSystem.${cmd} -- calling IOUtils.getChildren - dirPath="${dirPath}"`);
@@ -2566,24 +2441,24 @@ async function getStatsForDir(context, cmd, dirName, includeChildInfo, types) {
   }
 
   const stats = {
-    'includeChildInfo': includeChildInfo,
-    'dirPath':                       dirPath,
-    'dirName':                       dirName,
-    'children':                      numChildren,
-    'regular':                       numRegularFiles,
-    'directory':                     numDirs,
-    'other':                         numOtherFiles,
-    'unknown':                       numUnknown,
-    'error':                         numError,
-    'earliestChildCreationTime':     earliestChildCreationTime,
-    'latestChildCreationTime':       latestChildCreationTime,
-    'earliestChildLastAccessedTime': earliestChildLastAccessedTime,
-    'latestChildLastAccessedTime':   latestChildLastAccessedTime,
-    'earliestChildLastModifiedTime': earliestChildLastModifiedTime,
-    'latestChildLastModifiedTime':   latestChildLastModifiedTime,
-    'smallestSize':                  smallestSize,
-    'largestSize':                   largestSize,
-    'totalSize':                     totalSize,
+    'includeChildInfo':                   includeChildInfo,
+    'dirPath':                            dirPath,
+    'dirName':                            dirName,
+    'count_children':                     numChildren,
+    'count_type_regular':                 numRegularFiles,
+    'count_type_directory':               numDirs,
+    'count_type_other':                   numOtherFiles,
+    'count_type_unknown':                 numUnknown,
+    'count_type_error':                   numError,
+    'time_childCreation_earliest':        earliestChildCreationTime,
+    'time_childCreation_latest':          latestChildCreationTime,
+    'time_childLastAccessed_earliest':    earliestChildLastAccessedTime,
+    'time_childLastAccessedTime_latest':  latestChildLastAccessedTime,
+    'time_childLastModified_earliest':    earliestChildLastModifiedTime,
+    'time_childLastModified_latest':      latestChildLastModifiedTime,
+    'size_smallest':                      smallestSize,
+    'size_largest':                       largestSize,
+    'size_total':                         totalSize,
   };
   if (includeChildInfo) {
     stats['childInfo'] = childInfo;

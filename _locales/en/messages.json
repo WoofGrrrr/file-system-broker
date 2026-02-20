@@ -74,6 +74,12 @@
   "options_fsbExtensionOptionsButtonEventLogManager.tooltip": {
     "message": "Display the Event Log Manager to List, View, or Delete Event Logs"
   },
+  "options_fsbExtensionOptionsButtonStatsManager.label": {
+    "message": "Manage Statistics"
+  },
+  "options_fsbExtensionOptionsButtonStatsManager.tooltip": {
+    "message": "Display the Statistics Manager to List and View Statistics"
+  },
   "options_fsbRefreshListButton.label": {
     "message": "Refresh List"
   },
@@ -118,6 +124,18 @@
   },
   "options_fsbExtensionListHeaderTextName.label": {
     "message": "Extension Name"
+  },
+  "options_fsbExtensionListHeaderTextDirExists.label": {
+    "message": "Dir?"
+  },
+  "options_fsbExtensionListHeaderTextItemCount.label": {
+    "message": "Items"
+  },
+  "options_fsbExtensionListHeaderTextTotalSizeFmt.label": {
+    "message": "Size"
+  },
+  "options_fsbExtensionListHeaderTextTotalSizeBytes.label": {
+    "message": "(bytes)"
   },
   "options_fsbRefreshListButton.tooltip": {
     "message": "Refresh the Extension List"
@@ -779,11 +797,144 @@
   "fsbEventLogViewer_error_noEventLogData_noLineData": {
     "message": "Internal Error - Failed to get Event Log Data - No Event Data Returned"
   },
+  "fsbEventLogViewer_error_LogFileEntryLimit": {
+    "message": "Internal Error - The Log Has Too Many Entries - Was There An Infinite Loop Somewhere?"
+  },
   "fsbEventLogViewer_message_error_deleteFailed": {
     "message": "Failed to delete Event Log"
   },
   "fsbEventLogViewer_message_error_responseMessageFailed": {
     "message": "Internal Error - Failed to send response message to Event Log Manager UI"
+  },
+  "fsbStatsManager_pageTitle": {
+    "message": "Statstics Manager"
+  },
+  "fsbStatsManager_title": {
+    "message": "Statstics Manager"
+  },
+  "fsbStatsManagerInstructions.label": {
+    "message": "Hints"
+  },
+  "fsbStatsManager_instructions_1": {
+    "message": "Click on a Directory to Select it - it will be highlighted (one or more may be selected)"
+  },
+  "fsbStatsManager_instructions_2": {
+    "message": "Click on the Directory again to De-select it"
+  },
+  "fsbStatsManager_instructions_3": {
+    "message": "Double-click on a Directory to list the Items in it"
+  },
+  "fsbStatsManager_instructions_4": {
+    "message": "Click the Delete button to delete the selected Directories (one or more may be selected)"
+  },
+  "fsbStatsManager_instructions_5": {
+    "message": "???"
+  },
+  "fsbStatsManager_instructions_6": {
+    "message": "???"
+  },
+  "fsbStatsManager_message_directoryListLoading": {
+    "message": "...Loading Directory List..."
+  },
+  "fsbStatsManager_directoryListHeader_directoryName": {
+    "message": "Directory Name"
+  },
+  "fsbStatsManager_directoryListHeader_extensionId": {
+    "message": "Extension ID"
+  },
+  "fsbStatsManager_directoryListHeader_extensionEnabled": {
+    "message": "E?"
+  },
+  "fsbStatsManager_directoryListHeader_extensionConfigured": {
+    "message": "C?"
+  },
+  "fsbStatsManager_directoryListHeader_extensionAccessAllowed": {
+    "message": "A?"
+  },
+  "fsbStatsManager_directoryListHeader_count_children": {
+    "message": "#Items"
+  },
+  "fsbStatsManager_directoryListHeader_count_type_regular": {
+    "message": "#Regular"
+  },
+  "fsbStatsManager_directoryListHeader_count_type_directory": {
+    "message": "#Directory"
+  },
+  "fsbStatsManager_directoryListHeader_count_type_other": {
+    "message": "#Other"
+  },
+  "fsbStatsManager_directoryListHeader_count_type_unknown": {
+    "message": "#Unknown"
+  },
+  "fsbStatsManager_directoryListHeader_count_type_error": {
+    "message": "#Error"
+  },
+  "fsbStatsManager_directoryListHeader_time_creation_earliest": {
+    "message": "Earliest Creation"
+  },
+  "fsbStatsManager_directoryListHeader_time_creation_latest": {
+    "message": "Latest Creation"
+  },
+  "fsbStatsManager_directoryListHeader_time_lastAccessed_earliest": {
+    "message": "Earliest Last Accessed"
+  },
+  "fsbStatsManager_directoryListHeader_time_lastAccessed_latest": {
+    "message": "Latest Last Accessed"
+  },
+  "fsbStatsManager_directoryListHeader_time_lastModified_earliest": {
+    "message": "Earliest Last Modified"
+  },
+  "fsbStatsManager_directoryListHeader_time_lastModified_latest": {
+    "message": "Latest Last Modified"
+  },
+  "fsbStatsManager_directoryListHeader_size_smallest": {
+    "message": "Smallest"
+  },
+  "fsbStatsManager_directoryListHeader_size_largest": {
+    "message": "Largest"
+  },
+  "fsbStatsManager_directoryListHeader_size_total": {
+    "message": "Total "
+  },
+  "fsbStatsManager_deleteButton": {
+    "message": "Delete"
+  },
+  "fsbStatsManager_refreshButton": {
+    "message": "Refresh List"
+  },
+  "fsbStatsManager_doneButton": {
+    "message": "Done"
+  },
+  "fsbStatsManager_message_oneDirectoryDeleted": {
+    "message": "1 Directory Deleted."
+  },
+  "fsbStatsManager_message_nnDirectoriesDeleted": {
+    "message": "$NN$ Directories Deleted.",
+    "placeholders": {
+      "nn": {
+        "content": "$1"
+      }
+    }
+  },
+  "fsbStatsManager_error_noDirectoryListElement": {
+    "message": "Internal Error: Failed to get dIrectory List Element #fsbStatsManagerDirectoryList"
+  },
+  "fsbStatsManager_error_noDirectories": {
+    "message": "Internal Error: Failed to get Directories List"
+  },
+  "fsbStatsManager_error_oneDirectoryDeleteFailed": {
+    "message": "1 Directory Failed to be Deleted."
+  },
+  "fsbStatsManager_error_nnDirectoriesDeleteFailed": {
+    "message": "$NN$ Directories Failed to be Deleted.",
+    "placeholders": {
+      "nn": {
+        "content": "$1"
+      }
+    }
+  },
+  "fsbStatsManager_error_": {
+    "message": ""
   },
   "numDaysSelectOption_1": {
     "message": "1 day"

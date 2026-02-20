@@ -48,6 +48,8 @@ export class FileSystemBrokerCommands {
     "stats",
     "fsbListInfo",          // This is an INTERNAL-ONLY Command!!!
     "fsbList",              // This is an INTERNAL-ONLY Command!!!
+    "fsbStats",             // This is an INTERNAL-ONLY Command!!!
+    "fsbDeleteDirectory",   // This is an INTERNAL-ONLY Command!!!
   ];
 
   static x = Object.freeze(FileSystemBrokerCommands.#commands);
@@ -116,7 +118,7 @@ export class FileSystemBrokerCommands {
       this.logAlways( "\n--- Processing Internal Command ---",              // MABXXX do this in logCommand???
                       `\n- command="${Command.command}"`,
                       `\n- parameters: ${formattedParameters}`,
-                      "\n- raw parameters:", Command.parameters,
+                      "\n- parameters object:", Command.parameters,
                     );
       if (this.#fsbEventLogger) this.#fsbEventLogger.logCommand(timeMS, "INTERNAL", Command);
     }
@@ -137,7 +139,7 @@ export class FileSystemBrokerCommands {
                           `\n- Command="${Command.command}"`,
                           `\n- result: ${formattedResult}`,
                           `\n- parameters: ${formattedParameters}`,
-                          "\n- raw parameters:", Command.parameters,
+                          "\n- parameters object:", Command.parameters,
                         );
           if (this.#fsbEventLogger) this.#fsbEventLogger.logCommandResult(timeMS, "INTERNAL", Command, result);
         }
@@ -245,7 +247,7 @@ export class FileSystemBrokerCommands {
     };
 
     // full validation is done in processInternalCommand() -> processCommand() -> deleteDirectoryCommand()
-    const result = await this.processInternalCommand(nowMS, Command, extensionId);
+    const result = await this.processInternalCommand(nowMS, Command, extensionId); // <---- passed-in extensionId
 
     return result;
   }
@@ -280,7 +282,7 @@ export class FileSystemBrokerCommands {
       Command['parameters'] = parameters;
     }
 
-    const result = await this.processInternalCommand(nowMS, Command, this.#EXTENSION_ID);
+    const result = await this.processInternalCommand(nowMS, Command, this.#EXTENSION_ID); // <---- this.#EXTENSION_ID
 
     return result;
   }
@@ -315,7 +317,70 @@ export class FileSystemBrokerCommands {
       Command['parameters'] = parameters;
     }
 
-    const result = await this.processInternalCommand(nowMS, Command, this.#EXTENSION_ID);
+    const result = await this.processInternalCommand(nowMS, Command, this.#EXTENSION_ID); // <---- this.#EXTENSION_ID
+
+    return result;
+  }
+
+
+
+  // This method is a shortcut for just calling processInternalCommand(),
+  // but it creates the Command object for you,
+  // it uses this.#extensionID as the extensionId,
+  // and it DOES NOT use messaging.
+  //
+  // Since extensionId === this.#extensionID, it will list files only
+  // in the top-most File System directory.
+  //
+  // fsbStats is an INTERNAL-ONLY COMMAND, so the extensionId MUST BE this.#EXTENSION_ID
+  // (see fsbStatsCommand() below)
+  //
+  // You can use this when you cannot use messaging to run the command
+  // like it would do if you were to use the the FileSystemBrokerAPI class
+  // (not the same as messenger.FileSystemBrokerAPI.)
+  async fsbStats() {
+    const nowMS = Date.now();
+    const Command = {
+      'command': 'fsbStats',
+    };
+
+    const result = await this.processInternalCommand(nowMS, Command, this.#EXTENSION_ID); // <---- this.#EXTENSION_ID
+
+    return result;
+  }
+
+
+
+  // This method is a shortcut for just calling processInternalCommand(),
+  // but it creates the Command object for you,
+  // it uses this.#extensionID as the extensionId,
+  // and it DOES NOT use messaging.
+  //
+  // Since extensionId === this.#extensionID, it will list files only
+  // in the top-most File System directory.
+  //
+  // fsbDeleteDirectory is an INTERNAL-ONLY COMMAND, so the extensionId MUST BE this.#EXTENSION_ID
+  // (see fsbDeleteDirectory() below)
+  //
+  // You can use this when you cannot use messaging to run the command
+  // like it would do if you were to use the the FileSystemBrokerAPI class
+  // (not the same as messenger.FileSystemBrokerAPI.)
+  async fsbDeleteDirectory(directoryName, parameters) {
+    const nowMS = Date.now();
+    const Command = {
+      'command': 'fsbDeleteDirectory',
+      'directoryName': directoryName,
+    };
+
+    // full validation is done in processInternalCommand() -> processCommand() -> fsbDeleteDirectoryCommand()
+    if (parameters && (typeof parameters) !== 'object') {
+      this.error(`fsDeleteDirectory -- 'parameters' parameter is not an 'object', type='${(typeof parameters)}'`);
+      return ( { "invalid": `fsbDeleteDirectory: 'parameters' parameter is not an 'object', type='${(typeof parameters)}'` } );
+    } else if (parameters) {
+      Command['parameters'] = parameters;
+    }
+
+    const result = await this.processInternalCommand(nowMS, Command, this.#EXTENSION_ID); // <---- this.#EXTENSION_ID
 
     return result;
   }
@@ -411,6 +476,10 @@ export class FileSystemBrokerCommands {
         return this.fsbListInfoCommand(command, extensionId);
       case "fsbList":
         return this.fsbListCommand(command, extensionId);
+      case "fsbStats":
+        return this.fsbStatsCommand(command, extensionId);
+      case "fsbDeleteDirectory":
+        return this.fsbDeleteDirectoryCommand(command, extensionId);
     }
 
     return this.unknownCommand(command, extensionId);
@@ -1684,7 +1753,7 @@ export class FileSystemBrokerCommands {
 
 
   async statsCommand(command, extensionId) {
-    this.debug(`stats ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\nCOMMAND: `, command);
+    this.debug(`statsCommand ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ extensionId="${extensionId}" \nCOMMAND: `, command);
 
     const parameters = command.parameters;
     if (parameters) {
@@ -1728,7 +1797,7 @@ export class FileSystemBrokerCommands {
     } else {
       const badType = this.checkStatsItemTypes(types); // we don't check for repeats, but schema.json does
       if (badType) {
-        this.debug(`fsbStats -- 'types' parameter contains an invalid value: "${badType}"`);
+        this.debug(`statsCommand -- 'types' parameter contains an invalid value: "${badType}"`);
         return ( { "invalid": `Stats Command: 'parameters.types'  parameter contains an invalid value: "${badType}"` } );
       }
       // this is ok
@@ -1777,11 +1846,11 @@ this.debug(
 
   // MABXXX THIS IS AN INTERNAL-ONLY COMMAND!!!
   async fsbListInfoCommand(command, extensionId) {
-    this.debug(`fsbListInfo ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ matchGLOB="${command.matchGLOB}"`);
+    this.debug(`fsbListInfoCommand ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ extensionId="${extensionId}"`);
 
     if (this.#EXTENSION_ID !== extensionId) {
       this.error(`fsbListInfoCommand -- THIS IS AN INTERNAL-ONLY COMMAND!  But it was requested by "${extensionId}"`);
-      return ( { "error": "fsbListInfo: Unknown Command" } );
+      return ( { "error": "fsbListInfo: Unknown Command" } ); // MABXXX return something better???
     }
 
     const parameters = command.parameters;
@@ -1871,11 +1940,11 @@ this.debug(
 
   // MABXXX THIS IS AN INTERNAL-ONLY COMMAND!!!
   async fsbListCommand(command, extensionId) {
-    this.debug(`fsbList ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ matchGLOB="${command.matchGLOB}"`);
+    this.debug(`fsbListCommand ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ extensionId="${extensionId}"`);
 
     if (this.#EXTENSION_ID !== extensionId) {
       this.error(`fsbListCommand -- THIS IS AN INTERNAL-ONLY COMMAND!  But it was requested by "${extensionId}"`);
-      return ( { "error": "fsbList: Unknown Command" } );
+      return ( { "error": "fsbList: Unknown Command" } ); // MABXXX return something better???
     }
 
     const parameters = command.parameters;
@@ -1962,6 +2031,87 @@ this.debug(
   }
 
 
+  // MABXXX THIS IS AN INTERNAL-ONLY COMMAND!!!
+  async fsbStatsCommand(command, extensionId) {
+    this.debug(`fsbStatsCommand ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ extensionId="${extensionId}"`);
+
+    if (this.#EXTENSION_ID !== extensionId) {
+      this.error(`fsbStatsCommand -- THIS IS AN INTERNAL-ONLY COMMAND!  But it was requested by "${extensionId}"`);
+      return ( { "error": "fsbStats: Unknown Command" } ); // MABXXX return something better???
+    }
+
+    try {
+      this.debug(`fsbStatsCommand -- getting stats for Directories in the Extension FileSystem`);
+      const stats = await messenger.BrokerFileSystem.fsbStats();  // NOTE: No extensionId!!!
+      this.debug(`fsbStatsCommand -- stats.length=${stats.length}`);
+
+      const response = { "stats": stats, "length": Object.keys(stats).length };
+      return response;
+
+    } catch (error) {
+      this.caught(error, `fsbStatsCommand -- Caught error while listing items for the Extension FileSystem`);
+      return ( { "error": `Error Processing fsbStats Command: ${error.message}`, "code": "500" } );
+    }
+  }
+
+
+  // MABXXX THIS IS AN INTERNAL-ONLY COMMAND!!!
+  async fsbDeleteDirectoryCommand(command, extensionId) {
+    this.debug(`fsbDeleteDirectoryCommand ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ extensionId="${extensionId}", COMMAND:\n"`, command);
+
+    if (this.#EXTENSION_ID !== extensionId) {
+      this.error(`fsbDeleteDirectoryCommand -- THIS IS AN INTERNAL-ONLY COMMAND!  But it was requested by "${extensionId}"`);
+      return ( { "error": "fsbDeleteDirectory: Unknown Command" } ); // MABXXX return something better???
+    }
+
+    if (! command.directoryName) {
+      this.debug("fsbDeleteDirectory -- Message 'directoryName' parameter is missing");
+      return ( { "invalid": "fsbDeleteDirectory Command: 'directoryName' parameter is required" } );
+    } else if ((typeof command.directoryName) !== 'string') {
+      this.debug("fsbDeleteDirectory -- Message 'directoryName' parameter type is not 'string'");
+      return ( { "invalid": "fsbDeleteDirectory Command: 'directoryName' parameter type must be 'string'" } );
+    } else if (! this.checkValidDirName(command.directoryName)) {
+      this.debug(`fsbDeleteDirectoryCommand -- Message 'directoryName' parameter is invalid: "${command.directoryName}"`);
+      return ( { "invalid": `fsbDeleteDirectory Command: 'directoryName' parameter is invalid: "${command.directoryName}"` } );
+    }
+
+    const parameters = command.parameters;
+    if (parameters) {
+      if (parameters && (typeof parameters) !== 'object') {
+        this.debug(`fsbDeleteDirectoryCommand -- Message 'parameters' parameter type is not 'object', type='${(typeof parameters)}'`);
+        return ( { "invalid": `fsbDeleteDirectory Command: 'parameters' parameter type must be 'object', type='${(typeof parameters)}'` } );
+      }
+      const badKey = this.checkCmdParms(parameters, ['recursive']);
+      if (badKey) {
+        this.debug(`fsbDeleteDirectoryCommand -- 'parameters' parameter has invalid key: "${badKey}"`);
+        return ( { "invalid": `fsbDeleteDirectory Command: 'parameters' parameter has invalid key: '${badKey}'` } );
+      }
+    }
+
+    var recursive = parameters?.recursive;
+    if (recursive === null || recursive === undefined) {
+      recursive = false;
+    } else if ((typeof recursive) !== 'boolean') {
+      this.debug(`fsbDeleteDirectoryCommand -- Message 'parameters.recursive' parameter type is not 'boolean'. It is '${typeof command.recursive}'`);
+      return ( { "invalid": `fsbDeleteDirectory Command: 'parameters.recursive' parameter must be type 'boolean'. It is '${typeof command.recursive}'` } );
+    }
+
+    try {
+      this.debug(`fsbDeleteDirectoryCommand -- getting stats for Directories in the Extension FileSystem`);
+      const deleted = await messenger.BrokerFileSystem.fsbDeleteDirectory(command.directoryName, parameters);  // NOTE: No extensionId!!!
+      this.debug(`fsbDeleteDirectoryCommand -- deleted=${deleted}`);
+
+      const response = { "deleted": deleted, "directoryName": command.directoryName };
+      if (parameters) response['parameters'] = parameters;
+      return response;
+
+    } catch (error) {
+      this.caught(error, `fsbDeleteDirectoryCommand -- Caught error while deleting a directory in the Extension FileSystem: "${command.directoryName}"`);
+      return ( { "error": `Error Processing fsbDeleteDirectory Command: ${error.message}`, "code": "500" } );
+    }
+  }
+
+
 
   async unknownCommand(command, extensionId) {
     this.debug(`unknownCommand ~~~~~~~~~~~~~~~~~~~~ command.command="${command.command}"`);
@@ -2028,7 +2178,7 @@ this.debug(
             } else {
               toObject[`${key}[${value.length}]`] = value.length;
             }
-          } else {
+          } else { // just an object
             // if entries is "short" (<=5) we put entries, otherwise we put length
             const entries = Object.entries(value);
             if (entries.length > 0 && entries.length <= 5) {
@@ -2123,7 +2273,7 @@ this.debug(
           } else {
             // already done above
           }
-        } else {
+        } else { // just and object
           // if entries is "short" (<=5) we put entries, otherwise we put length
           const entries = Object.entries(value);
           formatted += `${key}: object[${entries.length}]`;
@@ -2143,7 +2293,7 @@ this.debug(
               } else if (Array.isArray(v)) {
                 valueList += `${k}: array[${v.length}]`;
               } else if ((typeof v) === 'object') {
-                valueList += `${k}: object`;
+                valueList += `${k}: object`; // MABXXX WHAT IF k==="parameters";
               } else {
                 valueList += `${k}: ${v}`;
               }
@@ -2304,6 +2454,10 @@ this.debug(
           return result.fileInfo  ? "fileInfo.length=" + result.fileInfo.length  : "(NO fileInfo)";
         case "fsbList":
           return result.list  ? "list.length=" + result.list.length  : "(NO list)";
+        case "fsbStats":
+          return result.stats  ? `stats.length=${Object.keys(result.stats).length} length=${result.length}` : "(NO stats)";
+        case "fsbDeleteDirectory":
+          return "deleted=" + result.deleted;
       }
 
       return "Unknown Command:" + command.command;
@@ -2334,6 +2488,12 @@ this.debug(
         default:
           return key;
       }
+    }
+  }
+
+  checkCmdParms(parms, allowedKeys) {
+    for (const key of Object.keys(parms)) {
+      if (! allowedKeys.includes(key)) return key;
     }
   }
 
@@ -2409,6 +2569,7 @@ this.debug(
    */
   checkValidFileName(filename) {
     if ((typeof filename) !== 'string') return false;
+    if (filename.length < 1 || filename.length > 64) return false;
 
     const ILLEGAL_CHARS = /[<>:"/\\|?*\x00-\x1F]/g;
     if (ILLEGAL_CHARS.test(filename)) return false;
@@ -2417,13 +2578,12 @@ this.debug(
     const RESERVED_NAMES = /^(con|prn|aux|nul|com[0-9]|lpt[0-9])$/i;
     if (RESERVED_NAMES.test(filename)) return false;
 
-    if (filename.length > 64) return false;
-
     return true;
   }
 
   checkValidDirName(dirname) {
     if ((typeof dirname) !== 'string') return false;
+    if (dirname.length < 1 ||  dirname.length > 64) return false;
 
     const ILLEGAL_CHARS = /[<>:"/\\|?*\x00-\x1F]/g;
     if (ILLEGAL_CHARS.test(dirname)) return false;
@@ -2432,7 +2592,6 @@ this.debug(
     const RESERVED_NAMES = /^(\.\.|con|prn|aux|nul|com[0-9]|lpt[0-9])$/i;
     if (RESERVED_NAMES.test(dirname)) return false;
 
-    if (dirname.length > 64) return false;
 
     return true;
   }

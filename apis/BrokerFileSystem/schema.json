@@ -456,7 +456,7 @@
             "minLength": 1,
             "maxLength": 64,
             "optional": true,
-            "description": "The name of the directory to delete. If provided, must be a valid file name. If not provided, delete the directory named like the given extensionId. The file must be a DIrectory, not  Regular File."
+            "description": "The name of the directory to delete. If provided, must be a valid directory name. If not provided, delete the directory named like the given extensionId. Must be a Directory, not Regular File."
           },
           {
             "name": "recursive",
@@ -634,8 +634,7 @@
         "type": "function",
         "async": true,
         "description": "Returns the full pathName of the system directory on which this API operates.",
-        "parameters": [
-        ]
+        "parameters": []
       },
 
       {
@@ -660,7 +659,7 @@
               "includeChildInfo": {
                 "type": "boolean",
                 "optional": true,
-                "description": "If true, include information for each child item in the directory named like the extensionId."
+                "description": "Optional. If true, include information for each child item in the directory named like the extensionId."
               },
 
               "types": {
@@ -673,7 +672,7 @@
                   "enum": [ "regular", "directory", "other", "unknown", "error" ]
                 },
                 "optional": true,
-                "description": "If includeChildInfo is true, which item types -- 'regular', 'directory', 'other', 'unknown', 'error' -- to include. The default is all types."
+                "description": "Optional. If includeChildInfo is true, which item types -- 'regular', 'directory', 'other', 'unknown', 'error' -- to include. The default is all types."
               }
             }
           }
@@ -696,7 +695,7 @@
                 "type": "string",
                 "minLength": 1,
                 "optional": true,
-                "description": "A GLOB string that will be used to filter the items by name."
+                "description": "Optional. A GLOB string that will be used to filter the items by name."
               },
 
               "types": {
@@ -709,7 +708,7 @@
                   "enum": [ "regular", "directory", "other" ]
                 },
                 "optional": true,
-                "description": "which item types -- 'regular', 'directory', 'other' -- to include. The default is all types."
+                "description": "Optional. Which item types -- 'regular', 'directory', 'other' -- to include. The default is all types."
               }
             }
           }
@@ -732,7 +731,7 @@
                 "type": "string",
                 "minLength": 1,
                 "optional": true,
-                "description": "A GLOB string that will be used to filter the items by name."
+                "description": "Optional. A GLOB string that will be used to filter the items by name."
               },
 
               "types": {
@@ -745,7 +744,44 @@
                   "enum": [ "regular", "directory", "other" ]
                 },
                 "optional": true,
-                "description": "which item types -- 'regular', 'directory', 'other' -- to include. The default is all types."
+                "description": "Optional. Which item types -- 'regular', 'directory', 'other' -- to include. The default is all types."
+              }
+            }
+          }
+        ]
+      },
+
+      {
+        "name": "fsbStats",
+        "type": "function",
+        "async": true,
+        "description": "Returns an Object that provides information about each directory inside the top-level directory in which this extension operates.",
+        "parameters": []
+      },
+
+      {
+        "name": "fsbDeleteDirectory",
+        "type": "function",
+        "async": true,
+        "description": "Deletes the directory with the given directoryName.",
+        "parameters": [
+          {
+            "name": "directoryName",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "description": "The name of the directory to delete. It must be a valid directory name. Must be a Directory, not  Regular File."
+          },
+
+          {
+            "name": "parameters",
+            "type": "object",
+            "optional": true,
+            "properties": {
+              "recursive": {
+                "type": "boolean",
+                "optional": true,
+                "description": "Optional. Default is false. If true, the named directory and all its contents - including directories and sub-directories - will be deleted. If false, and the directory contains any items, throws an error."
               }
             }
           }

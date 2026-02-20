@@ -13,14 +13,16 @@ class EventLogViewer {
     this.LOG_FILENAME_EXTENSION  = ".log";
     this.LOG_FILENAME_MATCH_GLOB = "*.log";
 
-    this.INFO          = false;
-    this.LOG           = false;
-    this.DEBUG         = false;
-    this.WARN          = false;
+    this.INFO          = true;
+    this.LOG           = true;
+    this.DEBUG         = true;
+    this.WARN          = true;
 
     this.logger        = new Logger();
     this.fsbOptionsApi = new FsbOptions(this.logger);
     this.fsBrokerApi   = new FileSystemBrokerAPI();
+
+    this.LOG_ENTRY_LIMIT = 5000;
 
 
 
@@ -118,6 +120,8 @@ class EventLogViewer {
       fileInfo = response.fileInfo;
     }
 
+    this.setupEventListeners();
+
     if (! fileInfo) {
       this.error("##### Failed to get FileInfo  #####");
       this.setErrorFor("instructions", "fsbEventLogViewer_error_noFileInfo");
@@ -126,8 +130,6 @@ class EventLogViewer {
       await this.updateLogFileInfoUI(fileInfo);
       await this.buildFileDataUI(fileInfo);
     }
-
-    this.setupEventListeners();
   }
 
 
@@ -267,9 +269,9 @@ class EventLogViewer {
     const i18nMessage = getI18nMsg("fsbEventLogViewer_message_fileDataLoading", "...");
     this.appendLogLineMessageUI(domFileDataList, i18nMessage);
 
-    // returns { "fileName": string, "data": UTF8-String, "lineData": array of object } array of javascript object
-    //         { "invalid":  string                                                   } If fileName is invalid or full pathName too long. The returned string gives the reason.
-    //         { "error":    string                                                   } If there was some error reading the file. The returned string gives the reason.
+    // returns { "fileName": string, "logEntries": array of object } Each logEntry object is a representation of the JSON data in the Log
+    //         { "invalid":  string                                } If fileName is invalid or full pathName too long. The returned string gives the reason.
+    //         { "error":    string                                } If there was some error reading the file. The returned string gives the reason.
     const logFileData = await this.readLogFile(fileInfo.fileName);
 
     domFileDataList.innerHTML = '';
@@ -279,29 +281,32 @@ class EventLogViewer {
     const statuses = new Set();
 
     if (! logFileData) {
-      this.appendLogLineMessageUI( domFileDataList, getI18nMsg( 'fsbEventLogViewer_error_noLogFileData_response',   "ERROR NO logFileData"          ) );
+      this.appendLogLineMessageUI( domFileDataList, getI18nMsg( 'fsbEventLogViewer_error_noLogFileData_response',   "ERROR NO logFileData"            ) );
     } else if (logFileData.invalid) {
-      this.appendLogLineMessageUI( domFileDataList, getI18nMsg( 'fsbEventLogViewer_error_noLogFileData_invalid',    "ERROR logFileData.invalid"     ) );
+      this.appendLogLineMessageUI( domFileDataList, getI18nMsg( 'fsbEventLogViewer_error_noLogFileData_invalid',    "ERROR logFileData.invalid"       ) );
     } else if (logFileData.error) {
-      this.appendLogLineMessageUI( domFileDataList, getI18nMsg( 'fsbEventLogViewer_error_noLogFileData_error',      "ERROR logFileData.error"       ) );
+      this.appendLogLineMessageUI( domFileDataList, getI18nMsg( 'fsbEventLogViewer_error_noLogFileData_error',      "ERROR logFileData.error"         ) );
     } else if (! logFileData.fileName) {
-      this.appendLogLineMessageUI( domFileDataList, getI18nMsg( 'fsbEventLogViewer_error_noLogFileData_noFileName', "ERROR NO logFileData.fileName" ) );
-    } else if (! logFileData.data) {
-      this.appendLogLineMessageUI( domFileDataList, getI18nMsg( 'fsbEventLogViewer_error_noLogFileData_noData',     "ERROR NO logFileData.data"     ) );
-    } else if (! logFileData.lineData || logFileData.lineData.length < 1) {
-      this.appendLogLineMessageUI( domFileDataList, getI18nMsg( 'fsbEventLogViewer_error_noLogFileData_noData',     "ERROR NO logFileData.lineData" ) );
+      this.appendLogLineMessageUI( domFileDataList, getI18nMsg( 'fsbEventLogViewer_error_noLogFileData_noFileName', "ERROR NO logFileData.fileName"   ) );
+    } else if (! logFileData.logEntries || logFileData.logEntries.length < 1) {
+      this.appendLogLineMessageUI( domFileDataList, getI18nMsg( 'fsbEventLogViewer_error_noLogFileData_noData',     "ERROR NO logFileData.logEntries" ) );
+    } else if (logFileData.logEntries.length >= this.LOG_ENTRY_LIMIT) {
+      this.appendLogLineMessageUI( domFileDataList, getI18nMsg( 'fsbEventLogViewer_error_LogFileDataLimit',         "The Log Has Too Many Entries"    ) );
     } else {
+
+      this.debugAlways(`\n\n########## logFileData.logEntries.length=${logFileData.logEntries.length} ##########\n\n`);
+
       const logHeaderUI = this.buildLogHeaderUI();
       domFileDataList.appendChild(logHeaderUI);
 
-      for (const logLineData of logFileData.lineData) {
-        senders.add(  logLineData.sender  ); // for building filter select list
-        types.add(    logLineData.type    ); // for building filter select list
-        commands.add( logLineData.command ); // for building filter select list
-        statuses.add( logLineData.status  ); // for building filter select list
+      for (const logEntry of logFileData.logEntries) {
+        senders.add(  logEntry.sender  ); // for building filter select list
+        types.add(    logEntry.type    ); // for building filter select list
+        commands.add( logEntry.command ); // for building filter select list
+        statuses.add( logEntry.status  ); // for building filter select list
 
-        const logLineItemUI = this.buildLogLineItemUI(logLineData);
-        domFileDataList.appendChild(logLineItemUI);
+        const logEntryItemUI = this.buildLogEntryItemUI(logEntry);
+        domFileDataList.appendChild(logEntryItemUI);
       }
 
     }
@@ -377,20 +382,19 @@ class EventLogViewer {
    * log line data, which is stored as JSON stringified objects.
    *
    * This includes the command name and any parameters.  This maybe not have been the best of ideas
-   * because if a parameter happens to have the same name as one of the expected keys, like 'time',
+   * because if a parameter happens to have the same name as one of the expected keys, like timeMS
    * 'sender', 'result', or type, etc, this will become a problem.
    *
    * Perhaps parameters could be encapsulated inside their own object???
    */
-  formatCommandParameters(logLineData) { // MABXXX Move to FileSystemBrokerCommands ???
+  formatCommandParameters(logEntry) { // MABXXX Move to FileSystemBrokerCommands ???
     let formattedParameters = '';
 
-    if (logLineData.command) {
-      for (const[key, value] of Object.entries(logLineData)) {
-        // Anything that is NOT 'timeMS, 'time', 'sender', 'command', 'status', 'result', or 'type' is a 'parameter'
+    if (logEntry.command) {
+      for (const[key, value] of Object.entries(logEntry)) {
+        // Anything that is NOT 'timeMS, 'sender', 'command', 'status', 'result', or 'type' is a 'parameter'
         switch (key) {
           case 'timeMS':
-          case 'time':
           case 'sender':
           case 'type':
           case 'command':
@@ -424,60 +428,59 @@ class EventLogViewer {
 
 
 
-  buildLogLineItemUI(logLineData) {
+  buildLogEntryItemUI(logEntry) {
     const logLineItemTR = document.createElement('tr');
       logLineItemTR.classList.add('event-line-item');
       logLineItemTR.addEventListener( "click",    (e) => this.logLineItemClicked(e)       );
       logLineItemTR.addEventListener( "dblclick", (e) => this.logLineItemDoubleClicked(e) );
 
       // these will make filtering easier
-      logLineItemTR.setAttribute( 'timeMS',  logLineData.timeMS  );
-      logLineItemTR.setAttribute( 'time',    logLineData.time    );
-      logLineItemTR.setAttribute( 'sender',  logLineData.sender  );
-      logLineItemTR.setAttribute( 'type',    logLineData.type    );
-      logLineItemTR.setAttribute( 'command', logLineData.command );
-      logLineItemTR.setAttribute( 'status',  logLineData.status  );
+      logLineItemTR.setAttribute( 'timeMS',  logEntry.timeMS  );
+      logLineItemTR.setAttribute( 'sender',  logEntry.sender  );
+      logLineItemTR.setAttribute( 'type',    logEntry.type    );
+      logLineItemTR.setAttribute( 'command', logEntry.command );
+      logLineItemTR.setAttribute( 'status',  logEntry.status  );
 
       const logLineTimestampTD =  document.createElement('td');
         logLineTimestampTD.classList.add('event-line-data');
         logLineTimestampTD.classList.add('event-line-time');
-        logLineTimestampTD.appendChild( document.createTextNode( formatMsToDateTime24HR(logLineData.time) ) );
+        logLineTimestampTD.appendChild( document.createTextNode( formatMsToDateTime24HR(logEntry.timeMS) ) );
       logLineItemTR.appendChild(logLineTimestampTD);
 
       const logLineSenderTD =  document.createElement('td');
         logLineSenderTD.classList.add('event-line-data');
         logLineSenderTD.classList.add('event-line-sender');
-        if (logLineData.sender) logLineSenderTD.appendChild( document.createTextNode(logLineData.sender) );
+        if (logEntry.sender) logLineSenderTD.appendChild( document.createTextNode(logEntry.sender) );
       logLineItemTR.appendChild(logLineSenderTD);
 
       const logLineTypeTD =  document.createElement('td');
         logLineTypeTD.classList.add('event-line-data');
         logLineTypeTD.classList.add('event-line-type');
-        if (logLineData.type) logLineTypeTD.appendChild( document.createTextNode(logLineData.type) );
+        if (logEntry.type) logLineTypeTD.appendChild( document.createTextNode(logEntry.type) );
       logLineItemTR.appendChild(logLineTypeTD);
 
       const logLineCommandTD =  document.createElement('td');
         logLineCommandTD.classList.add('event-line-data');
         logLineCommandTD.classList.add('event-line-command');
-        if (logLineData.command) logLineCommandTD.appendChild( document.createTextNode(logLineData.command) );
+        if (logEntry.command) logLineCommandTD.appendChild( document.createTextNode(logEntry.command) );
       logLineItemTR.appendChild(logLineCommandTD);
 
       const logLineStatusTD =  document.createElement('td');
         logLineStatusTD.classList.add('event-line-data');
         logLineStatusTD.classList.add('event-line-status');
-        if (logLineData.status) logLineStatusTD.appendChild( document.createTextNode(logLineData.status) );
+        if (logEntry.status) logLineStatusTD.appendChild( document.createTextNode(logEntry.status) );
       logLineItemTR.appendChild(logLineStatusTD);
 
       const logLineParametersTD =  document.createElement('td');
         logLineParametersTD.classList.add('event-line-data');
         logLineParametersTD.classList.add('event-line-parameters');
-        logLineParametersTD.appendChild( document.createTextNode( this.formatCommandParameters(logLineData) ) );
+        logLineParametersTD.appendChild( document.createTextNode( this.formatCommandParameters(logEntry) ) );
       logLineItemTR.appendChild(logLineParametersTD);
 
       const logLineResultTD =  document.createElement('td');
         logLineResultTD.classList.add('event-line-data');
         logLineResultTD.classList.add('event-line-result');
-        if (logLineData.result) logLineResultTD.appendChild( document.createTextNode(logLineData.result) );
+        if (logEntry.result) logLineResultTD.appendChild( document.createTextNode(logEntry.result) );
       logLineItemTR.appendChild(logLineResultTD);
 
     return logLineItemTR;
@@ -1191,41 +1194,58 @@ class EventLogViewer {
     }
   }
 
-  /* returns { "fileName": string, "data": UTF8-String, "lineData": array of object } array of javascript object
-   *         { "invalid":  string                                                   } If fileName invalid or pathName too long. The returned string gives the reason.
-   *         { "error":    string                                                   } If there was some error reading the file. The returned string gives the reason.
+  /* returns { "fileName": string, "logEntries": array of object } Each logEntry object is a representation of the JSON data in the Log
+   *         { "invalid":  string                                } If fileName invalid. The returned string gives the reason.
+   *         { "error":    string                                } If there was some error reading the file. The returned string gives the reason.
+   *
+   * Example logEntry:
+   *   For now, anything other the timeMS, time, sender, type, command, status, and result is ASSumed to be a parameter to the command (MABXXX BAD DESIGN)
+   *
+   *   {
+   *     "timeMS":     1770267600002,
+   *     "sender":     "INTERNAL",
+   *     "type":       "event",
+   *     "command":    "midnightTimerTimedOut",
+   *     "status":     "success",
+   *     "result":     "Timed out after 1145 ms -- Set at \"2026-02-04 23:59:58\"",
+   *     "delayMs":    1145,
+   *     "timerSetAt": "2026-02-04 23:59:58"
+   *   }
    */
-  async readLogFile(fileName) {
+  async readLogFile(fileName) { // MABXXX MOVE THIS TO FsbEventLogger ??????????
     try {
       this.debug(`-- Reading log file "${fileName}"`);
       const response = await this.fsBrokerApi.readFile(fileName);
       //this.debug("-- response:", response);
       //this.debug(`-- response.data: "${response.data}"`);
 
-      if (response.data) {
-        const lines    = response.data.split('\n');
-        const lineData = [];
+      if (response.error)   return response;
+      if (response.invalid) return response;
+      if (! response.data)  return response;
 
-        for (const line of lines) {
-          //this.debug(`-- line: "${line}"`);
-          if (line.length >= 1) {
-            try {
-              const obj = JSON.parse(line);
-              lineData.push(obj);
-            } catch (error) {
-              this.caught(error, `-- Unexpected Error parsing JSON: "${line}"`);
-            }
+      const lines    = response.data.split('\n');
+      const logEntries = [];
+      delete response.data;
+
+      for (const line of lines) {
+        //this.debug(`-- line: "${line}"`);
+        if (line.length >= 1) {
+          try {
+            const obj = JSON.parse(line);
+            logEntries.push(obj);
+          } catch (error) {
+            this.caught(error, `-- Unexpected Error parsing JSON: "${line}"`);
           }
         }
-
-        response['lineData'] = lineData;
       }
+
+      response['logEntries'] = logEntries;
 
       return response;
 
     } catch (error) {
       this.caught(error, "-- Unexpected Error");
-      return { "error": error.name + ": " + error.message };
+      return { "error": `Unexpected Error: ${error.name}: ${error.message}` };
     }
   }
 

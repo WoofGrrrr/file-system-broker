@@ -111,11 +111,25 @@ export function getExtensionName(defaultExtName) {
 export function getI18nMsg(id, defaultMsg) {
   let i18nMessage = messenger.i18n.getMessage(id);
 
-  if (i18nMessage == "") {
-    if (defaultMsg === undefined) {
-      i18nMessage = id;
-    } else {
+  if (! i18nMessage) {
+    if (defaultMsg) {
       i18nMessage = defaultMsg;
+    } else {
+      i18nMessage = id;
+    }
+  }
+
+  return i18nMessage;
+}
+
+export function getI18nMsgSubst(id, subst, defaultMsg) {
+  let i18nMessage = messenger.i18n.getMessage(id, subst);
+
+  if (! i18nMessage) {
+    if (defaultMsg) {
+      i18nMessage = defaultMsg;
+    } else {
+      i18nMessage = id;
     }
   }
 

@@ -28,6 +28,7 @@ export class FsbOptions {
     'fsbShowExtensionChooserInstructions',
     'fsbShowBackupManagerInstructions',
     'fsbShowEventLogManagerInstructions',
+    'fsbShowStatsManagerInstructions',
     'fsbOnRemoveExtensionDeleteDirectory',
   ];
 
@@ -56,6 +57,7 @@ export class FsbOptions {
     'fsbShowExtensionChooserInstructions':    true,
     'fsbShowBackupManagerInstructions':       true,
     'fsbShowEventLogManagerInstructions':     true,
+    'fsbShowStatsManagerInstructions':        true,
     'fsbOnRemoveExtensionDeleteDirectory':    true,
   };
 
@@ -328,6 +330,10 @@ export class FsbOptions {
     return this.isEnabledOption('fsbShowEventLogManagerInstructions', true);
   }
 
+  async isEnabledShowStatsManagerInstructions() {
+    return this.isEnabledOption('fsbShowStatsManagerInstructions', true);
+  }
+
   async isEnabledOnRemoveExtensionDeleteDirectory() {
     const KEY = 'fsbOnRemoveExtensionDeleteDirectory';
     return this.isEnabledOption(KEY, true);
@@ -429,7 +435,7 @@ export class FsbOptions {
         if (! this.settingDefaultOptions) this.error("-- failed to get props['extensionsProps'] (extensionsProps) from local storage");
 
       } else if (typeof extensionsProps !== 'object') {
-        if (! this.settingDefaultOptions) this.error("-- props['extensionsProps'](extensionsProps) is not a object");
+        if (! this.settingDefaultOptions) this.error("-- props['extensionsProps'] (extensionsProps) is not a object");
 
       } else {
         if (this.DEBUG) {
@@ -437,27 +443,50 @@ export class FsbOptions {
           logProps("", "FSBOptions.getExtensionsProps.extensionsProps", extensionsProps);
         }
 
-        for (const installedExtension of installedExtensions) {
-          if (installedExtension.type === 'extension') {
-            const configured = extensionsProps.hasOwnProperty(installedExtension.id);
-            if (! configured) {
-              this.debug(`-- Extension NOT configured - not found in extensionsProps: ID="${installedExtension.id}`);
-            } else {
-              this.debug(`-- Extension IS configured - found in extensionsProps: ID="${installedExtension.id}`);
+        if (installedExtensions && installedExtensions.length > 0) {
+          // Update extensionsProps with data from the currently-installed extensions
+          for (const installedExtension of installedExtensions) { // an array of managament.ExtensionInfo
+            if (installedExtension.type === 'extension') {
+              const installedExtensionIsConfigured = extensionsProps.hasOwnProperty(installedExtension.id);
+              if (! installedExtensionIsConfigured) {
+                this.debug(`-- Extension NOT configured - not found in extensionsProps: ID="${installedExtension.id}`);
+              } else {
+                this.debug(`-- Extension IS configured - found in extensionsProps: ID="${installedExtension.id}`);
 
-              const extensionProps       = extensionsProps[installedExtension.id];
-              extensionProps.installed   = true; // this should have been 'configured'
-              extensionProps.uninstalled = false;
-              extensionProps.id          = installedExtension.id;                       // redundant - should already be there
-              extensionProps.description = installedExtension.description;              // remove this line if we ever store this locally so we can edit/replace
-              extensionProps.disabled    = ! installedExtension.enabled;                // remove this line if we ever store this locally so we can edit/replace
-//////////////extensionProps.name        = installedExtension.name;                     // we store this locally so we can edit/replace MABXXX WHY?
-              extensionProps.shortName   = installedExtension.shortName;                // remove this line if we ever store this locally so we can edit/replace
-              extensionProps.version     = installedExtension.version;
-              extensionProps.versionName = installedExtension.versionName;
+                const extensionProps       = extensionsProps[installedExtension.id];
+                extensionProps.installed   = true; // this should have been 'configured'
+                extensionProps.uninstalled = false;
+                extensionProps.id          = installedExtension.id;                       // redundant - should already be there
+                extensionProps.description = installedExtension.description;              // remove this line if we ever store this locally so we can edit/replace
+                extensionProps.disabled    = ! installedExtension.enabled;                // remove this line if we ever store this locally so we can edit/replace
+////////////////extensionProps.name        = installedExtension.name;                     // we store this locally so we can edit/replace MABXXX WHY?
+                extensionProps.shortName   = installedExtension.shortName;                // remove this line if we ever store this locally so we can edit/replace
+                extensionProps.version     = installedExtension.version;
+                extensionProps.versionName = installedExtension.versionName;
+              }
             }
           }
+
+          // If the extension is NOT in installedExtensions, then mark it as uninstalled
+          for (const [extensionId, extensionProps] of Object.entries(extensionsProps)) {
+            const foundInstalledExtension = installedExtensions.find(extension => extension.id === extensionId);
+            if (foundInstalledExtension) {
+              extensionProps.uninstalled = false; // <--- Redudant with code just above, but WTF? 
+              delete extensionProps['uninstalledTimeMS'];
+            } else {
+              extensionProps.uninstalled       = true;
+              extensionProps.uninstalledTimeMS = Date.now(); // MABXXX uninstalledTimeMS
+            }
+          }
+        } else {
+          // NO installedExtensions, so mark them all as uninstalled
+          for (const [extensionId, extensionProps] of Object.entries(extensionsProps)) {
+            extensionProps.uninstalled       = true;
+            extensionProps.uninstalledTimeMS = Date.now(); // MABXXX uninstalledTimeMS
+          }
         }
+
+        //MABXXX SHOULD WE UPDATE STORAGE???
 
         if (this.DEBUG) {
           this.debugAlways(`-- RETURNING Object.keys(extensionsProps).length=${Object.keys(extensionsProps).length}`);
@@ -549,14 +578,16 @@ export class FsbOptions {
     return false;
   }
 
-  async storeExtensionsProps(props) {
-    // MABXXX SHOULD WE REMOVE ALL THE STUFF THAT WE DON'T ALLOW THE USER TO CHANGE - and thus we should always be getting from messenger.management.getAll???
+  async storeExtensionsProps(props) { // MABXXX an array???
+    // MABXXX SHOULD WE REMOVE ALL THE STUFF THAT WE DON'T ALLOW THE USER TO CHANGE - and thus we should always be getting from messenger.management.getAll() ???
     //        - id
     //        - description
     //        - disabled
     //        - shortName
     //        - version
     //        - versionName
+    // MABXXX IF AN EXTENSION GETS UNINSTALLED, THUS IT WON'T BE RETURNED FROM messenger.management.getAll(), THESE WILL BE THE LAST-KNOWN VALUES
+    //        But uninstalled should be true.
     return messenger.storage.local.set(
       { 'extensionsProps': props }
     );
@@ -571,8 +602,10 @@ export class FsbOptions {
       //        - shortName
       //        - version
       //        - versionName
+    // MABXXX IF AN EXTENSION GETS UNINSTALLED, THUS IT WON'T BE RETURNED FROM messenger.management.getAll(), THESE WILL BE THE LAST-KNOWN VALUES
+    //        But uninstalled should be true.
       const extensionsProps = await this.getExtensionsProps();
-      extensionsProps[extensionId] = props;
+      extensionsProps[extensionId] = props; // MABXXX DANGER!!! THIS COULD CHANGE THE extensionId!!!
       await this.storeExtensionsProps(extensionsProps);
       return extensionsProps[extensionId];
     }

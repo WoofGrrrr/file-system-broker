@@ -90,9 +90,11 @@ __Sub-directories are currently not supported.__
   + isValidFileName - is a fileName valid?
   + isValidDirectoryName - is a directoryName valid?
   + getFileSystemPathName - return the full pathName of the system directory on which this API operates
-  + stats - returns a JavaScript object that contains information about the directory for an extension and its contents
-  + fsbListInfo - return a list of FileInfo objects for all items - Reguar files, Directories, and "other" - in the directory on which this API operates (INTERNAL USE ONLY!!!)
-  + fsbList - list of the fileNames of all items - Reguar files, Directories, and "other" - in the directory on which this API operates (INTERNAL USE ONLY!!!)
+  + stats -return an object that contains information about the directory for an extension and its contents
+  + fsbListInfo - return a list of FileInfo objects for matching items in the FileSystemBroker directory on which this API operates (INTERNAL USE ONLY!!!)
+  + fsbList - return a list of the fileNames and Types of matching items in the FileSystemBroker directory on which this API operates (INTERNAL USE ONLY!!!)
+  + fsbStats - return an object that contains information about the FileSystemBroker directory and each sub-directory in it (INTERNAL USE ONLY!!!)
+  + fsbDeleteDirectory - Delete a directory in the FileSystemBroker directory on which this API operates (INTERNAL USE ONLY!!!)
 
 <br>
 <br>
@@ -588,7 +590,7 @@ __Sub-directories are currently not supported.__
 <br>
 <br>
 
-### stats( extensionId [, 'parameters': ['includeChildInfo': boolean] ['types': array of String] ] )
+### stats( [ { ['includeChildInfo': boolean] ['types': array of String] } ] )
 
     Returns a JavaScript object that contains information
     about the directory and the items in the directory
@@ -620,37 +622,38 @@ __Sub-directories are currently not supported.__
 <br>
     The returned object:
 ```
-      { extensionId: {
-          stats: {
-                   'includeChildInfo':               boolean:          incoming parameter
-                   'types':                          array of string:  incoming parameter (OPTIONAL: only if includeChildInfo is true)
-                   'dirName':                        string:           directory name
-                   'dirPath':                        string:           directory fulle pathName
-                   'children':                       integer:          total number of child items
-                   'regular':                        integer:          number of child items with type 'regular'
-                   'directory':                      integer:          number of child items with type 'directory'
-                   'other':                          integer:          number of child items with type 'other'
-                   'unknown':                        integer:          number of child items with type none of the three above
-                   'error':                          integer:          number of child items whose types could not be determined
-                   'earliestChildCreationTime':      integer:          earliest Creation Time      of all child items (OS-dependent) in MS (undefined if no children)
-                   'latestChildCreationTime':        integer:          latest   Creation Time      of all child items (OS-dependent) in MS (undefined if no children)
-                   'earliestChildLastAccessedTime':  integer:          earliest Last Accessed Time of all child items (OS-dependent) in MS (undefined if no children)
-                   'latestChildLastAccessedTime':    integer:          latest   Last Accessed Time of all child items (OS-dependent) in MS (undefined if no children)
-                   'earliestChildLastModifiedTime':  integer:          earliest Last Modified Time of all child items (OS-dependent) in MS (undefined if no children)
-                   'latestChildLastModifiedTime':    integer:          latest   Last Modified Time of all child items (OS-dependent) in MS (undefined if no children)
-                   'smallestSize':                   integer:          smallest size (bytes) of all child items with type 'regular' (-1 if none)
-                   'largestSize':                    integer:          largest size (bytes) of all child items with type 'regular' (-1 if none)
-                   'totalSize':                      integer:          total of sizes (bytes) of all child items with type 'regular'
-                   [ 'childInfo': ]                  array of object {                 (OPTIONAL: only if includeChildInfo is true)
-                                                       'name'                string:   item name
-                                                       'type'                string:   item type - 'regular', 'directory', 'other', 'unknown', 'error'
-                                                       'path'                string:   item full pathName
-                                                       'creationTime':       integer:  Creation Time      (OS-dependent) in MS
-                                                       'lastAccessedTime':   integer:  Last Accessed Time (OS-dependent) in MS
-                                                       'lastModifiedTime':   integer:  Last Modified Time (OS-dependent) in MS
-                                                       [ 'size': ]           integer:  file size (bytes) (OPTIONAL: only for items with type 'regular')
-                                                     }
-                 }
+      { directoryName:
+          {
+            'includeChildInfo':                 boolean:          incoming parameter
+            'types':                            array of string:  incoming parameter (OPTIONAL: only if includeChildInfo is true)
+            'dirName':                          string:           directory fileName
+            'dirPath':                          string:           directory full pathName
+            'error':                            string:           a description if there was an error getting information. None of the data below will be present.
+            'count_children':                   integer:          total number of child items
+            'count_regular':                    integer:          number of child items with type 'regular'
+            'count_directory':                  integer:          number of child items with type 'directory'
+            'count_other':                      integer:          number of child items with type 'other'
+            'count_unknown':                    integer:          number of child items whose type is none of the three above
+            'count_error':                      integer:          number of child items whose type could not be determined
+            'time_childCreation_earliest':      integer:          earliest Creation Time      of all child items in MS (OS-dependent) in MS (undefined if no children)
+            'time_childCreation_latest':        integer:          latest   Creation Time      of all child items in MS (OS-dependent) in MS (undefined if no children)
+            'time_childLastAccessed_earliest':  integer:          earliest Last Accessed Time of all child items in MS (OS-dependent) in MS (undefined if no children)
+            'time_childLastAccessed_latest':    integer:          latest   Last Accessed Time of all child items in MS (OS-dependent) in MS (undefined if no children)
+            'time_childLastModified_earliest':  integer:          earliest Last Modified Time of all child items in MS (OS-dependent) in MS (undefined if no children)
+            'time_childLastModified_latest':    integer:          latest   Last Modified Time of all child items in MS (OS-dependent) in MS (undefined if no children)
+            'size_smallest':                    integer:          smallest size (bytes) of all child items with type 'regular' (-1 if none)
+            'size_largest':                     integer:          largest size (bytes) of all child items with type 'regular' (-1 if none)
+            'size_total':                       integer:          total of sizes (bytes) of all child items with type 'regular'
+            [ 'childInfo': ]                    array of object:          (OPTIONAL: only if includeChildInfo is true)
+                                                  {
+                                                    'name'                string:   item fileName
+                                                    'path'                string:   item full pathName
+                                                    'type'                string:   item type - 'regular', 'directory', 'other', 'unknown', 'error'
+                                                    'creationTime':       integer:  Creation Time in MS      (OS-dependent)
+                                                    'lastAccessedTime':   integer:  Last Accessed Time in MS (OS-dependent)
+                                                    'lastModifiedTime':   integer:  Last Modified Time in MS (OS-dependent)
+                                                    [ 'size': ]           integer:  file size (bytes)        (OPTIONAL: only for items with type 'regular')
+                                                  }
           }
       }
 
@@ -667,7 +670,7 @@ __Sub-directories are currently not supported.__
 <br>
 <br>
 
-###  fsbListInfo( [ parameters: { ['matchGLOB': matchGLOB] ['types': types] } ] ) (INTERNAL USE ONLY)
+###  fsbListInfo( [ { ['matchGLOB': matchGLOB] ['types': types] } ] ) (INTERNAL USE ONLY)
 
     Returns an array of FileInfo objects listing the File Info for the
     items (all types) in the top-directory on which this extension
@@ -720,7 +723,7 @@ __Sub-directories are currently not supported.__
 <br>
 <br>
 
-###  fsbList( [ parameters: { ['matchGLOB': matchGLOB] ['types': types] } ] ) (INTERNAL USE ONLY)
+###  fsbList( [ { ['matchGLOB': matchGLOB] ['types': types] } ] ) (INTERNAL USE ONLY)
 
     Returns an array listing information for the items
     in the top-directory on which this extension operates.
@@ -759,4 +762,66 @@ __Sub-directories are currently not supported.__
     or if paramaters.types is provided and is not an Array that contains the expected values,
 <br>
     or if there is an operating system error.
+
+<br>
+<br>
+
+### fsbStats()  (INTERNAL USE ONLY)
+
+    Returns an array that provides information about each directory
+    inside the top-level directory in which this extension operates.
+<br>
+<br>
+    The returned array contains an element for each directory, indexed by directory name:
+```
+        {
+          'dirName':                           string:   directory name
+          'dirPath':                           string:   directory full pathName
+          'error':                             string:   a description if there was an error getting information. None of the data below will be present.
+          'count_children':                    integer:  total number of child items
+          'count_type_regular':                integer:  number of child items with type 'regular'
+          'count_type_directory':              integer:  number of child items with type 'directory'
+          'count_type_other':                  integer:  number of child items with type 'other'
+          'count_type_unknown':                integer:  number of child items whose type is none of the three above
+          'count_type_error':                  integer:  number of child items whose type could not be determined
+          'time_childCreation_earliest':       integer:  earliest Creation Time      of all child items in MS (OS-dependent) (undefined if no children)
+          'time_childCreation_latest':         integer:  latest   Creation Time      of all child items in MS (OS-dependent) (undefined if no children)
+          'time_childLastAccessed_earliest':   integer:  earliest Last Accessed Time of all child items in MS (OS-dependent) (undefined if no children)
+          'time_childLastAccessedTime_latest': integer:  latest   Last Accessed Time of all child items in MS (OS-dependent) (undefined if no children)
+          'time_childLastModified_earliest':   integer:  earliest Last Modified Time of all child items in MS (OS-dependent) (undefined if no children)
+          'time_childLastModified_latest':     integer:  latest   Last Modified Time of all child items in MS (OS-dependent) (undefined if no children)
+          'size_smallest':                     integer:  smallest size (bytes) of all child items with type 'regular' (-1 if none)
+          'size_largest':                      integer:  largest size (bytes) of all child items with type 'regular' (-1 if none)
+          'size_total':    
+
+```
+<br>
+<br>
+    Throws if any directory's full pathName is > 255 characters,
+<br>
+    or if there is an operating system error.
+
+<br>
+<br>
+
+###  fsbDeleteDirectory(directoryName [, { 'recursive': boolean } ] )
+
+    Deletes the directory with the given directoryName.
+
+    If recursive is true, the directory and all it's
+    contents are deleted. Throws if recursive is false
+    or is not provided and the directory is not empty.
+
+    Returns true if the directory was deleted, or false
+    if the directory does not exist.
+
+    Throws if the directoryName is missing or invalid,
+    or if the directory's full pathName is > 255 characters,
+    or if the names item is not a Directory,
+    or if recursive is false or not provided and the directory is not empty,
+    or if there is an operating system error.
+
+<br>
+<br>
+<br>
 <br>

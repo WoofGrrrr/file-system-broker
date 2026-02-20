@@ -433,15 +433,37 @@ input[type="checkbox"].open-close-check:not(checked) + label {
   border-color:     var(--extension-access-disallowed-border-color);
 }
 
+.data-numeric {
+  text-align: right;
+}
+
 .extension-list-id { /* .extension-list-item > .extension-list-id */
   width:      auto;
   text-align: left;
 }
 
 .extension-list-name { /* .extension-list-item > .extension-list-name */
-  width:      auto;
+  width:      100%;
   text-align: left;
 }
+
+.extension-list-stats-dir-exists {
+  width:      auto;
+}
+
+.extension-list-stats-item-count {
+  width:      auto;
+}
+
+.extension-list-stats-total-size-fmt {
+  width:      auto;
+}
+
+.extension-list-stats-total-size-bytes {
+  width:      auto;
+}
+
+
 
 #fsbExtensionList:not(.edit-mode) > .extension-list-item:hover:not(.extension-locked) > .extension-list-data {
   background-color: var(--extension-hover-background-color);

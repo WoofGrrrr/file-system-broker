@@ -144,11 +144,10 @@ Use something like the following code in your JavaScript:
   + isValidFileName -        is a fileName valid?
   + isValidDirectoryName -   is a directoryName valid?
   + getFileSystemPathName -  returns the full pathName of the top-level system directory on which this API operates (in the users profile)
-  + stats -                  get information about the extension's directory and the items in that directory
-  + fsbListInfo -            list FileInfo objects for all items - Reguar files, Directories, and "other" - in the directory on which this API operates MABXXX MAYBE NOT IN THIS API
-  + fsbList -                list info for items in the directory on which this API operates MABXXX MAYBE NOT IN THIS API
-
-
+  + stats -return an object that contains information about the directory for an extension and its contents
+  + fsbListInfo - return a list of FileInfo objects for matching items in the FileSystemBroker directory on which this API operates (INTERNAL USE ONLY!!!)
+  + fsbList - return a list of the fileNames and Types of matching items in the FileSystemBroker directory on which this API operates (INTERNAL USE ONLY!!!)
+  + fsbStats - return an object that contains information about the FileSystemBroker directory and each sub-directory in it (INTERNAL USE ONLY!!!)
 
 #### All functions are asynchronous (async.) They all return a JavaScript object.
 
@@ -863,7 +862,7 @@ Use something like the following code in your JavaScript:
 <br>
 <br>
 
-### stats( ['parammeters': { ['includeChildInfo': boolean] ['types': array of string] ] )
+### stats( [ { ['includeChildInfo': boolean] ['types': array of string] ] )
 
     Returns a JavaScript object that contains information
     about the directory and the items in the directory
@@ -895,37 +894,42 @@ Use something like the following code in your JavaScript:
 <br>
     The returned object:
 ```
-      { extensionId: {
-          stats: {
-                   'includeChildInfo':               boolean:          incoming parameter
-                   'types':                          array of string:  incoming parameter (OPTIONAL: only if includeChildInfo is true)
-                   'dirName':                        string:           directory name
-                   'dirPath':                        string:           directory fulle pathName
-                   'children':                       integer:          total number of child items
-                   'regular':                        integer:          number of child items with type 'regular'
-                   'directory':                      integer:          number of child items with type 'directory'
-                   'other':                          integer:          number of child items with type 'other'
-                   'unknown':                        integer:          number of child items with type none of the three above
-                   'error':                          integer:          number of child items whose types could not be determined
-                   'earliestChildCreationTime':      integer:          earliest Creation Time      of all child items (OS-dependent) in MS (undefined if no children)
-                   'latestChildCreationTime':        integer:          latest   Creation Time      of all child items (OS-dependent) in MS (undefined if no children)
-                   'earliestChildLastAccessedTime':  integer:          earliest Last Accessed Time of all child items (OS-dependent) in MS (undefined if no children)
-                   'latestChildLastAccessedTime':    integer:          latest   Last Accessed Time of all child items (OS-dependent) in MS (undefined if no children)
-                   'earliestChildLastModifiedTime':  integer:          earliest Last Modified Time of all child items (OS-dependent) in MS (undefined if no children)
-                   'latestChildLastModifiedTime':    integer:          latest   Last Modified Time of all child items (OS-dependent) in MS (undefined if no children)
-                   'smallestSize':                   integer:          smallest size (bytes) of all child items with type 'regular' (-1 if none)
-                   'largestSize':                    integer:          largest size (bytes) of all child items with type 'regular' (-1 if none)
-                   'totalSize':                      integer:          total of sizes (bytes) of all child items with type 'regular'
-                   [ 'childInfo': ]                  array of object {                 (OPTIONAL: only if includeChildInfo is true)
-                                                       'name'                string:   item name
-                                                       'type'                string:   item type - 'regular', 'directory', 'other', 'unknown', 'error'
-                                                       'path'                string:   item full pathName
-                                                       'creationTime':       integer:  Creation Time      (OS-dependent) in MS
-                                                       'lastAccessedTime':   integer:  Last Accessed Time (OS-dependent) in MS
-                                                       'lastModifiedTime':   integer:  Last Modified Time (OS-dependent) in MS
-                                                       [ 'size': ]           integer:  file size (bytes) (OPTIONAL: only for items with type 'regular')
-                                                     }
-                 }
+      {
+        'parameters':                               object:           the parameters object supplied to the incoming command
+        'stats':
+          { directoryName:                          string:           chould match the extensionID
+              {
+                'includeChildInfo':                 boolean:          incoming parameter
+                'types':                            array of string:  incoming parameter (OPTIONAL: only if includeChildInfo is true)
+                'dirName':                          string:           directory fileName
+                'dirPath':                          string:           directory full pathName
+                'error':                            string:           a description if there was an error getting information. None of the data below will be present.
+                'count_children':                   integer:          total number of child items
+                'count_regular':                    integer:          number of child items with type 'regular'
+                'count_directory':                  integer:          number of child items with type 'directory'
+                'count_other':                      integer:          number of child items with type 'other'
+                'count_unknown':                    integer:          number of child items whose type is none of the three above
+                'count_error':                      integer:          number of child items whose type could not be determined
+                'time_childCreation_earliest':      integer:          earliest Creation Time      of all child items in MS (OS-dependent) in MS (undefined if no children)
+                'time_childCreation_latest':        integer:          latest   Creation Time      of all child items in MS (OS-dependent) in MS (undefined if no children)
+                'time_childLastAccessed_earliest':  integer:          earliest Last Accessed Time of all child items in MS (OS-dependent) in MS (undefined if no children)
+                'time_childLastAccessed_latest':    integer:          latest   Last Accessed Time of all child items in MS (OS-dependent) in MS (undefined if no children)
+                'time_childLastModified_earliest':  integer:          earliest Last Modified Time of all child items in MS (OS-dependent) in MS (undefined if no children)
+                'time_childLastModified_latest':    integer:          latest   Last Modified Time of all child items in MS (OS-dependent) in MS (undefined if no children)
+                'size_smallest':                    integer:          smallest size (bytes) of all child items with type 'regular' (-1 if none)
+                'size_largest':                     integer:          largest size (bytes) of all child items with type 'regular' (-1 if none)
+                'size_total':                       integer:          total of sizes (bytes) of all child items with type 'regular'
+                [ 'childInfo': ]                    array of object:          (OPTIONAL: only if includeChildInfo is true)
+                                                      {
+                                                        'name'                string:   item fileName
+                                                        'path'                string:   item full pathName
+                                                        'type'                string:   item type - 'regular', 'directory', 'other', 'unknown', 'error'
+                                                        'creationTime':       integer:  Creation Time in MS      (OS-dependent)
+                                                        'lastAccessedTime':   integer:  Last Accessed Time in MS (OS-dependent)
+                                                        'lastModifiedTime':   integer:  Last Modified Time in MS (OS-dependent)
+                                                        [ 'size': ]           integer:  file size (bytes)        (OPTIONAL: only for items with type 'regular')
+                                                      }
+              }
           }
       }
 ```
@@ -946,10 +950,68 @@ Use something like the following code in your JavaScript:
 <br>
 <br>
 
-### fsbListInfo( [ parameters: { ['matchGLOB': matchGLOB] ['types': types] } ] ) (INTERNAL USE ONLY)
+### fsbListInfo( [ { ['matchGLOB': matchGLOB] ['types': types] } ] ) (INTERNAL USE ONLY)
 
-    Returns an array of FileInfo objects listing the File Info for the
-    items  in the top-directory on which this extension
+    Returns an onbect containing an array of FileInfo objects
+    listing the File Info for the items in the top-directory
+    on which this extension operates.
+<br>
+<br>
+    If the optional parameters.matchGLOB parameter is given, only
+    the information for items whose names match the given GLOB will
+    be returned.
+<br>
+<br>
+    If the optional parameters.types array parameter is given,
+    only the information for items whose type is listed in the
+    parameters.types array will be returned. paramaters.types
+    is an array of one or more of:
+<br>
+      'regular', 'directory, 'other'
+<br>
+    The default is ALL types.
+<br>
+<br>
+    The returned object:
+```
+      {
+        'parameters':  object:             the parameters object supplied to the incoming command
+        'fileInfo:     array of FileInfo:
+                         {
+                           'fileName:      string:   the fileName
+                           'path:          string:   the full pathname
+                           'type:          string:   "regular", "directory", or "other"
+                           'size:          integer:  for a Regular File, the size in bytes, otherwise -1
+                           'creationTime   integer:  (Windows and MacOS only): milliseconds since 1970-01-01T00:00:00.000Z
+                           'lastAccessed:  integer:  milliseconds since 1970-01-01T00:00:00.000Z
+                           'lastModified:  integer:  milliseconds since 1970-01-01T00:00:00.000Z
+                           'permissions:   integer:  expressed as a UNIX file mode (for Windows, the 'user', 'group', and 'other' parts will always be identical)
+                         }  
+```
+<br>
+<br>
+    If the Directory does not exist, it will be created and an
+    empty array is returned.
+<br>
+<br>
+    Returns "invalid" if parameters is provided and is not an object,
+<br>
+    or if paramaters.matchGLOB is provided and is not a String,
+<br>
+    or if paramaters.types is provided and is not an Array that contains the expected values
+<br>
+<br>
+    Returns "error" if the directory's full pathName is > 255 characters,
+<br>
+    or if there is an operating system error.
+<br>
+<br>
+<br>
+
+### fsbList( [ { ['matchGLOB': matchGLOB] ['types': types] } ] ) (INTERNAL USE ONLY)
+
+    Returns an object containing an array listing information
+    for the items in the top-directory on which this extension
     operates.
 <br>
 <br>
@@ -968,59 +1030,17 @@ Use something like the following code in your JavaScript:
     The default is ALL types.
 <br>
 <br>
-    If the Directory does not exist, it will be created and an
-    empty array is returned.
-<br>
-<br>
-    FileInfo has these entries:
-    - fileName:     the fileName
-    - path:         the full pathname
-    - type:         "regular", "directory", or "other"
-    - size:         for a Regular File, the size in bytes, otherwise -1
-    - creationTime  (Windows and MacOS only): milliseconds since 1970-01-01T00:00:00.000Z
-    - lastAccessed: milliseconds since 1970-01-01T00:00:00.000Z
-    - lastModified: milliseconds since 1970-01-01T00:00:00.000Z
-    - permissions:  expressed as a UNIX file mode (for Windows, the 'user', 'group', and 'other' parts will always be identical)
-<br>
-<br>
-    Returns "invalid" if parameters is provided and is not an object,
-<br>
-    or if paramaters.matchGLOB is provided and is not a String,
-<br>
-    or if paramaters.types is provided and is not an Array that contains the expected values
-<br>
-<br>
-    Returns "error" if the directory's full pathName is > 255 characters,
-<br>
-    or if there is an operating system error.
-<br>
-<br>
-<br>
-
-### fsbList( [ parameters: { ['matchGLOB': matchGLOB] ['types': types] } ] ) (INTERNAL USE ONLY)
-
-    Returns an array listing information for the items
-    in the top-directory on which this extension operates.
-<br>
-<br>
-    If the optional parameters.matchGLOB parameter is given, only
-    the information for items whose names match the given GLOB will
-    be returned.
-<br>
-<br>
-    If the optional parameters.types array parameter is given,
-    only the information for items whose type is listed in the
-    parameters.types array will be returned. paramaters.types
-    is an array of one or more of:
-<br>
-      'regular', 'directory, 'other'
-<br>
-    The default is ALL types.
-<br>
-<br>
     The items in the returned array are object
-<br>
-    { 'name': itemName, 'type' itemType }
+    The returned object:
+```
+      {
+        'parameters':  object:           the parameters object supplied to the incoming command
+        'list':        array of object:
+                         {
+                           'name':       string:  the name of the item
+                           'type:        string:  "regular", "directory", or "other"
+                         }  
+```
 <br>
 <br>
     If the Directory does not exist, it will be created and an
@@ -1037,3 +1057,50 @@ Use something like the following code in your JavaScript:
     Returns "error" if the directory's full pathName is > 255 characters,
 <br>
     or if there is an operating system error.
+
+<br>
+<br>
+
+### fsbStats()  (INTERNAL USE ONLY)
+
+    Returns an Object that provides information about each directory
+    inside the top-level directory in which this extension operates.
+<br>
+<br>
+<br>
+    The returned object contains an array of object, indexed by Directory Name:
+```
+      { 'stats': array of object, indexed by Directory Name
+                   {
+                     'dirName':                           string:   directory fileName
+                     'dirPath':                           string:   directory full pathName
+                     'error':                             string:   a description if there was an error getting information. None of the data below will be present.
+                     'count_children':                    integer:  total number of child items
+                     'count_type_regular':                integer:  number of child items with type 'regular'
+                     'count_type_directory':              integer:  number of child items with type 'directory'
+                     'count_type_other':                  integer:  number of child items with type 'other'
+                     'count_type_unknown':                integer:  number of child items whose type is none of the three above
+                     'count_type_error':                  integer:  number of child items whose type could not be determined
+                     'time_childCreation_earliest':       integer:  earliest Creation Time      of all child items in MS (OS-dependent) (undefined if no children)
+                     'time_childCreation_latest':         integer:  latest   Creation Time      of all child items in MS (OS-dependent) (undefined if no children)
+                     'time_childLastAccessed_earliest':   integer:  earliest Last Accessed Time of all child items in MS (OS-dependent) (undefined if no children)
+                     'time_childLastAccessedTime_latest': integer:  latest   Last Accessed Time of all child items in MS (OS-dependent) (undefined if no children)
+                     'time_childLastModified_earliest':   integer:  earliest Last Modified Time of all child items in MS (OS-dependent) (undefined if no children)
+                     'time_childLastModified_latest':     integer:  latest   Last Modified Time of all child items in MS (OS-dependent) (undefined if no children)
+                     'size_smallest':                     integer:  smallest size (bytes) of all child items with type 'regular' (-1 if none)
+                     'size_largest':                      integer:  largest size (bytes) of all child items with type 'regular' (-1 if none)
+                     'size_total':                        integer:  total of sizes (bytes) of all child items with type 'regular'
+                   }
+      }
+
+```
+<br>
+<br>
+    Returns 'error' if any directory's full pathName is > 255 characters,
+<br>
+    or if there is an operating system error.
+
+<br>
+<br>
+<br>
+<br>
