@@ -51,6 +51,14 @@ input[type="checkbox"].open-close-check:not(checked) + label {
   background-image:  url("../images/icons/light-gray-triangle-outline-right_10x10.png") !important;
 }
 
+.data-loading-message {
+  background-color: #D0D0D0;
+  border:           2px SOLID #00D080;
+  color:            #00D080;
+  font-weight:      BOLD;
+  padding:          5px;
+}
+
 .options-open-close-panel {
 /*background-color: var(--panel-background-color);*/
 /*border:           1px solid var(--panel-border-color);*/
@@ -265,7 +273,7 @@ input[type="checkbox"].open-close-check:not(checked) + label {
 
 
 
-.directory-list-header { /* <TH>  Directory List Header Row */
+.directory-list-header { /* <TR>  Directory List Header Row */
   background-color: var(--list-header-item-background-color);
   border:           none;
   color:            var(--list-header-item-color);
@@ -282,52 +290,64 @@ input[type="checkbox"].open-close-check:not(checked) + label {
   -moz-appearance:  none;
 
   & > .list-header-data { /* <TH>  Directory List Header Row */
-    &.header-name { /* <TH>  Directory List Header Row */
+    &.header-name {
     }
 
-    &.header-ext-id { /* <TH>  Directory List Header Row */
+    &.header-ext-id {
     }
 
-    &.header-count-children { /* <TH>  Directory List Header Row */
+    &.header-ext-installed {
     }
 
-    &.header-count-regular { /* <TH>  Directory List Header Row */
+    &.header-ext-enabled {
     }
 
-    &.header-count-directory { /* <TH>  Directory List Header Row */
+    &.header-ext-configured {
     }
 
-    &.header-count-other { /* <TH>  Directory List Header Row */
+    &.header-ext-access {
     }
 
-    &.header-count-unknown { /* <TH>  Directory List Header Row */
+    &.header-count-children {
     }
 
-    &.header-count-error { /* <TH>  Directory List Header Row */
+    &.header-count-regular {
     }
 
-    &.header-time-creation-earliest { /* <TH>  Directory List Header Row */
+    &.header-count-directory {
     }
 
-    &.header-time-creation-latest { /* <TH>  Directory List Header Row */
+    &.header-count-other {
     }
 
-    &.header-time-last-accessed-earliest { /* <TH>  Directory List Header Row */
+    &.header-count-unknown {
     }
 
-    &.header-time-last-accessed-latest { /* <TH>  Directory List Header Row */
+    &.header-count-error {
     }
 
-    &.header-time-last-modified-earliest { /* <TH>  Directory List Header Row */
+    &.header-time-creation-earliest {
     }
 
-    &.header-time-last-modified-latest { /* <TH>  Directory List Header Row */
+    &.header-time-creation-latest {
     }
 
-    &.header-size-smallest { /* <TH>  Directory List Header Row */
+    &.header-time-last-accessed-earliest {
     }
 
-    &.header-size-largest { /* <TH>  Directory List Header Row */
+    &.header-time-last-accessed-latest {
+    }
+
+    &.header-time-last-modified-earliest {
+    }
+
+    &.header-time-last-modified-latest {
+    }
+
+    &.header-size-smallest {
+    }
+
+    &.header-size-largest {
     }
 
     &.header-size-totel { /* <TH>  Directory List Header Row */
@@ -350,36 +370,108 @@ input[type="checkbox"].open-close-check:not(checked) + label {
   white-space:      nowrap;
   width:            100%;
   -moz-appearance:  none;
+
+  & > :first-child {
+    border-bottom-left-radius: 5px;
+    border-left:               1px solid; /* var(--list-item-border-color) !important; */
+    border-top-left-radius:    5px;
+  }
+
+  & > :last-child {
+    border-bottom-right-radius: 5px;
+    border-right:               1px solid; /* var(--list-item-border-color) !important; */
+    border-top-right-radius:    5px;
+  }
+
+  & > .list-item-data { /* this is a <TD> */
+    background-color: var(--list-item-background-color);
+    border-bottom:    1px solid;
+    border-top:       1px solid;
+    border-color:     var(--list-item-border-color) !important;
+    color:            var(--list-item-color);
+    margin:           0 0.5em;
+    padding:          0.1em 0.5em;
+    text-decoration:  var(--list-item-text-decoration);
+    white-space:      nowrap;
+    -moz-appearance:  none;
+
+    &.list-item-name { /* .directory-list-item > .list-item-name - this is a <TD> */
+      text-align: left;
+      width:      auto;
+    }
+
+    &.list-item-ext-id { /* .directory-list-item > .list-item-ext-id - this is a <TD> */
+      text-align: left;
+      width:      auto;
+    }
+  }
 }
 
-.directory-list-item > :first-child {
-  border-bottom-left-radius: 5px;
-  border-left:               1px solid; /* var(--list-item-border-color) !important; */
-  border-top-left-radius:    5px;
-}
+.list-item-boolean { /* <TD> */
+  min-width:      1.25em;
+  padding:        5px;
+  text-align:     center;
+  vertical-align: middle;
 
-.directory-list-item > :last-child {
-  border-bottom-right-radius: 5px;
-  border-right:               1px solid; /* var(--list-item-border-color) !important; */
-  border-top-right-radius:    5px;
-}
+  &.list-item-ext-installed {
+  }
+  &.list-item-ext-enabled {
+  }
+  &.list-item-ext-configured {
+  }
+  &.list-item-ext-access {
+  }
 
-.list-item-data { /* this is a <TD> */
-  background-color: var(--list-item-background-color);
-  border-bottom:    1px solid;
-  border-top:       1px solid;
-  border-color:     var(--list-item-border-color) !important;
-  color:            var(--list-item-color);
-  margin:           0 0.5em;
-  padding:          0.1em 0.5em;
-  text-decoration:  var(--list-item-text-decoration);
-  white-space:      nowrap;
-  -moz-appearance:  none;
-}
+  & > .list-item-dot { /* <SPAN> */
+    background-color:   TRANSPARENT;
+    border:             1px SOLID TRANSPARENT;
+    border-radius:      50%;
+    display:            inline-block;
+    height:             1.10em;
+    min-height:         1.10em;
+    min-width:          1.10em;
+    width:              1.10em;
 
-.list-item-name { /* .directory-list-item > .list-item-ame - this is a <TD> */
-  text-align: left;
-  width:      auto;
+    display:            flex;
+    justify-content:    center; /* centers horizontally */
+    align-items:        center; /* centers vertically */
+    height:             100%;   /* Ensure the cell has a defined height for vertical centering */
+
+    &.dot-ext-installed {
+      background-color: GREEN;
+      border:           1px SOLID BLACK;
+    }
+    &.dot-ext-not-installed {
+    }
+    &.dot-ext-disabled {
+      background-color: RED;
+      border:           1px SOLID BLACK;
+    }
+    &.dot-ext-enabled {
+      background-color: GREEN;
+      border:           1px SOLID BLACK;
+    }
+    &.dot-ext-disabled-not-installed {
+    }
+    &.dot-ext-configured {
+      background-color: BLUE;
+      border:           1px SOLID BLACK;
+    }
+    &.dot-ext-not-configured {
+      background-color: YELLOW;
+      border:           1px SOLID BLACK;
+    }
+    &.dot-ext-access-allowed {
+      background-color: GREEN;
+      border:           1px SOLID BLACK;
+    }
+    &.dot-ext-access-denied {
+      background-color: RED;
+      border:           1px SOLID BLACK;
+    }
+    &.dot-ext-access-not-configured {
+    }
+  }
 }
 
 .list-item-count {
@@ -433,16 +525,23 @@ input[type="checkbox"].open-close-check:not(checked) + label {
 tr.directory-list-item.selected > td.list-item-data {
   background-color: var(--list-item-selected-background-color);
   border-color:     var(--list-item-selected-border-color);
-  color:            var(--list-item-selected-color); /* MABXXX PROBLEM!!! */
+  color:            var(--list-item-selected-color);
   text-shadow:      1px 1px var(--list-item-selected-text-shadow-color);
 }
 
-tr.directory-list-item:hover > td.list-item-data {
+tr.directory-list-item.selected:hover > td.list-item-data {
+  text-shadow:      2px 2px var(--list-item-selected-text-shadow-color);
+}
+
+tr.directory-list-item:not(.selected):hover > td.list-item-data {
   background-color: var(--list-item-hover-background-color);
+  color:            var(--list-item-hover-color);
+  text-shadow:      1px 1px var(--list-item-hover-text-shadow-color);
+}
+
+tr.directory-list-item:hover > td.list-item-data {
   background-image: var(--list-item-hover-background-image);
   border-color:     var(--list-item-hover-border-color);
-  color:            var(--list-item-hover-color); /* MABXXX PROBLEM!!! */
-  text-shadow:      1px 1px var(--list-item-hover-text-shadow-color);
 }
 
 

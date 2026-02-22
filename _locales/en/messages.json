@@ -839,8 +839,14 @@
   "fsbStatsManager_directoryListHeader_directoryName": {
     "message": "Directory Name"
   },
+  "fsbStatsManager_directoryListHeader_directoryPathName": {
+    "message": "Directory PathName"
+  },
   "fsbStatsManager_directoryListHeader_extensionId": {
     "message": "Extension ID"
+  },
+  "fsbStatsManager_directoryListHeader_extensionInstalled": {
+    "message": "I?"
   },
   "fsbStatsManager_directoryListHeader_extensionEnabled": {
     "message": "E?"
@@ -852,22 +858,22 @@
     "message": "A?"
   },
   "fsbStatsManager_directoryListHeader_count_children": {
-    "message": "#Items"
+    "message": "#"
   },
   "fsbStatsManager_directoryListHeader_count_type_regular": {
-    "message": "#Regular"
+    "message": "#R"
   },
   "fsbStatsManager_directoryListHeader_count_type_directory": {
-    "message": "#Directory"
+    "message": "#D"
   },
   "fsbStatsManager_directoryListHeader_count_type_other": {
-    "message": "#Other"
+    "message": "#O"
   },
   "fsbStatsManager_directoryListHeader_count_type_unknown": {
-    "message": "#Unknown"
+    "message": "#U"
   },
   "fsbStatsManager_directoryListHeader_count_type_error": {
-    "message": "#Error"
+    "message": "#E"
   },
   "fsbStatsManager_directoryListHeader_time_creation_earliest": {
     "message": "Earliest Creation"
@@ -896,14 +902,89 @@
   "fsbStatsManager_directoryListHeader_size_total": {
     "message": "Total "
   },
+  "fsbStatsManager_directoryListHeader_tooltip_directoryName": {
+    "message": "Directory Name"
+  },
+  "fsbStatsManager_directoryListHeader_tooltip_directoryPathName": {
+    "message": "The full PathName for the directory"
+  },
+  "fsbStatsManager_directoryListHeader_tooltip_extensionId": {
+    "message": "The Extension ID of the extenstion for which this is the directory, if any"
+  },
+  "fsbStatsManager_directoryListHeader_tooltip_extensionInstalled": {
+    "message": "Is the Extension installed?"
+  },
+  "fsbStatsManager_directoryListHeader_tooltip_extensionEnabled": {
+    "message": "Is the Extension enabled?"
+  },
+  "fsbStatsManager_directoryListHeader_tooltip_extensionConfigured": {
+    "message": "Is the Extension configured to use FileSystemManager?"
+  },
+  "fsbStatsManager_directoryListHeader_tooltip_extensionAccessAllowed": {
+    "message": "Is the Extension configured and allowed to FileSystemManager?"
+  },
+  "fsbStatsManager_directoryListHeader_tooltip_count_children": {
+    "message": "The number of items in the directory"
+  },
+  "fsbStatsManager_directoryListHeader_tooltip_count_type_regular": {
+    "message": "The number of Regular Files in the directory"
+  },
+  "fsbStatsManager_directoryListHeader_tooltip_count_type_directory": {
+    "message": "The number of Directories in the directory"
+  },
+  "fsbStatsManager_directoryListHeader_tooltip_count_type_other": {
+    "message": "The number of type 'other' in the directory"
+  },
+  "fsbStatsManager_directoryListHeader_tooltip_count_type_unknown": {
+    "message": "The number of items in the directory whose types are known"
+  },
+  "fsbStatsManager_directoryListHeader_tooltip_count_type_error": {
+    "message": "The number of items in the directory for which there was an error getting their type"
+  },
+  "fsbStatsManager_directoryListHeader_tooltip_time_creation_earliest": {
+    "message": "The least-recent Creation date & time of all items in the directory"
+  },
+  "fsbStatsManager_directoryListHeader_tooltip_time_creation_latest": {
+    "message": "The most-recent Creation date & time of all items in the directory"
+  },
+  "fsbStatsManager_directoryListHeader_tooltip_time_lastAccessed_earliest": {
+    "message": "The least-recent Last Accessed date & time of all items in the directory"
+  },
+  "fsbStatsManager_directoryListHeader_tooltip_time_lastAccessed_latest": {
+    "message": "The most-recent Last Accessed date & time of all items in the directory"
+  },
+  "fsbStatsManager_directoryListHeader_tooltip_time_lastModified_earliest": {
+    "message": "The least-recent Last Modified date & time of all items in the directory"
+  },
+  "fsbStatsManager_directoryListHeader_tooltip_time_lastModified_latest": {
+    "message": "The most-recent Last Modified date & time of all items in the directory"
+  },
+  "fsbStatsManager_directoryListHeader_tooltip_size_smallest": {
+    "message": "The size of the smallest Regular File in the directory"
+  },
+  "fsbStatsManager_directoryListHeader_tooltip_size_largest": {
+    "message": "The size of the largest Regular File in the directory"
+  },
+  "fsbStatsManager_directoryListHeader_tooltip_size_total": {
+    "message": "The total of the sizes of all Regular Files in the directory "
+  },
   "fsbStatsManager_deleteButton": {
     "message": "Delete"
   },
   "fsbStatsManager_refreshButton": {
     "message": "Refresh List"
   },
+  "fsbStatsManager_error_noDirectoryListElement": {
+    "message": "Internal Error: Failed to get directory List Element #fsbStatsManagerDirectoryList"
+  },
+  "fsbStatsManager_error_noDirectories": {
+    "message": "Internal Error: Failed to get Directories List"
+  },
   "fsbStatsManager_doneButton": {
     "message": "Done"
+  },
+  "fsbStatsManager_message_directoryDeleteCanceled": {
+    "message": "Directory Deletion Canceled."
   },
   "fsbStatsManager_message_oneDirectoryDeleted": {
     "message": "1 Directory Deleted."
@@ -916,12 +997,6 @@
       }
     }
   },
-  "fsbStatsManager_error_noDirectoryListElement": {
-    "message": "Internal Error: Failed to get dIrectory List Element #fsbStatsManagerDirectoryList"
-  },
-  "fsbStatsManager_error_noDirectories": {
-    "message": "Internal Error: Failed to get Directories List"
-  },
   "fsbStatsManager_error_oneDirectoryDeleteFailed": {
     "message": "1 Directory Failed to be Deleted."
   },
@@ -933,8 +1008,34 @@
       }
     }
   },
-  "fsbStatsManager_error_": {
-    "message": ""
+  "fsbStatsManager_dialog_confirmDeleteDirs_title": {
+    "message": "Confirm Directory Deletion"
+  },
+  "fsbStatsManager_dialog_confirmDeleteDirs_oneDir_message1": {
+    "message": "One Directory and all its contents will be deleted."
+  },
+  "fsbStatsManager_dialog_confirmDeleteDirs_oneDir_message2": {
+    "message": " "
+  },
+  "fsbStatsManager_dialog_confirmDeleteDirs_nnDirs_message1": {
+    "message": "$NN$ Directories and all their contents will be Deleted.",
+    "placeholders": {
+      "nn": {
+        "content": "$1"
+      }
+    }
+  },
+  "fsbStatsManager_dialog_confirmDeleteDirs_nnDirs_message2": {
+    "message": " "
+  },
+  "fsbStatsManager_dialog_confirmDeleteDirs_messageContinue": {
+    "message": "Do you wish to continue?"
+  },
+  "fsbStatsManager_dialog_confirmDeleteDirs_button_continue.label": {
+    "message": "Continue"
+  },
+  "fsbStatsManager_dialog_confirmDeleteDirs_button_cancel.label": {
+    "message": "Cancel"
   },
   "numDaysSelectOption_1": {
     "message": "1 day"

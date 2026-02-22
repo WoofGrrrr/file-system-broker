@@ -200,7 +200,7 @@ __Sub-directories are currently not supported.__
     Throws if the extensionId or fileName is invalid,
     if the file's full pathName is > 255 characters,
     or if the file does not exist,
-    or if there is an operating system error. 
+    or if there is an operating system error.
 
 <br>
 <br>
@@ -214,7 +214,7 @@ __Sub-directories are currently not supported.__
     Throws if the extensionId or fileName is invalid,
     if the file's full pathName is > 255 characters,
     or if the file does not exist,
-    or if there is an operating system error. 
+    or if there is an operating system error.
 
 <br>
 <br>
@@ -228,7 +228,7 @@ __Sub-directories are currently not supported.__
     Throws if the extensionId or fileName is invalid,
     if the file's full pathName is > 255 characters,
     or if the file does not exist,
-    or if there is an operating system error. 
+    or if there is an operating system error.
 
 <br>
 <br>
@@ -772,27 +772,53 @@ __Sub-directories are currently not supported.__
     inside the top-level directory in which this extension operates.
 <br>
 <br>
-    The returned array contains an element for each directory, indexed by directory name:
+    The returned object contains an object with statistics for the FileSystemBroker as a whole
+    and an array of object, indexed by Directory Name, with statistics for each sub-directory
+    in the top-level FileSystemBroker directory:
 ```
-        {
-          'dirName':                           string:   directory name
-          'dirPath':                           string:   directory full pathName
-          'error':                             string:   a description if there was an error getting information. None of the data below will be present.
-          'count_children':                    integer:  total number of child items
-          'count_type_regular':                integer:  number of child items with type 'regular'
-          'count_type_directory':              integer:  number of child items with type 'directory'
-          'count_type_other':                  integer:  number of child items with type 'other'
-          'count_type_unknown':                integer:  number of child items whose type is none of the three above
-          'count_type_error':                  integer:  number of child items whose type could not be determined
-          'time_childCreation_earliest':       integer:  earliest Creation Time      of all child items in MS (OS-dependent) (undefined if no children)
-          'time_childCreation_latest':         integer:  latest   Creation Time      of all child items in MS (OS-dependent) (undefined if no children)
-          'time_childLastAccessed_earliest':   integer:  earliest Last Accessed Time of all child items in MS (OS-dependent) (undefined if no children)
-          'time_childLastAccessedTime_latest': integer:  latest   Last Accessed Time of all child items in MS (OS-dependent) (undefined if no children)
-          'time_childLastModified_earliest':   integer:  earliest Last Modified Time of all child items in MS (OS-dependent) (undefined if no children)
-          'time_childLastModified_latest':     integer:  latest   Last Modified Time of all child items in MS (OS-dependent) (undefined if no children)
-          'size_smallest':                     integer:  smallest size (bytes) of all child items with type 'regular' (-1 if none)
-          'size_largest':                      integer:  largest size (bytes) of all child items with type 'regular' (-1 if none)
-          'size_total':    
+      {
+        'fsbStats': {
+                     'dirName':                           string:   directory fileName
+                     'dirPath':                           string:   directory full pathName
+                     'count_total':                       integer:  total number of descendent items
+                     'count_type_regular':                integer:  number of descendent items with type 'regular'
+                     'count_type_directory':              integer:  number of descendent items with type 'directory'
+                     'count_type_other':                  integer:  number of descendent items with type 'other'
+                     'count_type_unknown':                integer:  number of descendent items whose type is none of the three above
+                     'count_type_error':                  integer:  number of descendent items whose type could not be determined
+                     'time_childCreation_earliest':       integer:  earliest Creation Time      in MS of all descendent items (OS-dependent) (undefined if no children)
+                     'time_childCreation_latest':         integer:  latest   Creation Time      in MS of all descendent items (OS-dependent) (undefined if no children)
+                     'time_childLastAccessed_earliest':   integer:  earliest Last Accessed Time in MS of all descendent items (OS-dependent) (undefined if no children)
+                     'time_childLastAccessed_latest':     integer:  latest   Last Accessed Time in MS of all descendent items (OS-dependent) (undefined if no children)
+                     'time_childLastModified_earliest':   integer:  earliest Last Modified Time in MS of all descendent items (OS-dependent) (undefined if no children)
+                     'time_childLastModified_latest':     integer:  latest   Last Modified Time in MS of all descendent items (OS-dependent) (undefined if no children)
+                     'size_smallest':                     integer:  smallest size  (bytes) of all descendent items with type 'regular' (undefined if no items with type 'regular')
+                     'size_largest':                      integer:  largest  size  (bytes) of all descendent items with type 'regular' (undefined if no items with type 'regular')
+                     'size_total':                        integer:  total of sizes (bytes) of all descendent items with type 'regular' (undefined if no items with type 'regular')
+        },
+        'dirSstats': array of object, indexed by Directory Name
+                       {
+                         'dirName':                           string:   directory fileName
+                         'dirPath':                           string:   directory full pathName
+                         'error':                             string:   a description if there was an error getting information. None of the data below will be present.
+                         'count_children':                    integer:  total number of child items
+                         'count_type_regular':                integer:  number of child items with type 'regular'
+                         'count_type_directory':              integer:  number of child items with type 'directory'
+                         'count_type_other':                  integer:  number of child items with type 'other'
+                         'count_type_unknown':                integer:  number of child items whose type is none of the three above
+                         'count_type_error':                  integer:  number of child items whose type could not be determined
+                         'time_childCreation_earliest':       integer:  earliest Creation Time      in MS of all child items (OS-dependent) (undefined if no children)
+                         'time_childCreation_latest':         integer:  latest   Creation Time      in MS of all child items (OS-dependent) (undefined if no children)
+                         'time_childLastAccessed_earliest':   integer:  earliest Last Accessed Time in MS of all child items (OS-dependent) (undefined if no children)
+                         'time_childLastAccessed_latest':     integer:  latest   Last Accessed Time in MS of all child items (OS-dependent) (undefined if no children)
+                         'time_childLastModified_earliest':   integer:  earliest Last Modified Time in MS of all child items (OS-dependent) (undefined if no children)
+                         'time_childLastModified_latest':     integer:  latest   Last Modified Time in MS of all child items (OS-dependent) (undefined if no children)
+                         'size_smallest':                     integer:  smallest size  (bytes) of all child items with type 'regular' (undefined if no items with type 'regular')
+                         'size_largest':                      integer:  largest  size  (bytes) of all child items with type 'regular' (undefined if no items with type 'regular')
+                         'size_total':                        integer:  total of sizes (bytes) of all child items with type 'regular' (undefined if no items with type 'regular')
+                       }
+        }
+      }
 
 ```
 <br>

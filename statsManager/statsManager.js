@@ -14,6 +14,8 @@ class StatsManager {
   #DEBUG         = false;
   #WARN          = false;
 
+  #IGNORE_DIRECTORY_NAMES = [ '.tmp.drivedownload', '.tmp.driveupload' ]; // these directories are created by Google Drive
+
   #logger        = new Logger();
   #fsbOptionsApi = new FsbOptions(this.logger);
   #fsBrokerApi   = new FileSystemBrokerAPI();
@@ -25,31 +27,62 @@ class StatsManager {
 //fsbCommandsApi.setEventLogger(this.fsbEventLogger);
   
 
-  #canceled      = false;
+  // internal state
+  #canceled = false;
 
-  #listHeaderText_dirName                    = getI18nMsg( "fsbStatsManager_directoryListHeader_directoryName",              "Name"           );
-  #listHeaderText_extensionId                = getI18nMsg( "fsbStatsManager_directoryListHeader_extensionId",                "Extension ID"   );
-  #listHeaderText_extensionEnabled           = getI18nMsg( "fsbStatsManager_directoryListHeader_extensionEnabled",           "E?"             );
-  #listHeaderText_extensionConfigured        = getI18nMsg( "fsbStatsManager_directoryListHeader_extensionConfigured",        "C?"             );
-  #listHeaderText_extensionAccessAllowed     = getI18nMsg( "fsbStatsManager_directoryListHeader_extensionAccessAllowed",     "A?"             );
 
-  #listHeaderText_count_children             = getI18nMsg( "fsbStatsManager_directoryListHeader_count_children",             "#Items"         );
-  #listHeaderText_count_regular              = getI18nMsg( "fsbStatsManager_directoryListHeader_count_type_regular",         "#Regular"       );
-  #listHeaderText_count_directory            = getI18nMsg( "fsbStatsManager_directoryListHeader_count_type_directory",       "#Directory"     );
-  #listHeaderText_count_other                = getI18nMsg( "fsbStatsManager_directoryListHeader_count_type_other",           "#Other"         );
-  #listHeaderText_count_unknown              = getI18nMsg( "fsbStatsManager_directoryListHeader_count_type_unknown",         "#Unknown"       );
-  #listHeaderText_count_error                = getI18nMsg( "fsbStatsManager_directoryListHeader_count_type_error",           "#Error"         );
+  #listHeaderText_dirName                    = getI18nMsg( "fsbStatsManager_directoryListHeader_directoryName",              "Directory Name"     );
+  #listHeaderText_dirPathName                = getI18nMsg( "fsbStatsManager_directoryListHeader_directoryName",              "Directory PathName" );
+  #listHeaderText_extensionId                = getI18nMsg( "fsbStatsManager_directoryListHeader_extensionId",                "Extension ID"       );
+  #listHeaderText_extensionInstalled         = getI18nMsg( "fsbStatsManager_directoryListHeader_extensionInstalled",         "I?"                 );
+  #listHeaderText_extensionEnabled           = getI18nMsg( "fsbStatsManager_directoryListHeader_extensionEnabled",           "E?"                 );
+  #listHeaderText_extensionConfigured        = getI18nMsg( "fsbStatsManager_directoryListHeader_extensionConfigured",        "C?"                 );
+  #listHeaderText_extensionAccessAllowed     = getI18nMsg( "fsbStatsManager_directoryListHeader_extensionAccessAllowed",     "A?"                 );
 
-  #listHeaderText_time_creation_earliest     = getI18nMsg( "fsbStatsManager_directoryListHeader_time_creation_earliest",     ""               );
-  #listHeaderText_time_creation_latest       = getI18nMsg( "fsbStatsManager_directoryListHeader_time_creation_latest",       ""               );
-  #listHeaderText_time_lastAccessed_earliest = getI18nMsg( "fsbStatsManager_directoryListHeader_time_lastAccessed_earliest", ""               );
-  #listHeaderText_time_lastAccessed_latest   = getI18nMsg( "fsbStatsManager_directoryListHeader_time_lastAccessed_latest",   ""               );
-  #listHeaderText_time_lastModified_earliest = getI18nMsg( "fsbStatsManager_directoryListHeader_time_lastModified_earliest", ""               );
-  #listHeaderText_time_lastModified_latest   = getI18nMsg( "fsbStatsManager_directoryListHeader_time_lastModified_latest",   ""               );
+  #listHeaderText_count_children             = getI18nMsg( "fsbStatsManager_directoryListHeader_count_children",             "#I"                 );
+  #listHeaderText_count_regular              = getI18nMsg( "fsbStatsManager_directoryListHeader_count_type_regular",         "#R"                 );
+  #listHeaderText_count_directory            = getI18nMsg( "fsbStatsManager_directoryListHeader_count_type_directory",       "#D"                 );
+  #listHeaderText_count_other                = getI18nMsg( "fsbStatsManager_directoryListHeader_count_type_other",           "#O"                 );
+  #listHeaderText_count_unknown              = getI18nMsg( "fsbStatsManager_directoryListHeader_count_type_unknown",         "#U"                 );
+  #listHeaderText_count_error                = getI18nMsg( "fsbStatsManager_directoryListHeader_count_type_error",           "#E"                 );
 
-  #listHeader_size_smallest                  = getI18nMsg( "fsbStatsManager_directoryListHeader_size_smallest",              ""               );
-  #listHeader_size_largest                   = getI18nMsg( "fsbStatsManager_directoryListHeader_size_largest",               ""               );
-  #listHeader_size_total                     = getI18nMsg( "fsbStatsManager_directoryListHeader_size_total",                 ""               );
+  #listHeaderText_time_creation_earliest     = getI18nMsg( "fsbStatsManager_directoryListHeader_time_creation_earliest",     ""                   );
+  #listHeaderText_time_creation_latest       = getI18nMsg( "fsbStatsManager_directoryListHeader_time_creation_latest",       ""                   );
+  #listHeaderText_time_lastAccessed_earliest = getI18nMsg( "fsbStatsManager_directoryListHeader_time_lastAccessed_earliest", ""                   );
+  #listHeaderText_time_lastAccessed_latest   = getI18nMsg( "fsbStatsManager_directoryListHeader_time_lastAccessed_latest",   ""                   );
+  #listHeaderText_time_lastModified_earliest = getI18nMsg( "fsbStatsManager_directoryListHeader_time_lastModified_earliest", ""                   );
+  #listHeaderText_time_lastModified_latest   = getI18nMsg( "fsbStatsManager_directoryListHeader_time_lastModified_latest",   ""                   );
+
+  #listHeaderText_size_smallest              = getI18nMsg( "fsbStatsManager_directoryListHeader_size_smallest",              ""                   );
+  #listHeaderText_size_largest               = getI18nMsg( "fsbStatsManager_directoryListHeader_size_largest",               ""                   );
+  #listHeaderText_size_total                 = getI18nMsg( "fsbStatsManager_directoryListHeader_size_total",                 ""                   );
+
+
+  #listHeaderTooltip_dirName                    = getI18nMsg( "fsbStatsManager_directoryListHeader_tooltip_directoryName",              "Directory Name"                );
+  #listHeaderTooltip_dirPathName                = getI18nMsg( "fsbStatsManager_directoryListHeader_tooltip_directoryName",              "Directory PathName"            );
+  #listHeaderTooltip_extensionId                = getI18nMsg( "fsbStatsManager_directoryListHeader_tooltip_extensionId",                "Extension ID"                  );
+  #listHeaderTooltip_extensionInstalled         = getI18nMsg( "fsbStatsManager_directoryListHeader_tooltip_extensionInstalled",         "Installed?"                    );
+  #listHeaderTooltip_extensionEnabled           = getI18nMsg( "fsbStatsManager_directoryListHeader_tooltip_extensionEnabled",           "Enabled?"                      );
+  #listHeaderTooltip_extensionConfigured        = getI18nMsg( "fsbStatsManager_directoryListHeader_tooltip_extensionConfigured",        "Configured?"                   );
+  #listHeaderTooltip_extensionAccessAllowed     = getI18nMsg( "fsbStatsManager_directoryListHeader_tooltip_extensionAccessAllowed",     "Access Allowed?"               );
+
+  #listHeaderTooltip_count_children             = getI18nMsg( "fsbStatsManager_directoryListHeader_tooltip_count_children",             "Number of Items"               );
+  #listHeaderTooltip_count_regular              = getI18nMsg( "fsbStatsManager_directoryListHeader_tooltip_count_type_regular",         "Number of Regular Files"       );
+  #listHeaderTooltip_count_directory            = getI18nMsg( "fsbStatsManager_directoryListHeader_tooltip_count_type_directory",       "Number of Directories"         );
+  #listHeaderTooltip_count_other                = getI18nMsg( "fsbStatsManager_directoryListHeader_tooltip_count_type_other",           "Number of Other Items"         );
+  #listHeaderTooltip_count_unknown              = getI18nMsg( "fsbStatsManager_directoryListHeader_tooltip_count_type_unknown",         "Number of Unknown"             );
+  #listHeaderTooltip_count_error                = getI18nMsg( "fsbStatsManager_directoryListHeader_tooltip_count_type_error",           "Number of Errors getting Type" );
+
+  #listHeaderTooltip_time_creation_earliest     = getI18nMsg( "fsbStatsManager_directoryListHeader_tooltip_time_creation_earliest",     "Earliest Creation Time"        );
+  #listHeaderTooltip_time_creation_latest       = getI18nMsg( "fsbStatsManager_directoryListHeader_tooltip_time_creation_latest",       "Latest Creation Time"          );
+  #listHeaderTooltip_time_lastAccessed_earliest = getI18nMsg( "fsbStatsManager_directoryListHeader_tooltip_time_lastAccessed_earliest", "Earliest Last Accessed Time"   );
+  #listHeaderTooltip_time_lastAccessed_latest   = getI18nMsg( "fsbStatsManager_directoryListHeader_tooltip_time_lastAccessed_latest",   "Latest Last Accessed Time"     );
+  #listHeaderTooltip_time_lastModified_earliest = getI18nMsg( "fsbStatsManager_directoryListHeader_tooltip_time_lastModified_earliest", "Earliest Last MOdified Time"   );
+  #listHeaderTooltip_time_lastModified_latest   = getI18nMsg( "fsbStatsManager_directoryListHeader_tooltip_time_lastModified_latest",   "Latest Last MOdified Time"     );
+
+  #listHeaderTooltip_size_smallest              = getI18nMsg( "fsbStatsManager_directoryListHeader_tooltip_size_smallest",              "Smallest Regular File"         );
+  #listHeaderTooltip_size_largest               = getI18nMsg( "fsbStatsManager_directoryListHeader_tooltip_size_largest",               "Largest Regular File"          );
+  #listHeaderTooltip_size_total                 = getI18nMsg( "fsbStatsManager_directoryListHeader_tooltip_size_total",                 "Total of Regular File sizes"   );
 
 
 
@@ -360,32 +393,51 @@ class StatsManager {
 
     const i18nMessage = getI18nMsg("fsbStatsManager_message_directoryListLoading", "...");
     const loadingTR = document.createElement("tr");
-    loadingTR.classList.add("stats-loading");
+    loadingTR.classList.add("data-loading-message");
     loadingTR.appendChild( document.createTextNode(i18nMessage) ); // you can put a text node in a TR ???
     domDirectoryList.appendChild(loadingTR);
 
-    // MABXXX THIS RETURNS ONLY THE 'stats' array!!!
-    const fsbStats = await this.getFsbStats();
-    this.debug("---fsbStats\n", fsbStats);
+    const stats = await this.getFsbStats();
+    this.debug("---stats\n", stats);
+    const fsbStats    = stats?.fsbStats
+    const fsbDirStats = stats?.dirStats
+
+    var noDirectoriesErrorReported = false;
+    if (! fsbDirStats) {
+      this.error("---NO fsbDirStats");
+      this.setErrorFor("fsbStatsManagerTitlePanel", fsbStatsManager_error_noDirectories);
+      noDirectoriesErrorReported = true;
+    } else if (Object.keys(fsbDirStats).length < 1) {
+      this.error("---fsbDirStats.length < 1");
+      this.setErrorFor("fsbStatsManagerTitlePanel", fsbStatsManager_error_noDirectories);
+      noDirectoriesErrorReported = true;
+    } else {
+      for (const dirName of Object.keys(fsbDirStats)) {
+        if (this.#IGNORE_DIRECTORY_NAMES.includes(dirName)) {
+          this.debugAlways(`---IGNORING DIRECTORY "${dirName}"`);
+          delete fsbDirStats[dirName];
+        }
+      }
+    }
 
     domDirectoryList.innerHTML = '';
 
     const headerItemUI = this.buildDirectoryListHeaderUI();
     domDirectoryList.append(headerItemUI);
 
-    if (! fsbStats) {
-      this.error("---NO fsbStats");
-      this.setErrorFor("fsbStatsManagerTitlePanel", fsbStatsManager_error_noDirectories);
-    } else if (Object.keys(fsbStats).length < 1) {
-      this.error("---fsbStats.length < 1");
-      this.setErrorFor("fsbStatsManagerTitlePanel", fsbStatsManager_error_noDirectories);
+    if (Object.keys(fsbDirStats).length < 1) { // DO THIS AGAIN AFTER REMOVAL OF ANY IGNORED DIRECTORY NAMES
+      if (! noDirectoriesErrorReported) {
+        this.error("---fsbDirStats.length < 1");
+        this.setErrorFor("fsbStatsManagerTitlePanel", fsbStatsManager_error_noDirectories);
+        noDirectoriesErrorReported = true;
+      }
     } else {
-      const installedExtensions = await messenger.management.getAll(); // MABXXX #fsbOptions.getExtenionsProps() returns .installed, no???
+      const installedExtensions = await messenger.management.getAll();
       const extensionsProps     = await this.#fsbOptionsApi.getExtensionsProps();;
-      const sortedKeys          = Object.keys(fsbStats).sort((a, b) => { return a.localeCompare( b, undefined, {'sensitivity': 'base'} ) } );
+      const sortedKeys          = Object.keys(fsbDirStats).sort((a, b) => { return a.localeCompare( b, undefined, {'sensitivity': 'base'} ) } );
 
       for (const key of sortedKeys) {
-        const dirStats        = fsbStats[key];
+        const dirStats       = fsbDirStats[key];
         var   extensionInfo  = null;
         var   extensionProps = null;
 
@@ -400,7 +452,7 @@ class StatsManager {
 
         if (extensionsProps) {
           extensionProps = (extensionsProps && dirStats.dirName in extensionsProps) ? extensionsProps[dirStats.dirName] : null;
-          this.debugAlways("---extensionProps\n", extensionProps);
+          this.debug("---extensionProps\n", extensionProps);
         }
 
         const listItemUI = await this.buildDirectoryListItemUI(dirStats, extensionInfo, extensionProps);
@@ -422,6 +474,7 @@ class StatsManager {
         dirNameTH.classList.add("list-header-data");  // directory-list-header > list-header-data
         dirNameTH.classList.add("header-name");       // directory-list-header > header-name
         dirNameTH.appendChild( document.createTextNode(this.#listHeaderText_dirName) );
+        dirNameTH.setAttribute("title", this.#listHeaderTooltip_dirName);
       dirHeaderTR.appendChild(dirNameTH);
 
       // Create Extension ID element and add it to the row
@@ -429,27 +482,39 @@ class StatsManager {
         extIdTH.classList.add("list-header-data");  // directory-list-header > list-header-data
         extIdTH.classList.add("header-ext-id");    // directory-list-header > header-ext-id
         extIdTH.appendChild( document.createTextNode(this.#listHeaderText_extensionId) );
+        extIdTH.setAttribute("title", this.#listHeaderTooltip_extensionId);
       dirHeaderTR.appendChild(extIdTH);
 
+      // Create Extension Installed element and add it to the row
+      const extInstalledTH = document.createElement("th");
+        extInstalledTH.classList.add("list-header-data");      // directory-list-header > list-header-data
+        extInstalledTH.classList.add("header-ext-installed");  // directory-list-header > header-ext-installed
+        extInstalledTH.appendChild( document.createTextNode(this.#listHeaderText_extensionInstalled) );
+        extInstalledTH.setAttribute("title", this.#listHeaderTooltip_extensionInstalled);
+      dirHeaderTR.appendChild(extInstalledTH);
+
       // Create Extension Enabled element and add it to the row
-      const extEnablesTH = document.createElement("th");
-        extEnablesTH.classList.add("list-header-data");     // directory-list-header > list-header-data
-        extEnablesTH.classList.add("header-ext-enabled");  // directory-list-header > header-ext-enabled //MABXXX ADD TO CSS
-        extEnablesTH.appendChild( document.createTextNode(this.#listHeaderText_extensionEnabled) );
-      dirHeaderTR.appendChild(extEnablesTH);
+      const extEnabledTH = document.createElement("th");
+        extEnabledTH.classList.add("list-header-data");     // directory-list-header > list-header-data
+        extEnabledTH.classList.add("header-ext-enabled");  // directory-list-header > header-ext-enabled
+        extEnabledTH.appendChild( document.createTextNode(this.#listHeaderText_extensionEnabled) );
+        extEnabledTH.setAttribute("title", this.#listHeaderTooltip_extensionEnabled);
+      dirHeaderTR.appendChild(extEnabledTH);
 
       // Create Extension Configured element and add it to the row
       const extConfiguredTH = document.createElement("th");
         extConfiguredTH.classList.add("list-header-data");        // directory-list-header > list-header-data
-        extConfiguredTH.classList.add("header-ext-configured");  // directory-list-header > header-ext-configured //MABXXX ADD TO CSS
+        extConfiguredTH.classList.add("header-ext-configured");  // directory-list-header > header-ext-configured
         extConfiguredTH.appendChild( document.createTextNode(this.#listHeaderText_extensionConfigured) );
+        extConfiguredTH.setAttribute("title", this.#listHeaderTooltip_extensionConfigured);
       dirHeaderTR.appendChild(extConfiguredTH);
 
       // Create Extension Access Allowed element and add it to the row
       const extAccessAllowedTH = document.createElement("th");
         extAccessAllowedTH.classList.add("list-header-data");        // directory-list-header > list-header-data
-        extAccessAllowedTH.classList.add("header-ext-configured");  // directory-list-header > header-ext-configured //MABXXX ADD TO CSS
+        extAccessAllowedTH.classList.add("header-ext-access");  // directory-list-header > header-ext-access
         extAccessAllowedTH.appendChild( document.createTextNode(this.#listHeaderText_extensionAccessAllowed) );
+        extAccessAllowedTH.setAttribute("title", this.#listHeaderTooltip_extensionAccessAllowed);
       dirHeaderTR.appendChild(extAccessAllowedTH);
 
       // Create Child Count element and add it to the row
@@ -457,6 +522,7 @@ class StatsManager {
         childCountTH.classList.add("list-header-data");       // directory-list-header > list-header-data
         childCountTH.classList.add("header-count-children");  // directory-list-header > header-count-children
         childCountTH.appendChild( document.createTextNode(this.#listHeaderText_count_children) );
+        childCountTH.setAttribute("title", this.#listHeaderTooltip_count_children);
       dirHeaderTR.appendChild(childCountTH);
 
       // Create Child Type egular' Count element and add it to the row
@@ -464,6 +530,7 @@ class StatsManager {
         regularCountTH.classList.add("list-header-data");      // directory-list-header > list-header-data
         regularCountTH.classList.add("header-count-regular");  // directory-list-header > header-count-regular
         regularCountTH.appendChild( document.createTextNode(this.#listHeaderText_count_regular) );
+        regularCountTH.setAttribute("title", this.#listHeaderTooltip_count_regular);
       dirHeaderTR.appendChild(regularCountTH);
 
       // Create Child Type 'directory' Count element and add it to the row
@@ -471,6 +538,7 @@ class StatsManager {
         directoryCountTH.classList.add("list-header-data");        // directory-list-header > list-header-data
         directoryCountTH.classList.add("header-count-directory");  // directory-list-header > header-count-directory
         directoryCountTH.appendChild( document.createTextNode(this.#listHeaderText_count_directory) );
+        directoryCountTH.setAttribute("title", this.#listHeaderTooltip_count_directory);
       dirHeaderTR.appendChild(directoryCountTH);
 
       // Create Child Type 'other' Count element and add it to the row
@@ -478,6 +546,7 @@ class StatsManager {
         otherCountTH.classList.add("list-header-data");    // directory-list-header > list-header-data
         otherCountTH.classList.add("header-count-other");  // directory-list-header > header-count-other
         otherCountTH.appendChild( document.createTextNode(this.#listHeaderText_count_other) );
+        otherCountTH.setAttribute("title", this.#listHeaderTooltip_count_other);
       dirHeaderTR.appendChild(otherCountTH);
 
       // Create Child Type unknown Count element and add it to the row
@@ -485,6 +554,7 @@ class StatsManager {
         unknownCountTH.classList.add("list-header-data");      // directory-list-header > list-header-data
         unknownCountTH.classList.add("header-count-unknown");  // directory-list-header > header-count-unknown
         unknownCountTH.appendChild( document.createTextNode(this.#listHeaderText_count_unknown) );
+        unknownCountTH.setAttribute("title", this.#listHeaderTooltip_count_unknown);
       dirHeaderTR.appendChild(unknownCountTH);
 
       // Create Child Type error Count element and add it to the row
@@ -492,6 +562,7 @@ class StatsManager {
         errorCountTH.classList.add("list-header-data");    // directory-list-header > list-header-data
         errorCountTH.classList.add("header-count-error");  // directory-list-header > header-count-error
         errorCountTH.appendChild( document.createTextNode(this.#listHeaderText_count_error) );
+        errorCountTH.setAttribute("title", this.#listHeaderTooltip_count_error);
       dirHeaderTR.appendChild(errorCountTH);
 
       // Create Earliest Creation Time element and add it to the row
@@ -499,6 +570,7 @@ class StatsManager {
         timeCreationEarliestTH.classList.add("list-header-data");               // directory-list-header > list-header-data
         timeCreationEarliestTH.classList.add("header-time-creation-earliest");  // directory-list-header > header-time-creation-earliest
         timeCreationEarliestTH.appendChild( document.createTextNode(this.#listHeaderText_time_creation_earliest) );
+        timeCreationEarliestTH.setAttribute("title", this.#listHeaderTooltip_time_creation_earliest);
       dirHeaderTR.appendChild(timeCreationEarliestTH);
 
       // Create Latest Creation Time element and add it to the row
@@ -506,6 +578,7 @@ class StatsManager {
         timeCreationLatestTH.classList.add("list-header-data");             // directory-list-header > list-header-data
         timeCreationLatestTH.classList.add("header-time-creation-latest");  // directory-list-header > header-time-creation-latest
         timeCreationLatestTH.appendChild( document.createTextNode(this.#listHeaderText_time_creation_latest) );
+        timeCreationLatestTH.setAttribute("title", this.#listHeaderTooltip_time_creation_latest);
       dirHeaderTR.appendChild(timeCreationLatestTH);
 
       // Create Earliest Last Accessed Time element and add it to the row
@@ -513,6 +586,7 @@ class StatsManager {
         timeLastAccessedEarliestTH.classList.add("list-header-data");                     // directory-list-header > list-header-data
         timeLastAccessedEarliestTH.classList.add("header-time-last-accessed-earliest");   // directory-list-header > header-time-last-accessed-earliest
         timeLastAccessedEarliestTH.appendChild( document.createTextNode(this.#listHeaderText_time_lastAccessed_earliest) );
+        timeLastAccessedEarliestTH.setAttribute("title", this.#listHeaderTooltip_time_lastAccessed_earliest);
       dirHeaderTR.appendChild(timeLastAccessedEarliestTH);
 
       // Create Latest Last Accessed Time element and add it to the row
@@ -520,6 +594,7 @@ class StatsManager {
         timeLastAccessedLatestTH.classList.add("list-header-data");                  // directory-list-header > list-header-data
         timeLastAccessedLatestTH.classList.add("header-time-last-accessed-latest");  // directory-list-header > header-time-last-accessed-latest
         timeLastAccessedLatestTH.appendChild( document.createTextNode(this.#listHeaderText_time_lastAccessed_latest) );
+        timeLastAccessedLatestTH.setAttribute("title", this.#listHeaderTooltip_time_lastAccessed_latest);
       dirHeaderTR.appendChild(timeLastAccessedLatestTH);
 
       // Create Earliest Last Modified Time element and add it to the row
@@ -527,6 +602,7 @@ class StatsManager {
         timeLastModifiedEarliestTH.classList.add("list-header-data");                    // directory-list-header > list-header-data
         timeLastModifiedEarliestTH.classList.add("header-time-last-modified-earliest");  // directory-list-header > header-time-last-modified-earliest
         timeLastModifiedEarliestTH.appendChild( document.createTextNode(this.#listHeaderText_time_lastModified_earliest) );
+        timeLastModifiedEarliestTH.setAttribute("title", this.#listHeaderTooltip_time_lastModified_earliest);
       dirHeaderTR.appendChild(timeLastModifiedEarliestTH);
 
       // Create Latest Last Modified Time element and add it to the row
@@ -534,27 +610,31 @@ class StatsManager {
         timeLastModifiedLatestTH.classList.add("list-header-data");                  // directory-list-header > list-header-data
         timeLastModifiedLatestTH.classList.add("header-time-last-modified-latest");  // directory-list-header > header-time-last-modified-latest
         timeLastModifiedLatestTH.appendChild( document.createTextNode(this.#listHeaderText_time_lastModified_latest) );
+        timeLastModifiedLatestTH.setAttribute("title", this.#listHeaderTooltip_time_lastModified_latest);
       dirHeaderTR.appendChild(timeLastModifiedLatestTH);
 
       // Create Smallest Size element and add it to the row
       const sizeSmallestTH = document.createElement("th");
         sizeSmallestTH.classList.add("list-header-data");     // directory-list-header > list-header-data
         sizeSmallestTH.classList.add("header-size-smallest"); // directory-list-header > header-size-smallest
-        sizeSmallestTH.appendChild( document.createTextNode(this.#listHeader_size_smallest) );
+        sizeSmallestTH.appendChild( document.createTextNode(this.#listHeaderText_size_smallest) );
+        sizeSmallestTH.setAttribute("title", this.#listHeaderTooltip_size_smallest);
       dirHeaderTR.appendChild(sizeSmallestTH);
 
       // Create Largest Size element and add it to the row
       const sizeLargestTH = document.createElement("th");
         sizeLargestTH.classList.add("list-header-data");     // directory-list-header > list-header-data
         sizeLargestTH.classList.add("header-size-largest");  // directory-list-header > header-size-largest
-        sizeLargestTH.appendChild( document.createTextNode(this.#listHeader_size_largest) );
+        sizeLargestTH.appendChild( document.createTextNode(this.#listHeaderText_size_largest) );
+        sizeLargestTH.setAttribute("title", this.#listHeaderTooltip_size_largest);
       dirHeaderTR.appendChild(sizeLargestTH);
 
       // Create Total Size element and add it to the row
       const sizeTotalTH = document.createElement("th");
         sizeTotalTH.classList.add("list-header-data");   // directory-list-header > list-header-data
         sizeTotalTH.classList.add("header-size-totel");  // directory-list-header > header-size-totel
-        sizeTotalTH.appendChild( document.createTextNode(this.#listHeader_size_total) );
+        sizeTotalTH.appendChild( document.createTextNode(this.#listHeaderText_size_total) );
+        sizeTotalTH.setAttribute("title", this.#listHeaderTooltip_size_total);
       dirHeaderTR.appendChild(sizeTotalTH);
 
     return dirHeaderTR;
@@ -587,7 +667,7 @@ class StatsManager {
      *     'size_total':                      integer:  total of sizes (bytes) of all child items with type 'regular'
      *   }
      */
-    this.debug(`BUILD DIRETORY LIST ITEM UI: --- dirStats:\n`, dirStats);
+    this.debug(`BUILD DIRECTORY LIST ITEM UI: --- dirStats:\n`, dirStats);
 
     const dirItemTR = document.createElement("tr");
       dirItemTR.classList.add("directory-list-item");             // directory-list-item
@@ -610,35 +690,72 @@ class StatsManager {
         }
       dirItemTR.appendChild(extIdTD);
 
+      // Create Extension Installed element and add it to the row
+      const extInstalledTD = document.createElement("td");
+        extInstalledTD.classList.add("list-item-data");          // directory-list-item > list-item-data
+        extInstalledTD.classList.add("list-item-boolean");       // directory-list-item > list-item-boolean
+        extInstalledTD.classList.add("list-item-ext-installed"); // directory-list-item > list-item-ext-installed
+        const extInstalledDotSpan = document.createElement("span");
+          extInstalledDotSpan.classList.add("list-item-dot");
+          if (extensionInfo) {
+            extInstalledDotSpan.classList.add("dot-ext-installed");
+          } else {
+            extInstalledDotSpan.classList.add("dot-ext-not-installed");
+          }
+        extInstalledTD.appendChild(extInstalledDotSpan);
+      dirItemTR.appendChild(extInstalledTD);
+
       // Create Extension Enabled element and add it to the row
       const extEnabledTD = document.createElement("td");
         extEnabledTD.classList.add("list-item-data");        // directory-list-item > list-item-data
-        extEnabledTD.classList.add("list-item-ext-enabled"); // directory-list-item > list-item-ext-enabled //MABXXX ADD TO CSS
-        if (extensionInfo) {
-          extEnabledTD.appendChild( document.createTextNode(! extensionInfo.disabled) );
-        }
+        extEnabledTD.classList.add("list-item-boolean");     // directory-list-item > list-item-boolean
+        extEnabledTD.classList.add("list-item-ext-enabled"); // directory-list-item > list-item-ext-enabled
+        const extEnabledDotSpan = document.createElement("span");
+          extEnabledDotSpan.classList.add("list-item-dot");
+          if (extensionInfo) {
+            if (extensionInfo.disabled) {
+              extEnabledDotSpan.classList.add("dot-ext-disabled");
+            } else {
+              extEnabledDotSpan.classList.add("dot-ext-enabled");
+            }
+          } else {
+            extEnabledDotSpan.classList.add("dot-ext-disabled-not-installed");
+          }
+        extEnabledTD.appendChild(extEnabledDotSpan);
       dirItemTR.appendChild(extEnabledTD);
 
       // Create Extension Configured element and add it to the row
       const extConfiguredTD = document.createElement("td");
         extConfiguredTD.classList.add("list-item-data");           // directory-list-item > list-item-data
-        extConfiguredTD.classList.add("list-item-ext-configured"); // directory-list-item > list-item-ext-configured //MABXXX ADD TO CSS
-        if (extensionProps) {
-          extConfiguredTD.appendChild( document.createTextNode("true") );
-        } else {
-          extConfiguredTD.appendChild( document.createTextNode("false") );
-        }
+        extConfiguredTD.classList.add("list-item-boolean");        // directory-list-item > list-item-boolean
+        extConfiguredTD.classList.add("list-item-ext-configured"); // directory-list-item > list-item-ext-configured
+        const extConfiguredDotSpan = document.createElement("span");
+          extConfiguredDotSpan.classList.add("list-item-dot");
+          if (extensionProps) {
+            extConfiguredDotSpan.classList.add("dot-ext-configured");
+          } else {
+            extConfiguredDotSpan.classList.add("dot-ext-not-configured");
+          }
+        extConfiguredTD.appendChild(extConfiguredDotSpan);
       dirItemTR.appendChild(extConfiguredTD);
 
-      // Create Extension AccessAllowed element and add it to the row
+      // Create Extension Access Allowed element and add it to the row
       const extAccessAllowedTD = document.createElement("td");
-        extAccessAllowedTD.classList.add("list-item-data");               // directory-list-item > list-item-data
-        extAccessAllowedTD.classList.add("list-item-ext-access-allowed"); // directory-list-item > list-item-ext-access-allowed //MABXXX ADD TO CSS
-        if (extensionProps) {
-          extAccessAllowedTD.appendChild( document.createTextNode(extensionProps.allowAccess) );
-        } else {
-//        extAccessAllowedTD.appendChild( document.createTextNode("false") );
-        }
+        extAccessAllowedTD.classList.add("list-item-data");       // directory-list-item > list-item-data
+        extAccessAllowedTD.classList.add("list-item-boolean");    // directory-list-item > list-item-boolean
+        extAccessAllowedTD.classList.add("list-item-ext-access"); // directory-list-item > list-item-ext-access-allowed
+        const extAccessAllowedDotSpan = document.createElement("span");
+          extAccessAllowedDotSpan.classList.add("list-item-dot");
+          if (extensionProps) {
+            if (extensionProps.allowAccess) {
+              extAccessAllowedDotSpan.classList.add("dot-ext-access-allowed");
+            } else {
+              extAccessAllowedDotSpan.classList.add("dot-ext-access-denied");
+            }
+          } else {
+            extAccessAllowedDotSpan.classList.add("dot-ext-access-not-configured");
+          }
+        extAccessAllowedTD.appendChild(extAccessAllowedDotSpan);
       dirItemTR.appendChild(extAccessAllowedTD);
     
 
@@ -772,13 +889,232 @@ class StatsManager {
 
 
 
-  // MABXXX THIS RETURNS ONLY THE 'stats' array!!!
+  // - directoryNames: array of string
+  async showDeleteDirsConfirmDialog(directoryNames) {
+    this.debugAlways( "\n--- begin:",
+                `\n directoryNames="${directoryNames}"`,
+                `\n (typeof directoryNames)="${typeof directoryNames}"`,
+                `\n isArray(directoryNames)="${Array.isArray(directoryNames)}"`,                              // but is MUST be
+                `\n directoryNames.length=${Array.isArray(directoryNames) ? directoryNames.length : '(not an array)'}`, // but is MUST be
+              );
+
+    if (directoryNames == null) {
+      this.error("directoryNames is null");
+      return;
+    } else if (typeof directoryNames === 'undefined') {
+      this.error("directoryNames is undefined");
+      return;
+    } else if (! Array.isArray(directoryNames)) {
+      this.error("directoryNames is not an array");
+      return;
+    } else if (directoryNames.length < 0) {
+      this.error("directoryNames.length < 0");
+      return;
+    } else if (typeof directoryNames[0] !== 'string') {
+      this.error("directoryNames[0] is not a string");
+      return;
+    } else {
+    }
+
+    var   popupLeft   = 100;
+    var   popupTop    = 100;
+    var   popupHeight = 500;
+    var   popupWidth  = 600;
+    const mainWindow  = await messenger.windows.getCurrent();
+
+    if (! mainWindow) {
+      this.debug("-- DID NOT GET THE CURRENT (MAIN, mail:3pane) WINDOW!!! ---");
+
+    } else {
+      this.debug( "\n--- Got the Current (Main, mail:3pane) Window:",
+                  `\n- mainWindow.top=${mainWindow.top}`,
+                  `\n- mainWindow.left=${mainWindow.left}`,
+                  `\n- mainWindow.height=${mainWindow.height}`,
+                  `\n- mainWindow.width=${mainWindow.width}`,
+                );
+//////popupTop  = mainWindow.top  + mainWindow. / 2;
+      popupTop  = mainWindow.top  + Math.round( (mainWindow.height - popupHeight) / 2 );
+//////popupLeft = mainWindow.left + 100;
+      popupLeft = mainWindow.left + Math.round( (mainWindow.width  - popupWidth)  / 2 );
+      if (mainWindow.height - 200 > popupHeight) popupHeight - mainWindow.Height - 200;   // make it higher, but not shorter
+////////if (mainWindow.Width  - 200 > popupWidth)  popupWidth  = mainWindow.Width  - 200;   // make it wider,  but not narrower --- eh, don't need it wider
+    }
+
+    const bounds = await this.#fsbOptionsApi.getWindowBounds("DeleteDirsConfirmDialog"); // MABXXX PERHAPS THIS SHOULD ALWAYS BE CENTERED??????
+
+    if (! bounds) {
+      this.debug("-- no previous window bounds");
+    } else if (typeof bounds !== 'object') {
+      this.error(`-- PREVIOUS WINDOW BOUNDS IS NOT AN OBJECT: typeof='${typeof bounds}' #####`);
+    } else {
+      this.debug( "\n--- restoring previous window bounds:",
+                  `\n- bounds.top=${bounds.top}`,
+                  `\n- bounds.left=${bounds.left}`,
+                  `\n- bounds.width=${bounds.width}`,
+                  `\n- bounds.height=${bounds.height}`,
+                );
+//    popupTop    = bounds.top;
+      popupTop    = mainWindow ? mainWindow.top  + Math.round( (mainWindow.height - bounds.height) / 2 ) : bounds.top; // CENTER ON THE MAIN WINDOW!!!
+//    popupLeft   = bounds.left;
+      popupLeft   = mainWindow ? mainWindow.left + Math.round( (mainWindow.width  - bounds.width)  / 2 )  : bounds.left; // CENTER ON THE MAIN WINDOW!!!
+      popupWidth  = bounds.width;
+      popupHeight = bounds.height;
+    }
+
+    this.debug( "\n--- window bounds:",
+                `\n- popupTop=${popupTop}`,
+                `\n- popupLeft=${popupLeft}`,
+                `\n- popupWidth=${popupWidth}`,
+                `\n- popupHeight=${popupHeight}`,
+              );
+
+
+
+    // window.id does not exist.  how do we get our own window id???
+    var   ourTabId;
+    var   ourWindowId;
+    const currentTab = await messenger.tabs.getCurrent();
+    if (! currentTab) {
+      this.debug("-- messenger.tabs.getCurrent() didn't return a Tab");
+    } else {
+      this.debug(`-- currentTab.id="${currentTab.id}" currentTab.windowId="${currentTab.windowId}"`);
+      ourTabId    = currentTab.id;
+      ourWindowId = currentTab.windowId;
+    }
+
+    const title           = getI18nMsg("fsbStatsManager_dialog_confirmDeleteDirs_title");           // "Confirm Directory Deletion"
+    const button1MsgId    = "fsbStatsManager_dialog_confirmDeleteDirs_button_continue.label";
+    const button2MsgId    = "fsbStatsManager_dialog_confirmDeleteDirs_button_cancel.label";
+    const messageContinue = getI18nMsg("fsbStatsManager_dialog_confirmDeleteDirs_messageContinue"); // "Do you wish to continue?"
+
+    var  confirmDialogUrl = messenger.runtime.getURL("../dialogs/confirm.html")
+                             + `?windowName=${encodeURIComponent("DeleteDirsConfirmDialog")}`
+                             + `&title=${encodeURIComponent(title)}`
+                             + "&buttons_3=false"
+                             + `&button1MsgId=${encodeURIComponent(button1MsgId)}`
+                             + `&button2MsgId=${encodeURIComponent(button2MsgId)}`;
+
+    var message1;
+    var message2;
+    if (directoryNames.length < 2) {
+      message1 = getI18nMsg("fsbStatsManager_dialog_confirmDeleteDirs_oneDir_message1"); // "One Directory will be deleted"
+      message2 = getI18nMsg("fsbStatsManager_dialog_confirmDeleteDirs_oneDir_message2"); // " "
+    } else {
+      message1 = getI18nMsgSubst("fsbStatsManager_dialog_confirmDeleteDirs_nnDirs_message1", directoryNames.length.toString()); // "NN Directories will be deleted"
+      message2 = getI18nMsg(     "fsbStatsManager_dialog_confirmDeleteDirs_nnDirs_message2"                                  ); // " "
+    }
+    confirmDialogUrl +=   `&message1=${encodeURIComponent(message1)}`
+                        + `&message2=${encodeURIComponent(message2)}`
+                        + `&message3=${encodeURIComponent(messageContinue)}`;
+
+    // MABXXX DAMN!!! THERE'S NO WAY TO MAKE THIS MODAL!!! MUST USE action "default_popup".  But how to get Extension ID, etc?
+    // The window.confirm() function doesn't give a way to specify button text.
+    // Which is worse? Ugly ugly UGLY!!!
+    const confirmDialogWindow = await messenger.windows.create(
+      {
+        'url':                 confirmDialogUrl,
+        'type':                "popup",
+        'titlePreface':        getI18nMsg("extensionName") + " - ",
+        'top':                 popupTop,
+        'left':                popupLeft,
+        'height':              popupHeight,
+        'width':               popupWidth,
+        'allowScriptsToClose': true,
+      }
+    );
+
+    this.debug( "\n--- Delete Directories Confirmation Popup Window Created --",
+                `\n-from ourTabId="${ourTabId}"`,
+                `\n-from ourWindowId="${ourWindowId}"`,
+                `\n-confirmDialogWindow.id="${confirmDialogWindow.id}"`,
+                `\n-URL="${confirmDialogUrl}"`,
+              );
+
+    // Re-focus on the confirmDialog window when our window gets focus
+    // MABXXX PERHAPS THIS SHOULD BE DONE INSIDE #confirmDialogPrompt() ???
+//  const focusListener = async (windowId) => this.windowFocusChanged(windowId, ourTabId, ourWindowId, confirmDialogWindow.id);
+    const focusListener = null;
+//  messenger.windows.onFocusChanged.addListener(focusListener);
+
+    // ConfirmDialogResponse - expected:
+    // - null     - the user closed the popup window        (set by our own windows.onRemoved listener - the defaultResponse sent to #confirmDialogPrompt)
+    // - CLOSED   - the user closed the popup window        (sent by the ConfirmDialog window's window.onRemoved listener -- NOT REALLY - we use our own onRemoved listener)
+    // - BUTTON_1 - the user clicked button 1               (sent by the ConfirmDialog window's button listener)
+    // - BUTTON_2 - the user clicked button 2               (sent by the ConfirmDialog window's button listener)
+    // - BUTTON_3 - the user clicked button 3               (sent by the ConfirmDialog window's button listener)
+
+    const confirmDialogResponse = await this.#confirmDialogPrompt(confirmDialogWindow.id, focusListener, null);
+    this.debug(`-- confirmDialogResponse="${confirmDialogResponse}"`);
+
+    switch (confirmDialogResponse) {
+      case 'BUTTON_1': // 'Yes' button - Continue
+        this.debug("-- ConfirmDialog 'Continue' clicked");
+        return true;
+      case 'BUTTON_2': // 'No' button - Cancel
+        this.debug("-- ConfirmDialog 'Cancel' clicked");
+        return false;
+      case 'CLOSED':   // this never happens - see comments in ConfirmDialog regarding conduit failure
+      case null:       // closed using the window close button
+        this.debug("-- ConfirmDialog window closed");
+        return false;
+      default:
+        this.error(`-- UNKNOWN ConfirmDialog Response - NOT A KNOWN RESPONSE: "${confirmDialogResponse}"`);
+    }
+  }
+
+  async #confirmDialogPrompt(confirmDialogWindowId, focusListener, defaultResponse) {
+    try {
+      await messenger.windows.get(confirmDialogWindowId);
+    } catch (error) {
+      // Window does not exist, assume closed.
+      this.caught(error, "-- PERHAPS WINDOW CLOSED???");
+      return defaultResponse;
+    }
+
+    return new Promise(resolve => {
+      var response = defaultResponse;
+
+      function windowRemovedListener(windowId) {
+        if (windowId == confirmDialogWindowId) {
+
+          messenger.runtime.onMessage.removeListener(messageListener);
+          messenger.windows.onRemoved.removeListener(windowRemovedListener);
+//////////messenger.windows.onFocusChanged.removeListener(focusListener);
+
+          resolve(response);
+        }
+      }
+
+      /* The ConfirmDialog sends a message as ConfirmDialogResponse:
+       * - CLOSED   - the user closed the popup window   (sent by the ConfirmDialog window's window.onRemoved listener -- NOT REALLY -- using OUR onRemoved instead)
+       * - BUTTON_1 - the user clicked button 1          (sent by the ConfirmDialog window's button listener)
+       * - BUTTON_2 - the user clicked button 2          (sent by the ConfirmDialog window's button listener)
+       * - BUTTON_3 - the user clicked button 3          (sent by the ConfirmDialog window's button listener)
+       * Save this ConfirmDialogResponse into response for resolve()
+       */
+      function messageListener(request, sender, sendResponse) {
+        if (sender.tab && sender.tab.windowId == confirmDialogWindowId && request && request.hasOwnProperty("ConfirmDialogResponse")) {
+          response = request.ConfirmDialogResponse;
+        }
+
+        return false; // we're not sending any response 
+      }
+
+      messenger.runtime.onMessage.addListener(messageListener);
+      messenger.windows.onRemoved.addListener(windowRemovedListener);
+    });
+  }
+
+
+
+
   async getFsbStats() {
     let fsbStatsResponse;
     try {
       fsbStatsResponse = await this.#fsBrokerApi.fsbStats();
+      this.debug( "\n\n========================\nfsbStatsResponse:\n", fsbStatsResponse, "\n========================\n\n" );
     } catch (error) {
-      this.caught(error, "-- getFsbStats");
+      this.caught(error, "-- getFsbDirStats");
     }
 
     if (! fsbStatsResponse) {
@@ -789,8 +1125,12 @@ class StatsManager {
       this.error(`-- fsbStats -- FSB STATS ERROR: ${fsbStatsResponse.error}`);
     } else if (! fsbStatsResponse.stats) {
       this.error("-- fsbStats -- NO STATS RETURNED");
+    } else if (! fsbStatsResponse.stats.fsbStats) {
+      this.error("-- fsbStats -- NO FSB_STATS RETURNED");
+    } else if (! fsbStatsResponse.stats.dirStats) {
+      this.error("-- fsbStats -- NO DIR_STATS RETURNED");
     } else {
-      return fsbStatsResponse.stats; // MABXXX THIS RETURNS ONLY THE 'stats' array!!!
+      return fsbStatsResponse.stats;
     }
   }
 
@@ -964,51 +1304,74 @@ class StatsManager {
     } else {
       this.debug(`-- domSelectedDirectoryItemTRs.length=${domSelectedDirectoryItemTRs.length}`);
 
-      var errors  = 0;
-      var deleted = 0;
-
+      const dirTRs   = [];
+      const dirNames = [];
       for (const domSelectedDirectoryItemTR of domSelectedDirectoryItemTRs) {
         const dirName = domSelectedDirectoryItemTR.getAttribute("dirName");
-        this.debug(`-- Deleting Directory dirName="${dirName}"`);
-
         if (! dirName) {
           this.error("Failed to get Attribute 'dirName'");
         } else {
-          const response = await this.#fsBrokerApi.fsbDeleteDirectory( dirName, {'recursive': true} );
-          if (! response) {
-            this.error(`-- FAILED TO DELETE DIRECTORY -- NO RESPONSE RETURNED -- dirName="${dirName}"`);
-            ++errors;
-          } else if (response.invalid) {
-            this.error(`-- FAILED TO DELETE DIRECTORY -- INVALID RETURNED -- dirName="${dirName}": ${response.invalid}`); // MABXXX <---------- add response.invalid everywhere
-            ++errors;
-          } else if (response.error) {
-            this.error(`-- FAILED TO DELETE DIRECTORY -- ERROR RETURNED -- dirName="${dirName}": ${response.error}`); // MABXXX <-------------- add response.error everywhere
-            ++errors;
-          } else if (! response.directoryName) {
-            this.error(`-- FAILED TO DELETE DIRECTORY -- NO DIRECTORY NAME RETURNED -- dirName="${dirName}": response.directoryName="${response.directoryName}"`);
-            ++errors;
-          } else if (! response.deleted) {
-            this.error(`-- FAILED TO DELETE DIRECTORY -- dirName="${dirName}" response.deleted="${response.deleted}"`);
-            ++errors;
-          } else {
-            this.debug(`-- Directory Deleted -- dirName="${dirName}": response.directoryName="${response.directoryName}"`);
-            ++deleted;
-            domSelectedDirectoryItemTR.remove();
-          }
+          this.debug(`-- Deleting Directory dirName="${dirName}"`);
+          dirTRs.push(domSelectedDirectoryItemTR);
+          dirNames.push(dirName);
         }
       }
 
-      if (errors) {
-        if (errors === 1) {
-          this.setErrorFor("fsbStatsManagerTitlePanel", "fsbStatsManager_error_oneDirectoryDeleteFailed"); 
-        } else {
-          this.setErrorFor("fsbStatsManagerTitlePanel", "fsbStatsManager_error_nnDirectoriesDeleteFailed", errors); 
-        }
-      }
-      if (deleted === 1) {
-        this.setMessageFor("fsbStatsManagerTitlePanel", "fsbStatsManager_message_oneDirectoryDeleted"); 
+      if (dirNames.length < 1) {
+        this.error("No selected TRs had a 'dirName' attribute");
+
       } else {
-        this.setMessageFor("fsbStatsManagerTitlePanel", "fsbStatsManager_message_nnDirectoriesDeleted", deleted); 
+        const confirmed = await this.showDeleteDirsConfirmDialog(dirNames);
+
+        if (! confirmed) {
+          this.debug("The user chose to cancel directory deletion");
+          this.setMessageFor("fsbStatsManagerTitlePanel", "fsbStatsManager_message_directoryDeleteCanceled"); 
+
+        } else {
+          var errors  = 0;
+          var deleted = 0;
+
+          for (var i = 0;  i <  dirTRs.length; ++i) {
+            const dirTR   = dirTRs[i];
+            const dirName = dirNames[i];
+
+            const response = await this.#fsBrokerApi.fsbDeleteDirectory( dirName, {'recursive': true} );
+
+            if (! response) {
+              this.error(`-- FAILED TO DELETE DIRECTORY -- NO RESPONSE RETURNED -- dirName="${dirName}"`);
+              ++errors;
+            } else if (response.invalid) {
+              this.error(`-- FAILED TO DELETE DIRECTORY -- INVALID RETURNED -- dirName="${dirName}": ${response.invalid}`); // MABXXX <---------- add response.invalid everywhere
+              ++errors;
+            } else if (response.error) {
+              this.error(`-- FAILED TO DELETE DIRECTORY -- ERROR RETURNED -- dirName="${dirName}": ${response.error}`); // MABXXX <-------------- add response.error everywhere
+              ++errors;
+            } else if (! response.directoryName) {
+              this.error(`-- FAILED TO DELETE DIRECTORY -- NO DIRECTORY NAME RETURNED -- dirName="${dirName}": response.directoryName="${response.directoryName}"`);
+              ++errors;
+            } else if (! response.deleted) {
+              this.error(`-- FAILED TO DELETE DIRECTORY -- dirName="${dirName}" response.deleted="${response.deleted}"`);
+              ++errors;
+            } else {
+              this.debug(`-- Directory Deleted -- dirName="${dirName}": response.directoryName="${response.directoryName}"`);
+              ++deleted;
+              dirTR.remove();
+            }
+          }
+
+          if (errors) {
+            if (errors === 1) {
+              this.setErrorFor("fsbStatsManagerTitlePanel", "fsbStatsManager_error_oneDirectoryDeleteFailed"); 
+            } else {
+              this.setErrorFor("fsbStatsManagerTitlePanel", "fsbStatsManager_error_nnDirectoriesDeleteFailed", errors); 
+            }
+          }
+          if (deleted === 1) {
+            this.setMessageFor("fsbStatsManagerTitlePanel", "fsbStatsManager_message_oneDirectoryDeleted"); 
+          } else {
+            this.setMessageFor("fsbStatsManagerTitlePanel", "fsbStatsManager_message_nnDirectoriesDeleted", deleted); 
+          }
+        }
       }
     }
 
@@ -1022,10 +1385,10 @@ class StatsManager {
 
 
   resetMessages() {
-    let msgPanelDivs = document.querySelectorAll("div.messages-panel");
+    let msgPanelDivs = document.querySelectorAll("div.messages-panel"); // <--------------- NOTE: messages-panel - same as for resetErrors(), but different attribute
     if (msgPanelDivs) {
       for (let msgPanelDiv of msgPanelDivs) {
-        msgPanelDiv.setAttribute("msg", "false");
+        msgPanelDiv.setAttribute("msg", "false"); // <------------------------------------- different from resetErrors();
       }
     }
 
@@ -1048,7 +1411,7 @@ class StatsManager {
   /* there can be no more than one message per elementId */
   setMessageFor(elementId, msgId, parms) {
     var i18nMessage;
-    if (parms) {
+    if (parms !== null && parms !== undefined) {
       i18nMessage = getI18nMsgSubst(msgId, parms);
     } else {
       i18nMessage = getI18nMsg(msgId);
@@ -1081,10 +1444,10 @@ class StatsManager {
 
 
   resetErrors() {
-    let msgPanelDivs = document.querySelectorAll("div.messages-panel");
+    let msgPanelDivs = document.querySelectorAll("div.messages-panel"); // <--------------- NOTE: messages-panel - same as for resetMessages(), but different attribute
     if (msgPanelDivs) {
       for (let msgPanelDiv of msgPanelDivs) {
-        msgPanelDiv.setAttribute("error", "false");
+        msgPanelDiv.setAttribute("error", "false"); // <----------------------------------- different from resetMessages();
       }
     }
 
