@@ -205,6 +205,10 @@ A command is a message which is an object of the form:
         { "command": "isValidFileName",        "fileName":      string                       } - response { "fileName":      string, "valid":         boolean                       }
         { "command": "isValidDirectoryName",   "directoryName": string                       } - response { "directoryName": string, "valid":         boolean                       }
         { "command": "getFileSystemPathName"                                                 } - response { "pathName":      string                                                 }
+        { "command": "stats"                [, "includeChildInfo": boolean ]                 } - response { "stats":         object                                                 }
+        { "command": "fsbListInfo"          [, object ]                                      } - response { "fileInfo":      [],     "length":        integer                       }
+        { "command": "fsbList"              [, object ]                                      } - response { "list":          [],     "length":        integer                       }
+        { "command": "fsbStats"             [, "includeChildInfo": boolean ]                 } - response { "stats":         object                                                 }
         { "command": "renameFile", "fromFileName": string, "toFileName: string [, "overwrite": boolean] } - response { "fromFileName": string, "toFileName": string, "renamed": boolean }
 
 <br>
@@ -309,7 +313,7 @@ in mind.
 <br>
 <br>
 
-### exists(extensionId [, fileName])
+#### exists - does a file exist?
 
     Returns true if a file with the given fileName exists
     in the directory for the extensionId.
@@ -318,7 +322,7 @@ in mind.
     provided, returns true if the directory for the
     given extensionId exists.
 
-    command message: { "Command": { "command": "exits" [, "fileName": string] } }
+    command message: { "Command": { "command": "exists" [, "fileName": string] } }
 
                      The fileName parameter is optional. If not specified, the
                      caller-specific directory (named like the caller's Extension
@@ -865,7 +869,11 @@ in mind.
 <br>
 <br>
 
-### stats( [ { ['includeChildInfo': boolean] ['types': array of string] } ] )
+#### stats - Returns statistics for the calling extension.
+
+    command message: { "Command": { "command": "stats" } }
+
+    response:        { "stats": object }
 
     Returns a JavaScript object that contains information
     about the directory and the items in the directory
@@ -953,9 +961,13 @@ in mind.
 <br>
 <br>
 
-### fsbListInfo( [ { ['matchGLOB': matchGLOB] ['types': types] } ] ) (INTERNAL USE ONLY)
+#### fsbListInfo - (INTERNAL USE ONLY)
 
-    Returns an onbect containing an array of FileInfo objects
+    command message: { "Command": { "command": "fsbListInfo"[, "parameters": { ['matchGLOB': matchGLOB] [, 'types': types] } ] } }
+
+    response:        { "fileInfo": array of FileInfo[, "parameters": object ] }
+
+    Returns an object containing an array of FileInfo objects
     listing the File Info for the items in the top-directory
     on which this extension operates.
 <br>
@@ -1012,7 +1024,11 @@ in mind.
 <br>
 <br>
 
-### fsbList( [ { ['matchGLOB': matchGLOB] ['types': types] } ] ) (INTERNAL USE ONLY)
+#### fsbList - (INTERNAL USE ONLY)
+
+    command message: { "Command": { "command": "fsbList"[, "parameters": { ['matchGLOB': matchGLOB] [, 'types': types] } ] } }
+
+    response:        { "list": array of object[, "parameters": object ] }
 
     Returns an object containing an array listing information
     for the items in the top-directory on which this extension
@@ -1065,7 +1081,11 @@ in mind.
 <br>
 <br>
 
-### fsbStats()  (INTERNAL USE ONLY)
+#### fsbStats    (INTERNAL USE ONLY)
+
+    command message: { "Command": { "command": "fsbStats" } }
+
+    response:        { "fsbStats": object, "dirStats": array of object }
 
     Returns an Object that provides information about each directory
     inside the top-level directory in which this extension operates.
@@ -1095,7 +1115,7 @@ in mind.
                      'size_largest':                      integer:  largest  size  (bytes) of all descendent items with type 'regular' (undefined if no items with type 'regular')
                      'size_total':                        integer:  total of sizes (bytes) of all descendent items with type 'regular' (undefined if no items with type 'regular')
         },
-        'dirSstats': array of object, indexed by Directory Name
+        'dirStats': array of object, indexed by Directory Name
                        {
                          'dirName':                           string:   directory fileName
                          'dirPath':                           string:   directory full pathName
@@ -1257,7 +1277,7 @@ existing backup file, or delete one or more backup files.
 
 ## FileSystemBroker Event Logging
 
-FileSystemBroker logs certain events and writes them to Files. You can
+FileSystemBroker logs certain events and writes them to Log Files. You can
 choose which events get logged, and you can use the Event Log Manager to
 List, View, Archive, or Delete logs.
 
