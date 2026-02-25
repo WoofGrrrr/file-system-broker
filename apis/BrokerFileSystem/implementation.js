@@ -1720,7 +1720,7 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
             // this is ok
           }
 
-          try { // MABXXX try/catch ???
+          try {
             const response = await getStatsForDir(context, "stats", extensionId, includeChildInfo, types);
             if (! response) {
               debug(`stats -- Failed to get response from getStatsForDir():  "${extensionId}"`);
@@ -2051,6 +2051,10 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
             var   numUnknown      = 0;
             var   numError        = 0;
 
+            const regPathNames    = []; // accumulate pathNames for regular files for internal use           // MABXXX parameterize this???
+            const dirPathNames    = []; // accumulate pathNames for directories for internal use             // MABXXX parameterize this???
+            const otherPathNames  = []; // accumulate pathNames for items with type 'other' for internal use // MABXXX parameterize this???
+
             var   earliestChildCreationTime;     // undefined when no children
             var   latestChildCreationTime;       // undefined when no children
             var   earliestChildLastAccessedTime; // undefined when no children
@@ -2114,6 +2118,7 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
                   switch (fileInfo.type) {
                     case 'regular': {
                       numRegularFiles++;
+                      if (regPathNames) regPathNames.push(itemPath);
                       smallestSize = (smallestSize === undefined) ? fileInfo.size : Math.min( fileInfo.size, smallestSize );
                       largestSize  = (largestSize  === undefined) ? fileInfo.size : Math.max( fileInfo.size, largestSize  );
                       totalSize    = (totalSize    === undefined) ? fileInfo.size : totalSize + fileInfo.size;
@@ -2122,16 +2127,19 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
 
                     case 'directory': {
                       numDirs++;
+                      if (dirPathNames) dirPathNames.push(itemPath);
+                      break;
                     }
 
                     case 'other': {
                       numOther++;
+                      if (otherPathNames) otherPathNames.push(itemPath);
                       break;
                     }
 
                     default: {
                       numUnknown++;
-                      error(`${cmd} -- Unknown Type for item "${childName}" in Directory "${dirName}" at "${dirPath}": type='${fileInfo.type}'`);
+                      error(`fsbStats -- Unknown Type for item "${childName}" in Directory "${dirName}" at "${dirPath}": type='${fileInfo.type}'`);
                     }
                   }
 
@@ -2139,7 +2147,17 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
                     const dirFileInfo = fileInfo;
                     const dirPath     = itemPath;
                     const dirName     = itemName;
-                    const response    = await getStatsForDirFileInfo(context, 'fsbStats', dirName, dirPath, dirFileInfo, false); // includeChildInfo=false, types=undefined
+                    const response    = await getStatsForDirFileInfo( context,
+                                                                      'fsbStats',
+                                                                      dirName,
+                                                                      dirPath,
+                                                                      dirFileInfo,
+                                                                      false,           // includeChildInfo=false
+                                                                      undefined,       // types=undefined
+                                                                      regPathNames,
+                                                                      dirPathNames,
+                                                                      otherPathNames
+                                                                    );
 
                     var dirStats = {
                       'dirName': dirName,
@@ -2147,16 +2165,16 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
                     }
 
                     if (! response) {
-                      error(`fsbStats -- Failed to get response from getStatsForDir():  "${dirName}"`);
+                      error(`fsbStats -- Failed to get response from getStatsForDirFileInfo():  "${dirName}"`);
                       dirStats['error'] = 'Unable to get data';
                     } else if (response.error) {
-                      error(`fsbStats -- 'error' response from getStatsForDir(): "${response.error}"`);
+                      error(`fsbStats -- 'error' response from getStatsForDirFileInfo(): "${response.error}"`);
                       dirStats['error'] = response.error;
                     } else if (response.invalid) {
-                      error(`fsbStats -- 'invalid' response from getStatsForDir(): "${response.invalid}"`);
+                      error(`fsbStats -- 'invalid' response from getStatsForDirFileInfo(): "${response.invalid}"`);
                       dirStats['error'] = response.invalid;
                     } else if (! response.stats) {
-                      error(`fsbStats -- No 'stats' response from getStatsForDir(): "${dirName}"`);
+                      error(`fsbStats -- No 'stats' response from getStatsForDirFileInfo(): "${dirName}"`);
                       dirStats['error'] = 'Unable to get data';
                     } else {
                       dirStats = response.stats;
@@ -2208,12 +2226,17 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
             const fsbStats = {
               'dirName':                         FSB_DIR_NAME,
               'dirPath':                         dirPath,
+
               'count_total':                     numChildren,
-              'count_regular':                   numRegularFiles,
-              'count_directory':                 numDirs,
-              'count_other':                     numOther,
-              'count_unknown':                   numUnknown,
-              'count_error':                     numError,
+              'count_type_regular':              numRegularFiles,
+              'count_type_directory':            numDirs,
+              'count_type_other':                numOther,
+              'count_type_unknown':              numUnknown,
+              'count_type_error':                numError,
+
+              'regular_pathNames':               regPathNames,
+              'directory_pathNames':             dirPathNames,
+              'other_pathNames':                 otherPathNames,
 
               'time_childCreation_earliest':     earliestChildCreationTime,
               'time_childCreation_latest':       latestChildCreationTime,
@@ -2353,11 +2376,11 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
 //              'dirName':                          string:           directory name
 //              'dirPath':                          string:           directory fulle pathName
 //              'count_children':                   integer:          total number of child items
-//              'count_regular':                    integer:          number of child items with type 'regular'
-//              'count_directory':                  integer:          number of child items with type 'directory'
-//              'count_other':                      integer:          number of child items with type 'other'
-//              'count_unknown':                    integer:          number of child items with type none of the three above
-//              'count_error':                      integer:          number of child items whose types could not be determined
+//              'count_type_regular':               integer:          number of child items with type 'regular'
+//              'count_type_directory':             integer:          number of child items with type 'directory'
+//              'count_type_other':                 integer:          number of child items with type 'other'
+//              'count_type_unknown':               integer:          number of child items with type none of the three above
+//              'count_type_error':                 integer:          number of child items whose types could not be determined
 //              'time_childCreation_earliest':      integer:          earliest Creation Time      of all child items (OS-dependent) in MS
 //              'time_childCreation'_latest:        integer:          latest   Creation Time      of all child items (OS-dependent) in MS
 //              'time_childLastAccessed_earliest':  integer:          earliest Last Accessed Time of all child items (OS-dependent) in MS
@@ -2378,72 +2401,86 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
 //                                                  }
 //            }
 //   }
-async function getStatsForDir(context, cmd, dirName, includeChildInfo, types) {
+async function getStatsForDir(context, cmdName, dirName, includeChildInfo, types) {
   if (! context || (typeof context) !== 'object') {
-    error(`BrokerFileSystem.${cmd}`, "-- ERROR: 'context' parameter must be 'object'");
-    return ( { 'error': `Internal Error - BrokerFileSystem.${cmd} -- getStatsForDir(): parameter 'context' must be 'object'` } );
+    error(`BrokerFileSystem.${cmdName}`, "-- ERROR: 'context' parameter must be 'object'");
+    return ( { 'error': `Internal Error - BrokerFileSystem.${cmdName} -- getStatsForDir(): parameter 'context' must be 'object'` } );
   }
 
-  if ((typeof cmd) !== 'string') {
-    error(`BrokerFileSystem.${cmd}`, "-- ERROR: 'cmd' parameter must be 'string'");
-    return ( { 'error': `Internal Error - BrokerFileSystem.${cmd} -- getStatsForDir(): parameter 'cmd' must be 'string'` } );
-  } else if (cmd.length < 1) {
-    error(`BrokerFileSystem.${cmd}`, "-- ERROR: 'cmd' parameter has length=0");
-    return ( { 'error': `Internal Error - BrokerFileSystem.${cmd} -- getStatsForDir(): parameter 'cmd' has length=0` } );
+  if ((typeof cmdName) !== 'string') {
+    error(`BrokerFileSystem.${cmdName}`, "-- ERROR: 'cmdName' parameter must be 'string'");
+    return ( { 'error': `Internal Error - BrokerFileSystem.${cmdName} -- getStatsForDir(): parameter 'cmdName' must be 'string'` } );
+  } else if (cmdName.length < 1) {
+    error(`BrokerFileSystem.${cmdName}`, "-- ERROR: 'cmdName' parameter has length=0");
+    return ( { 'error': `Internal Error - BrokerFileSystem.${cmdName} -- getStatsForDir(): parameter 'cmdName' has length=0` } );
   }
 
   const dirPath = buildPathName(context, dirName);
   if (! checkPathName(dirPath)) {
-    error(`BrokerFileSystem.${cmd}`, `-- ERROR: PathName for item "${dirName}" is invalid: "${dirPath}"`);
-    return ( { 'error': `Internal Error - BrokerFileSystem.${cmd} -- getStatsForDir(): PathName for item "${dirName}" is invalid: "${dirPath}"` } );
+    error(`BrokerFileSystem.${cmdName}`, `-- ERROR: PathName for item "${dirName}" is invalid: "${dirPath}"`);
+    return ( { 'error': `Internal Error - BrokerFileSystem.${cmdName} -- getStatsForDir(): PathName for item "${dirName}" is invalid: "${dirPath}"` } );
   }
 
-  debug(`BrokerFileSystem.${cmd}  -- calling IOUtils.exists - dirPath="${dirPath}"`);
+  debug(`BrokerFileSystem.${cmdName}  -- calling IOUtils.exists - dirPath="${dirPath}"`);
   var exists = false;
   try {
     exists = await IOUtils.exists(dirPath); // returns Promise<boolean>
   } catch (error) {
-    caught(error, `BrokerFileSystem.${cmd} -- FILE SYSTEM ERROR`, `Calling IOUtils.exists for Item "${dirName}" at "${dirPath}"`);
-    return ( { 'error': `Internal Error - BrokerFileSystem.${cmd} -- getStatsForDir(): Checking existence of Item "${dirName}" at path "${dirPath}"` } );
+    caught(error, `BrokerFileSystem.${cmdName} -- FILE SYSTEM ERROR`, `Calling IOUtils.exists for Item "${dirName}" at "${dirPath}"`);
+    return ( { 'error': `Internal Error - BrokerFileSystem.${cmdName} -- getStatsForDir(): Checking existence of Item "${dirName}" at path "${dirPath}"` } );
   }
 
   if (! exists) {
-    error(`BrokerFileSystem.${cmd}`, `-- ERROR: Item "${dirName}" does not exist: "${dirPath}"`);
-    return ( { 'error': `Internal Error - BrokerFileSystem.${cmd} -- getStatsForDir(): Item "${dirName}" at path "${dirPath}" does not exist` } );
+    error(`BrokerFileSystem.${cmdName}`, `-- ERROR: Item "${dirName}" does not exist: "${dirPath}"`);
+    return ( { 'error': `Internal Error - BrokerFileSystem.${cmdName} -- getStatsForDir(): Item "${dirName}" at path "${dirPath}" does not exist` } );
   }
 
   var dirFileInfo;
   try {
-    debug(`BrokerFileSystem.${cmd} -- calling IOUtils.stat - dirPath="${dirPath}"`);
+    debug(`BrokerFileSystem.${cmdName} -- calling IOUtils.stat - dirPath="${dirPath}"`);
     dirFileInfo = await IOUtils.stat(dirPath); // returns Promise<FileInfo>
   } catch (error) { // sometimes stat() throws even though exists() returns true.  I don't know why.  Bugzilla #1962918
-    caught(error, `BrokerFileSystem.${cmd} -- FILE SYSTEM ERROR`, `Calling stat() for Item "${dirName}" at "${dirPath}" is a Directory`);
+    caught(error, `BrokerFileSystem.${cmdName} -- FILE SYSTEM ERROR`, `Calling stat() for Item "${dirName}" at "${dirPath}" is a Directory`);
     if (error.name !== 'NotFoundError') {
-      return ( { 'error': `Internal Error - BrokerFileSystem.${cmd} -- getStatsForDir(): Checking if Item "${dirName}" at path "${dirPath}" is a directory` } );
+      return ( { 'error': `Internal Error - BrokerFileSystem.${cmdName} -- getStatsForDir(): Checking if Item "${dirName}" at path "${dirPath}" is a directory` } );
     }
   }
 
   if (! dirFileInfo) {
-    error(`BrokerFileSystem.${cmd}`, `-- ERROR: Failed to get FileInfo to check if item "${dirName}" at "${dirPath}" is a Directory`);
-    return ( { 'error': `Internal Error - BrokerFileSystem.${cmd} -- getStatsForDir(): Failed to check if item "${dirName}" at path "${dirPath}" is a directory` } );
+    error(`BrokerFileSystem.${cmdName}`, `-- ERROR: Failed to get FileInfo to check if item "${dirName}" at "${dirPath}" is a Directory`);
+    return ( { 'error': `Internal Error - BrokerFileSystem.${cmdName} -- getStatsForDir(): Failed to check if item "${dirName}" at path "${dirPath}" is a directory` } );
   }
 
   if (dirFileInfo.type !== 'directory') { // enum FileType { "regular", "directory", "other" };
-    error(`BrokerFileSystem.${cmd}`, `-- ERROR: Item "${dirName}" at "${dirPath}" is NOT a Directory`);
-    return ( { 'error': `Internal Error - BrokerFileSystem.${cmd} -- getStatsForDir(): Item "${dirName}" at path "${dirPath}" is NOT a directory` } );
+    error(`BrokerFileSystem.${cmdName}`, `-- ERROR: Item "${dirName}" at "${dirPath}" is NOT a Directory`);
+    return ( { 'error': `Internal Error - BrokerFileSystem.${cmdName} -- getStatsForDir(): Item "${dirName}" at path "${dirPath}" is NOT a directory` } );
   }
 
-  return await getStatsForDirFileInfo(context, cmd, dirName, dirPath, dirFileInfo, includeChildInfo, types);
+  return await getStatsForDirFileInfo(context, cmdName, dirName, dirPath, dirFileInfo, includeChildInfo, types);
 }
 
-async function getStatsForDirFileInfo(context, cmd, dirName, dirPath, dirFileInfo, includeChildInfo, types) {
+// MABXXX TO AVOID REDUNDANT CODE, THERE ARE NO VALIDITY CHECKS FOR THE PARAMETERS
+// MABXXX THEY **MUST** BE VALIDATED BEFORE CALLING!!!
+//
+async function getStatsForDirFileInfo( context,
+                                       cmdName,
+                                       dirName,
+                                       dirPath,
+                                       dirFileInfo,
+                                       includeChildInfo,
+                                       types,
+                                       regPathNames,  // If provided, it must be an array. Used to accumulate pathNames for regular files for internal use
+                                       dirPathNames,  // If provided, it must be an array. Used to accumulate pathNames for directories for internal use
+                                       otherPathNames // If provided, it must be an array. Used to accumulate pathNames for items with type 'other' for internal use
+                                     )
+{
   var children;
   try {
-    debug(`BrokerFileSystem.${cmd} -- calling IOUtils.getChildren - dirPath="${dirPath}"`);
+    debug(`BrokerFileSystem.${cmdName} -- calling IOUtils.getChildren - dirPath="${dirPath}"`);
     children = await IOUtils.getChildren(dirPath, {"ignoreAbsent": true}); // returns Promise<sequence<DOMString>> // NOTE: ignoreAbsent: true
   } catch (error) {
-    caught(error, `BrokerFileSystem.${cmd} -- FILE SYSTEM ERROR`, `Calling IOUtils.getChildren() for Directory "${dirName}" at path "${dirPath}"`);
-    return ( { 'error': `Internal Error - BrokerFileSystem.${cmd} -- getStatsForDir(): Getting children of Directory "${dirName}" at path "${dirPath}"` } );
+    caught(error, `BrokerFileSystem.${cmdName} -- FILE SYSTEM ERROR`, `Calling IOUtils.getChildren() for Directory "${dirName}" at path "${dirPath}"`);
+    return ( { 'error': `Internal Error - BrokerFileSystem.${cmdName} -- getStatsForDir(): Getting children of Directory "${dirName}" at path "${dirPath}"` } );
   }
 
 
@@ -2481,15 +2518,15 @@ async function getStatsForDirFileInfo(context, cmd, dirName, dirPath, dirFileInf
       try {
         fileInfo = await IOUtils.stat(childPath); // returns Promise<FileInfo>
       } catch (error) { // sometimes stat() throws even though exists() returns true.  I don't know why.  Bugzilla #1962918
-        caught(error, `${cmd} -- FILE SYSTEM ERROR`, `Calling stat() for item "${childName}" in Directory "${dirName}" at "${dirPath}"`);
+        caught(error, `${cmdName} -- FILE SYSTEM ERROR`, `Calling stat() for item "${childName}" in Directory "${dirName}" at "${dirPath}"`);
         if (error.name !== 'NotFoundError') {
-//        throw new ExtensionError(`BrokerFileSystem.${cmd} -- Error getting File Information for item "${childName}" in Directory "${dirName}" at "${dirPath}"`); // MABXXX
+//        throw new ExtensionError(`BrokerFileSystem.${cmdName} -- Error getting File Information for item "${childName}" in Directory "${dirName}" at "${dirPath}"`); // MABXXX
         }
       }
 
       if (! fileInfo) {
         numError++;
-        error(`${cmd} -- Unable to get File Information for item "${childName}" in Directory "${dirName}" at "${dirPath}"`);
+        error(`${cmdName} -- Unable to get File Information for item "${childName}" in Directory "${dirName}" at "${dirPath}"`);
         if (includeChildInfo && (! types || types.includes('error'))) {
           const info = {
             'name': childName,
@@ -2498,7 +2535,7 @@ async function getStatsForDirFileInfo(context, cmd, dirName, dirPath, dirFileInf
           };
           childInfo.push(info);
         }
-//      throw new ExtensionError(`BrokerFileSystem.${cmd} Unable to get File Information for item "${childName}" in Directory "${dirName}" at "${dirPath}"`); // MABXXX
+//      throw new ExtensionError(`BrokerFileSystem.${cmdName} Unable to get File Information for item "${childName}" in Directory "${dirName}" at "${dirPath}"`); // MABXXX
       } else {
         var info;
         if (includeChildInfo) {
@@ -2524,6 +2561,7 @@ async function getStatsForDirFileInfo(context, cmd, dirName, dirPath, dirFileInf
         switch (fileInfo.type) {
           case 'regular': {
             numRegularFiles++;
+            if (regPathNames) regPathNames.push(childPath);
             smallestSize = (smallestSize === undefined) ? fileInfo.size : Math.min( fileInfo.size, smallestSize );
             largestSize  = (largestSize  === undefined) ? fileInfo.size : Math.max( fileInfo.size, largestSize  );
             totalSize    = (totalSize    === undefined) ? fileInfo.size : totalSize + fileInfo.size;
@@ -2536,6 +2574,7 @@ async function getStatsForDirFileInfo(context, cmd, dirName, dirPath, dirFileInf
 
           case 'directory': {
             numDirs++;
+            if (dirPathNames) dirPathNames.push(childPath);
             if (includeChildInfo && (! types || types.includes('directory'))) {
               childInfo.push(info);
             }
@@ -2544,6 +2583,7 @@ async function getStatsForDirFileInfo(context, cmd, dirName, dirPath, dirFileInf
 
           case 'other': {
             numOther++;
+            if (otherPathNames) otherPathNames.push(childPath);
             if (includeChildInfo && (! types || types.includes('other'))) {
               childInfo.push(info);
             }
@@ -2552,7 +2592,7 @@ async function getStatsForDirFileInfo(context, cmd, dirName, dirPath, dirFileInf
 
           default: {
             numUnknown++;
-            error(`${cmd} -- Unknown Type for item "${childName}" in Directory "${dirName}" at "${dirPath}": type='${fileInfo.type}'`);
+            error(`${cmdName} -- Unknown Type for item "${childName}" in Directory "${dirName}" at "${dirPath}": type='${fileInfo.type}'`);
             if (includeChildInfo && (! types || types.includes('unknown'))) {
               info['type'] = 'unknown';
               childInfo.push(info);

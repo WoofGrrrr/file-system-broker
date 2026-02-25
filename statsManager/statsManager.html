@@ -55,6 +55,87 @@
         </div>
       </div>
 
+      <div id="fsbStatsManagerStatsPanelWrapper">
+        <div id="fsbStatsManagerStatsPanel">
+          <div id="fsbStatsManagerStatsPanelTitle" data-l10n-id="fsbStatsManager_statsPanelTitle"></div>
+
+          <div id="fsbStatsManagerNamesPanel" class="stats-sub-panel">
+            <table id="fsbStatsManagerNames" class="stats-table">
+              <tr class="stats-header">
+                <th class="stats-header-item" data-l10n-id="fsbStatsManager_statsHeader_dir_name"></th>
+                <th class="stats-header-item" data-l10n-id="fsbStatsManager_statsHeader_dir_path"></th>
+              </tr>
+              <tr id="stats_data_names" class="stats-data">
+                <td id="stats_data_dir_name" class="stats-data-item stats-data-name"></td>
+                <td id="stats_data_dir_path" class="stats-data-item stats-data-name"></td>
+              </tr>
+            </table>
+          </div>
+
+          <div id="fsbStatsManagerCountsPanel" class="stats-sub-panel">
+            <div class="stats-title" data-l10n-id="fsbStatsManager_statsTitle_counts"></div>
+            <table id="fsbStatsManagerCounts" class="stats-table">
+              <tr class="stats-header">
+                <th class="stats-header-item" data-l10n-id="fsbStatsManager_statsHeader_count_total"></th>
+                <th class="stats-header-item" data-l10n-id="fsbStatsManager_statsHeader_count_type_regular"></th>
+                <th class="stats-header-item" data-l10n-id="fsbStatsManager_statsHeader_count_type_directory"></th>
+                <th class="stats-header-item" data-l10n-id="fsbStatsManager_statsHeader_count_type_other"></th>
+                <th class="stats-header-item" data-l10n-id="fsbStatsManager_statsHeader_count_type_uknown"></th>
+                <th class="stats-header-item" data-l10n-id="fsbStatsManager_statsHeader_count_type_error"></th>
+              </tr>
+              <tr id="stats_data_counts" class="stats-data">
+                <td id="stats_data_count_total"          class="stats-data-item stats-data-count"></td>
+                <td id="stats_data_count_type_regular"   class="stats-data-item stats-data-count"></td>
+                <td id="stats_data_count_type_directory" class="stats-data-item stats-data-count"></td>
+                <td id="stats_data_count_type_other"     class="stats-data-item stats-data-count"></td>
+                <td id="stats_data_count_type_unknown"   class="stats-data-item stats-data-count"></td>
+                <td id="stats_data_count_type_error"     class="stats-data-item stats-data-count"></td>
+              </tr>
+            </table>
+          </div>
+
+          <div id="fsbStatsManagerSizesPanel" class="stats-sub-panel">
+            <div class="stats-title" data-l10n-id="fsbStatsManager_statsTitle_sizes"></div>
+            <table id="fsbStatsManagerSizes" class="stats-table">
+              <tr class="stats-header">
+                <th class="stats-header-item" data-l10n-id="fsbStatsManager_statsHeader_size_smallest"></th>
+                <th class="stats-header-item" data-l10n-id="fsbStatsManager_statsHeader_size_largest"></th>
+                <th class="stats-header-item" data-l10n-id="fsbStatsManager_statsHeader_size_total"></th>
+              </tr>
+              <tr id="stats_data_sizes" class="stats-data">
+                <td id="stats_data_size_smallest" class="stats-data-item stats-data-size"></td>
+                <td id="stats_data_size_largest"  class="stats-data-item stats-data-size"></td>
+                <td id="stats_data_size_total"    class="stats-data-item stats-data-size"></td>
+              </tr>
+            </table>
+          </div>
+
+          <div id="fsbStatsManagerTimesPanel" class="stats-sub-panel">
+            <div class="stats-title" data-l10n-id="fsbStatsManager_statsTitle_times"></div>
+            <table id="fsbStatsManagerTimes" class="stats-table">
+              <tr class="stats-header">
+                <th class="stats-header-item" data-l10n-id="fsbStatsManager_statsHeader_time_creation_earliest"></th>
+                <th class="stats-header-item" data-l10n-id="fsbStatsManager_statsHeader_time_creation_latest"></th>
+                <th class="stats-header-item" data-l10n-id="fsbStatsManager_statsHeader_time_last_accessed_earliest"></th>
+                <th class="stats-header-item" data-l10n-id="fsbStatsManager_statsHeader_time_last_accessed_latest"></th>
+                <th class="stats-header-item" data-l10n-id="fsbStatsManager_statsHeader_time_last_modified_earliest"></th>
+                <th class="stats-header-item" data-l10n-id="fsbStatsManager_statsHeader_time_last_modified_latest"></th>
+              </tr>
+              <tr id="stats_data_times" class="stats-data">
+                <td id="stats_data_time_creation_earliest"      class="stats-data-item stats-data-time"></td>
+                <td id="stats_data_time_creation_latest"        class="stats-data-item stats-data-time"></td>
+                <td id="stats_data_time_last_accessed_earliest" class="stats-data-item stats-data-time"></td>
+                <td id="stats_data_time_last_accessed_latest"   class="stats-data-item stats-data-time"></td>
+                <td id="stats_data_time_last_modified_earliest" class="stats-data-item stats-data-time"></td>
+                <td id="stats_data_time_last_modified_latest"   class="stats-data-item stats-data-time"></td>
+              </tr>
+            </table>
+          </div>
+        </div> <!-- END OF <div id="fsbStatsManagerStatsPanel"> -->
+
+        <div id="fsbStatsManagerStatsSpacer"></div>
+      </div> <!-- END OF <div id="fsbStatsManagerStatsPanelWrapper"> -->
+
       <div id="fsbStatsManagerDirectoryListWrapper">
         <table id="fsbStatsManagerDirectoryList">
         </table>

@@ -1,7 +1,7 @@
 import { Logger              } from '../modules/logger.js';
 import { FsbOptions          } from '../modules/options.js';
 import { FileSystemBrokerAPI } from '../modules/FileSystemBroker/filesystem_broker_api.js';
-import { getI18nMsg, getI18nMsgSubst, formatMsToDateTime24HR , formatMsToDateTime12HR } from '../modules/utilities.js';
+import { getI18nMsg, getI18nMsgSubst, formatMsToDateTime24HR, formatMsToDateTime12HR } from '../modules/utilities.js';
 
 
 
@@ -14,7 +14,8 @@ class StatsManager {
   #DEBUG         = false;
   #WARN          = false;
 
-  #IGNORE_DIRECTORY_NAMES = [ '.tmp.drivedownload', '.tmp.driveupload' ]; // these directories are created by Google Drive
+  #IGNORE_DIRECTORIES     = false;
+  #IGNORE_DIRECTORY_NAMES = [ ".tmp.drivedownload", ".tmp.driveupload", "$Temp" ]; // these (hidden) directories are created by Google Drive & ProtonDrive
 
   #logger        = new Logger();
   #fsbOptionsApi = new FsbOptions(this.logger);
@@ -152,7 +153,7 @@ class StatsManager {
     await this.updateOptionsUI();
 //  await updateStatsManagerUI() {
     await this.localizePage();
-    await this.buildDirectoryListUI();
+    await this.buildUI();
     this.setupEventListeners();
   }
 
@@ -377,7 +378,7 @@ class StatsManager {
 
 
 
-  async buildDirectoryListUI() {
+  async buildUI() {
     this.resetMessages();
     this.resetErrors();
 
@@ -387,7 +388,6 @@ class StatsManager {
       this.setErrorFor("fsbStatsManagerTitlePanel", fsbStatsManager_error_noDirectoryListElement);
       return;
     }
-
     domDirectoryList.innerHTML = '';
     this.updateUIOnSelectionChanged();
 
@@ -402,35 +402,214 @@ class StatsManager {
     const fsbStats    = stats?.fsbStats
     const fsbDirStats = stats?.dirStats
 
-    var noDirectoriesErrorReported = false;
+    if (! stats) {
+      this.error("---NO stats");
+      this.setErrorFor("fsbStatsManagerTitlePanel", "fsbStatsManager_error_noDirectories"); /// MABXXX NEED A DIFFERENT ERROR MESSAGE
+
+    } else {
+      await this.updateFsbStatsUI(fsbStats);
+
+      await this.buildDirectoryListUI(domDirectoryList, fsbDirStats);
+    }
+  }
+
+  async updateFsbStatsUI(fsbStats) {
+    this.debugAlways("\n===================fsbStats:\n", fsbStats);
+
+    if (! fsbStats) {
+      this.error("---NO fsbStats");
+      this.setErrorFor("fsbStatsManagerTitlePanel", "fsbStatsManager_error_noDirectories"); /// MABXXX NEED A DIFFERENT ERROR MESSAGE
+      return;
+    }
+
+    var element;
+
+    element = document.getElementById("stats_data_dir_name");
+    if (element) {
+      if ((typeof fsbStats.dirName) === 'string') {
+        element.textContent = fsbStats.dirName;
+      } else {
+        element.textContent = "";
+      }
+    }
+
+    element = document.getElementById("stats_data_dir_path");
+    if (element) {
+      if ((typeof fsbStats.dirPath) === 'string') {
+        element.textContent = fsbStats.dirPath;
+      } else {
+        element.textContent = "";
+      }
+    }
+
+    element = document.getElementById("stats_data_count_total");
+    if (element) {
+      if (Number.isInteger(fsbStats.count_total)) {
+        element.textContent = fsbStats.count_total;
+      } else {
+        element.textContent = "";
+      }
+    }
+
+    element = document.getElementById("stats_data_count_type_regular");
+    if (element) {
+      if (Number.isInteger(fsbStats.count_type_regular)) {
+        element.textContent = fsbStats.count_type_regular;
+      } else {
+        element.textContent = "";
+      }
+    }
+
+    element = document.getElementById("stats_data_count_type_directory");
+    if (element) {
+      if (Number.isInteger(fsbStats.count_type_directory)) {
+        element.textContent = fsbStats.count_type_directory;
+      } else {
+        element.textContent = "";
+      }
+    }
+
+    element = document.getElementById("stats_data_count_type_other");
+    if (element) {
+      if (Number.isInteger(fsbStats.count_type_other)) {
+        element.textContent = fsbStats.count_type_other;
+      } else {
+        element.textContent = "";
+      }
+    }
+
+    element = document.getElementById("stats_data_count_type_unknown");
+    if (element) {
+      if (Number.isInteger(fsbStats.count_type_unknown)) {
+        element.textContent = fsbStats.count_type_unknown;
+      } else {
+        element.textContent = "";
+      }
+    }
+
+    element = document.getElementById("stats_data_count_type_error");
+    if (element) {
+      if (Number.isInteger(fsbStats.count_type_error)) {
+        element.textContent = fsbStats.count_type_error;
+      } else {
+        element.textContent = "";
+      }
+    }
+
+    element = document.getElementById("stats_data_size_smallest");
+    if (element) {
+      if (Number.isInteger(fsbStats.size_smallest)) {
+        element.textContent = await messenger.messengerUtilities.formatFileSize( fsbStats.size_smallest );
+      } else {
+        element.textContent = "";
+      }
+    }
+
+    element = document.getElementById("stats_data_size_largest");
+    if (element) {
+      if (Number.isInteger(fsbStats.size_largest)) {
+        element.textContent = await messenger.messengerUtilities.formatFileSize( fsbStats.size_largest );
+      } else {
+        element.textContent = "";
+      }
+    }
+
+    element = document.getElementById("stats_data_size_total");
+    if (element) {
+      if (Number.isInteger(fsbStats.size_total)) {
+        element.textContent = await messenger.messengerUtilities.formatFileSize( fsbStats.size_total );
+      } else {
+        element.textContent = "";
+      }
+    }
+
+    element = document.getElementById("stats_data_time_creation_earliest");
+    if (element) {
+      if (Number.isInteger(fsbStats.time_childCreation_earliest)) {
+        element.textContent = formatMsToDateTime24HR( fsbStats.time_childCreation_earliest );
+      } else {
+        element.textContent = "";
+      }
+    }
+
+    element = document.getElementById("stats_data_time_creation_latest");
+    if (element) {
+      if (Number.isInteger(fsbStats.time_childCreation_latest)) {
+        element.textContent = formatMsToDateTime24HR( fsbStats.time_childCreation_latest );
+      } else {
+        element.textContent = "";
+      }
+    }
+
+    element = document.getElementById("stats_data_time_last_accessed_earliest");
+    if (element) {
+      if (Number.isInteger(fsbStats.time_childLastAccessed_earliest)) {
+        element.textContent = formatMsToDateTime24HR( fsbStats.time_childLastAccessed_earliest );
+      } else {
+        element.textContent = "";
+      }
+    }
+
+    element = document.getElementById("stats_data_time_last_accessed_latest");
+    if (element) {
+      if (Number.isInteger(fsbStats.time_childLastAccessed_latest)) {
+        element.textContent = formatMsToDateTime24HR( fsbStats.time_childLastAccessed_latest );
+      } else {
+        element.textContent = "";
+      }
+    }
+
+    element = document.getElementById("stats_data_time_last_modified_earliest");
+    if (element) {
+      if (Number.isInteger(fsbStats.time_childLastModified_earliest)) {
+        element.textContent = formatMsToDateTime24HR( fsbStats.time_childLastModified_earliest );
+      } else {
+        element.textContent = "";
+      }
+    }
+
+    element = document.getElementById("stats_data_time_last_modified_latest");
+    if (element) {
+      if (Number.isInteger(fsbStats.time_childLastModified_latest)) {
+        element.textContent = formatMsToDateTime24HR( fsbStats.time_childLastModified_latest );
+      } else {
+        element.textContent = "";
+      }
+    }
+  }
+
+  async buildDirectoryListUI(domDirectoryList, fsbDirStats) {
+    this.debugAlways("\n===================fsbDirStats:\n", fsbDirStats);
+
+    domDirectoryList.innerHTML = '';
+
     if (! fsbDirStats) {
       this.error("---NO fsbDirStats");
-      this.setErrorFor("fsbStatsManagerTitlePanel", fsbStatsManager_error_noDirectories);
-      noDirectoriesErrorReported = true;
+      this.setErrorFor("fsbStatsManagerTitlePanel", "fsbStatsManager_error_noDirectories");
+      return;
+
     } else if (Object.keys(fsbDirStats).length < 1) {
       this.error("---fsbDirStats.length < 1");
-      this.setErrorFor("fsbStatsManagerTitlePanel", fsbStatsManager_error_noDirectories);
-      noDirectoriesErrorReported = true;
+      this.setErrorFor("fsbStatsManagerTitlePanel", "fsbStatsManager_error_noDirectories");
+      return;
+
     } else {
       for (const dirName of Object.keys(fsbDirStats)) {
-        if (this.#IGNORE_DIRECTORY_NAMES.includes(dirName)) {
+        if (this.#IGNORE_DIRECTORIES && this.#IGNORE_DIRECTORY_NAMES.includes(dirName)) {
           this.debugAlways(`---IGNORING DIRECTORY "${dirName}"`);
           delete fsbDirStats[dirName];
         }
       }
     }
 
-    domDirectoryList.innerHTML = '';
-
     const headerItemUI = this.buildDirectoryListHeaderUI();
     domDirectoryList.append(headerItemUI);
 
     if (Object.keys(fsbDirStats).length < 1) { // DO THIS AGAIN AFTER REMOVAL OF ANY IGNORED DIRECTORY NAMES
-      if (! noDirectoriesErrorReported) {
-        this.error("---fsbDirStats.length < 1");
-        this.setErrorFor("fsbStatsManagerTitlePanel", fsbStatsManager_error_noDirectories);
-        noDirectoriesErrorReported = true;
-      }
+      this.error("---fsbDirStats.length < 1");
+      this.setErrorFor("fsbStatsManagerTitlePanel", "fsbStatsManager_error_noDirectories");
+      return;
+
     } else {
       const installedExtensions = await messenger.management.getAll();
       const extensionsProps     = await this.#fsbOptionsApi.getExtensionsProps();;
@@ -525,7 +704,7 @@ class StatsManager {
         childCountTH.setAttribute("title", this.#listHeaderTooltip_count_children);
       dirHeaderTR.appendChild(childCountTH);
 
-      // Create Child Type egular' Count element and add it to the row
+      // Create Child Type 'regular' Count element and add it to the row
       const regularCountTH = document.createElement("th");
         regularCountTH.classList.add("list-header-data");      // directory-list-header > list-header-data
         regularCountTH.classList.add("header-count-regular");  // directory-list-header > header-count-regular
@@ -564,6 +743,30 @@ class StatsManager {
         errorCountTH.appendChild( document.createTextNode(this.#listHeaderText_count_error) );
         errorCountTH.setAttribute("title", this.#listHeaderTooltip_count_error);
       dirHeaderTR.appendChild(errorCountTH);
+
+      // Create Smallest Size element and add it to the row
+      const sizeSmallestTH = document.createElement("th");
+        sizeSmallestTH.classList.add("list-header-data");     // directory-list-header > list-header-data
+        sizeSmallestTH.classList.add("header-size-smallest"); // directory-list-header > header-size-smallest
+        sizeSmallestTH.appendChild( document.createTextNode(this.#listHeaderText_size_smallest) );
+        sizeSmallestTH.setAttribute("title", this.#listHeaderTooltip_size_smallest);
+      dirHeaderTR.appendChild(sizeSmallestTH);
+
+      // Create Largest Size element and add it to the row
+      const sizeLargestTH = document.createElement("th");
+        sizeLargestTH.classList.add("list-header-data");     // directory-list-header > list-header-data
+        sizeLargestTH.classList.add("header-size-largest");  // directory-list-header > header-size-largest
+        sizeLargestTH.appendChild( document.createTextNode(this.#listHeaderText_size_largest) );
+        sizeLargestTH.setAttribute("title", this.#listHeaderTooltip_size_largest);
+      dirHeaderTR.appendChild(sizeLargestTH);
+
+      // Create Total Size element and add it to the row
+      const sizeTotalTH = document.createElement("th");
+        sizeTotalTH.classList.add("list-header-data");   // directory-list-header > list-header-data
+        sizeTotalTH.classList.add("header-size-totel");  // directory-list-header > header-size-totel
+        sizeTotalTH.appendChild( document.createTextNode(this.#listHeaderText_size_total) );
+        sizeTotalTH.setAttribute("title", this.#listHeaderTooltip_size_total);
+      dirHeaderTR.appendChild(sizeTotalTH);
 
       // Create Earliest Creation Time element and add it to the row
       const timeCreationEarliestTH = document.createElement("th");
@@ -613,30 +816,6 @@ class StatsManager {
         timeLastModifiedLatestTH.setAttribute("title", this.#listHeaderTooltip_time_lastModified_latest);
       dirHeaderTR.appendChild(timeLastModifiedLatestTH);
 
-      // Create Smallest Size element and add it to the row
-      const sizeSmallestTH = document.createElement("th");
-        sizeSmallestTH.classList.add("list-header-data");     // directory-list-header > list-header-data
-        sizeSmallestTH.classList.add("header-size-smallest"); // directory-list-header > header-size-smallest
-        sizeSmallestTH.appendChild( document.createTextNode(this.#listHeaderText_size_smallest) );
-        sizeSmallestTH.setAttribute("title", this.#listHeaderTooltip_size_smallest);
-      dirHeaderTR.appendChild(sizeSmallestTH);
-
-      // Create Largest Size element and add it to the row
-      const sizeLargestTH = document.createElement("th");
-        sizeLargestTH.classList.add("list-header-data");     // directory-list-header > list-header-data
-        sizeLargestTH.classList.add("header-size-largest");  // directory-list-header > header-size-largest
-        sizeLargestTH.appendChild( document.createTextNode(this.#listHeaderText_size_largest) );
-        sizeLargestTH.setAttribute("title", this.#listHeaderTooltip_size_largest);
-      dirHeaderTR.appendChild(sizeLargestTH);
-
-      // Create Total Size element and add it to the row
-      const sizeTotalTH = document.createElement("th");
-        sizeTotalTH.classList.add("list-header-data");   // directory-list-header > list-header-data
-        sizeTotalTH.classList.add("header-size-totel");  // directory-list-header > header-size-totel
-        sizeTotalTH.appendChild( document.createTextNode(this.#listHeaderText_size_total) );
-        sizeTotalTH.setAttribute("title", this.#listHeaderTooltip_size_total);
-      dirHeaderTR.appendChild(sizeTotalTH);
-
     return dirHeaderTR;
   }  
 
@@ -678,14 +857,16 @@ class StatsManager {
       const dirNameTD = document.createElement("td");
         dirNameTD.classList.add("list-item-data"); // directory-list-item > list-item-data
         dirNameTD.classList.add("list-item-name"); // directory-list-item > list-item-name
-        dirNameTD.appendChild( document.createTextNode(dirStats.dirName) );
+        if (dirStats.dirName) {
+          dirNameTD.appendChild( document.createTextNode(dirStats.dirName) );
+        }
       dirItemTR.appendChild(dirNameTD);
 
       // Create Extension ID element and add it to the row
       const extIdTD = document.createElement("td");
         extIdTD.classList.add("list-item-data");   // directory-list-item > list-item-data
         extIdTD.classList.add("list-item-ext-id"); // directory-list-item > list-item-ext-id
-        if (extensionInfo) {
+        if (extensionInfo && extensionInfo.id) {
           extIdTD.appendChild( document.createTextNode(extensionInfo.id) );
         }
       dirItemTR.appendChild(extIdTD);
@@ -765,7 +946,9 @@ class StatsManager {
         countChildrenTD.classList.add("list-item-data");  // directory-list-item > list-item-data
         countChildrenTD.classList.add("list-item-count"); // directory-list-item > list-item-count
         countChildrenTD.classList.add("count-children");  // directory-list-item > count-children
-        countChildrenTD.appendChild( document.createTextNode( dirStats.count_children ) );
+        if (Number.isInteger(dirStats.count_children)) {
+          countChildrenTD.appendChild( document.createTextNode( dirStats.count_children ) );
+        }
       dirItemTR.appendChild(countChildrenTD);
 
       // Create Type Regular Count element and add it to the row
@@ -773,7 +956,9 @@ class StatsManager {
         countTypeRegularTD.classList.add("list-item-data");     // directory-list-item > list-item-data
         countTypeRegularTD.classList.add("list-item-count");    // directory-list-item > list-item-count
         countTypeRegularTD.classList.add("count-type-regular"); // directory-list-item > count-type-regular
-        countTypeRegularTD.appendChild( document.createTextNode( dirStats.count_type_regular ) );
+        if (Number.isInteger(dirStats.count_type_regular)) {
+          countTypeRegularTD.appendChild( document.createTextNode( dirStats.count_type_regular ) );
+        }
       dirItemTR.appendChild(countTypeRegularTD);
 
       // Create Type Directory Count element and add it to the row
@@ -781,7 +966,12 @@ class StatsManager {
         countTypeDirectoryTD.classList.add("list-item-data");       // directory-list-item > list-item-data
         countTypeDirectoryTD.classList.add("list-item-count");      // directory-list-item > list-item-count
         countTypeDirectoryTD.classList.add("count-type-directory"); // directory-list-item > count-type-directory
-        countTypeDirectoryTD.appendChild( document.createTextNode( dirStats.count_type_directory ) );
+        if (Number.isInteger(dirStats.count_type_directory)) {
+          if (dirStats.count_type_directory > 0) {
+            countTypeDirectoryTD.classList.add("list-item-warning"); // directory-list-item > list-item-warning
+          }
+          countTypeDirectoryTD.appendChild( document.createTextNode( dirStats.count_type_directory ) );
+        }
       dirItemTR.appendChild(countTypeDirectoryTD);
 
       // Create Type Other Count element and add it to the row
@@ -789,7 +979,12 @@ class StatsManager {
         countTypeOtherTD.classList.add("list-item-data");   // directory-list-item > list-item-data
         countTypeOtherTD.classList.add("list-item-count");  // directory-list-item > list-item-count
         countTypeOtherTD.classList.add("count-type-other"); // directory-list-item > count-type-other
-        countTypeOtherTD.appendChild( document.createTextNode( dirStats.count_type_other ) );
+        if (Number.isInteger(dirStats.count_type_other)) {
+          if (dirStats.count_type_other > 0) {
+            countTypeOtherTD.classList.add("list-item-caution"); // directory-list-item > list-item-caution
+          }
+          countTypeOtherTD.appendChild( document.createTextNode( dirStats.count_type_other ) );
+        }
       dirItemTR.appendChild(countTypeOtherTD);
 
       // Create Type Unknown Count element and add it to the row
@@ -797,7 +992,12 @@ class StatsManager {
         countTypeUnknownTD.classList.add("list-item-data");     // directory-list-item > list-item-data
         countTypeUnknownTD.classList.add("list-item-count");    // directory-list-item > list-item-count
         countTypeUnknownTD.classList.add("count-type-unknown"); // directory-list-item > count-type-unknown
-        countTypeUnknownTD.appendChild( document.createTextNode( dirStats.count_type_unknown ) );
+        if (Number.isInteger(dirStats.count_type_unknown)) {
+          if (dirStats.count_type_unknown > 0) {
+            countTypeUnknownTD.classList.add("list-item-caution"); // directory-list-item > list-item-caution
+          }
+          countTypeUnknownTD.appendChild( document.createTextNode( dirStats.count_type_unknown ) );
+        }
       dirItemTR.appendChild(countTypeUnknownTD);
 
       // Create Type Error Count element and add it to the row
@@ -805,58 +1005,13 @@ class StatsManager {
         countTypeErrorTD.classList.add("list-item-data");   // directory-list-item > list-item-data
         countTypeErrorTD.classList.add("list-item-count");  // directory-list-item > list-item-count
         countTypeErrorTD.classList.add("count-type-error"); // directory-list-item > count-type-error
-        countTypeErrorTD.appendChild( document.createTextNode( dirStats.count_type_error ) );
+        if (Number.isInteger(dirStats.count_type_error)) {
+          if (dirStats.count_type_error > 0) {
+            countTypeErrorTD.classList.add("list-item-warning"); // directory-list-item > list-item-warning
+          }
+          countTypeErrorTD.appendChild( document.createTextNode( dirStats.count_type_error ) );
+        }
       dirItemTR.appendChild(countTypeErrorTD);
-
-
-
-      // Create Earliest Child Creation Date/Time element and add it to the row
-      const timeEarliestChildCreationTD = document.createElement("td");
-        timeEarliestChildCreationTD.classList.add("list-item-data");               // directory-list-item > list-item-data
-        timeEarliestChildCreationTD.classList.add("list-item-time");               // directory-list-item > list-item-time
-        timeEarliestChildCreationTD.classList.add("time-child-creation-earliest"); // directory-list-item > time-child-creation-earliest
-        timeEarliestChildCreationTD.appendChild( document.createTextNode( formatMsToDateTime24HR(dirStats.time_childCreation_earliest) ) );
-      dirItemTR.appendChild(timeEarliestChildCreationTD);
-
-      // Create Latest Child Creation Date/Time element and add it to the row
-      const timeLatestChildCreationTD = document.createElement("td");
-        timeLatestChildCreationTD.classList.add("list-item-data");             // directory-list-item > list-item-data
-        timeLatestChildCreationTD.classList.add("list-item-time");             // directory-list-item > list-item-time
-        timeLatestChildCreationTD.classList.add("time-child-creation-latest"); // directory-list-item > time-child-creation-latest
-        timeLatestChildCreationTD.appendChild( document.createTextNode( formatMsToDateTime24HR(dirStats.time_childCreation_latest) ) );
-      dirItemTR.appendChild(timeLatestChildCreationTD);
-
-      // Create Earliest Child Last Accessed Date/Time element and add it to the row
-      const timeEarliestChildLastAccessTD = document.createElement("td");
-        timeEarliestChildLastAccessTD.classList.add("list-item-data");                    // directory-list-item > list-item-data
-        timeEarliestChildLastAccessTD.classList.add("list-item-time");                    // directory-list-item > list-item-time
-        timeEarliestChildLastAccessTD.classList.add("time-child-last-accessed-earliest"); // directory-list-item > time-child-last-accessed-earliest
-        timeEarliestChildLastAccessTD.appendChild( document.createTextNode( formatMsToDateTime24HR(dirStats.time_childLastAccessed_earliest) ) );
-      dirItemTR.appendChild(timeEarliestChildLastAccessTD);
-
-      // Create Latest Child Last Accessed Date/Time element and add it to the row
-      const timeLatestChildLastAccessedTD = document.createElement("td");
-        timeLatestChildLastAccessedTD.classList.add("list-item-data");                  // directory-list-item > list-item-data
-        timeLatestChildLastAccessedTD.classList.add("list-item-time");                  // directory-list-item > list-item-time
-        timeLatestChildLastAccessedTD.classList.add("time-child-last-accessed-latest"); // directory-list-item > time-child-last-accessed-latest
-        timeLatestChildLastAccessedTD.appendChild( document.createTextNode( formatMsToDateTime24HR(dirStats.time_childLastAccessedTime_latest) ) );
-      dirItemTR.appendChild(timeLatestChildLastAccessedTD);
-
-      // Create Earliest Child Last Modified Date/Time element and add it to the row
-      const timeEarliestChildLastModifiedTD = document.createElement("td");
-        timeEarliestChildLastModifiedTD.classList.add("list-item-data");                    // directory-list-item > list-item-data
-        timeEarliestChildLastModifiedTD.classList.add("list-item-time");                    // directory-list-item > list-item-time
-        timeEarliestChildLastModifiedTD.classList.add("time-child-last-modified-earliest"); // directory-list-item > time-child-last-modified-earliest
-        timeEarliestChildLastModifiedTD.appendChild( document.createTextNode( formatMsToDateTime24HR(dirStats.time_childLastModified_earliest) ) );
-      dirItemTR.appendChild(timeEarliestChildLastModifiedTD);
-
-      // Create Latest Child Last Modified Date/Time element and add it to the row
-      const timeLatestChildLastModifiedTD = document.createElement("td");
-        timeLatestChildLastModifiedTD.classList.add("list-item-data");                  // directory-list-item > list-item-data
-        timeLatestChildLastModifiedTD.classList.add("list-item-time");                  // directory-list-item > list-item-time
-        timeLatestChildLastModifiedTD.classList.add("time-child-last-modified-latest"); // directory-list-item > time-child-last-modified-latest
-        timeLatestChildLastModifiedTD.appendChild( document.createTextNode( formatMsToDateTime24HR(dirStats.time_childLastModified_latest) ) );
-      dirItemTR.appendChild(timeLatestChildLastModifiedTD);
 
 
 
@@ -865,7 +1020,9 @@ class StatsManager {
         sizeSmallestTD.classList.add("list-item-data"); // directory-list-item > list-item-data
         sizeSmallestTD.classList.add("list-item-size"); // directory-list-item > list-item-size
         sizeSmallestTD.classList.add("size-smallest");  // directory-list-item > size-smallest
-        sizeSmallestTD.appendChild( document.createTextNode( await messenger.messengerUtilities.formatFileSize(dirStats.size_smallest) ) );
+        if (Number.isInteger(dirStats.size_smallest)) {
+          sizeSmallestTD.appendChild( document.createTextNode( await messenger.messengerUtilities.formatFileSize(dirStats.size_smallest) ) );
+        }
       dirItemTR.appendChild(sizeSmallestTD);
 
       // Create Size element and add it to the row
@@ -873,7 +1030,9 @@ class StatsManager {
         sizeLargestTD.classList.add("list-item-data"); // directory-list-item > list-item-data
         sizeLargestTD.classList.add("list-item-size"); // directory-list-item > list-item-size
         sizeLargestTD.classList.add("size-largest");   // directory-list-item > size-largest
-        sizeLargestTD.appendChild( document.createTextNode( await messenger.messengerUtilities.formatFileSize(dirStats.size_largest) ) );
+        if (Number.isInteger(dirStats.size_largest)) {
+          sizeLargestTD.appendChild( document.createTextNode( await messenger.messengerUtilities.formatFileSize(dirStats.size_largest) ) );
+        }
       dirItemTR.appendChild(sizeLargestTD);
 
       // Create Size element and add it to the row
@@ -881,8 +1040,72 @@ class StatsManager {
         sizeTotalTD.classList.add("list-item-data"); // directory-list-item > list-item-data
         sizeTotalTD.classList.add("list-item-size"); // directory-list-item > list-item-size
         sizeTotalTD.classList.add("size-total");     // directory-list-item > size-total
-        sizeTotalTD.appendChild( document.createTextNode( await messenger.messengerUtilities.formatFileSize(dirStats.size_total) ) );
+        if (Number.isInteger(dirStats.size_total)) {
+          sizeTotalTD.appendChild( document.createTextNode( await messenger.messengerUtilities.formatFileSize(dirStats.size_total) ) );
+        }
       dirItemTR.appendChild(sizeTotalTD);
+
+
+
+      // Create Earliest Child Creation Date/Time element and add it to the row
+      const timeEarliestChildCreationTD = document.createElement("td");
+        timeEarliestChildCreationTD.classList.add("list-item-data");               // directory-list-item > list-item-data
+        timeEarliestChildCreationTD.classList.add("list-item-time");               // directory-list-item > list-item-time
+        timeEarliestChildCreationTD.classList.add("time-child-creation-earliest"); // directory-list-item > time-child-creation-earliest
+        if (Number.isInteger(dirStats.time_childCreation_earliest)) {
+          timeEarliestChildCreationTD.appendChild( document.createTextNode( formatMsToDateTime24HR(dirStats.time_childCreation_earliest) ) );
+        }
+      dirItemTR.appendChild(timeEarliestChildCreationTD);
+
+      // Create Latest Child Creation Date/Time element and add it to the row
+      const timeLatestChildCreationTD = document.createElement("td");
+        timeLatestChildCreationTD.classList.add("list-item-data");             // directory-list-item > list-item-data
+        timeLatestChildCreationTD.classList.add("list-item-time");             // directory-list-item > list-item-time
+        timeLatestChildCreationTD.classList.add("time-child-creation-latest"); // directory-list-item > time-child-creation-latest
+        if (Number.isInteger(dirStats.time_childCreation_latest)) {
+          timeLatestChildCreationTD.appendChild( document.createTextNode( formatMsToDateTime24HR(dirStats.time_childCreation_latest) ) );
+        }
+      dirItemTR.appendChild(timeLatestChildCreationTD);
+
+      // Create Earliest Child Last Accessed Date/Time element and add it to the row
+      const timeEarliestChildLastAccessTD = document.createElement("td");
+        timeEarliestChildLastAccessTD.classList.add("list-item-data");                    // directory-list-item > list-item-data
+        timeEarliestChildLastAccessTD.classList.add("list-item-time");                    // directory-list-item > list-item-time
+        timeEarliestChildLastAccessTD.classList.add("time-child-last-accessed-earliest"); // directory-list-item > time-child-last-accessed-earliest
+        if (Number.isInteger(dirStats.time_childLastAccessed_earliest)) {
+          timeEarliestChildLastAccessTD.appendChild( document.createTextNode( formatMsToDateTime24HR(dirStats.time_childLastAccessed_earliest) ) );
+        }
+      dirItemTR.appendChild(timeEarliestChildLastAccessTD);
+
+      // Create Latest Child Last Accessed Date/Time element and add it to the row
+      const timeLatestChildLastAccessedTD = document.createElement("td");
+        timeLatestChildLastAccessedTD.classList.add("list-item-data");                  // directory-list-item > list-item-data
+        timeLatestChildLastAccessedTD.classList.add("list-item-time");                  // directory-list-item > list-item-time
+        timeLatestChildLastAccessedTD.classList.add("time-child-last-accessed-latest"); // directory-list-item > time-child-last-accessed-latest
+        if (Number.isInteger(dirStats.time_childLastAccessedTime_latest)) {
+          timeLatestChildLastAccessedTD.appendChild( document.createTextNode( formatMsToDateTime24HR(dirStats.time_childLastAccessedTime_latest) ) );
+        }
+      dirItemTR.appendChild(timeLatestChildLastAccessedTD);
+
+      // Create Earliest Child Last Modified Date/Time element and add it to the row
+      const timeEarliestChildLastModifiedTD = document.createElement("td");
+        timeEarliestChildLastModifiedTD.classList.add("list-item-data");                    // directory-list-item > list-item-data
+        timeEarliestChildLastModifiedTD.classList.add("list-item-time");                    // directory-list-item > list-item-time
+        timeEarliestChildLastModifiedTD.classList.add("time-child-last-modified-earliest"); // directory-list-item > time-child-last-modified-earliest
+        if (Number.isInteger(dirStats.time_childLastModified_earliest)) {
+          timeEarliestChildLastModifiedTD.appendChild( document.createTextNode( formatMsToDateTime24HR(dirStats.time_childLastModified_earliest) ) );
+        }
+      dirItemTR.appendChild(timeEarliestChildLastModifiedTD);
+
+      // Create Latest Child Last Modified Date/Time element and add it to the row
+      const timeLatestChildLastModifiedTD = document.createElement("td");
+        timeLatestChildLastModifiedTD.classList.add("list-item-data");                  // directory-list-item > list-item-data
+        timeLatestChildLastModifiedTD.classList.add("list-item-time");                  // directory-list-item > list-item-time
+        timeLatestChildLastModifiedTD.classList.add("time-child-last-modified-latest"); // directory-list-item > time-child-last-modified-latest
+        if (Number.isInteger(dirStats.time_childLastModified_latest)) {
+          timeLatestChildLastModifiedTD.appendChild( document.createTextNode( formatMsToDateTime24HR(dirStats.time_childLastModified_latest) ) );
+        }
+      dirItemTR.appendChild(timeLatestChildLastModifiedTD);
 
     return dirItemTR;
   }  
@@ -1272,7 +1495,7 @@ class StatsManager {
       refreshBtn.disabled = true;
     }
 
-    await this.buildDirectoryListUI();
+    await this.buildUI();
 
     this.updateUIOnSelectionChanged();
 

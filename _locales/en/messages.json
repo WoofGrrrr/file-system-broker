@@ -836,6 +836,69 @@
   "fsbStatsManager_message_directoryListLoading": {
     "message": "...Loading Directory List..."
   },
+  "fsbStatsManager_statsHeader_dir_name": {
+    "message": "Directory Name"
+  },
+  "fsbStatsManager_statsPanelTitle": {
+    "message": "Overall Statstics:"
+  },
+  "fsbStatsManager_statsHeader_dir_path": {
+    "message": "Directory PathName"
+  },
+  "fsbStatsManager_statsTitle_counts": {
+    "message": "Accumulative Item Counts by Type"
+  },
+  "fsbStatsManager_statsHeader_count_total": {
+    "message": "Total"
+  },
+  "fsbStatsManager_statsHeader_count_type_regular": {
+    "message": "Regular File"
+  },
+  "fsbStatsManager_statsHeader_count_type_directory": {
+    "message": "Directory"
+  },
+  "fsbStatsManager_statsHeader_count_type_other": {
+    "message": "Other"
+  },
+  "fsbStatsManager_statsHeader_count_type_uknown": {
+    "message": "Unknown"
+  },
+  "fsbStatsManager_statsHeader_count_type_error": {
+    "message": "Error"
+  },
+  "fsbStatsManager_statsTitle_sizes": {
+    "message": "Regular File Size"
+  },
+  "fsbStatsManager_statsHeader_size_smallest": {
+    "message": "Smallest File"
+  },
+  "fsbStatsManager_statsHeader_size_largest": {
+    "message": "Largest File"
+  },
+  "fsbStatsManager_statsHeader_size_total": {
+    "message": "Total"
+  },
+  "fsbStatsManager_statsTitle_times": {
+    "message": "Times"
+  },
+  "fsbStatsManager_statsHeader_time_creation_earliest": {
+    "message": "Earliest Created"
+  },
+  "fsbStatsManager_statsHeader_time_creation_latest": {
+    "message": "Latest Created"
+  },
+  "fsbStatsManager_statsHeader_time_last_accessed_earliest": {
+    "message": "Earliest Last Accessed"
+  },
+  "fsbStatsManager_statsHeader_time_last_accessed_latest": {
+    "message": "Latest Last Accessed"
+  },
+  "fsbStatsManager_statsHeader_time_last_modified_earliest": {
+    "message": "Earliest Last Modified"
+  },
+  "fsbStatsManager_statsHeader_time_last_modified_latest": {
+    "message": "Latest Last Modified"
+  },
   "fsbStatsManager_directoryListHeader_directoryName": {
     "message": "Directory Name"
   },
@@ -876,10 +939,10 @@
     "message": "#E"
   },
   "fsbStatsManager_directoryListHeader_time_creation_earliest": {
-    "message": "Earliest Creation"
+    "message": "Earliest Created"
   },
   "fsbStatsManager_directoryListHeader_time_creation_latest": {
-    "message": "Latest Creation"
+    "message": "Latest Created"
   },
   "fsbStatsManager_directoryListHeader_time_lastAccessed_earliest": {
     "message": "Earliest Last Accessed"

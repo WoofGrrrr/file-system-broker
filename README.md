@@ -206,8 +206,8 @@ A command is a message which is an object of the form:
         { "command": "isValidDirectoryName",   "directoryName": string                       } - response { "directoryName": string, "valid":         boolean                       }
         { "command": "getFileSystemPathName"                                                 } - response { "pathName":      string                                                 }
         { "command": "stats"                [, "includeChildInfo": boolean ]                 } - response { "stats":         object                                                 }
-        { "command": "fsbListInfo"          [, object ]                                      } - response { "fileInfo":      [],     "length":        integer                       }
-        { "command": "fsbList"              [, object ]                                      } - response { "list":          [],     "length":        integer                       }
+        { "command": "fsbListInfo"          [, "parameters": object ]                        } - response { "fileInfo":      [],     "length":        integer                       }
+        { "command": "fsbList"              [, "parameters": object ]                        } - response { "list":          [],     "length":        integer                       }
         { "command": "fsbStats"             [, "includeChildInfo": boolean ]                 } - response { "stats":         object                                                 }
         { "command": "renameFile", "fromFileName": string, "toFileName: string [, "overwrite": boolean] } - response { "fromFileName": string, "toFileName": string, "renamed": boolean }
 
@@ -965,7 +965,7 @@ in mind.
 
     command message: { "Command": { "command": "fsbListInfo"[, "parameters": { ['matchGLOB': matchGLOB] [, 'types': types] } ] } }
 
-    response:        { "fileInfo": array of FileInfo[, "parameters": object ] }
+    response:        { "fileInfo": array of FileInfo, "length": integer[, "parameters": object ] }
 
     Returns an object containing an array of FileInfo objects
     listing the File Info for the items in the top-directory
@@ -991,6 +991,7 @@ in mind.
 ```
       {
         'parameters':  object:             the parameters object supplied to the incoming command
+        'length":      integer:            the number of FileInfo objects returned in the array
         'fileInfo:     array of FileInfo:
                          {
                            'fileName:      string:   the fileName
@@ -1028,7 +1029,7 @@ in mind.
 
     command message: { "Command": { "command": "fsbList"[, "parameters": { ['matchGLOB': matchGLOB] [, 'types': types] } ] } }
 
-    response:        { "list": array of object[, "parameters": object ] }
+    response:        { "list": array of object, "length": integer[, "parameters": object ] }
 
     Returns an object containing an array listing information
     for the items in the top-directory on which this extension
@@ -1050,11 +1051,11 @@ in mind.
     The default is ALL types.
 <br>
 <br>
-    The items in the returned array are object
     The returned object:
 ```
       {
         'parameters':  object:           the parameters object supplied to the incoming command
+        'length":      integer:          the number of FileInfo objects returned in the array
         'list':        array of object:
                          {
                            'name':       string:  the name of the item
@@ -1085,7 +1086,7 @@ in mind.
 
     command message: { "Command": { "command": "fsbStats" } }
 
-    response:        { "fsbStats": object, "dirStats": array of object }
+    response:        { "stats": { "fsbStats": object, "dirStats": array of object } }
 
     Returns an Object that provides information about each directory
     inside the top-level directory in which this extension operates.
