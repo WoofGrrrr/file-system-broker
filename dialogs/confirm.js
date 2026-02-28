@@ -57,7 +57,7 @@ class ConfirmDialog {
 
     const thisWindow = await messenger.windows.getCurrent();
     messenger.windows.onRemoved.addListener((windowId) => this.windowRemoved(windowId, thisWindow.id));
-    
+
 
 
     const okButtonLabelMsgId     = "fsbConfirmDialog_okButton.label";
@@ -67,12 +67,14 @@ class ConfirmDialog {
 
     var   buttons_3              = false;
     var   title                  = getI18nMsg("fsbConfirmDialogTitle", "Please Confirm");
-    var   message1;
-    var   message2;
-    var   message3;
-    var   message4;
-    var   message5;
-    var   message6;
+    var   titleColor;
+    var   titleSize;
+    var   titleWeight;
+    const messages               = [];
+    const msgAligns              = [];
+    const msgColors              = [];
+    const msgSizes               = [];
+    const msgWeights             = [];
 
     var   button1LabelMsgId      = okButtonLabelMsgId;
     var   button2LabelMsgId      = cancelButtonLabelMsgId;
@@ -85,28 +87,45 @@ class ConfirmDialog {
     const docLocationInfo = parseDocumentLocation(document);
     const params          = docLocationInfo.params;
     if (params) {
-      var param;
+      var   param;
+      var   msgCount = 6;
 
       param = params.get('title');
       if (param) title = param;
 
-      param = params.get('message1');
-      if (param) message1 = param;
+      param = params.get('tc');
+      if (param) titleColor = param;
 
-      param = params.get('message2');
-      if (param) message2 = param;
+      param = params.get('ts');
+      if (param) titleSize = param;
 
-      param = params.get('message3');
-      if (param) message3 = param;
+      param = params.get('tw');
+      if (param) titleWeight = param;
 
-      param = params.get('message4');
-      if (param) message4 = param;
+      param = params.get('c');
+      if (param) {
+        const num = Number(param);
+        if (Number.isInteger(num)) {
+          msgCount = num;
+        }
+      }
 
-      param = params.get('message5');
-      if (param) message5 = param;
+      for (var i = 1; i <= msgCount; ++i) {
+        param = params.get(`message${i}`);
+        if (param) messages[i] = param;
 
-      param = params.get('message6');
-      if (param) message6 = param;
+        param = params.get(`a${i}`);
+        if (param) msgAligns[i] = param;
+        if (param) msgSizes[i] = param;
+
+        param = params.get(`c${i}`);
+        if (param) msgColors[i] = param;
+
+        param = params.get(`s${i}`);
+
+        param = params.get(`w${i}`);
+        if (param) msgWeights[i] = param;
+      }
 
       param = params.get('yes_no');
       if (param && param === 'true') {
@@ -159,78 +178,57 @@ class ConfirmDialog {
     const titleLabel = document.getElementById("ConfirmDialogTitleLabel");
     titleLabel.innerText = title;
 
+    if (titleColor)  titleLabel.style.color      = titleColor;
+    if (titleSize)   titleLabel.style.fontSize   = titleSize;
+    if (titleWeight) titleLabel.style.fontWeight = titleWeight;
+
     this.debug( "--"
-                + `\n- message1="${message1}"`
-                + `\n- message2="${message2}"`
-                + `\n- message3="${message3}"`
-                + `\n- message4="${message4}"`
-                + `\n- message5="${message5}"`
-                + `\n- message6="${message6}"`
+                + `\n- title="${title}"`
+                + `\n- msgCount="${msgCount}"`
+                + `\n- messages[0]="${messages[0]}"`
+                + `\n- messages[1]="${messages[1]}"`
+                + `\n- messages[2]="${messages[2]}"`
+                + `\n- messages[3]="${messages[3]}"`
+                + `\n- messages[4]="${messages[4]}"`
+                + `\n- messages[5]="${messages[5]}"`
                 + `\n- buttons_3=${buttons_3}`
                 + `\n- button1LabelText="${button1LabelText}"`
                 + `\n- button2LabelText="${button2LabelText}"`
                 + `\n- button3LabelText="${button3LabelText}"`
               );
 
-    // MABXXX we could always build the messages instead... perhaps indicate how many to build.  Same with buttons?
-    const message1Panel = document.getElementById("ConfirmDialogMessage1Panel");
-    if (message1 != undefined) {
-      message1Panel.style.display = "block";
-      const message1Label = document.getElementById("ConfirmDialogMessage1Label");
-      if (message1 === " ") message1Label.innerHTML = "&nbsp;";
-      else                  message1Label.innerText = message1;
-    } else {
-      message1Panel.style.display = "none";
-    }
 
-    const message2Panel = document.getElementById("ConfirmDialogMessage2Panel");
-    if (message2 != undefined) {
-      message2Panel.style.display = "block";
-      const message2Label = document.getElementById("ConfirmDialogMessage2Label");
-      if (message2 === " ") message2Label.innerHTML = "&nbsp;";
-      else                  message2Label.innerText = message2;
-    } else {
-      message2Panel.style.display = "none";
-    }
+    const messagesPanel = document.getElementById("ConfirmDialogMessagesPanel");
 
-    const message3Panel = document.getElementById("ConfirmDialogMessage3Panel");
-    if (message3 != undefined) {
-      message3Panel.style.display = "block";
-      const message3Label = document.getElementById("ConfirmDialogMessage3Label");
-      if (message3 === " ") message3Label.innerHTML = "&nbsp;";
-      else                  message3Label.innerText = message3;
-    } else {
-      message3Panel.style.display = "none";
-    }
+    if (messages.length < 1) {
+      messagesPanel.style.display = "none";
 
-    const message4Panel = document.getElementById("ConfirmDialogMessage4Panel");
-    if (message4 != undefined) {
-      message4Panel.style.display = "block";
-      const message4Label = document.getElementById("ConfirmDialogMessage4Label");
-      if (message4 === " ") message4Label.innerHTML = "&nbsp;";
-      else                  message4Label.innerText = message4;
     } else {
-      message4Panel.style.display = "none";
-    }
+      for (var i = 1; i <= msgCount; ++i) {
+        const msg    = messages[i];
+        const align  = msgAligns[i];
+        const color  = msgColors[i];
+        const size   = msgSizes[i];
+        const weight = msgWeights[i];
 
-    const message5Panel = document.getElementById("ConfirmDialogMessage5Panel");
-    if (message5 != undefined) {
-      message5Panel.style.display = "block";
-      const message5Label = document.getElementById("ConfirmDialogMessage5Label");
-      if (message5 === " ") message5Label.innerHTML = "&nbsp;";
-      else                  message5Label.innerText = message5;
-    } else {
-      message5Panel.style.display = "none";
-    }
+        if (msg !== undefined) {
+          const messageDiv = document.createElement('div');
+            messageDiv.classList.add('confirm-dialog-message');
 
-    const message6Panel = document.getElementById("ConfirmDialogMessage6Panel");
-    if (message6 != undefined) {
-      message6Panel.style.display = "block";
-      const message6Label = document.getElementById("ConfirmDialogMessage6Label");
-      if (message6 === " ") message6Label.innerHTML = "&nbsp;";
-      else                  message6Label.innerText = message6;
-    } else {
-      message6Panel.style.display = "none";
+            if (align)  messageDiv.style.textAlign  = align;
+            if (color)  messageDiv.style.color      = color;
+            if (size)   messageDiv.style.fontSize   = size;
+            if (weight) messageDiv.style.fontWeight = weight;
+
+            const messageLabel = document.createElement('label');
+              if (msg === " ") messageLabel.innerHTML = "&nbsp;";
+              else             messageLabel.innerText = msg;
+            messageDiv.appendChild(messageLabel);
+          messagesPanel.appendChild(messageDiv);
+        }
+      }
+
+      messagesPanel.style.display = "block";
     }
 
     const button1Label = document.getElementById("ConfirmDialogButton1Label");
@@ -257,7 +255,6 @@ class ConfirmDialog {
     } else {
       button3.style.display = "none";
     }
-
 
     await this.localizePage();
   }
@@ -287,7 +284,7 @@ class ConfirmDialog {
 
     this.debug("-- end");
   }
-  
+
 
 
   async windowUnloading(e) {

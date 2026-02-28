@@ -50,7 +50,7 @@ body {
 #ConfirmDialogMessagesPanelWrapper {
   display:          grid;
   grid-template-areas: "left-spacer messages right-spacer";
-  grid-template-columns: auto max-content auto;
+  grid-template-columns: auto auto auto;
 
   & #ConfirmDialogMessagesPanel {
     grid-area: messages;
@@ -66,7 +66,9 @@ body {
 }
 
 #ConfirmDialogMessagesPanel {
-  text-align: center;
+  margin-left:  4em;
+  margin-right: 4em;
+  text-align:   center;
 }
 
 #ConfirmDialogButtonPanel {

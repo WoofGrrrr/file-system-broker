@@ -4,6 +4,10 @@ import { FileSystemBrokerAPI } from '../modules/FileSystemBroker/filesystem_brok
 import { getI18nMsg, getI18nMsgSubst, formatMsToDateTime24HR, formatMsToDateTime12HR } from '../modules/utilities.js';
 
 
+/* TBD:
+ * - Delete Directory doesn't update fsbStats!!!
+ *
+ */
 
 
 class StatsManager {
@@ -145,48 +149,40 @@ class StatsManager {
   async run(e) {
     this.debug("-- begin");
 
-    window.addEventListener("beforeunload", (e) => this.windowUnloading(e));
+    window.addEventListener("beforeunload", (e) => this.#windowUnloading(e));
 
     const showInstructions = await this.#fsbOptionsApi.isEnabledShowStatsManagerInstructions();
-    this.showHideInstructions(showInstructions);
+    this.#showHideInstructions(showInstructions);
 
-    await this.updateOptionsUI();
-//  await updateStatsManagerUI() {
-    await this.localizePage();
-    await this.buildUI();
-    this.setupEventListeners();
+    await this.#updateOptionsUI();
+    await this.#localizePage();
+    await this.#buildUI();
+    this.#setupEventListeners();
   }
 
 
 
-  setupEventListeners() {
-    document.addEventListener( "change", (e) => this.optionChanged(e) );   // One of the checkboxes or radio buttons was clicked or a select has changed
+  #setupEventListeners() {
+    document.addEventListener( "change", (e) => this.#optionChanged(e) );   // One of the checkboxes or radio buttons was clicked or a select has changed
 
     const doneBtn = document.getElementById("fsbStatsManagerDoneButton");
     if (! doneBtn) {
       this.error("Failed to get element '#fsbStatsManagerDoneButton'");
     } else {
-      doneBtn.addEventListener("click", (e) => this.doneButtonClicked(e));
+      doneBtn.addEventListener("click", (e) => this.#doneButtonClicked(e));
     }
 
     const refreshBtn = document.getElementById("fsbStatsManagerRefreshButton");
     if (! refreshBtn) {
       this.error("Failed to get element '#fsbStatsManagerRefreshButton'");
     } else {
-      refreshBtn.addEventListener("click", (e) => this.refreshButtonClicked(e));
-    }
-
-    const deleteBtn = document.getElementById("fsbStatsManagerDeleteButton");
-    if (! deleteBtn) {
-      this.error("Failed to get element '#fsbStatsManagerDeleteButton'");
-    } else {
-      deleteBtn.addEventListener("click", (e) => this.deleteButtonClicked(e));
+      refreshBtn.addEventListener("click", (e) => this.#refreshButtonClicked(e));
     }
   }
 
 
 
-  async localizePage() {
+  async #localizePage() {
     this.debug("-- start");
 
     for (const el of document.querySelectorAll("[data-l10n-id]")) {
@@ -212,7 +208,7 @@ class StatsManager {
 
 
 
-  async updateOptionsUI() {
+  async #updateOptionsUI() {
     this.debug("-- start");
 
     const options = await this.#fsbOptionsApi.getAllOptions();
@@ -249,7 +245,7 @@ class StatsManager {
   // One of the Options checkboxes or radio buttons (etc) has been clicked or a select has changed
   //
   // copied from optionsUI.js, so this does a lot that we don't really need for now.
-  async optionChanged(e) {
+  async #optionChanged(e) {
     if (e == null) return;
     this.debug(`-- tagName="${e.target.tagName}" type="${e.target.type}" fsbGeneralOption? ${e.target.classList.contains("fsbGeneralOption")} id="${e.target.id}"`);
 
@@ -305,7 +301,7 @@ class StatsManager {
         // special processing for these checkboxes
         switch (optionName) {
           case "fsbShowStatsManagerInstructions": 
-            this.showHideInstructions(optionValue);
+            this.#showHideInstructions(optionValue);
             break;
         }
       }
@@ -325,7 +321,7 @@ class StatsManager {
 
 
 
-  showHideInstructions(show) {
+  #showHideInstructions(show) {
     this.debug(`-- show=${show}`);
     const panel = document.getElementById("fsbStatsManagerInstructions");
     if (panel) {
@@ -339,12 +335,7 @@ class StatsManager {
   
 
 
-  async updateStatsManagerUI() {
-  }
-  
-
-
-  async windowUnloading(e) {
+  async #windowUnloading(e) {
     if (this.DEBUG) this.debugAlways( "--- Window Unloading ---"
                                       + `\n- window.screenTop=${window.screenTop}`
                                       + `\n- window.screenLeft=${window.screenLeft}`
@@ -378,18 +369,18 @@ class StatsManager {
 
 
 
-  async buildUI() {
-    this.resetMessages();
-    this.resetErrors();
+  async #buildUI() {
+    this.#resetMessages();
+    this.#resetErrors();
 
     const domDirectoryList = document.getElementById("fsbStatsManagerDirectoryList");
     if (! domDirectoryList) {
       this.error("-- failed to get element #fsbStatsManagerDirectoryList");
-      this.setErrorFor("fsbStatsManagerTitlePanel", fsbStatsManager_error_noDirectoryListElement);
+      this.#setErrorFor("fsbStatsManagerTitlePanel", fsbStatsManager_error_noDirectoryListElement);
       return;
     }
     domDirectoryList.innerHTML = '';
-    this.updateUIOnSelectionChanged();
+    this.#updateUIOnSelectionChanged();
 
     const i18nMessage = getI18nMsg("fsbStatsManager_message_directoryListLoading", "...");
     const loadingTR = document.createElement("tr");
@@ -397,28 +388,28 @@ class StatsManager {
     loadingTR.appendChild( document.createTextNode(i18nMessage) ); // you can put a text node in a TR ???
     domDirectoryList.appendChild(loadingTR);
 
-    const stats = await this.getFsbStats();
+    const stats = await this.#getFsbStats();
     this.debug("---stats\n", stats);
     const fsbStats    = stats?.fsbStats
     const fsbDirStats = stats?.dirStats
 
     if (! stats) {
       this.error("---NO stats");
-      this.setErrorFor("fsbStatsManagerTitlePanel", "fsbStatsManager_error_noDirectories"); /// MABXXX NEED A DIFFERENT ERROR MESSAGE
+      this.#setErrorFor("fsbStatsManagerTitlePanel", "fsbStatsManager_error_noDirectories"); /// MABXXX NEED A DIFFERENT ERROR MESSAGE
 
     } else {
-      await this.updateFsbStatsUI(fsbStats);
+      await this.#updateFsbStatsUI(fsbStats);
 
-      await this.buildDirectoryListUI(domDirectoryList, fsbDirStats);
+      await this.#buildDirectoryListUI(domDirectoryList, fsbDirStats);
     }
   }
 
-  async updateFsbStatsUI(fsbStats) {
-    this.debugAlways("\n===================fsbStats:\n", fsbStats);
+  async #updateFsbStatsUI(fsbStats) {
+    this.debug("\n===================fsbStats:\n", fsbStats);
 
     if (! fsbStats) {
       this.error("---NO fsbStats");
-      this.setErrorFor("fsbStatsManagerTitlePanel", "fsbStatsManager_error_noDirectories"); /// MABXXX NEED A DIFFERENT ERROR MESSAGE
+      this.#setErrorFor("fsbStatsManagerTitlePanel", "fsbStatsManager_error_noDirectories"); /// MABXXX NEED A DIFFERENT ERROR MESSAGE
       return;
     }
 
@@ -578,47 +569,47 @@ class StatsManager {
     }
   }
 
-  async buildDirectoryListUI(domDirectoryList, fsbDirStats) {
-    this.debugAlways("\n===================fsbDirStats:\n", fsbDirStats);
+  async #buildDirectoryListUI(domDirectoryList, fsbDirStats) {
+    this.debug("\n===================fsbDirStats:\n", fsbDirStats);
 
     domDirectoryList.innerHTML = '';
 
     if (! fsbDirStats) {
       this.error("---NO fsbDirStats");
-      this.setErrorFor("fsbStatsManagerTitlePanel", "fsbStatsManager_error_noDirectories");
+      this.#setErrorFor("fsbStatsManagerTitlePanel", "fsbStatsManager_error_noDirectories");
       return;
 
     } else if (Object.keys(fsbDirStats).length < 1) {
       this.error("---fsbDirStats.length < 1");
-      this.setErrorFor("fsbStatsManagerTitlePanel", "fsbStatsManager_error_noDirectories");
+      this.#setErrorFor("fsbStatsManagerTitlePanel", "fsbStatsManager_error_noDirectories");
       return;
 
     } else {
       for (const dirName of Object.keys(fsbDirStats)) {
         if (this.#IGNORE_DIRECTORIES && this.#IGNORE_DIRECTORY_NAMES.includes(dirName)) {
-          this.debugAlways(`---IGNORING DIRECTORY "${dirName}"`);
+          this.debug(`---IGNORING DIRECTORY "${dirName}"`);
           delete fsbDirStats[dirName];
         }
       }
     }
 
-    const headerItemUI = this.buildDirectoryListHeaderUI();
+    const headerItemUI = this.#buildDirectoryListHeaderUI();
     domDirectoryList.append(headerItemUI);
 
     if (Object.keys(fsbDirStats).length < 1) { // DO THIS AGAIN AFTER REMOVAL OF ANY IGNORED DIRECTORY NAMES
       this.error("---fsbDirStats.length < 1");
-      this.setErrorFor("fsbStatsManagerTitlePanel", "fsbStatsManager_error_noDirectories");
+      this.#setErrorFor("fsbStatsManagerTitlePanel", "fsbStatsManager_error_noDirectories");
       return;
 
     } else {
       const installedExtensions = await messenger.management.getAll();
-      const extensionsProps     = await this.#fsbOptionsApi.getExtensionsProps();;
-      const sortedKeys          = Object.keys(fsbDirStats).sort((a, b) => { return a.localeCompare( b, undefined, {'sensitivity': 'base'} ) } );
+      const allExtensionsProps  = await this.#fsbOptionsApi.getExtensionsProps();;
+      const sortedKeys          = Object.keys(fsbDirStats).sort( (a, b) => { return a.localeCompare( b, undefined, {'sensitivity': 'base'} ) } );
 
       for (const key of sortedKeys) {
-        const dirStats       = fsbDirStats[key];
-        var   extensionInfo  = null;
-        var   extensionProps = null;
+        const dirStats = fsbDirStats[key];
+        var   extensionInfo
+        var   extensionProps
 
         if (installedExtensions) {
           extensionInfo = installedExtensions.find( extension =>
@@ -629,12 +620,25 @@ class StatsManager {
           this.debug("---extensionInfo\n", extensionInfo);
         }
 
-        if (extensionsProps) {
-          extensionProps = (extensionsProps && dirStats.dirName in extensionsProps) ? extensionsProps[dirStats.dirName] : null;
-          this.debug("---extensionProps\n", extensionProps);
+        if (! extensionInfo) {
+          this.debug("---NO extensionInfo");
+        } else {
+          this.debug("\n---extensionInfo:\n", extensionInfo);
         }
 
-        const listItemUI = await this.buildDirectoryListItemUI(dirStats, extensionInfo, extensionProps);
+        if (! allExtensionsProps) {
+          this.debug("---NO allExtensionsProps");
+        } else {
+          extensionProps = (allExtensionsProps && dirStats.dirName in allExtensionsProps) ? allExtensionsProps[dirStats.dirName] : null;
+        }
+
+        if (! extensionProps) {
+          this.debug("---NO extensionProps");
+        } else {
+          this.debug("\n---extensionProps:\n", extensionProps);
+        }
+
+        const listItemUI = await this.#buildDirectoryListItemUI(dirStats, extensionInfo, extensionProps);
         domDirectoryList.append(listItemUI);
       }
     }
@@ -642,11 +646,25 @@ class StatsManager {
 
 
 
-  buildDirectoryListHeaderUI() {
+  #buildDirectoryListHeaderUI() {
     this.debug("-- BUILD LIST HEADER UI");
 
     const dirHeaderTR = document.createElement("tr");
       dirHeaderTR.classList.add("directory-list-header"); // directory-list-header
+
+      // Create Controls element and add it to the row
+      const controlsTH = document.createElement("th");
+        controlsTH.classList.add("list-header-controls");  // directory-list-header > list-header-controls
+        const controlsDiv = document.createElement("div");
+          controlsDiv.classList.add("header-controls");  // directory-list-header > list-header-controls > header-controls
+//////////const deleteDirectoryButton = document.createElement("button");
+////////////deleteDirectoryButton.classList.add("delete-directory-button");
+////////////const deleteDirectoryButtonLabel = document.createElement("label");
+//////////////
+////////////deleteDirectoryButton.appendChild(deleteDirectoryButtonLabel);
+//////////controlsDiv.appendChild(deleteDirectoryButton);
+        controlsTH.appendChild(controlsDiv);
+      dirHeaderTR.appendChild(controlsTH);
 
       // Create Directory Name element and add it to the row
       const dirNameTH = document.createElement("th");
@@ -696,15 +714,15 @@ class StatsManager {
         extAccessAllowedTH.setAttribute("title", this.#listHeaderTooltip_extensionAccessAllowed);
       dirHeaderTR.appendChild(extAccessAllowedTH);
 
-      // Create Child Count element and add it to the row
-      const childCountTH = document.createElement("th");
-        childCountTH.classList.add("list-header-data");       // directory-list-header > list-header-data
-        childCountTH.classList.add("header-count-children");  // directory-list-header > header-count-children
-        childCountTH.appendChild( document.createTextNode(this.#listHeaderText_count_children) );
-        childCountTH.setAttribute("title", this.#listHeaderTooltip_count_children);
-      dirHeaderTR.appendChild(childCountTH);
+      // Create Item Count element and add it to the row
+      const itemCountTH = document.createElement("th");
+        itemCountTH.classList.add("list-header-data");       // directory-list-header > list-header-data
+        itemCountTH.classList.add("header-count-children");  // directory-list-header > header-count-children
+        itemCountTH.appendChild( document.createTextNode(this.#listHeaderText_count_children) );
+        itemCountTH.setAttribute("title", this.#listHeaderTooltip_count_children);
+      dirHeaderTR.appendChild(itemCountTH);
 
-      // Create Child Type 'regular' Count element and add it to the row
+      // Create Item Type 'regular' Count element and add it to the row
       const regularCountTH = document.createElement("th");
         regularCountTH.classList.add("list-header-data");      // directory-list-header > list-header-data
         regularCountTH.classList.add("header-count-regular");  // directory-list-header > header-count-regular
@@ -712,7 +730,7 @@ class StatsManager {
         regularCountTH.setAttribute("title", this.#listHeaderTooltip_count_regular);
       dirHeaderTR.appendChild(regularCountTH);
 
-      // Create Child Type 'directory' Count element and add it to the row
+      // Create Item Type 'directory' Count element and add it to the row
       const directoryCountTH = document.createElement("th");
         directoryCountTH.classList.add("list-header-data");        // directory-list-header > list-header-data
         directoryCountTH.classList.add("header-count-directory");  // directory-list-header > header-count-directory
@@ -720,7 +738,7 @@ class StatsManager {
         directoryCountTH.setAttribute("title", this.#listHeaderTooltip_count_directory);
       dirHeaderTR.appendChild(directoryCountTH);
 
-      // Create Child Type 'other' Count element and add it to the row
+      // Create Item Type 'other' Count element and add it to the row
       const otherCountTH = document.createElement("th");
         otherCountTH.classList.add("list-header-data");    // directory-list-header > list-header-data
         otherCountTH.classList.add("header-count-other");  // directory-list-header > header-count-other
@@ -728,7 +746,7 @@ class StatsManager {
         otherCountTH.setAttribute("title", this.#listHeaderTooltip_count_other);
       dirHeaderTR.appendChild(otherCountTH);
 
-      // Create Child Type unknown Count element and add it to the row
+      // Create Item Type unknown Count element and add it to the row
       const unknownCountTH = document.createElement("th");
         unknownCountTH.classList.add("list-header-data");      // directory-list-header > list-header-data
         unknownCountTH.classList.add("header-count-unknown");  // directory-list-header > header-count-unknown
@@ -736,7 +754,7 @@ class StatsManager {
         unknownCountTH.setAttribute("title", this.#listHeaderTooltip_count_unknown);
       dirHeaderTR.appendChild(unknownCountTH);
 
-      // Create Child Type error Count element and add it to the row
+      // Create Item Type error Count element and add it to the row
       const errorCountTH = document.createElement("th");
         errorCountTH.classList.add("list-header-data");    // directory-list-header > list-header-data
         errorCountTH.classList.add("header-count-error");  // directory-list-header > header-count-error
@@ -822,9 +840,12 @@ class StatsManager {
 
 
   // async just because of formatFileSize()
-  async buildDirectoryListItemUI(dirStats, extensionInfo, extensionProps) {
-    /*
-     * dirStats
+  async #buildDirectoryListItemUI(dirStats, extensionInfo, extensionProps) {
+    /* if extensionInfo (management.ExtensionInfo) is not null, it means an extension is installed whose ID matches dirStats.dirName 
+     *
+     * If extnesionProps is not null, it means and extension is configured (see class FsbOptions) whose ID matches dirStats.dirName 
+     *
+     * dirStats:
      *   {
      *     'dirName':                         string:   directory fileName
      *     'dirPath':                         string:   directory full pathName
@@ -846,12 +867,40 @@ class StatsManager {
      *     'size_total':                      integer:  total of sizes (bytes) of all child items with type 'regular'
      *   }
      */
-    this.debug(`BUILD DIRECTORY LIST ITEM UI: --- dirStats:\n`, dirStats);
+    this.debug(`BUILD DIRECTORY LIST ITEM UI: --- \n--dirStats:\n`, dirStats, "\n--extensionInfo:\n", extensionInfo, "\n--extensionProps:\n", extensionProps);
 
     const dirItemTR = document.createElement("tr");
-      dirItemTR.classList.add("directory-list-item");             // directory-list-item
-      dirItemTR.setAttribute("dirName", dirStats.dirName);
-      dirItemTR.addEventListener("click", (e) => this.directoryListItemClicked(e));
+      dirItemTR.classList.add("directory-list-item");                          // directory-list-item
+
+      dirItemTR.setAttribute( "dirname",    dirStats.dirName                                               );
+      dirItemTR.setAttribute( "dirpath",    dirStats.dirPath                                               );
+      dirItemTR.setAttribute( "itemcount",  dirStats.count_children                                        );
+      dirItemTR.setAttribute( "installed",  ( extensionInfo  !== undefined && extensionInfo  !== null    ) );
+      dirItemTR.setAttribute( "enabled",    ( extensionInfo                && ! extensionInfo.disabled   ) );
+      dirItemTR.setAttribute( "configured", ( extensionProps !== undefined && extensionProps !== null    ) );
+      dirItemTR.setAttribute( "access",     ( extensionProps               && extensionProps.allowAccess ) );
+
+      dirItemTR.addEventListener("click", (e) => this.#directoryListItemClicked(e));
+
+      // Create Controls element and add it to the row
+      const controlsTD = document.createElement("td");
+        controlsTD.classList.add("list-item-controls");                        // directory-list-item > list-item-controls
+        const controlsDiv = document.createElement("div");
+          controlsDiv.classList.add("item-controls-panel");                    // directory-list-item > list-item-controls > item-controls-panel
+
+          const deleteDirectoryButton = document.createElement("button");
+            deleteDirectoryButton.classList.add("item-controls-button");       // directory-list-item > list-item-controls > item-controls-panel > item-controls-button
+            deleteDirectoryButton.classList.add("extension-icon-button");      // directory-list-item > list-item-controls > item-controls-panel > extension-icon-button
+            deleteDirectoryButton.classList.add("icon-button");                // directory-list-item > list-item-controls > item-controls-panel > icon-button
+            deleteDirectoryButton.classList.add("icon-only");                  // directory-list-item > list-item-controls > item-controls-panel > icon-only
+            deleteDirectoryButton.classList.add("button-delete-directory");    // directory-list-item > list-item-controls > item-controls-panel > button-delete-directory
+            deleteDirectoryButton.setAttribute("dirname", dirStats.dirName);
+            deleteDirectoryButton.setAttribute("dirpath", dirStats.dirPath);
+            deleteDirectoryButton.addEventListener("click", (e) => this.#directoryListItemControlClicked(e));
+          controlsDiv.appendChild(deleteDirectoryButton);
+
+        controlsTD.appendChild(controlsDiv);
+      dirItemTR.appendChild(controlsTD);
 
       // Create Directory Name element and add it to the row
       const dirNameTD = document.createElement("td");
@@ -1108,36 +1157,143 @@ class StatsManager {
       dirItemTR.appendChild(timeLatestChildLastModifiedTD);
 
     return dirItemTR;
-  }  
+  }
 
 
 
-  // - directoryNames: array of string
-  async showDeleteDirsConfirmDialog(directoryNames) {
-    this.debugAlways( "\n--- begin:",
-                `\n directoryNames="${directoryNames}"`,
-                `\n (typeof directoryNames)="${typeof directoryNames}"`,
-                `\n isArray(directoryNames)="${Array.isArray(directoryNames)}"`,                              // but is MUST be
-                `\n directoryNames.length=${Array.isArray(directoryNames) ? directoryNames.length : '(not an array)'}`, // but is MUST be
-              );
+  async #directoryListItemControlClicked(e) {
+    this.debug("### CLICKED ###");
 
-    if (directoryNames == null) {
-      this.error("directoryNames is null");
-      return;
-    } else if (typeof directoryNames === 'undefined') {
-      this.error("directoryNames is undefined");
-      return;
-    } else if (! Array.isArray(directoryNames)) {
-      this.error("directoryNames is not an array");
-      return;
-    } else if (directoryNames.length < 0) {
-      this.error("directoryNames.length < 0");
-      return;
-    } else if (typeof directoryNames[0] !== 'string') {
-      this.error("directoryNames[0] is not a string");
-      return;
-    } else {
+    this.#resetMessages();
+    this.#resetErrors();
+
+    if (e.target.tagName === 'BUTTON' || e.target.tagName === 'LABEL') {
+      this.debug("### CLICKED BUTTON OR LABEL ###");
+      
+      var button;
+      if (e.target.tagName === 'BUTTON') {
+        button = e.target;
+      } else if (e.target.parentElement && e.target.parentElement.tagName === 'BUTTON') {
+        button = e.target.parentElement;
+      } else {
+        this.debug("Got a click on a <label> whose parent element is not a <button>");
+      }
+
+      if (! button) {
+        //
+        this.debug("### CLICKED DIDN'T GET BUTTON ###");
+      } else {
+        e.preventDefault()
+
+        if (button.classList.contains('item-controls-button')) {
+          if (button.classList.contains('button-delete-directory')) {
+            await this.#deleteDirectoryButtonClicked(button, e);
+          } else {
+            this.error("'directory-list-item-button' Button does not have recognized button sub-class, classList:", button.classList);
+          }
+        } else {
+          this.debug("Button does not have class 'directory-list-item-button':", button.classList);
+        }
+      }
     }
+  }
+
+  async #deleteDirectoryButtonClicked(button, e) {
+    const dirName = button.getAttribute("dirname");
+    const dirPath = button.getAttribute("dirpath");
+
+    this.debug(`dirName="${dirName}" dirPath="${dirPath}"`);
+
+    if (! dirName) {
+      this.error("'button-delete-directory' Button does not have Attribute 'dirName'");
+    } else if (! dirPath) {
+      this.error("'button-delete-directory' Button does not have Attribute 'dirPath'");
+    } else {
+      await this.#deleteDirectory(dirName, dirPath);
+    }
+  }
+
+
+
+  async #deleteDirectory(dirName, dirPath) {
+    this.debug(`dirName="${dirName}" dirPath="${dirPath}"`);
+
+//  const selector      = `tr.directory-list-item[dirpath='${dirPath}']`;
+    const selector      = `tr.directory-list-item[dirname='${dirName}']`;
+    const dirListItemTR = document.querySelector(selector);
+
+    if (! dirListItemTR) {
+      this.error(`Failed to select Directory List Item TR with selector: "${selector}"`);
+
+    } else {
+      const itemCount  = dirListItemTR.getAttribute( "itemcount"  );
+      const installed  = dirListItemTR.getAttribute( "installed"  );
+      const enabled    = dirListItemTR.getAttribute( "enabled"    );
+      const configured = dirListItemTR.getAttribute( "configured" );
+      const access     = dirListItemTR.getAttribute( "access"     );
+      this.debug(`itemCount=${itemCount} installed=${installed} enabled=${enabled} configured=${configured} access=${access}`);
+
+      const confirmed = await this.#showDeleteDirectoryConfirmDialog(dirName, dirPath, itemCount, installed, enabled, configured, access);
+
+      if (! confirmed) {
+        this.debug("The user chose to cancel directory deletion");
+        this.#setMessageFor("fsbStatsManagerTitlePanel", "fsbStatsManager_message_directoryDeleteCanceled"); 
+
+      } else {
+        var   error    = false;
+        var   deleted  = false;
+        const response = await this.#fsBrokerApi.fsbDeleteDirectory( dirName, {'recursive': true} );
+
+        if (! response) {
+          this.error(`-- FAILED TO DELETE DIRECTORY -- NO RESPONSE RETURNED -- dirName="${dirName}"`);
+          error = true;
+        } else if (response.invalid) {
+          this.error(`-- FAILED TO DELETE DIRECTORY -- INVALID RETURNED -- dirName="${dirName}": ${response.invalid}`); // MABXXX <---------- add response.invalid everywhere
+          error = true;
+        } else if (response.error) {
+          this.error(`-- FAILED TO DELETE DIRECTORY -- ERROR RETURNED -- dirName="${dirName}": ${response.error}`); // MABXXX <-------------- add response.error everywhere
+          error = true;
+        } else if (! response.directoryName) {
+          this.error(`-- FAILED TO DELETE DIRECTORY -- NO DIRECTORY NAME RETURNED -- dirName="${dirName}": response.directoryName="${response.directoryName}"`);
+          error = true;
+        } else if (! response.deleted) {
+          this.error(`-- FAILED TO DELETE DIRECTORY -- dirName="${dirName}" response.deleted="${response.deleted}"`);
+          error = true;
+        } else {
+          this.debug(`-- Directory Deleted -- dirName="${dirName}": response.directoryName="${response.directoryName}"`);
+          deleted = true;
+          dirListItemTR.remove();
+        }
+
+        if (error) {
+          this.#setErrorFor("fsbStatsManagerTitlePanel", "fsbStatsManager_error_directoryDeleteFailed"); 
+        }
+
+        if (deleted) {
+          this.#setMessageFor("fsbStatsManagerTitlePanel", "fsbStatsManager_message_directoryDeleted"); 
+        }
+      }
+    }
+  }
+
+
+
+  async #showDeleteDirectoryConfirmDialog(dirName, dirPath, numItems, installed, enabled, configured, access) {
+    const itemCount                = Number(numItems);
+    const isExtensionInstalled     = (installed  === 'true') ? true : false;
+    const isExtensionEnabled       = (enabled    === 'true') ? true : false;
+    const isExtensionConfigured    = (configured === 'true') ? true : false;
+    const isExtensionGrantedAccess = (access     === 'true') ? true : false;
+
+    this.debug( "\n--- parameters:",
+                `\n- dirName .................... "${dirName}"`,
+                `\n- dirPath .................... "${dirPath}"`,
+                `\n- itemCount .................. ${itemCount}`,
+                `\n- isExtensionInstalled ....... ${isExtensionInstalled}`,
+                `\n- isExtensionEnabled ......... ${isExtensionEnabled}`,
+                `\n- isExtensionConfigured ...... ${isExtensionConfigured}`,
+                `\n- isExtensionGrantedAccess ... ${isExtensionGrantedAccess}`,
+              );
 
     var   popupLeft   = 100;
     var   popupTop    = 100;
@@ -1155,15 +1311,15 @@ class StatsManager {
                   `\n- mainWindow.height=${mainWindow.height}`,
                   `\n- mainWindow.width=${mainWindow.width}`,
                 );
-//////popupTop  = mainWindow.top  + mainWindow. / 2;
+  //////popupTop  = mainWindow.top  + mainWindow. / 2;
       popupTop  = mainWindow.top  + Math.round( (mainWindow.height - popupHeight) / 2 );
-//////popupLeft = mainWindow.left + 100;
+  //////popupLeft = mainWindow.left + 100;
       popupLeft = mainWindow.left + Math.round( (mainWindow.width  - popupWidth)  / 2 );
       if (mainWindow.height - 200 > popupHeight) popupHeight - mainWindow.Height - 200;   // make it higher, but not shorter
-////////if (mainWindow.Width  - 200 > popupWidth)  popupWidth  = mainWindow.Width  - 200;   // make it wider,  but not narrower --- eh, don't need it wider
+  ////////if (mainWindow.Width  - 200 > popupWidth)  popupWidth  = mainWindow.Width  - 200;   // make it wider,  but not narrower --- eh, don't need it wider
     }
 
-    const bounds = await this.#fsbOptionsApi.getWindowBounds("DeleteDirsConfirmDialog"); // MABXXX PERHAPS THIS SHOULD ALWAYS BE CENTERED??????
+    const bounds = await this.#fsbOptionsApi.getWindowBounds("DeleteDirectoryConfirmDialog"); // MABXXX PERHAPS THIS SHOULD ALWAYS BE CENTERED??????
 
     if (! bounds) {
       this.debug("-- no previous window bounds");
@@ -1176,9 +1332,9 @@ class StatsManager {
                   `\n- bounds.width=${bounds.width}`,
                   `\n- bounds.height=${bounds.height}`,
                 );
-//    popupTop    = bounds.top;
+  //    popupTop    = bounds.top;
       popupTop    = mainWindow ? mainWindow.top  + Math.round( (mainWindow.height - bounds.height) / 2 ) : bounds.top; // CENTER ON THE MAIN WINDOW!!!
-//    popupLeft   = bounds.left;
+  //    popupLeft   = bounds.left;
       popupLeft   = mainWindow ? mainWindow.left + Math.round( (mainWindow.width  - bounds.width)  / 2 )  : bounds.left; // CENTER ON THE MAIN WINDOW!!!
       popupWidth  = bounds.width;
       popupHeight = bounds.height;
@@ -1205,30 +1361,98 @@ class StatsManager {
       ourWindowId = currentTab.windowId;
     }
 
-    const title           = getI18nMsg("fsbStatsManager_dialog_confirmDeleteDirs_title");           // "Confirm Directory Deletion"
-    const button1MsgId    = "fsbStatsManager_dialog_confirmDeleteDirs_button_continue.label";
-    const button2MsgId    = "fsbStatsManager_dialog_confirmDeleteDirs_button_cancel.label";
-    const messageContinue = getI18nMsg("fsbStatsManager_dialog_confirmDeleteDirs_messageContinue"); // "Do you wish to continue?"
+    const title           = getI18nMsg("fsbStatsManager_dialog_confirmDeleteDirectory_title");           // "Confirm Directory Deletion"
+    const button1MsgId    = "fsbStatsManager_dialog_confirmDeleteDirectory_button_continue.label";
+    const button2MsgId    = "fsbStatsManager_dialog_confirmDeleteDirectory_button_cancel.label";
+    const messageContinue = getI18nMsg("fsbStatsManager_dialog_confirmDeleteDirectory_messageContinue"); // "Do you wish to continue?"
 
     var  confirmDialogUrl = messenger.runtime.getURL("../dialogs/confirm.html")
-                             + `?windowName=${encodeURIComponent("DeleteDirsConfirmDialog")}`
+                             + `?windowName=${encodeURIComponent("DeleteDirectoryConfirmDialog")}`
                              + `&title=${encodeURIComponent(title)}`
+                             + `&tc=${encodeURIComponent('yellow')}`
                              + "&buttons_3=false"
                              + `&button1MsgId=${encodeURIComponent(button1MsgId)}`
                              + `&button2MsgId=${encodeURIComponent(button2MsgId)}`;
 
-    var message1;
-    var message2;
-    if (directoryNames.length < 2) {
-      message1 = getI18nMsg("fsbStatsManager_dialog_confirmDeleteDirs_oneDir_message1"); // "One Directory will be deleted"
-      message2 = getI18nMsg("fsbStatsManager_dialog_confirmDeleteDirs_oneDir_message2"); // " "
+    var msgNum  = 0;
+    var message = '';
+
+    message = getI18nMsgSubst("fsbStatsManager_dialog_confirmDeleteDirectory_dirName", dirName);
+    confirmDialogUrl += `&message${++msgNum}=${encodeURIComponent(message)}`
+    confirmDialogUrl += `&w${msgNum}=${encodeURIComponent('bolder')}`
+
+    confirmDialogUrl += `&message${++msgNum}=${encodeURIComponent(" ")}`
+
+    if (! Number.isInteger(itemCount)) {
+      // ???
+    } else if (itemCount === 0) {
+      message = getI18nMsg("fsbStatsManager_dialog_confirmDeleteDirectory_hasNoItems");
+      confirmDialogUrl += `&message${++msgNum}=${encodeURIComponent(message)}`
+      confirmDialogUrl += `&a${msgNum}=${encodeURIComponent('left')}`
+    } else if (itemCount === 1) {
+      message = getI18nMsg("fsbStatsManager_dialog_confirmDeleteDirectory_hasOneItem");
+      confirmDialogUrl += `&message${++msgNum}=${encodeURIComponent(message)}`
+      confirmDialogUrl += `&a${msgNum}=${encodeURIComponent('left')}`
+      confirmDialogUrl += `&c${msgNum}=${encodeURIComponent('red')}`
     } else {
-      message1 = getI18nMsgSubst("fsbStatsManager_dialog_confirmDeleteDirs_nnDirs_message1", directoryNames.length.toString()); // "NN Directories will be deleted"
-      message2 = getI18nMsg(     "fsbStatsManager_dialog_confirmDeleteDirs_nnDirs_message2"                                  ); // " "
+      message = getI18nMsgSubst("fsbStatsManager_dialog_confirmDeleteDirectory_hasNNItems", itemCount);
+      confirmDialogUrl += `&message${++msgNum}=${encodeURIComponent(message)}`
+      confirmDialogUrl += `&a${msgNum}=${encodeURIComponent('left')}`
+      confirmDialogUrl += `&c${msgNum}=${encodeURIComponent('red')}`
     }
-    confirmDialogUrl +=   `&message1=${encodeURIComponent(message1)}`
-                        + `&message2=${encodeURIComponent(message2)}`
-                        + `&message3=${encodeURIComponent(messageContinue)}`;
+
+    confirmDialogUrl += `&message${++msgNum}=${encodeURIComponent(" ")}`
+
+    if (isExtensionInstalled) {
+      message = getI18nMsg("fsbStatsManager_dialog_confirmDeleteDirectory_extensionInstalled");
+      confirmDialogUrl += `&message${++msgNum}=${encodeURIComponent(message)}`
+      confirmDialogUrl += `&a${msgNum}=${encodeURIComponent('left')}`
+
+      if (isExtensionEnabled) {
+        message = getI18nMsg("fsbStatsManager_dialog_confirmDeleteDirectory_extensionEnabled");
+        confirmDialogUrl += `&message${++msgNum}=${encodeURIComponent(message)}`
+        confirmDialogUrl += `&a${msgNum}=${encodeURIComponent('left')}`
+      } else {
+        message = getI18nMsg("fsbStatsManager_dialog_confirmDeleteDirectory_extensionNotEnabled");
+        confirmDialogUrl += `&message${++msgNum}=${encodeURIComponent(message)}`
+        confirmDialogUrl += `&a${msgNum}=${encodeURIComponent('left')}`
+      }
+    } else {
+      message = getI18nMsg("fsbStatsManager_dialog_confirmDeleteDirectory_extensionNotInstalled");
+      confirmDialogUrl += `&message${++msgNum}=${encodeURIComponent(message)}`
+      confirmDialogUrl += `&a${msgNum}=${encodeURIComponent('left')}`
+    }
+
+    confirmDialogUrl += `&message${++msgNum}=${encodeURIComponent(" ")}`
+
+    if (isExtensionConfigured) {
+      message = getI18nMsg("fsbStatsManager_dialog_confirmDeleteDirectory_extensionConfigured");
+      confirmDialogUrl += `&message${++msgNum}=${encodeURIComponent(message)}`
+      confirmDialogUrl += `&a${msgNum}=${encodeURIComponent('left')}`
+
+      if (isExtensionGrantedAccess) {
+        message = getI18nMsg("fsbStatsManager_dialog_confirmDeleteDirectory_extensionGrantedAccess");
+        confirmDialogUrl += `&message${++msgNum}=${encodeURIComponent(message)}`
+        confirmDialogUrl += `&a${msgNum}=${encodeURIComponent('left')}`
+      } else {
+        message = getI18nMsg("fsbStatsManager_dialog_confirmDeleteDirectory_extensionNotGrantedAccess");
+        confirmDialogUrl += `&message${++msgNum}=${encodeURIComponent(message)}`
+        confirmDialogUrl += `&a${msgNum}=${encodeURIComponent('left')}`
+      }
+    } else {
+      message = getI18nMsg("fsbStatsManager_dialog_confirmDeleteDirectory_extensionNotConfigured");
+      confirmDialogUrl += `&message${++msgNum}=${encodeURIComponent(message)}`
+      confirmDialogUrl += `&a${msgNum}=${encodeURIComponent('left')}`
+    }
+
+    confirmDialogUrl += `&message${++msgNum}=${encodeURIComponent(" ")}`;                // empty line
+
+    confirmDialogUrl += `&message${++msgNum}=${encodeURIComponent(messageContinue)}`;
+    confirmDialogUrl += `&w${msgNum}=${encodeURIComponent('bold')}`;
+
+    confirmDialogUrl += `&c=${encodeURIComponent(msgNum)}`;
+
+    this.debug(`confirmDialogUrl="${confirmDialogUrl}"`);
 
     // MABXXX DAMN!!! THERE'S NO WAY TO MAKE THIS MODAL!!! MUST USE action "default_popup".  But how to get Extension ID, etc?
     // The window.confirm() function doesn't give a way to specify button text.
@@ -1255,9 +1479,9 @@ class StatsManager {
 
     // Re-focus on the confirmDialog window when our window gets focus
     // MABXXX PERHAPS THIS SHOULD BE DONE INSIDE #confirmDialogPrompt() ???
-//  const focusListener = async (windowId) => this.windowFocusChanged(windowId, ourTabId, ourWindowId, confirmDialogWindow.id);
+  //  const focusListener = async (windowId) => this.windowFocusChanged(windowId, ourTabId, ourWindowId, confirmDialogWindow.id);
     const focusListener = null;
-//  messenger.windows.onFocusChanged.addListener(focusListener);
+  //  messenger.windows.onFocusChanged.addListener(focusListener);
 
     // ConfirmDialogResponse - expected:
     // - null     - the user closed the popup window        (set by our own windows.onRemoved listener - the defaultResponse sent to #confirmDialogPrompt)
@@ -1266,7 +1490,7 @@ class StatsManager {
     // - BUTTON_2 - the user clicked button 2               (sent by the ConfirmDialog window's button listener)
     // - BUTTON_3 - the user clicked button 3               (sent by the ConfirmDialog window's button listener)
 
-    const confirmDialogResponse = await this.#confirmDialogPrompt(confirmDialogWindow.id, focusListener, null);
+    const confirmDialogResponse = await this.#confirmDeleteDirectoryDialogPrompt(confirmDialogWindow.id, focusListener, null);
     this.debug(`-- confirmDialogResponse="${confirmDialogResponse}"`);
 
     switch (confirmDialogResponse) {
@@ -1285,7 +1509,7 @@ class StatsManager {
     }
   }
 
-  async #confirmDialogPrompt(confirmDialogWindowId, focusListener, defaultResponse) {
+  async #confirmDeleteDirectoryDialogPrompt(confirmDialogWindowId, focusListener, defaultResponse) {
     try {
       await messenger.windows.get(confirmDialogWindowId);
     } catch (error) {
@@ -1302,7 +1526,7 @@ class StatsManager {
 
           messenger.runtime.onMessage.removeListener(messageListener);
           messenger.windows.onRemoved.removeListener(windowRemovedListener);
-//////////messenger.windows.onFocusChanged.removeListener(focusListener);
+  //////////messenger.windows.onFocusChanged.removeListener(focusListener);
 
           resolve(response);
         }
@@ -1331,13 +1555,13 @@ class StatsManager {
 
 
 
-  async getFsbStats() {
+  async #getFsbStats() {
     let fsbStatsResponse;
     try {
       fsbStatsResponse = await this.#fsBrokerApi.fsbStats();
       this.debug( "\n\n========================\nfsbStatsResponse:\n", fsbStatsResponse, "\n========================\n\n" );
     } catch (error) {
-      this.caught(error, "-- getFsbDirStats");
+      this.caught(error, "-- getFsbStats");
     }
 
     if (! fsbStatsResponse) {
@@ -1359,31 +1583,18 @@ class StatsManager {
 
 
 
-  updateUIOnSelectionChanged() {
-    const deleteBtn     = document.getElementById("fsbStatsManagerDeleteButton");
-    const selectedCount = this.getSelectedDomDirectoryListItemCount();
-
-    if (! deleteBtn) {
-      this.error("Failed to get element '#fsbStatsManagerDeleteButton'");
-    } else {
-      if (selectedCount == 0) {
-        deleteBtn.disabled  = true;
-      } else if (selectedCount == 1) {
-        deleteBtn.disabled  = false;
-      } else {
-        deleteBtn.disabled  = false;
-      }
-    }
+  #updateUIOnSelectionChanged() {
+////const selectedCount = this.#getSelectedDomDirectoryListItemCount();
   }
 
 
 
   // and directory-list-item (TR or TD) was clicked
-  async directoryListItemClicked(e) {
+  async #directoryListItemClicked(e) {
     if (! e) return;
 
-////e.stopPropagation();
-////e.stopImmediatePropagation();
+//////e.stopPropagation();
+//////e.stopImmediatePropagation();
 
     this.debug(`-- e.target.tagName="${e.target.tagName}"`);
 
@@ -1403,7 +1614,7 @@ class StatsManager {
                     + ` directory-list-item? ${trElement.classList.contains("directory-list-item")}`
                   );
         if (trElement.classList.contains("directory-list-item")) {
-          const dirName     = trElement.getAttribute("dirName");
+          const dirName     = trElement.getAttribute("dirname");
           const wasSelected = trElement.classList.contains('selected');
       
           this.debug(`-- wasSelected=${wasSelected}  dirName="${dirName}"`);
@@ -1414,65 +1625,76 @@ class StatsManager {
             trElement.classList.remove('selected');
           }
 
-          this.updateUIOnSelectionChanged();
+          this.#updateUIOnSelectionChanged();
         }
       }
     }
   }
 
-  deselectAllDirectories() {
+
+
+  #deSelectAllDirectories() {
     const domDirectoryList = document.getElementById("fsbStatsManagerDirectoryList");
     if (! domDirectoryList) {
       this.error("-- failed to get domDirectoryList");
     } else {
-      for (const listItem of domDirectoryList.children) {
-        listItem.classList.remove('selected');
+      var deSelected = 0;
+
+      for (const listItemTR of domDirectoryList.children) {
+        if (listItemTR.classList.contains("directory-list-item")) {
+          if (listItemTR.classList.contains('selected')) {
+            ++deSelected;
+            listItemTR.classList.remove('selected');
+          }
+        }
       }
 
-      this.updateUIOnSelectionChanged();
+      if (deSelected) this.#updateUIOnSelectionChanged();
     }
   }
 
 
 
   // get only the FIRST!!!
-  getSelectedDomDirectoryListItem() {
+  #getSelectedDomDirectoryListItem() {
     const domDirectoryList = document.getElementById("fsbStatsManagerDirectoryList");
     if (! domDirectoryList) {
       this.error("-- failed to get domDirectoryList");
     } else {
-      for (const domDirectoryListItemTR of domDirectoryList.children) {
-        if (domDirectoryListItemTR.classList.contains('selected')) {
-          return domDirectoryListItemTR;
+      for (const listItemTR of domDirectoryList.children) {
+        if (listItemTR.classList.contains('directory-list-item') && listItemTR.classList.contains('selected')) {
+          return listItemTR;
         }
       }
     }
   }
 
-  getSelectedDomDirectoryListItems() {
+  #getSelectedDomDirectoryListItems() {
     const domDirectoryList = document.getElementById("fsbStatsManagerDirectoryList");
     if (! domDirectoryList) {
       this.error("-- failed to get domDirectoryList");
     } else {
-      const selected = [];
-      for (const domDirectoryListItemTR of domDirectoryList.children) {
-        if (domDirectoryListItemTR.classList.contains('selected')) {
-          selected.push(domDirectoryListItemTR);
+      const selectedItems = [];
+
+      for (const listItemTR of domDirectoryList.children) {
+        if (listItemTR.classList.contains('directory-list-item') && listItemTR.classList.contains('selected')) {
+          selectedItems.push(listItemTR);
         }
       }
-      return selected;
+
+      return selectedItems;
     }
   }
 
-  getSelectedDomDirectoryListItemCount() {
-    let   count           = 0;
+  #getSelectedDomDirectoryListItemCount() {
+    var   count            = 0;
     const domDirectoryList = document.getElementById("fsbStatsManagerDirectoryList");
 
     if (! domDirectoryList) {
       this.error("-- failed to get domDirectoryList");
     } else {
-      for (const domDirectoryListItemTR of domDirectoryList.children) {
-        if (domDirectoryListItemTR.classList.contains('selected')) {
+      for (const listItemTR of domDirectoryList.children) {
+        if (listItemTR.classList.contains('directory-list-item') && listItemTR.classList.contains('selected')) {
           ++count;
         }
       }
@@ -1483,7 +1705,7 @@ class StatsManager {
 
 
 
-  async refreshButtonClicked(e) {
+  async #refreshButtonClicked(e) {
     this.debug(`-- e.target.tagName="${e.target.tagName}"`);
 
     e.preventDefault();
@@ -1495,123 +1717,20 @@ class StatsManager {
       refreshBtn.disabled = true;
     }
 
-    await this.buildUI();
+    await this.#buildUI();
 
-    this.updateUIOnSelectionChanged();
+    this.#updateUIOnSelectionChanged();
 
     if (refreshBtn) refreshBtn.disabled = false;
   }
 
 
 
-  async deleteButtonClicked(e) {
-    this.debug(`-- e.target.tagName="${e.target.tagName}"`);
-
-    e.preventDefault();
-
-    this.resetMessages();
-    this.resetErrors();
-
-    const deleteBtn = document.getElementById("fsbStatsManagerDeleteButton");
-    if (! deleteBtn) {
-      this.error("Failed to get element '#fsbStatsManagerDeleteButton'");
-    } else {
-      deleteBtn.disabled = true;
-    }
-
-    const domSelectedDirectoryItemTRs = this.getSelectedDomDirectoryListItems();
-
-    if (! domSelectedDirectoryItemTRs) {
-      this.error("-- NO DIRECTORIES SELECTED -- Delete Button should have been disabled!!!");
-
-    } else {
-      this.debug(`-- domSelectedDirectoryItemTRs.length=${domSelectedDirectoryItemTRs.length}`);
-
-      const dirTRs   = [];
-      const dirNames = [];
-      for (const domSelectedDirectoryItemTR of domSelectedDirectoryItemTRs) {
-        const dirName = domSelectedDirectoryItemTR.getAttribute("dirName");
-        if (! dirName) {
-          this.error("Failed to get Attribute 'dirName'");
-        } else {
-          this.debug(`-- Deleting Directory dirName="${dirName}"`);
-          dirTRs.push(domSelectedDirectoryItemTR);
-          dirNames.push(dirName);
-        }
-      }
-
-      if (dirNames.length < 1) {
-        this.error("No selected TRs had a 'dirName' attribute");
-
-      } else {
-        const confirmed = await this.showDeleteDirsConfirmDialog(dirNames);
-
-        if (! confirmed) {
-          this.debug("The user chose to cancel directory deletion");
-          this.setMessageFor("fsbStatsManagerTitlePanel", "fsbStatsManager_message_directoryDeleteCanceled"); 
-
-        } else {
-          var errors  = 0;
-          var deleted = 0;
-
-          for (var i = 0;  i <  dirTRs.length; ++i) {
-            const dirTR   = dirTRs[i];
-            const dirName = dirNames[i];
-
-            const response = await this.#fsBrokerApi.fsbDeleteDirectory( dirName, {'recursive': true} );
-
-            if (! response) {
-              this.error(`-- FAILED TO DELETE DIRECTORY -- NO RESPONSE RETURNED -- dirName="${dirName}"`);
-              ++errors;
-            } else if (response.invalid) {
-              this.error(`-- FAILED TO DELETE DIRECTORY -- INVALID RETURNED -- dirName="${dirName}": ${response.invalid}`); // MABXXX <---------- add response.invalid everywhere
-              ++errors;
-            } else if (response.error) {
-              this.error(`-- FAILED TO DELETE DIRECTORY -- ERROR RETURNED -- dirName="${dirName}": ${response.error}`); // MABXXX <-------------- add response.error everywhere
-              ++errors;
-            } else if (! response.directoryName) {
-              this.error(`-- FAILED TO DELETE DIRECTORY -- NO DIRECTORY NAME RETURNED -- dirName="${dirName}": response.directoryName="${response.directoryName}"`);
-              ++errors;
-            } else if (! response.deleted) {
-              this.error(`-- FAILED TO DELETE DIRECTORY -- dirName="${dirName}" response.deleted="${response.deleted}"`);
-              ++errors;
-            } else {
-              this.debug(`-- Directory Deleted -- dirName="${dirName}": response.directoryName="${response.directoryName}"`);
-              ++deleted;
-              dirTR.remove();
-            }
-          }
-
-          if (errors) {
-            if (errors === 1) {
-              this.setErrorFor("fsbStatsManagerTitlePanel", "fsbStatsManager_error_oneDirectoryDeleteFailed"); 
-            } else {
-              this.setErrorFor("fsbStatsManagerTitlePanel", "fsbStatsManager_error_nnDirectoriesDeleteFailed", errors); 
-            }
-          }
-          if (deleted === 1) {
-            this.setMessageFor("fsbStatsManagerTitlePanel", "fsbStatsManager_message_oneDirectoryDeleted"); 
-          } else {
-            this.setMessageFor("fsbStatsManagerTitlePanel", "fsbStatsManager_message_nnDirectoriesDeleted", deleted); 
-          }
-        }
-      }
-    }
-
-    this.updateUIOnSelectionChanged();
-
-//  if ( deleteBtn) {
-//    deleteBtn.disabled = false; // MABXXX What if something is still selected???
-//  }
-  }
-
-
-
-  resetMessages() {
-    let msgPanelDivs = document.querySelectorAll("div.messages-panel"); // <--------------- NOTE: messages-panel - same as for resetErrors(), but different attribute
+  #resetMessages() {
+    let msgPanelDivs = document.querySelectorAll("div.messages-panel"); // <--------------- NOTE: messages-panel - same as for #resetErrors(), but different attribute
     if (msgPanelDivs) {
       for (let msgPanelDiv of msgPanelDivs) {
-        msgPanelDiv.setAttribute("msg", "false"); // <------------------------------------- different from resetErrors();
+        msgPanelDiv.setAttribute("msg", "false"); // <------------------------------------- different from #resetErrors();
       }
     }
 
@@ -1632,7 +1751,7 @@ class StatsManager {
   }
 
   /* there can be no more than one message per elementId */
-  setMessageFor(elementId, msgId, parms) {
+  #setMessageFor(elementId, msgId, parms) {
     var i18nMessage;
     if (parms !== null && parms !== undefined) {
       i18nMessage = getI18nMsgSubst(msgId, parms);
@@ -1666,11 +1785,11 @@ class StatsManager {
 
 
 
-  resetErrors() {
-    let msgPanelDivs = document.querySelectorAll("div.messages-panel"); // <--------------- NOTE: messages-panel - same as for resetMessages(), but different attribute
+  #resetErrors() {
+    let msgPanelDivs = document.querySelectorAll("div.messages-panel"); // <--------------- NOTE: messages-panel - same as for #resetMessages(), but different attribute
     if (msgPanelDivs) {
       for (let msgPanelDiv of msgPanelDivs) {
-        msgPanelDiv.setAttribute("error", "false"); // <----------------------------------- different from resetMessages();
+        msgPanelDiv.setAttribute("error", "false"); // <----------------------------------- different from #resetMessages();
       }
     }
 
@@ -1691,7 +1810,7 @@ class StatsManager {
   }
 
   /* there can be no more than one error message per elementId */
-  setErrorFor(elementId, msgId, parms) {
+  #setErrorFor(elementId, msgId, parms) {
     var i18nMessage;
     if (parms) {
       i18nMessage = getI18nMsgSubst(msgId, parms);
@@ -1723,7 +1842,7 @@ class StatsManager {
 
 
 
-  async doneButtonClicked(e) {
+  async #doneButtonClicked(e) {
     this.debug(`-- e.target.tagName="${e.target.tagName}"`);
 
     e.preventDefault();

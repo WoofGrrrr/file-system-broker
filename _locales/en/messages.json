@@ -822,16 +822,16 @@
     "message": "Click on the Directory again to De-select it"
   },
   "fsbStatsManager_instructions_3": {
-    "message": "Double-click on a Directory to list the Items in it"
+    "message": "Click a Delete button to the left of a Directory to delete it"
   },
   "fsbStatsManager_instructions_4": {
-    "message": "Click the Delete button to delete the selected Directories (one or more may be selected)"
+    "message": "-not used-"
   },
   "fsbStatsManager_instructions_5": {
-    "message": "???"
+    "message": "-not used-"
   },
   "fsbStatsManager_instructions_6": {
-    "message": "???"
+    "message": "-not used-"
   },
   "fsbStatsManager_message_directoryListLoading": {
     "message": "...Loading Directory List..."
@@ -1071,6 +1071,72 @@
       }
     }
   },
+
+  "fsbStatsManager_dialog_confirmDeleteDirectory_title": {
+    "message": "Confirm Directory Deletion"
+  },
+  "fsbStatsManager_dialog_confirmDeleteDirectory_dirName": {
+    "message": "Directory '$DIR_NAME$' will be deleted.",
+    "placeholders": {
+      "dir_name": {
+        "content": "$1"
+      }
+    }
+  },
+  "fsbStatsManager_dialog_confirmDeleteDirectory_hasNoItems": {
+    "message": "The Directory is empty."
+  },
+  "fsbStatsManager_dialog_confirmDeleteDirectory_hasOneItem": {
+    "message": "The Directory contains one item."
+  },
+  "fsbStatsManager_dialog_confirmDeleteDirectory_hasNNItems": {
+    "message": "The Directory contains $NN$ items.",
+    "placeholders": {
+      "nn": {
+        "content": "$1"
+      }
+    }
+  },
+  "fsbStatsManager_dialog_confirmDeleteDirectory_extensionInstalled": {
+    "message": "An Extension with an ID that matches this Directory is currently installed,"
+  },
+  "fsbStatsManager_dialog_confirmDeleteDirectory_extensionEnabled": {
+    "message": "and the Extension is Enabled."
+  },
+  "fsbStatsManager_dialog_confirmDeleteDirectory_extensionNotEnabled": {
+    "message": "but the Extension is NOT Enabled."
+  },
+  "fsbStatsManager_dialog_confirmDeleteDirectory_extensionNotInstalled": {
+    "message": "There is NO Installed Extension with an ID that matches this Directory."
+  },
+  "fsbStatsManager_dialog_confirmDeleteDirectory_extensionConfigured": {
+    "message": "An Extension with an ID that matches this Directory has been Configured,"
+  },
+  "fsbStatsManager_dialog_confirmDeleteDirectory_extensionGrantedAccess": {
+    "message": "and it has been Granted Access to use FileSystemBroker."
+  },
+  "fsbStatsManager_dialog_confirmDeleteDirectory_extensionNotGrantedAccess": {
+    "message": "but it has NOT been Granted Access to use FileSystemBroker."
+  },
+  "fsbStatsManager_dialog_confirmDeleteDirectory_extensionNotConfigured": {
+    "message": "NO Extension with an ID that matches this directory has been configured to use FileSystemBroker."
+  },
+  "fsbStatsManager_dialog_confirmDeleteDirectory_messageContinue": {
+    "message": "Do you wish to continue?"
+  },
+  "fsbStatsManager_dialog_confirmDeleteDirectory_button_continue.label": {
+    "message": "Continue"
+  },
+  "fsbStatsManager_dialog_confirmDeleteDirectory_button_cancel.label": {
+    "message": "Cancel"
+  },
+  "fsbStatsManager_error_directoryDeleteFailed": {
+    "message": "Directory failed to be deleted."
+  },
+  "fsbStatsManager_message_directoryDeleted": {
+    "message": "Directory deleted."
+  },
+
   "fsbStatsManager_dialog_confirmDeleteDirs_title": {
     "message": "Confirm Directory Deletion"
   },
@@ -1100,6 +1166,7 @@
   "fsbStatsManager_dialog_confirmDeleteDirs_button_cancel.label": {
     "message": "Cancel"
   },
+
   "numDaysSelectOption_1": {
     "message": "1 day"
   },

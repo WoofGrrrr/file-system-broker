@@ -533,7 +533,7 @@ input[type="checkbox"].open-close-check:not(checked) + label {
   width:            100%;
   -moz-appearance:  none;
 
-  & > :first-child {
+  & > :nth-child(2) {
     border-bottom-left-radius: 5px;
     border-left:               1px solid; /* var(--list-item-border-color) !important; */
     border-top-left-radius:    5px;
@@ -577,6 +577,42 @@ input[type="checkbox"].open-close-check:not(checked) + label {
       color:       var(--list-item-warning-color);
       font-weight: var(--list-item-warning-font-weight);
       text-shadow: var(--list-item-warning-text-shadow);
+    }
+  }
+
+  & > .list-item-controls {
+/*  background-color: var(--list-item-background-color); */
+
+    & > .item-controls-panel {
+      & > .item-controls-button {
+        &.icon-button {
+          &.icon-only {
+            background-color:    transparent !important;
+            background-position: center; 
+            background-repeat:   no-repeat;
+/*          background-size:     cover; */
+            border:              1px solid transparent;
+            cursor:              pointer;
+            height:              24px;
+            min-height:          24px;
+            min-width:           24px;
+            width:               24px;
+
+            &.button-delete-directory {
+              &:not(disabled,:hover) {
+                background-image: url("../images/icons/trashcan-red-16x16.png") !important;
+              }
+              &:not(disabled):hover {
+                background-image: url("../images/icons/trashcan-red-lighter-16x16.png") !important;
+              }
+              &:is(disabled) {
+                background-image: url("../images/icons/trashcan-gray-16x16.png") !important;
+                cursor:           not-allowed;
+              }
+            }
+          }
+        }
+      }
     }
   }
 }
@@ -764,7 +800,7 @@ tr.directory-list-item.selected > td.list-item-data { /* selected & not configur
 /* Anything done with non-specific selectors can be influenced
  * by outsiders, e.g. userChrome.css, userContent.css
  */
-#fsbStatsManager button {
+#fsbStatsManager button:not(.icon-only) {
   background-image: NONE !important;
   border:           1px solid transparent;
   border-radius:    0.5em;
@@ -781,20 +817,20 @@ tr.directory-list-item.selected > td.list-item-data { /* selected & not configur
   -moz-appearance:  none;
 }
 
-#fsbStatsManager button:not([disabled]) {
+#fsbStatsManager button:not(.icon-only,[disabled]) {
   background-color: var(--button-background-color);
   border-color:     var(--button-border-color);
   color:            var(--button-color);
 }
 
-#fsbStatsManager button[disabled] {
+#fsbStatsManager button:not(.icon-only)[disabled] {
   background-color: var(--button-disabled-background-color);
   border-color:     var(--button-disabled-border-color);
   color:            var(--button-disabled-color);
   cursor:           var(--cursor-disabled);
 }
 
-#fsbStatsManager button:not([disabled]):hover {
+#fsbStatsManager button:not(.icon-only,[disabled]):hover {
   background-color: var(--button-hover-background-color);
   background-image: NONE !important;
   border-color:     var(--button-hover-border-color);
@@ -802,34 +838,34 @@ tr.directory-list-item.selected > td.list-item-data { /* selected & not configur
   text-shadow:      1px 1px var(--button-hover-text-shadow-color);
 }
 
-button#fsbStatsManagerDoneButton:not([disabled]) {
+button#fsbStatsManagerDoneButton:not(.icon-only,[disabled]) {
   background-color: var(--button-cancel-background-color);
   color:            var(--button-cancel-color);
 }
 
-button#fsbStatsManagerDoneButton[disabled] {
+button#fsbStatsManagerDoneButton:not(.icon-only)[disabled] {
   background-color: var(--button-cancel-disabled-background-color);
   color:            var(--button-cancel-disabled-color);
 }
 
-button#fsbStatsManagerDoneButton:not([disabled]):hover {
+button#fsbStatsManagerDoneButton:not(.icon-only,[disabled]):hover {
   background-color: var(--button-cancel-hover-background-color);
   background-image: NONE !important;
   border-color:     var(--button-cancel-hover-color);
   color:            var(--button-cancel-hover-color);
 }
 
-button#fsbStatsManagerDeleteButton:not([disabled]) {
+button#fsbStatsManagerDeleteButton:not(.icon-only,[disabled]) {
   background-color: var(--button-save-background-color);
   color:            var(--button-save-color);
 }
 
-button#fsbStatsManagerDeleteButton[disabled] {
+button#fsbStatsManagerDeleteButton:not(.icon-only)[disabled] {
   background-color: var(--button-save-disabled-background-color);
   color:            var(--button-save-disabled-color);
 }
 
-button#fsbStatsManagerDeleteButton:not([disabled]):hover {
+button#fsbStatsManagerDeleteButton:not(.icon-only,[disabled]):hover {
   background-color: var(--button-save-hover-background-color);
   background-image: NONE !important;
   border-color:     var(--button-save-hover-color);
