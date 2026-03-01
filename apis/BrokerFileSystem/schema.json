@@ -755,8 +755,21 @@
         "name": "fsbStats",
         "type": "function",
         "async": true,
-        "description": "Returns an Object that provides information about each directory inside the top-level directory in which this extension operates.",
-        "parameters": []
+        "description": "Returns an Object that provides statstics for the top-level directory in which this extension operates, and optionally for each sub-directory inside that directory",
+        "parameters": [
+          {
+            "name": "parameters",
+            "type": "object",
+            "optional": true,
+            "properties": {
+              "includeDirStats": {
+                "type": "boolean",
+                "optional": true,
+                "description": "Optional. Default is true. If false, the array of sub-directory statstics - dirStats - is NOT returned as part of the response."
+              }
+            }
+          }
+        ]
       },
 
       {

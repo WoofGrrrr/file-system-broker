@@ -2002,9 +2002,24 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
 
 
 
-        async fsbStats() {
-          const FSB_DIR_NAME = "BrokerFileSystem";
-          const dirPath      = buildFileSystemPathName();
+        async fsbStats(parameters) {
+          const FSB_DIR_NAME    = "BrokerFileSystem";
+          const dirPath         = buildFileSystemPathName();
+          const includeDirStats = parameters?.includeDirStats;
+
+          if (parameters !== null && (typeof parameters) !== 'object') {
+            debug(`fsbStats -- Invalid 'parameters' parameter - it must be 'object': '${(typeof parameters)}'`);
+            throw new ExtensionError(`BrokerFileSystem.fsbStats -- Invalid 'parameters' parameter - it must be 'object': '${(typeof parameters)}'`);
+          }
+
+          var returnDirStats = true; // <--------------------------- NOTE: THIS DEFAULT!!! -------------------------------------------<<<<<
+          if (includeDirStats !== undefined) {
+            if ((typeof includeDirStats) !== 'boolean') {
+              debug(`fsbStats -- Invalid 'parameters.includeDirStats' parameter - it must be 'boolean': '${(typeof includeDirStats)}'`);
+              throw new ExtensionError(`BrokerFileSystem.fsbStats -- Invalid 'parameters.includeDirStats' parameter - it must be 'boolean': '${(typeof includeDirStats)}'`);
+            }
+            returnDirStats = includeDirStats;
+          }
 
           debug(`fsbStats -- calling IOUtils.exists - dirPath="${dirPath}"`);
           var exists = false;
@@ -2071,7 +2086,7 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
             debug(`fsbStats -- calling IOUtils.getChildren - dirPath="${dirPath}"`);
             var children;
             try {
-              children = await IOUtils.getChildren(dirPath, {"ignoreAbsent": true}); // returns Promise<sequence<DOMString>> // NOTE: ignoreAbsent
+              children = await IOUtils.getChildren(dirPath, {"ignoreAbsent": true}); // returns Promise<sequence<DOMString>> // NOTE: ignoreAbsent=true
             } catch (error) {
               caught(error, "fsbStats -- FILE SYSTEM ERROR", `Calling IOUtils.getChildren() for Directory "${FSB_DIR_NAME}" at "${dirPath}"`);
               throw new ExtensionError(`BrokerFileSystem.fsbStats -- Error listing files in Directory "${FSB_DIR_NAME}" at "${dirPath}"`);
@@ -2099,8 +2114,8 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
 
                 } else {
 
-                  // MABXXX should be do this only for DIRECTORY CHILDREN???
-                  // MABXXX should be do this only for Regular Files???
+                  // MABXXX should we do this only for DIRECTORY CHILDREN???
+                  // MABXXX should we do this only for Regular Files???
                   earliestChildCreationTime     = (earliestChildCreationTime     === undefined) ? fileInfo.creationTime
                                                                                                 : Math.min( fileInfo.creationTime, earliestChildCreationTime     );
                   latestChildCreationTime       = (latestChildCreationTime       === undefined) ? fileInfo.creationTime
@@ -2159,26 +2174,29 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
                                                                       otherPathNames
                                                                     );
 
-                    var dirStats = {
-                      'dirName': dirName,
-                      'dirPath': dirPath,
-                    }
+                    var dirStats;
+
+                    if (returnDirStats) dirStats = {
+                                                     'dirName': dirName,
+                                                     'dirPath': dirPath,
+                                                   };
 
                     if (! response) {
                       error(`fsbStats -- Failed to get response from getStatsForDirFileInfo():  "${dirName}"`);
-                      dirStats['error'] = 'Unable to get data';
+                      if (returnDirStats) dirStats['error'] = 'Unable to get data';
                     } else if (response.error) {
                       error(`fsbStats -- 'error' response from getStatsForDirFileInfo(): "${response.error}"`);
-                      dirStats['error'] = response.error;
+                      if (returnDirStats) dirStats['error'] = response.error;
                     } else if (response.invalid) {
                       error(`fsbStats -- 'invalid' response from getStatsForDirFileInfo(): "${response.invalid}"`);
-                      dirStats['error'] = response.invalid;
+                      if (returnDirStats) dirStats['error'] = response.invalid;
                     } else if (! response.stats) {
                       error(`fsbStats -- No 'stats' response from getStatsForDirFileInfo(): "${dirName}"`);
-                      dirStats['error'] = 'Unable to get data';
+                      if (returnDirStats) dirStats['error'] = 'Unable to get data';
                     } else {
+
                       dirStats = response.stats;
-                      delete dirStats['includeChildInfo'];
+                      if (returnDirStats) delete dirStats['includeChildInfo'];
 
                       numChildren     += dirStats.count_children;
                       numRegularFiles += dirStats.count_type_regular;
@@ -2216,7 +2234,7 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
                                                                                               : Math.max(latestChildLastModifiedTime, dirStats.time_childLastModified_latest);
                     }
 
-                    statsByDirectoryName[dirName] = dirStats;
+                    if (returnDirStats) statsByDirectoryName[dirName] = dirStats;
                   }
                 }
               }
@@ -2252,10 +2270,8 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
 
 
 
-            const response = {
-              'fsbStats': fsbStats,
-              'dirStats': statsByDirectoryName,
-            }
+            const response = { 'fsbStats': fsbStats  }
+            if (returnDirStats) response['dirStats'] = statsByDirectoryName;
 
             return response;
 

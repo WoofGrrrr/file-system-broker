@@ -333,12 +333,15 @@ in mind.
                      If fileName parameter not specified, the extension ID of
                      the calling extension will be returned as the "fileName"
                      response value.
-
+<br>
+<br>
     Returns an "invalid" response if the fileName parameter is invalid.
-
-    Returns an "error" response if the file's full pathName is > 255 characters
-    or if the operating system had a problem processing the command.
-
+<br>
+<br>
+    Returns an "error" response if the file's full pathName is > 255 characters.
+<br>
+<br>
+    Throws if there is an operating system error.
 <br>
 <br>
 <br>
@@ -348,12 +351,15 @@ in mind.
     command message: { "Command": { "command": "isRegularFile", "fileName": string } }
 
     response:        { "fileName": string, "isRegularFile": boolean }
-
+<br>
+<br>
     Returns an "invalid" response if the fileName parameter is missing or invalid.
-
-    Returns an "error" response if the file's full pathName is > 255 characters
-    or if the operating system had a problem processing the command.
-
+<br>
+<br>
+    Returns an "error" response if the file's full pathName is > 255 characters.
+<br>
+<br>
+    Throws if there is an operating system error.
 <br>
 <br>
 <br>
@@ -371,14 +377,18 @@ in mind.
                      If directoryName parameter not specified, the extension ID of
                      the calling extension will be returned as the "directoryName"
                      response value.
-
+<br>
+<br>
     Returns an "invalid" response if the directoryName parameter is invalid.
-
-    Returns an "error" response if the directory's full pathName is > 255 characters
-    or if the operating system had a problem processing the command.
-
+<br>
+<br>
+    Returns an "error" response if the directory's full pathName is > 255 characters.
+<br>
+<br>
+    Throws if there is an operating system error.
+<br>
+<br>
     Sub-directories are not supported at this time (there is no method to create one.)
-
 <br>
 <br>
 <br>
@@ -397,15 +407,20 @@ in mind.
                      If directoryName parameter not specified, the extension ID of
                      the calling extension will be returned as the "directoryName"
                      response value.
-
+<br>
+<br>
     Returns an "invalid" response if the directoryName parameter is invalid,
+<br>
     or if the directory does not exist or is not a directory.
-
-    Returns an "error" response if the directory's full pathName is > 255 characters
-    or if the operating system had a problem processing the command.
-
+<br>
+<br>
+    Returns an "error" response if the directory's full pathName is > 255 characters.
+<br>
+<br>
+    Throws if there is an operating system error.
+<br>
+<br>
     Sub-directories are not supported at this time (there is no method to create one.)
-
 <br>
 <br>
 <br>
@@ -424,13 +439,19 @@ in mind.
                      If directoryName parameter not specified, the extension ID of
                      the calling extension will be returned as the "directoryName"
                      response value.
-
+<br>
+<br>
     Returns an "invalid" response if the directoryName parameter is invalid,
+<br>
     or if the Directory does not exist or is not a Directory.
-
+<br>
+<br>
     Returns an "error" response if the directory's full pathName is > 255 characters
-    or if the operating system had a problem processing the command.
-
+<br>
+<br>
+    Throws if there is an operating system error.
+<br>
+<br>
     Sub-directories are not supported at this time (there is no method to create one.)
 
 <br>
@@ -442,14 +463,18 @@ in mind.
     command message: { "Command": { "command": "makeDirectory" } }
 
     response:        { "directoryName": string, "created": boolean }
-
+<br>
+<br>
     Returns an "invalid" response if a file or directory with the name of the caller's Extension ID already exists.
-
-    Returns an "error" response if the directory's full pathName is > 255 characters,
-    or if the operating system had a problem processing the command.
-
+<br>
+<br>
+    Returns an "error" response if the directory's full pathName is > 255 characters.
+<br>
+<br>
+    Throws if there is an operating system error.
+<br>
+<br>
     Sub-directories are not supported at this time, thus a directoryName parameter is not provided.
-
 <br>
 <br>
 <br>
@@ -466,15 +491,21 @@ in mind.
     - 'create'         will create a new file if a file with the given fileName does not exist, but will return an error if the file already exists
 
     response:        { "fileName": string, "bytesWritten": integer }
-
+<br>
+<br>
     Returns an "invalid" response if the fileName parameter is missing or invalid,
+<br>
     or if the data parameter is missing or invalid,
+<br>
     or if the writeMode parameter is not one of the values listed above,
+<br>
     or if the existence of the file conflicts with the writeMode as specified above.
-
-    Returns an "error" response if the file's full pathName is > 255 characters
-    or if the operating system had a problem processing the command.
-
+<br>
+<br>
+    Returns an "error" response if the file's full pathName is > 255 characters.
+<br>
+<br>
+    Throws if there is an operating system error.
 <br>
 <br>
 <br>
@@ -484,13 +515,17 @@ in mind.
     command message: { "Command": { "command": "writeFile", "fileName": string, "data": UTF8-String } }
     
     response:        { "fileName": string, "bytesWritten": integer }
-
+<br>
+<br>
     Returns an "invalid" response if the fileName parameter is missing or invalid
+<br>
     or if the data parameter is missing or invalid.
-
-    Returns an "error" response if the file's full pathName is > 255 characters
-    or if the operating system had a problem processing the command.
-
+<br>
+<br>
+    Returns an "error" response if the file's full pathName is > 255 characters.
+<br>
+<br>
+    Throws if there is an operating system error.
 <br>
 <br>
 <br>
@@ -501,12 +536,17 @@ in mind.
 
     response:        { "fileName": string, "bytesWritten": integer }
 
+<br>
+<br>
     Returns an "invalid" response if the fileName parameter is missing or invalid
+<br>
     or if the data parameter is missing or invalid.
-
-    Returns an "error" response if the file's full pathName is > 255 characters
-    or if the operating system had a problem processing the command.
-
+<br>
+<br>
+    Returns an "error" response if the file's full pathName is > 255 characters.
+<br>
+<br>
+    Throws if there is an operating system error.
 <br>
 <br>
 <br>
@@ -521,15 +561,21 @@ in mind.
     - 'create'         will create a new file if a file with the given fileName does not exist, but will return an error if the file already exists
 
     response:        { "fileName": string, "bytesWritten": integer }
-
+<br>
+<br>
     Returns an "invalid" response if the fileName parameter is missing or invalid,
+<br>
     or if the data parameter is missing or invalid,
+<br>
     or if the writeMode parameter is not one of the values listed above,
+<br>
     or if the existence of the file conflicts with the writeMode as specified above.
-
-    Returns an "error" response if the file's full pathName is > 255 characters
-    or if the operating system had a problem processing the command.
-
+<br>
+<br>
+    Returns an "error" response if the file's full pathName is > 255 characters.
+<br>
+<br>
+    Throws if there is an operating system error.
 <br>
 <br>
 <br>
@@ -544,15 +590,21 @@ in mind.
     - 'create'         will create a new file if a file with the given fileName does not exist, but will return an error if the file already exists
 
     response:        { "fileName": string, "bytesWritten": integer }
-
+<br>
+<br>
     Returns an "invalid" response if the fileName parameter is missing or invalid,
+<br>
     or if the data parameter is missing or invalid,
+<br>
     or if the writeMode parameter is not one of the values listed above,
+<br>
     or if the existence of the file conflicts with the writeMode as specified above.
-
-    Returns an "error" response if the file's full pathName is > 255 characters
-    or if the operating system had a problem processing the command.
-
+<br>
+<br>
+    Returns an "error" response if the file's full pathName is > 255 characters.
+<br>
+<br>
+    Throws if there is an operating system error.
 <br>
 <br>
 <br>
@@ -562,13 +614,17 @@ in mind.
     command message: { "Command": { "command": "readFile", "fileName": string } }
 
     response:        { "fileName": string, "data": UTF8-String }
-
+<br>
+<br>
     Returns an "invalid" response if the fileName parameter is missing or invalid,
+<br>
     or if the file does not exist.
-
-    Returns an "error" response if the file's full pathName is > 255 characters
-    or if the operating system had a problem processing the command.
-
+<br>
+<br>
+    Returns an "error" response if the file's full pathName is > 255 characters.
+<br>
+<br>
+    Throws if there is an operating system error.
 <br>
 <br>
 <br>
@@ -578,13 +634,17 @@ in mind.
     command message: { "Command": { "command": "readJSONFile", "fileName": string } }
 
     response:        { "fileName": string, "data": UTF8-String }
-
+<br>
+<br>
     Returns an "invalid" response if the fileName parameter is missing or invalid,
+<br>
     or if the file does not exist.
-
-    Returns an "error" response if the file's full pathName is > 255 characters
-    or if the operating system had a problem processing the command.
-
+<br>
+<br>
+    Returns an "error" response if the file's full pathName is > 255 characters.
+<br>
+<br>
+    Throws if there is an operating system error.
 <br>
 <br>
 <br>
@@ -594,13 +654,17 @@ in mind.
     command message: { "Command": { "command": "readObjectFromJSONFile", "fileName": string } }
 
     response:        { "fileName": string, "object": object }
-
+<br>
+<br>
     Returns an "invalid" response if the fileName parameter is missing or invalid,
+<br>
     or if the file does not exist.
-
-    Returns an "error" response if the file's full pathName is > 255 characters
-    or if the operating system had a problem processing the command.
-
+<br>
+<br>
+    Returns an "error" response if the file's full pathName is > 255 characters.
+<br>
+<br>
+    Throws if there is an operating system error.
 <br>
 <br>
 <br>
@@ -628,13 +692,17 @@ in mind.
                      - lastAccessed: milliseconds since 1970-01-01T00:00:00.000Z
                      - lastModified: milliseconds since 1970-01-01T00:00:00.000Z
                      - permissions:  expressed as a UNIX file mode (for Windows, the 'user', 'group', and 'other' parts will always be identical)
-
+<br>
+<br>
     Returns an "invalid" response if the fileName parameter is invalid,
+<br>
     or if the file does not exist.
-
-    Returns an "error" response if the file's full pathName is > 255 characters
-    or if the operating system had a problem processing the command.
-
+<br>
+<br>
+    Returns an "error" response if the file's full pathName is > 255 characters.
+<br>
+<br>
+    Throws if there is an operating system error.
 <br>
 <br>
 <br>
@@ -646,15 +714,21 @@ in mind.
                      The overwrite parameter is optional. The default is false.
 
     response:        { "fromFileName": string, "toFileName": string, "renamed": boolean }
-
+<br>
+<br>
     Returns an "invalid" response if either fileName parameter is invalid,
+<br>
     or if the file named by fromFileName does not exist or is not a Regular file (is a Directory or "Other",)
+<br>
     or if the optional overwrite parameter is not boolean,
+<br>
     or the overwrite parameter is not true and the file named by toFileName already exists.
-
-    Returns an "error" response if either file's full pathName is > 255 characters,
-    or if the operating system had a problem processing the command.
-
+<br>
+<br>
+    Returns an "error" response if either file's full pathName is > 255 characters.
+<br>
+<br>
+    Throws if there is an operating system error.
 <br>
 <br>
 <br>
@@ -664,13 +738,17 @@ in mind.
     command message: { "Command": { "command": "deleteFile", "fileName": string } }
 
     response:        { "fileName": string, "deleted": boolean }
-
+<br>
+<br>
     Returns an "invalid" response if the fileName parameter is missing or invalid,
+<br>
     or if the file does not exist.
-
-    Returns an "error" response if the file's full pathName is > 255 characters
-    or if the operating system had a problem processing the command.
-
+<br>
+<br>
+    Returns an "error" response if the file's full pathName is > 255 characters.
+<br>
+<br>
+    Throws if there is an operating system error.
 <br>
 <br>
 <br>
@@ -695,14 +773,22 @@ in mind.
                      If directoryName parameter not specified, the extension ID of
                      the calling extension will be returned as the "directoryName"
                      response value.
-
+<br>
+<br>
     Returns an "invalid" response if the directoryName parameter is invalid,
+<br>
     or if the directory does not exist,
+<br>
     or if it is not actually a Directory,
+<br>
     or if the directory contains files and/or sub-directories and the recursive parameter is not true.
-
-    Returns an "error" response if the directory's full pathName is > 255 characters,
-    or if the operating system had a problem processing the command.
+<br>
+<br>
+    Returns an "error" response if the directory's full pathName is > 255 characters.
+<br>
+<br>
+    Throws if there is an operating system error.
+<br>
 
     Sub-directories are not supported at this time (there is no method to create one.)
 
@@ -715,13 +801,19 @@ in mind.
     command message: { "Command": { "command": "listFiles" [, "matchGLOB": string] } }
 
     response:        { "fileNames": [], "length" integer }
-
+<br>
+<br>
     Returns an "invalid" response if the matchGLOB is not a String,
+<br>
     or if the directory does not exist or is not a Directory,
-
-    Returns an "error" response if the directory's full pathName is > 255 characters,
-    or if the operating system had a problem processing the command.
-
+<br>
+<br>
+    Returns an "error" response if the directory's full pathName is > 255 characters.
+<br>
+<br>
+    Throws if there is an operating system error.
+<br>
+<br>
     Sub-directories are not supported at this time (there is no method to create one,)
     thus a directoryName parameter is not provided.
 
@@ -744,13 +836,19 @@ in mind.
                      - lastAccessed: milliseconds since 1970-01-01T00:00:00.000Z
                      - lastModified: milliseconds since 1970-01-01T00:00:00.000Z
                      - permissions:  expressed as a UNIX file mode (for Windows, the 'user', 'group', and 'other' parts will always be identical)
-
+<br>
+<br>
     Returns an "invalid" response if the matchGLOB is not a String,
+<br>
     or if the directory does not exist or is not a Directory,
-
-    Returns an "error" response if the directory's full pathName is > 255 characters,
-    or if the operating system had a problem processing the command.
-
+<br>
+<br>
+    Returns an "error" response if the directory's full pathName is > 255 characters.
+<br>
+<br>
+    Throws if there is an operating system error.
+<br>
+<br>
     Sub-directories are not supported at this time (there is no method to create one,)
     thus a directoryName parameter is not provided.
 
@@ -763,13 +861,19 @@ in mind.
     command message: { "Command": { "command": "list" [, "matchGLOB": string] } }
 
     response:        { "fileNames": [], "length" integer }
-
+<br>
+<br>
     Returns an "invalid" response if the matchGLOB is not a String,
+<br>
     or if the directory does not exist or is not a Directory,
-
-    Returns an "error" response if the directory's full pathName is > 255 characters,
-    or if the operating system had a problem processing the command.
-
+<br>
+<br>
+    Returns an "error" response if the directory's full pathName is > 255 characters.
+<br>
+<br>
+    Throws if there is an operating system error.
+<br>
+<br>
     Sub-directories are not supported at this time (there is no method to create one,)
     thus a directoryName parameter is not provided.
 
@@ -792,13 +896,19 @@ in mind.
                      - lastAccessed: milliseconds since 1970-01-01T00:00:00.000Z
                      - lastModified: milliseconds since 1970-01-01T00:00:00.000Z
                      - permissions:  expressed as a UNIX file mode (for Windows, the 'user', 'group', and 'other' parts will always be identical)
-
+<br>
+<br>
     Returns an "invalid" response if the matchGLOB is not a String,
+<br>
     or if the directory does not exist or is not a Directory,
-
-    Returns an "error" response if the directory's full pathName is > 255 characters,
-    or if the operating system had a problem processing the command.
-
+<br>
+<br>
+    Returns an "error" response if the directory's full pathName is > 255 characters.
+<br>
+<br>
+    Throws if there is an operating system error.
+<br>
+<br>
     Sub-directories are not supported at this time (there is no method to create one,)
     thus a directoryName parameter is not provided.
 
@@ -820,8 +930,11 @@ in mind.
                      the calling extension will be returned as the "fileName"
                      response value.
 
+<br>
+<br>
     Returns an "invalid" response if the fileName parameter is invalid.
-
+<br>
+<br>
     The file with the given fileName need not actually exist.  This command merely returns
     what the full pathname would be.
 
@@ -834,9 +947,11 @@ in mind.
     command message: { "Command": { "command": "isValidFileName", "fileName": string } }
 
     response:        { "fileName": string, "valid": boolean }
-
+<br>
+<br>
     Returns an "invalid" response if the fileName parameter is not provided or is not a String.
-
+<br>
+<br>
     The file with the given fileName need not actually exist.  This command merely checks
     if the given string is a valid fileName.
 
@@ -849,9 +964,11 @@ in mind.
     command message: { "Command": { "command": "isValidDirectoryName", "directoryName": string } }
 
     response:        { "directoryName": string, "valid": boolean }
-
+<br>
+<br>
     Returns an "invalid" response if the directoryName parameter is not provided or is not a String.
-
+<br>
+<br>
     The directory with the given directoryName need not actually exist.  This command merely checks
     if the given string is a valid directoryName.
 
@@ -874,7 +991,8 @@ in mind.
     command message: { "Command": { "command": "stats" } }
 
     response:        { "stats": object }
-
+<br>
+<br>
     Returns a JavaScript object that contains information
     about the directory and the items in the directory
     for the given extensionId.
@@ -946,16 +1064,17 @@ in mind.
 ```
 <br>
 <br>
-    Returns "invalid" if parameters is provided and is not an object,
+    Returns an "invalid" response if parameters is provided and is not an object,
 <br>
     or if paramaters.includeChildInfo is provided and is not boolean,
 <br>
     or if paramaters.types is provided and is not an Array that contains the expected values.
 <br>
 <br>
-    Reurns "error" if the file's full pathName is > 255 characters,
+    Returns an "error" response if the file's full pathName is > 255 characters.
 <br>
-    or if there is an operating system error.
+<br>
+    Throws if there is an operating system error.
 
 <br>
 <br>
@@ -1010,16 +1129,17 @@ in mind.
     empty array is returned.
 <br>
 <br>
-    Returns "invalid" if parameters is provided and is not an object,
+    Returns an "invalid" response if parameters is provided and is not an object,
 <br>
     or if paramaters.matchGLOB is provided and is not a String,
 <br>
     or if paramaters.types is provided and is not an Array that contains the expected values
 <br>
 <br>
-    Returns "error" if the directory's full pathName is > 255 characters,
+    Returns an "error" response if the directory's full pathName is > 255 characters.
 <br>
-    or if there is an operating system error.
+<br>
+    Throws if there is an operating system error.
 
 <br>
 <br>
@@ -1068,32 +1188,38 @@ in mind.
     empty array is returned.
 <br>
 <br>
-    Returns "invalid" if parameters is provided and is not an object,
+    Returns an "invalid" response if parameters is provided and is not an object,
 <br>
     or if paramaters.matchGLOB is provided and is not a String,
 <br>
     or if paramaters.types is provided and is not an Array that contains the expected values
 <br>
 <br>
-    Returns "error" if the directory's full pathName is > 255 characters,
+    Returns an "error" response if the directory's full pathName is > 255 characters.
 <br>
-    or if there is an operating system error.
+<br>
+    Throws if there is an operating system error.
 
 <br>
 <br>
 
 #### fsbStats    (INTERNAL USE ONLY)
 
-    command message: { "Command": { "command": "fsbStats" } }
+    command message: { "Command": { "command": "fsbStats"[, 'parameters': { [ 'includeDirStats': boolean ] } ] } }
 
-    response:        { "stats": { "fsbStats": object, "dirStats": array of object } }
+    response:        { "stats": { "fsbStats": object [, "dirStats": array of object] } }
 
-    Returns an Object that provides information about each directory
-    inside the top-level directory in which this extension operates.
+    Returns an object that provides information about the top-level directory
+    in which this extension operates and optionally for each sub-directory.
+<br>
+<br>
+    If the optional parameters.includeDirStats parameter is given and is true, the optional
+    'dirStats' array is included in the returned obejct, otherwise it is not.  The default
+    is true.
 <br>
 <br>
     The returned object contains an object with statistics for the FileSystemBroker as a whole
-    and an array of object, indexed by Directory Name, with statistics for each sub-directory
+    and an optional array of object, indexed by Directory Name, with statistics for each sub-directory
     in the top-level FileSystemBroker directory:
 ```
       'stats': {
@@ -1116,7 +1242,7 @@ in mind.
                      'size_largest':                      integer:  largest  size  (bytes) of all descendent items with type 'regular' (undefined if no items with type 'regular')
                      'size_total':                        integer:  total of sizes (bytes) of all descendent items with type 'regular' (undefined if no items with type 'regular')
         },
-        'dirStats': array of object, indexed by Directory Name
+        'dirStats': (OPTIONAL, not included if includeDirStats is false) an array of object, indexed by Directory Name
                        {
                          'dirName':                           string:   directory fileName
                          'dirPath':                           string:   directory full pathName
@@ -1143,10 +1269,17 @@ in mind.
 ```
 <br>
 <br>
-    Returns 'error' if any directory's full pathName is > 255 characters,
+    Returns an 'invalid' response if parameters is not an object
 <br>
-    or if there is an operating system error.
-
+    or if parameters.includeStats is not boolean.
+<br>
+<br>
+    Returns an 'error' response if any directory's full pathName is > 255 characters,
+<br>
+<br>
+    Throws if there is an operating system error.
+<br>
+<br>
 <br>
 <br>
 <br>

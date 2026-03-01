@@ -398,19 +398,21 @@ class StatsManager {
       this.#setErrorFor("fsbStatsManagerTitlePanel", "fsbStatsManager_error_noDirectories"); /// MABXXX NEED A DIFFERENT ERROR MESSAGE
 
     } else {
-      await this.#updateFsbStatsUI(fsbStats);
+      await this.#setFsbStatsUI(fsbStats);
 
       await this.#buildDirectoryListUI(domDirectoryList, fsbDirStats);
     }
   }
 
-  async #updateFsbStatsUI(fsbStats) {
+
+
+  async #setFsbStatsUI(fsbStats) {
     this.debug("\n===================fsbStats:\n", fsbStats);
 
     if (! fsbStats) {
       this.error("---NO fsbStats");
       this.#setErrorFor("fsbStatsManagerTitlePanel", "fsbStatsManager_error_noDirectories"); /// MABXXX NEED A DIFFERENT ERROR MESSAGE
-      return;
+      // return; // don't just return.  Let the code below clear everything instead
     }
 
     var element;
@@ -569,6 +571,8 @@ class StatsManager {
     }
   }
 
+
+
   async #buildDirectoryListUI(domDirectoryList, fsbDirStats) {
     this.debug("\n===================fsbDirStats:\n", fsbDirStats);
 
@@ -657,12 +661,6 @@ class StatsManager {
         controlsTH.classList.add("list-header-controls");  // directory-list-header > list-header-controls
         const controlsDiv = document.createElement("div");
           controlsDiv.classList.add("header-controls");  // directory-list-header > list-header-controls > header-controls
-//////////const deleteDirectoryButton = document.createElement("button");
-////////////deleteDirectoryButton.classList.add("delete-directory-button");
-////////////const deleteDirectoryButtonLabel = document.createElement("label");
-//////////////
-////////////deleteDirectoryButton.appendChild(deleteDirectoryButtonLabel);
-//////////controlsDiv.appendChild(deleteDirectoryButton);
         controlsTH.appendChild(controlsDiv);
       dirHeaderTR.appendChild(controlsTH);
 
@@ -1271,8 +1269,25 @@ class StatsManager {
 
         if (deleted) {
           this.#setMessageFor("fsbStatsManagerTitlePanel", "fsbStatsManager_message_directoryDeleted"); 
+          await this.#updateFsbStatsUI();
         }
       }
+    }
+  }
+
+
+
+  async #updateFsbStatsUI() {
+    const stats    = await this.#getFsbStats(false);
+    const fsbStats = stats?.fsbStats
+
+    this.debug("---stats\n", stats);
+
+    if (! stats) {
+      this.error("---NO stats");
+      this.#setErrorFor("fsbStatsManagerTitlePanel", "fsbStatsManager_error_noDirectories"); /// MABXXX NEED A DIFFERENT ERROR MESSAGE
+    } else {
+      await this.#setFsbStatsUI(fsbStats);
     }
   }
 
@@ -1555,13 +1570,21 @@ class StatsManager {
 
 
 
-  async #getFsbStats() {
+  async #getFsbStats(includeDirStats) {
     let fsbStatsResponse;
     try {
-      fsbStatsResponse = await this.#fsBrokerApi.fsbStats();
+      if (includeDirStats !== undefined) {
+        if ((typeof includeDirStats) !== 'boolean') {
+          this.error(`includeDirStats parameter is not 'boolean': type='${(typeof includeDirStats)}'`);
+        } else {
+          fsbStatsResponse = await this.#fsBrokerApi.fsbStats( { 'includeDirStats': includeDirStats } );
+        }
+      } else {
+        fsbStatsResponse = await this.#fsBrokerApi.fsbStats(); // defaults to: { 'includeDirStats': true }
+      }
       this.debug( "\n\n========================\nfsbStatsResponse:\n", fsbStatsResponse, "\n========================\n\n" );
     } catch (error) {
-      this.caught(error, "-- getFsbStats");
+      this.caught(error, "-- #getFsbStats");
     }
 
     if (! fsbStatsResponse) {
@@ -1572,10 +1595,6 @@ class StatsManager {
       this.error(`-- fsbStats -- FSB STATS ERROR: ${fsbStatsResponse.error}`);
     } else if (! fsbStatsResponse.stats) {
       this.error("-- fsbStats -- NO STATS RETURNED");
-    } else if (! fsbStatsResponse.stats.fsbStats) {
-      this.error("-- fsbStats -- NO FSB_STATS RETURNED");
-    } else if (! fsbStatsResponse.stats.dirStats) {
-      this.error("-- fsbStats -- NO DIR_STATS RETURNED");
     } else {
       return fsbStatsResponse.stats;
     }
@@ -1709,6 +1728,7 @@ class StatsManager {
     this.debug(`-- e.target.tagName="${e.target.tagName}"`);
 
     e.preventDefault();
+    // the call the #buildUI() below will call #resetMMessages() and #resetErrors() and #updateUIOnSelectionChanged()
 
     const refreshBtn = document.getElementById("fsbStatsManagerRefreshButton");
     if (! refreshBtn) {
@@ -1717,9 +1737,8 @@ class StatsManager {
       refreshBtn.disabled = true;
     }
 
+    // calls #resetMMessages() and #resetErrors() and #updateUIOnSelectionChanged()
     await this.#buildUI();
-
-    this.#updateUIOnSelectionChanged();
 
     if (refreshBtn) refreshBtn.disabled = false;
   }

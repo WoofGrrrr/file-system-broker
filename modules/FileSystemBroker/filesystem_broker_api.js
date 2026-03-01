@@ -303,8 +303,12 @@ export class FileSystemBrokerAPI {
     }
   }
 
-  async fsbStats() { // MABXXX MAYBE NOT IN THIS API??? INTERNAL-ONLY COMMAND
-    return await this.sendFSBrokerCommand( { "command": "fsbStats" } );
+  async fsbStats(parameters) { // MABXXX MAYBE NOT IN THIS API??? INTERNAL-ONLY COMMAND
+    if (parameters === null || typeof parameters === 'undefined') {
+      return await this.sendFSBrokerCommand( { "command": "fsbStats" } );
+    } else {
+      return await this.sendFSBrokerCommand( { "command": "fsbStats", "parameters": parameters, } )
+    }
   }
 
   async fsbDeleteDirectory(directoryName, parameters) { // MABXXX MAYBE NOT IN THIS API??? INTERNAL-ONLY COMMAND

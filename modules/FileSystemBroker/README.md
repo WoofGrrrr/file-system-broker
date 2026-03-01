@@ -1061,15 +1061,20 @@ Use something like the following code in your JavaScript:
 <br>
 <br>
 
-### fsbStats()  (INTERNAL USE ONLY)
+### fsbStats( [ { [ 'includeDirStats': boolean ] } ] )  (INTERNAL USE ONLY)
 
-    Returns an Object that provides information about each directory
-    inside the top-level directory in which this extension operates.
+ 
+    Returns an object that provides information about the top-level directory
+    in which this extension operates and optionally for each sub-directory.
 <br>
 <br>
+    If the optional parameters.includeDirStats parameter is given and is true, the optional
+    'dirStats' array is included in the returned obejct, otherwise it is not.  The default
+    it true.
+    <br>
 <br>
     The returned object contains an object with statistics for the FileSystemBroker as a whole
-    and an array of object, indexed by Directory Name, with statistics for each sub-directory
+    and an optional array of object, indexed by Directory Name, with statistics for each sub-directory
     in the top-level FileSystemBroker directory:
 ```
       'stats': {
@@ -1092,7 +1097,7 @@ Use something like the following code in your JavaScript:
                      'size_largest':                      integer:  largest  size  (bytes) of all descendent items with type 'regular' (undefined if no items with type 'regular')
                      'size_total':                        integer:  total of sizes (bytes) of all descendent items with type 'regular' (undefined if no items with type 'regular')
         },
-        'dirSstats': array of object, indexed by Directory Name
+        'dirStats':  (OPTIONAL, not included if includeDirStats is false) an array of object, indexed by Directory Name
                        {
                          'dirName':                           string:   directory fileName
                          'dirPath':                           string:   directory full pathName
@@ -1118,6 +1123,11 @@ Use something like the following code in your JavaScript:
 
 
 ```
+<br>
+<br>
+    Returns 'invalid' if the optional parameter is not an object
+<br>
+    or if the optional parameter.includeDirStats is not boolean.
 <br>
 <br>
     Returns 'error' if any directory's full pathName is > 255 characters,

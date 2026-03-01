@@ -338,11 +338,19 @@ export class FileSystemBrokerCommands {
   // You can use this when you cannot use messaging to run the command
   // like it would do if you were to use the the FileSystemBrokerAPI class
   // (not the same as messenger.FileSystemBrokerAPI.)
-  async fsbStats() {
+  async fsbStats(parameters) {
     const nowMS = Date.now();
     const Command = {
       'command': 'fsbStats',
     };
+
+    // full validation is done in processInternalCommand() -> processCommand() -> fsbStatsCommand()
+    if (parameters && (typeof parameters) !== 'object') {
+      this.error(`fsbStats -- 'parameters' parameter is not an 'object', type='${(typeof parameters)}'`);
+      return ( { "invalid": `fsbStats: 'parameters' parameter is not an 'object', type='${(typeof parameters)}'` } );
+    } else if (parameters) {
+      Command['parameters'] = parameters;
+    }
 
     const result = await this.processInternalCommand(nowMS, Command, this.#EXTENSION_ID); // <---- this.#EXTENSION_ID
 
@@ -1949,7 +1957,7 @@ this.debug(
 
     const parameters = command.parameters;
     if (parameters) {
-      if (parameters && (typeof parameters) !== 'object') {
+      if ((typeof parameters) !== 'object') {
         this.debug(`fsbListCommand -- Message 'parameters' parameter type is not 'object', type='${(typeof parameters)}'`);
         return ( { "invalid": `fsbList Command: 'parameters' parameter type must be 'object', type='${(typeof parameters)}'` } );
       }
@@ -2040,9 +2048,30 @@ this.debug(
       return ( { "error": "fsbStats: Unknown Command" } ); // MABXXX return something better???
     }
 
+    const parameters = command.parameters;
+    if (parameters) {
+      if ((typeof parameters) !== 'object') {
+        this.debug(`fsbStatsCommand -- Message 'parameters' parameter type is not 'object', type='${(typeof parameters)}'`);
+        return ( { "invalid": `fsbStats Command: 'parameters' parameter type must be 'object', type='${(typeof parameters)}'` } );
+      }
+      const badKey = this.checkCmdParms(parameters, ['includeDirStats']);
+      if (badKey) {
+        this.debug(`fsbStatsCommand -- 'parameters' parameter has invalid key: "${badKey}"`);
+        return ( { "invalid": `fsbStatsCommand: 'parameters' parameter has invalid key: '${badKey}'` } );
+      }
+    }
+
+    var includeDirStats = parameters?.includeDirStats;
+    if (includeDirStats == null || (typeof includeDirStats) === 'undefined') {
+      includeDirStats = true; // <----------------------------------------------------- NOTE: DEFAULT IS true -------------------------<<<<<
+    } else if ((typeof includeDirStats) !== 'boolean') {
+      this.debug(`fsbStatsCommand -- 'parameters.includeDirStats' type is not 'boolean': '${typeof includeDirStats}'` );
+      return ( { "invalid": `fsbStats Command: 'parameters.includeDirStats' type must be 'boolean': type='${typeof includeDirStats}'` } );
+    }
+
     try {
       this.debug(`fsbStatsCommand -- getting stats for Directories in the Extension FileSystem`);
-      const stats = await messenger.BrokerFileSystem.fsbStats();  // NOTE: No extensionId!!!
+      const stats = await messenger.BrokerFileSystem.fsbStats(parameters);  // NOTE: No extensionId!!!
       this.debug(`fsbStatsCommand -- stats.length=${stats.length}`);
 
       const response = { "stats": stats, "length": Object.keys(stats).length };
@@ -2077,7 +2106,7 @@ this.debug(
 
     const parameters = command.parameters;
     if (parameters) {
-      if (parameters && (typeof parameters) !== 'object') {
+      if ((typeof parameters) !== 'object') {
         this.debug(`fsbDeleteDirectoryCommand -- Message 'parameters' parameter type is not 'object', type='${(typeof parameters)}'`);
         return ( { "invalid": `fsbDeleteDirectory Command: 'parameters' parameter type must be 'object', type='${(typeof parameters)}'` } );
       }
@@ -2455,7 +2484,10 @@ this.debug(
         case "fsbList":
           return result.list  ? "list.length=" + result.list.length  : "(NO list)";
         case "fsbStats":
-          return result.stats  ? `stats.length=${Object.keys(result.stats).length} length=${result.length}` : "(NO stats)";
+          if (result.stats) { 
+            return result.stats.dirStats ? `dirStats.length=${Object.keys(result.stats.dirStats).length} length=${result.length}` : "(NO dirStats)";
+          }
+          return "(NO stats)";
         case "fsbDeleteDirectory":
           return "deleted=" + result.deleted;
       }
@@ -2469,6 +2501,7 @@ this.debug(
 
   checkStatsCmdParms(parms) {
     for (const key of Object.keys(parms)) {
+      if ((typeof key) !== 'string') return '(not a string)';
       switch (key) {
         case 'includeChildInfo':
         case 'types':
@@ -2481,6 +2514,7 @@ this.debug(
 
   checkListCmdParms(parms) {
     for (const key of Object.keys(parms)) {
+      if ((typeof key) !== 'string') return '(not a string)';
       switch (key) {
         case 'matchGLOB':
         case 'types':
@@ -2493,6 +2527,7 @@ this.debug(
 
   checkCmdParms(parms, allowedKeys) {
     for (const key of Object.keys(parms)) {
+      if ((typeof key) !== 'string') return '(not a string)';
       if (! allowedKeys.includes(key)) return key;
     }
   }

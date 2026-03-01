@@ -602,13 +602,13 @@ __Sub-directories are currently not supported.__
     in the result.
 <br>
 <br>
-    The parameters.includeChildInfo parameter is optional.
+    The includeChildInfo parameter is optional.
     If it is not provided, it defaults to false. If true, the
     object returned includes information for each child
     item.
 <br>
 <br>
-    The parameters.types parameter is optional and is allowed
+    The types parameter is optional and is allowed
     only when parameters.includeChildInfo is true.  This is
     an array of String containing one or more item types:
 <br>
@@ -670,19 +670,19 @@ __Sub-directories are currently not supported.__
 <br>
 <br>
 
-###  fsbListInfo( [ { ['matchGLOB': matchGLOB] ['types': types] } ] ) (INTERNAL USE ONLY)
+###  fsbListInfo( [ { ['matchGLOB': string] ['types': array of string] } ] ) (INTERNAL USE ONLY)
 
     Returns an array of FileInfo objects listing the File Info for the
     items (all types) in the top-directory on which this extension
     operates.
 <br>
 <br>
-    If the optional parameters.matchGLOB parameter is given, only
+    If the optional matchGLOB parameter is given, only
     the information for items whose names match the given GLOB will
     be returned.
 <br>
 <br>
-    If the optional parameters.types array parameter is given,
+    If the optional types array parameter is given,
     only the information for items whose type is listed in the
     parameters.types array will be returned. paramaters.types
     is an array of one or more of:
@@ -723,18 +723,18 @@ __Sub-directories are currently not supported.__
 <br>
 <br>
 
-###  fsbList( [ { ['matchGLOB': matchGLOB] ['types': types] } ] ) (INTERNAL USE ONLY)
+###  fsbList( [ { ['matchGLOB': string] ['types': array of string] } ] ) (INTERNAL USE ONLY)
 
     Returns an array listing information for the items
     in the top-directory on which this extension operates.
 <br>
 <br>
-    If the optional parameters.matchGLOB parameter is given, only
+    If the optional matchGLOB parameter is given, only
     the information for items whose names match the given GLOB will
     be returned.
 <br>
 <br>
-    If the optional parameters.types array parameter is given,
+    If the optional types array parameter is given,
     only the information for items whose type is listed in the
     parameters.types array will be returned. paramaters.types
     is an array of one or more of:
@@ -766,15 +766,20 @@ __Sub-directories are currently not supported.__
 <br>
 <br>
 
-### fsbStats()  (INTERNAL USE ONLY)
+### fsbStats( [ { [ 'includeDirStats': boolean ] } ] )  (INTERNAL USE ONLY)
 
-    Returns an array that provides information about each directory
-    inside the top-level directory in which this extension operates.
+    Returns an object that provides information about the top-level directory
+    in which this extension operates and optionally for each sub-directory.
+<br>
+<br>
+    If the optional parameters.includeDirStats parameter is given and is true, the optional
+    'dirStats' array is included in the returned obejct, otherwise it is not.  The default
+    is true.
 <br>
 <br>
     The returned object contains an object with statistics for the FileSystemBroker as a whole
-    and an array of object, indexed by Directory Name, with statistics for each sub-directory
-    in the top-level FileSystemBroker directory:
+    and an optional array of object, indexed by Directory Name, with statistics for each
+    sub-directory in the top-level FileSystemBroker directory:
 ```
       {
         'fsbStats': {
@@ -796,7 +801,7 @@ __Sub-directories are currently not supported.__
                      'size_largest':                      integer:  largest  size  (bytes) of all descendent items with type 'regular' (undefined if no items with type 'regular')
                      'size_total':                        integer:  total of sizes (bytes) of all descendent items with type 'regular' (undefined if no items with type 'regular')
         },
-        'dirSstats': array of object, indexed by Directory Name
+        'dirStats': (OPTIONAL, not included if includeDirStats is false) an array of object, indexed by Directory Name
                        {
                          'dirName':                           string:   directory fileName
                          'dirPath':                           string:   directory full pathName
@@ -824,6 +829,10 @@ __Sub-directories are currently not supported.__
 <br>
 <br>
     Throws if any directory's full pathName is > 255 characters,
+<br>
+    or if the optional parameter is not an object
+<br>
+    or if the optional parameter.includeDirStats is not boolean
 <br>
     or if there is an operating system error.
 
