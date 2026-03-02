@@ -372,7 +372,7 @@ input[type="checkbox"].open-close-check:not(checked) + label {
   font-size:        var(--extension-font-size);
   padding:          0.5rem 1.1rem;
   text-align:       left;
-  text-decoration:  none;
+  text-decoration:  var(--extension-text-decoration);
   text-shadow:      none;
   white-space:      nowrap;
   width:            100%;
@@ -392,7 +392,7 @@ input[type="checkbox"].open-close-check:not(checked) + label {
 }
 
 /* those items that show actual Extension data: ID, Name */
-.extension-list-data {
+.extension-list-data { /* <TD> */
   background-color: var(--extension-background-color);
 
   border-bottom:    1px solid;
@@ -421,6 +421,15 @@ input[type="checkbox"].open-close-check:not(checked) + label {
   border-top-right-radius:    5px;
 }
 
+/* colors  and text-decoration for locked extensions */
+.extension-list-item.extension-locked > .extension-list-data {
+  background-color: var(--extension-locked-background-color);
+  border-color:     var(--extension-locked-border-color);
+  color:            var(--extension-locked-color);
+  text-decoration:  var(--extension-locked-text-decoration);
+  text-shadow:      var(--extension-locked-text-shadow);
+}
+
 /* colors for disabled extensions */
 .extension-list-item.extension-disabled > .extension-list-data {
   background-color: var(--extension-disabled-background-color);
@@ -431,6 +440,65 @@ input[type="checkbox"].open-close-check:not(checked) + label {
 .extension-list-item.access-disallowed > .extension-list-data {
   background-color: var(--extension-access-disallowed-background-color);
   border-color:     var(--extension-access-disallowed-border-color);
+}
+
+.data-boolean { /* <TD> */
+  text-align:     center;
+  vertical-align: middle;
+
+  &.extension-list-installed {
+  }
+
+  &.extension-list-enabled {
+  }
+
+  &.extension-list-stats-dir-exists {
+  }
+
+  & > .data-boolean-dot { /* <SPAN> */
+    background-color:   TRANSPARENT;
+    border:             1px SOLID TRANSPARENT;
+    border-radius:      50%;
+    display:            inline-block;
+    height:             0.5em;
+    min-height:         0.5em;
+    min-width:          0.5em;
+    width:              0.5em;
+
+    &.dot-stats-dir-exists {
+      background-color: GREEN;
+      border:           1px SOLID BLACK;
+    }
+
+    &.dot-stats-not-dir-exists {
+      background-color: RED;
+      border:           1px SOLID BLACK;
+    }
+
+    &.dot-ext-installed {
+      background-color: BLUE;
+      border:           1px SOLID BLACK;
+    }
+
+    &.dot-ext-not-installed {
+      background-color: YELLOW;
+      border:           1px SOLID BLACK;
+    }
+
+    &.dot-ext-disabled {
+      background-color: RED;
+      border:           1px SOLID BLACK;
+    }
+
+    &.dot-ext-enabled {
+      background-color: GREEN;
+      border:           1px SOLID BLACK;
+    }
+
+    &.dot-ext-not-enabled-not-installed {
+      border:           1px SOLID BLACK;
+    }
+  }
 }
 
 .data-numeric {
@@ -465,35 +533,56 @@ input[type="checkbox"].open-close-check:not(checked) + label {
 
 
 
-#fsbExtensionList:not(.edit-mode) > .extension-list-item:hover:not(.extension-locked) > .extension-list-data {
-  background-color: var(--extension-hover-background-color);
+#fsbExtensionList:not(.edit-mode) > .extension-list-item:hover > .extension-list-data {
+}
+
+/* hover background-image and border for extensions that are NOT locked */
+#fsbExtensionList:not(.edit-mode) > .extension-list-item:not(.extension-locked):hover > .extension-list-data {
   background-image: var(--extension-hover-background-image);
   border-color:     var(--extension-hover-border-color);
   text-shadow:      1px 1px var(--extension-hover-text-shadow-color);
 }
 
-#fsbExtensionList:not(.edit-mode) > .extension-list-item:hover:not(.extension-locked, .extension-disabled) > .extension-list-data {
+/* hover background-image and border for extensions that ARE locked */
+#fsbExtensionList:not(.edit-mode) > .extension-list-item.extension-locked:hover > .extension-list-data {
+  background-image: var(--extension-locked-hover-background-image);
+  border-color:     var(--extension-locked-hover-border-color);
+}
+
+/* hover background-color for selected extensions  that are NOT locked, disabled  or access-disallowed */
+#fsbExtensionList:not(.edit-mode) > .extension-list-item:not(.extension-locked,.access-disallowed ):hover > .extension-list-data {
+  background-color: var(--extension-hover-background-color);
+}
+
+/* hover color for selected extensions  that are NOT locked, disabled  or access-disallowed */
+#fsbExtensionList:not(.edit-mode) > .extension-list-item:not(.extension-locked,.extension-disabled,.access-disallowed):hover > .extension-list-data {
   color:            var(--extension-hover-color);
 }
 
+/* hover background-color, border, and text-shadow for selected extensions that are NOT locked */
 #fsbExtensionList:not(.edit-mode) > .extension-list-item.selected:not(.extension-locked) > .extension-list-data { /* and when :hover??? */
   background-color: var(--extension-selected-background-color);
   border-color:     var(--extension-selected-border-color);
   text-shadow:      1px 1px var(--extension-selected-text-shadow-color);
 }
 
-#fsbExtensionList:not(.edit-mode) > .extension-list-item.selected:not(.extension-locked, .extension-disabled) > .extension-list-data {
+/* color for selected extensions  that are NOT locked, disabled, or access-disallowed */
+#fsbExtensionList:not(.edit-mode) > .extension-list-item.selected:not(.extension-locked,.extension-disabled,.access-disallowed) > .extension-list-data {
   color:            var(--extension-selected-color);
 }
 
-/* color for disabled extensions */
-#fsbExtensionList > .extension-list-item.extension-disabled > .extension-list-data {
+/* color for disabled extensions that are NOT locked or access-disallowed */
+#fsbExtensionList > .extension-list-item.extension-disabled:not(.extension-locked,.access-disallowed) > .extension-list-data {
   color:            var(--extension-disabled-color);
 }
 
-/* color for access-disallowed extensions */
+/* color  and text-decoration for access-disallowed extensions */
 #fsbExtensionList > .extension-list-item.access-disallowed > .extension-list-data {
   color:            var(--extension-access-disallowed-color);
+  text-shadow:      var(--extension-access-disallowed-text-shadow);
+  &:is(.extension-list-name,.extension-list-id) {
+    text-decoration:  var(--extension-access-disallowed-text-decoration);
+  }
 }
 
 .extension-list-item.extension-disabled:not(.selected) > .extension-list-data {
@@ -511,10 +600,10 @@ input[type="checkbox"].open-close-check:not(checked) + label {
   }
 }
 
-#fsbExtensionList:not(.edit-mode) > .extension-list-item.disallow-access:not(.extension-locked):hover > .extension-list-data { /* and when selected??? */
-  background-color: color-mix(in srgb, var(--extension-disallow-access-background-color) 90%, #FFFFFF);
-/*border-color:     var(--extension-disallow-access-border-color); */
-/*color:            var(--extension-disallow-access-color); */
+#fsbExtensionList:not(.edit-mode) > .extension-list-item.access-disallowed:not(.extension-locked):hover > .extension-list-data { /* and when selected??? */
+  background-color: color-mix(in srgb, var(--extension-access-disallowed-background-color) 90%, #FFFFFF);
+/*border-color:     var(--extension-access-disallowed-border-color); */
+/*color:            var(--extension-access-disallowed-color); */
   text-shadow:      1px 1px var(--extension-hover-text-shadow-color);
 }
 
@@ -538,17 +627,17 @@ input[type="checkbox"].open-close-check:not(checked) + label {
 
 
 
-.extension-head-item { /* <TH>  Extension List Header Row */
-  background-color: var(--extension-background-color);
+.extension-head-item { /* <THEAD>  Extension List Header Row */
+  background-color: var(--extension-header-background-color);
   border:           none;
-  color:            var(--extension-color);
+  color:            var(--extension-header-color);
   cursor:           default;
-  font:             var(--extension-font);
-  font-size:        var(--extension-font-size);
+  font:             var(--extension-header-font);
+  font-size:        var(--extension-header-font-size);
   font-weight:      bold;
   padding:          0.5rem 1.1rem;
   text-align:       left;
-  text-decoration:  none;
+  text-decoration:  var(--extension-header-text-decoration);
   text-shadow:      none;
   white-space:      nowrap;
   width:            100%;

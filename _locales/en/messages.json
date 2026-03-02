@@ -119,24 +119,57 @@
   "options_fsbAddInstalledExtensionsButton.label": {
     "message": "Installed Extensions"
   },
-  "options_fsbExtensionListHeaderTextId.label": {
+
+  "options_fsbExtensionListHeader_text_installed.label": {
+    "message": "I?"
+  },
+  "options_fsbExtensionListHeader_text_enabled.label": {
+    "message": "E?"
+  },
+  "options_fsbExtensionListHeader_text_id.label": {
     "message": "Extension ID"
   },
-  "options_fsbExtensionListHeaderTextName.label": {
+  "options_fsbExtensionListHeader_text_name.label": {
     "message": "Extension Name"
   },
-  "options_fsbExtensionListHeaderTextDirExists.label": {
+  "options_fsbExtensionListHeader_text_dirExists.label": {
     "message": "Dir?"
   },
-  "options_fsbExtensionListHeaderTextItemCount.label": {
+  "options_fsbExtensionListHeader_text_itemCount.label": {
     "message": "Items"
   },
-  "options_fsbExtensionListHeaderTextTotalSizeFmt.label": {
+  "options_fsbExtensionListHeader_text_totalSizeFmt.label": {
     "message": "Size"
   },
-  "options_fsbExtensionListHeaderTextTotalSizeBytes.label": {
+  "options_fsbExtensionListHeader_text_totalSizeBytes.label": {
     "message": "(bytes)"
   },
+
+  "options_fsbExtensionListHeader_tooltip_installed.label": {
+    "message": "Is the Extension Installed?"
+  },
+  "options_fsbExtensionListHeader_tooltip_enabled.label": {
+    "message": "Is the Extension Enabled?"
+  },
+  "options_fsbExtensionListHeader_tooltip_id.label": {
+    "message": "The ID for the Extension"
+  },
+  "options_fsbExtensionListHeader_tooltip_name.label": {
+    "message": "The Name of the Extension"
+  },
+  "options_fsbExtensionListHeader_tooltip_dirExists.label": {
+    "message": "Does a Directory for the Extension exist?"
+  },
+  "options_fsbExtensionListHeader_tooltip_itemCount.label": {
+    "message": "The total number of items in the Directory for the Extension"
+  },
+  "options_fsbExtensionListHeader_tooltip_totalSizeFmt.label": {
+    "message": "The total of all the sizes of all the Regular Files in the Directory for the Extension"
+  },
+  "options_fsbExtensionListHeader_tooltip_totalSizeBytes.label": {
+    "message": "The total of all the sizes of all the Regular Files in the Directory for the Extension (bytes)"
+  },
+
   "options_fsbRefreshListButton.tooltip": {
     "message": "Refresh the Extension List"
   },

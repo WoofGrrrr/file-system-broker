@@ -116,6 +116,13 @@
 
 
 
+  --extension-header-background-color:             var(--list-header-item-background-color);
+  --extension-header-border-color:                 var(--list-header-item-border-color);
+  --extension-header-color:                        var(--list-header-item-color);
+  --extension-header-font:                         var(--list-header-item-font);
+  --extension-header-font-size:                    var(--list-header-item-font-size);
+  --extension-header-text-decoration:              NONE;
+
   --extension-background-color:                    var(--list-item-background-color);
   --extension-border-color:                        var(--list-item-border-color);
   --extension-color:                               var(--list-item-color);
@@ -123,10 +130,19 @@
   --extension-font-size:                           var(--list-item-font-size);
   --extension-text-decoration:                     NONE;
 
-  --extension-access-disallowed-background-color:  rgb(  63,  63,  70 );
+  --extension-locked-background-color:             TRANSPARENT;
+  --extension-locked-border-color:                 rgb(  20,  50,  50 );
+  --extension-locked-color:                        rgb(  90, 190, 195 );
+  --extension-locked-hover-background-image:       linear-gradient(rgba(00,00,00,0.2) 20%, rgba(150,150,150,0.2) 80%);
+  --extension-locked-hover-border-color:           rgb(  10,  10,  30 );
+  --extension-locked-text-decoration:              underline;
+  --extension-locked-text-shadow:                  1px 1px rgb( 20, 20, 20 );
+
+  --extension-access-disallowed-background-color:  rgb(  90,  90,  96 );
   --extension-access-disallowed-border-color:      rgb(  35,  35,  39 );
-  --extension-access-disallowed-color:             rgb( 180, 180, 180 );
-  --extension-access-disallowed-text-decoration:   NONE;
+  --extension-access-disallowed-color:             rgb( 255,  30,  60 );
+  --extension-access-disallowed-text-decoration:   line-through dotted black;
+  --extension-access-disallowed-text-shadow:       1px 1px rgb( 20, 20, 20 );
 
   --extension-configured-background-color:         rgb(  63,  63,  70 );
   --extension-configured-border-color:             rgb(  35,  35,  39 );
@@ -139,9 +155,9 @@
   --extension-not-configured-status-dot-color:     var(--extension-background-color);
   --extension-not-configured-text-decoration:      NONE;
 
-  --extension-disabled-background-color:           var(--list-item-disabled-background-color);
+  --extension-disabled-background-color:           var(--list-item-disabled-background-color);  /* rgb(  80,  80,  84 ); */
   --extension-disabled-border-color:               var(--list-item-disabled-border-color);
-  --extension-disabled-color:                      RED; /* var(--list-item-disabled-color);*/
+  --extension-disabled-color:                      RED; /* var(--list-item-disabled-color): rgb( 170, 190, 200 ) */
 /*--extension-disabled-status-dot-border-color:    rgb( 150, 150, 150 ); /* NOT USING */
 /*--extension-disabled-status-dot-color:           rgb( 100, 100, 100 ); /* NOT USING */
   --extension-disabled-text-decoration-color:      var(--list-item-disabled-text-decoration-color);
@@ -162,7 +178,7 @@
   --extension-selected-background-color:           var(--list-item-selected-background-color);
   --extension-selected-border-color:               var(--list-item-selected-border-color);
   --extension-selected-color:                      var(--list-item-selected-color);
-  --extension-selected-text-decoration:            underline solid blue;
+  --extension-selected-text-decoration:            NONE; /* underline solid blue; */
   --extension-selected-text-shadow-color:          var(--list-item-selected-text-shadow-color);
   --extension-selected-text-shadow:                1px 1px var(--extension-selected-text-shadow-color);
 

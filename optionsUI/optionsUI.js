@@ -59,12 +59,23 @@ class OptionsUI {
     this.tooltip_button_edit_add                                           = getI18nMsg( "options_fsbExtensionEditAddButton.tooltip",    null );
     this.tooltip_button_edit_cancel                                        = getI18nMsg( "options_fsbExtensionEditCancelButton.tooltip", null );
 
-    this.extensionListHeaderTextId                                         = getI18nMsg("options_fsbExtensionListHeaderTextId.label");
-    this.extensionListHeaderTextName                                       = getI18nMsg("options_fsbExtensionListHeaderTextName.label");
-    this.extensionListHeaderTextDirExists                                  = getI18nMsg("options_fsbExtensionListHeaderTextDirExists.label"); // I18n
-    this.extensionListHeaderTextItemCount                                  = getI18nMsg("options_fsbExtensionListHeaderTextItemCount.label");   // I18n
-    this.extensionListHeaderTextTotalSizeFmt                               = getI18nMsg("options_fsbExtensionListHeaderTextTotalSizeFmt.label");   // I18n
-    this.extensionListHeaderTextTotalSizeBytes                             = getI18nMsg("options_fsbExtensionListHeaderTextTotalSizeBytes.label"); // I18n
+    this.extensionListHeader_text_installed                                  = getI18nMsg("options_fsbExtensionListHeader_text_installed.label");
+    this.extensionListHeader_text_enabled                                    = getI18nMsg("options_fsbExtensionListHeader_text_enabled.label");
+    this.extensionListHeader_text_id                                         = getI18nMsg("options_fsbExtensionListHeader_text_id.label");
+    this.extensionListHeader_text_name                                       = getI18nMsg("options_fsbExtensionListHeader_text_name.label");
+    this.extensionListHeader_text_dirExists                                  = getI18nMsg("options_fsbExtensionListHeader_text_dirExists.label");
+    this.extensionListHeader_text_itemCount                                  = getI18nMsg("options_fsbExtensionListHeader_text_itemCount.label");
+    this.extensionListHeader_text_totalSizeFmt                               = getI18nMsg("options_fsbExtensionListHeader_text_totalSizeFmt.label");
+    this.extensionListHeader_text_totalSizeBytes                             = getI18nMsg("options_fsbExtensionListHeader_text_totalSizeBytes.label");
+
+    this.extensionListHeader_tooltip_installed                               = getI18nMsg("options_fsbExtensionListHeader_tooltip_installed.label");
+    this.extensionListHeader_tooltip_enabled                                 = getI18nMsg("options_fsbExtensionListHeader_tooltip_enabled.label");
+    this.extensionListHeader_tooltip_id                                      = getI18nMsg("options_fsbExtensionListHeader_tooltip_id.label");
+    this.extensionListHeader_tooltip_name                                    = getI18nMsg("options_fsbExtensionListHeader_tooltip_name.label");
+    this.extensionListHeader_tooltip_dirExists                               = getI18nMsg("options_fsbExtensionListHeader_tooltip_dirExists.label");
+    this.extensionListHeader_tooltip_itemCount                               = getI18nMsg("options_fsbExtensionListHeader_tooltip_itemCount.label");
+    this.extensionListHeader_tooltip_totalSizeFmt                            = getI18nMsg("options_fsbExtensionListHeader_tooltip_totalSizeFmt.label");
+    this.extensionListHeader_tooltip_totalSizeBytes                          = getI18nMsg("options_fsbExtensionListHeader_tooltip_totalSizeBytes.label");
 
     this.extensionListEditorTitleAddMode                                   = getI18nMsg("options_fsbExtensionEditTitleAddMode");
     this.extensionListEditorTitleEditMode                                  = getI18nMsg("options_fsbExtensionEditTitleEditMode");
@@ -631,12 +642,30 @@ class OptionsUI {
         logProps("", "buildExtensionsListUI.Extension Props", allExtensionsProps);
       }
 
+      const installedExtensions = await messenger.management.getAll();
+
       for (const [extensionId, extensionProps] of Object.entries(allExtensionsProps)) {
         this.debug(`-- adding Extension -- extensionId="${extensionId}"`);
 
-        var extDirStats = (this.fsbStats && (extensionId in this.fsbStats)) ? this.fsbStats[extensionId] : null;
+        var extensionInfo;
+        if (installedExtensions) {
+          extensionInfo = installedExtensions.find( extension =>
+            {
+              return (extension.type === 'extension' && extension.id === extensionId);
+            }
+          );  
+          this.debug("---extensionInfo\n", extensionInfo);
+        }
+
+        if (! extensionInfo) {
+          this.debug("---NO extensionInfo");
+        } else {
+          this.debug("\n---extensionInfo:\n", extensionInfo);
+        }
+
+        var extDirStats = (this.fsbStats && this.fsbStats.dirStats && (extensionId in this.fsbStats.dirStats)) ? this.fsbStats.dirStats[extensionId] : null;
          
-        const extensionListItemUI = await this.buildExtensionListItemUI(extensionId, extensionProps, extDirStats);
+        const extensionListItemUI = await this.buildExtensionListItemUI(extensionId, extensionProps, extDirStats, extensionInfo);
         domFsbExtensionList.appendChild(extensionListItemUI);
 
         this.debug(`-- finished adding Extension -- extensionId="${extensionId}"`);
@@ -659,46 +688,68 @@ class OptionsUI {
         controlsLeftTH.appendChild(controlsLeftLabel);
       thead.appendChild(controlsLeftTH);
 
+      const extensionInstalledTH = document.createElement("th");
+        extensionInstalledTH.classList.add("extension-head-data");            // extension-head-item > extension-head-data
+        extensionInstalledTH.setAttribute("title", this.extensionListHeader_tooltip_installed);
+        const extensionInstalledLabel = document.createElement("label");
+          extensionInstalledLabel.appendChild( document.createTextNode(this.extensionListHeader_text_installed) );
+        extensionInstalledTH.appendChild(extensionInstalledLabel);
+      thead.appendChild(extensionInstalledTH);
+
+      const extensionEnabledTH = document.createElement("th");
+        extensionEnabledTH.classList.add("extension-head-data");            // extension-head-item > extension-head-data
+        extensionEnabledTH.setAttribute("title", this.extensionListHeader_tooltip_enabled);
+        const extensionEnabledLabel = document.createElement("label");
+          extensionEnabledLabel.appendChild( document.createTextNode(this.extensionListHeader_text_enabled) );
+        extensionEnabledTH.appendChild(extensionEnabledLabel);
+      thead.appendChild(extensionEnabledTH);
+
       const extensionNameTH = document.createElement("th");
         extensionNameTH.classList.add("extension-head-data");            // extension-head-item > extension-head-data
+        extensionNameTH.setAttribute("title", this.extensionListHeader_tooltip_name);
         const extensionNameLabel = document.createElement("label");
-          extensionNameLabel.appendChild( document.createTextNode(this.extensionListHeaderTextName) );
+          extensionNameLabel.appendChild( document.createTextNode(this.extensionListHeader_text_name) );
         extensionNameTH.appendChild(extensionNameLabel);
       thead.appendChild(extensionNameTH);
 
       const extensionIdTH = document.createElement("th");
         extensionIdTH.classList.add("extension-head-data");              // extension-head-item > extension-head-data
+        extensionIdTH.setAttribute("title", this.extensionListHeader_tooltip_id);
         const extensionIdLabel = document.createElement("label");
-          extensionIdLabel.appendChild( document.createTextNode(this.extensionListHeaderTextId) );
+          extensionIdLabel.appendChild( document.createTextNode(this.extensionListHeader_text_id) );
         extensionIdTH.appendChild(extensionIdLabel);
       thead.appendChild(extensionIdTH);
 
       if (this.showExtensionStats) {
         const extensionDirExistsTH = document.createElement("th");
+          extensionDirExistsTH.setAttribute("title", this.extensionListHeader_tooltip_dirExists);
           extensionDirExistsTH.classList.add("extension-head-data");     // extension-head-item > extension-head-data
           const extensionDirExistsLabel = document.createElement("label");
-            extensionDirExistsLabel.appendChild( document.createTextNode(this.extensionListHeaderTextDirExists) );
+            extensionDirExistsLabel.appendChild( document.createTextNode(this.extensionListHeader_text_dirExists) );
           extensionDirExistsTH.appendChild(extensionDirExistsLabel);
         thead.appendChild(extensionDirExistsTH);
 
         const extensionItemCountTH = document.createElement("th");
+          extensionItemCountTH.setAttribute("title", this.extensionListHeader_tooltip_itemCount);
           extensionItemCountTH.classList.add("extension-head-data");  // extension-head-item > extension-head-data
           const extensionItemCountLabel = document.createElement("label");
-            extensionItemCountLabel.appendChild( document.createTextNode(this.extensionListHeaderTextItemCount) );
+            extensionItemCountLabel.appendChild( document.createTextNode(this.extensionListHeader_text_itemCount) );
           extensionItemCountTH.appendChild(extensionItemCountLabel);
         thead.appendChild(extensionItemCountTH);
 
         const extensionTotalSizeFmtTH = document.createElement("th");
+          extensionTotalSizeFmtTH.setAttribute("title", this.extensionListHeader_tooltip_totalSizeFmt);
           extensionTotalSizeFmtTH.classList.add("extension-head-data");  // extension-head-item > extension-head-data
           const extensionTotalSizeFmtLabel = document.createElement("label");
-            extensionTotalSizeFmtLabel.appendChild( document.createTextNode(this.extensionListHeaderTextTotalSizeFmt) );
+            extensionTotalSizeFmtLabel.appendChild( document.createTextNode(this.extensionListHeader_text_totalSizeFmt) );
           extensionTotalSizeFmtTH.appendChild(extensionTotalSizeFmtLabel);
         thead.appendChild(extensionTotalSizeFmtTH);
 
         const extensionTotalSizeBytesTH = document.createElement("th");
+          extensionTotalSizeBytesTH.setAttribute("title", this.extensionListHeader_tooltip_totalSizeBytes);
           extensionTotalSizeBytesTH.classList.add("extension-head-data");// extension-head-item > extension-head-data
           const extensionTotalSizeBytesLabel = document.createElement("label");
-            extensionTotalSizeBytesLabel.appendChild( document.createTextNode(this.extensionListHeaderTextTotalSizeBytes) );
+            extensionTotalSizeBytesLabel.appendChild( document.createTextNode(this.extensionListHeader_text_totalSizeBytes) );
           extensionTotalSizeBytesTH.appendChild(extensionTotalSizeBytesLabel);
         thead.appendChild(extensionTotalSizeBytesTH);
       }
@@ -755,7 +806,7 @@ class OptionsUI {
       extensionEditTitleTR.classList.add("extension-edit-title-item");              // extension-edit-title_item
       extensionEditTitleTR.classList.add('display-none');                           // HIDE the Row - turn ON display: none
 
-      var span = 3;
+      var span = 5;
       if (this.showExtensionStats) span += this.EXTENSIONS_STATS_COL_SPAN;
 
       // Create Extension Title Text element and add it to the row
@@ -795,6 +846,12 @@ class OptionsUI {
           allowAccessCheck.addEventListener("change", (e) => this.extensionOptionCheckClicked(e), true); // <====== NOTE: event "capturing" phase
         controlsLeftTD.appendChild(allowAccessCheck);
       extensionEditTR.appendChild(controlsLeftTD);
+
+      // Create space element for Installed & Enabled elements and add it to the row
+      const extensionInstalledEnabledTD = document.createElement("td");
+        extensionInstalledEnabledTD.classList.add("extension-edit-data");     // extension-edit-error-item > extension-edit-data
+        extensionInstalledEnabledTD.setAttribute("colspan", "2");
+      extensionEditTR.appendChild(extensionInstalledEnabledTD);
 
       // Create Extension Name element and add it to the row
       const extensionNameTD = document.createElement("td");
@@ -867,7 +924,7 @@ class OptionsUI {
 
       // Create space for the allow-access-check checkbox column TD and add it to the row
       const extensionEditErrorLeftIconsTD = document.createElement("td");
-        extensionEditErrorLeftIconsTD.classList.add("extension-edit-error-left-icons");                    // extension-edit-error-item > extension-edit-error-left-icons
+        extensionEditErrorLeftIconsTD.classList.add("extension-edit-error-left-icons");  // extension-edit-error-item > extension-edit-error-left-icons
         const extensionErrorIconSpan = document.createElement("span");
           extensionErrorIconSpan.classList.add("extension-edit-error-icon");
           const extensionErrorIcon = document.createElement("img");
@@ -875,6 +932,12 @@ class OptionsUI {
           extensionErrorIconSpan.appendChild(extensionErrorIcon);
         extensionEditErrorLeftIconsTD.appendChild(extensionErrorIconSpan);
       extensionEditErrorTR.appendChild(extensionEditErrorLeftIconsTD);
+
+      // Create space element for Installed & Enabled elements and add it to the row
+      const extensionInstalledEnabledTD = document.createElement("td");
+        extensionInstalledEnabledTD.classList.add("extension-edit-error-data");     // extension-edit-error-item > extension-edit-error-data
+        extensionInstalledEnabledTD.setAttribute("colspan", "2");
+      extensionEditErrorTR.appendChild(extensionInstalledEnabledTD);
 
       // Create Extension Name Error element and add it to the row
       const extensionNameTD = document.createElement("td");
@@ -912,29 +975,37 @@ class OptionsUI {
 
 
   // async just because of formatFileSize()
-  async buildExtensionListItemUI(extensionId, props, extDirStats) {
-    const extensionIdFromProps = ( !props || typeof props.id          !== 'string'  ) ? ''    : props.id;
-    const extensionName        = ( !props || typeof props.name        !== 'string'  ) ? ''    : props.name;
-    const description          = ( !props || typeof props.description !== 'string'  ) ? ''    : props.description;
-    const allowAccess          = ( !props || typeof props.allowAccess !== 'boolean' ) ? true  : props.allowAccess;
-    const locked               = ( !props || typeof props.locked      !== 'boolean' ) ? false : props.locked;
-    const disabled             = ( !props || typeof props.disabled    !== 'boolean' ) ? false : props.disabled;
+  async buildExtensionListItemUI(extensionId, props, extDirStats, extInfo) {
+    const installed      = extInfo ? true                : false;
+    const extensionName  = extInfo ? extInfo.name        : ( ! props || typeof props.name        !== 'string'  ) ? ''    : props.name;
+    const description    = extInfo ? extInfo.description : ( ! props || typeof props.description !== 'string'  ) ? ''    : props.description;
+    const disabled       = extInfo ? ! extInfo.enabled   : ( ! props || typeof props.disabled    !== 'boolean' ) ? false : props.disabled;
+    const extIdFromProps =                                 ( ! props || typeof props.id          !== 'string'  ) ? ''    : props.id;
+    const allowAccess    =                                 ( ! props || typeof props.allowAccess !== 'boolean' ) ? true  : props.allowAccess;
+    const locked         =                                 ( ! props || typeof props.locked      !== 'boolean' ) ? false : props.locked;
 
-    this.debug( "-- BUILD LIST ITEM UI:"
-                + `\n- extensionId ......... "${extensionId}"`
-                + `\n- props.id ............ "${props.id}"`
-                + `\n- props.name .......... "${props.name}"`
-                + `\n- props.description ... "${props.description}"`
-                + `\n- allowAccess ......... ${allowAccess}`
-                + `\n- locked .............. ${locked}`
+    this.debug( "\n--- BUILD LIST ITEM UI:",
+                `\n- extensionId ......... "${extensionId}"`,
+                `\n- props.id ............ "${props.id}"`,
+                `\n- props.name .......... "${props.name}"`,
+                `\n- props.description ... "${props.description}"`,
+                `\n- allowAccess ......... ${allowAccess}`,
+                `\n- locked .............. ${locked}`,
+                `\n- installed ........... ${installed}`,
+                `\n- disabled ............ ${disabled}`,
               );
 
-    if (extensionIdFromProps != extensionId) {
-      this.error(`-- EXTENSION ID MISMATCH -- extensionId="${extensionId}" extensionIdFromProps="${extensionIdFromProps}"`);
+    if (extIdFromProps !== extensionId) {
+      this.error(`-- EXTENSION ID MISMATCH -- extensionId="${extensionId}" extIdFromProps="${extIdFromProps}"`);
+    }
+
+    if (extInfo && extInfo.id !== extensionId) {
+      this.error(`-- EXTENSION ID MISMATCH -- extensionId="${extensionId}" extInfo.id="${extInfo.id}"`);
     }
 
     const extensionTR = document.createElement("tr");
                          extensionTR.classList.add( "extension-list-item" );               // extension-list-item
+      if (installed)     extensionTR.classList.add( "extension-installed" );
       if (locked)        extensionTR.classList.add( "extension-locked"    );
       if (disabled)      extensionTR.classList.add( "extension-disabled"  );
       if (! allowAccess) extensionTR.classList.add( "access-disallowed"   );
@@ -945,7 +1016,7 @@ class OptionsUI {
 
 
       if (! locked) {
-        extensionTR.addEventListener("click", (e) => this.extensionClicked(e), true);          // <====== NOTE: event "capturing" phase
+        extensionTR.addEventListener("click",    (e) => this.extensionClicked(e), true);       // <====== NOTE: event "capturing" phase
         extensionTR.addEventListener("dblclick", (e) => this.extensionDoubleClicked(e), true); // <====== NOTE: event "capturing" phase
       }
 
@@ -971,6 +1042,40 @@ class OptionsUI {
         controlsLeftTD.appendChild(allowAccessCheck);
       extensionTR.appendChild(controlsLeftTD);
 
+      // Create Extension Installed element and add it to the row
+      const extensionInstalledTD = document.createElement("td");
+        extensionInstalledTD.classList.add("extension-list-data");             // extension-list-item > extension-list-data
+        extensionInstalledTD.classList.add("data-boolean");                    // extension-list-item > data-boolean
+        extensionInstalledTD.classList.add("extension-list-installed");        // extension-list-item > extension-list-installed
+        const extensionInstalledDotSpan = document.createElement("td");
+          extensionInstalledDotSpan.classList.add("data-boolean-dot");         // extension-list-item > extension-list-data > data-boolean-dot
+          if (installed) {
+            extensionInstalledDotSpan.classList.add("dot-ext-installed");      // extension-list-item > extension-list-data > dot-ext-installed
+          } else {
+            extensionInstalledDotSpan.classList.add("dot-ext-not-installed");  // extension-list-item > extension-list-data > dot-ext-not-installed
+          }
+        extensionInstalledTD.appendChild(extensionInstalledDotSpan);
+      extensionTR.appendChild(extensionInstalledTD);
+
+      // Create Extension Enabled element and add it to the row
+      const extensionEnabledTD = document.createElement("td");
+        extensionEnabledTD.classList.add("extension-list-data");                         // extension-list-item > extension-list-data
+        extensionEnabledTD.classList.add("data-boolean");                                // extension-list-item > data-boolean
+        extensionEnabledTD.classList.add("extension-list-enabled");                      // extension-list-item > extension-list-enabled
+        const extensionEnabledDotSpan = document.createElement("td");
+          extensionEnabledDotSpan.classList.add("data-boolean-dot");                     // extension-list-item > extension-list-data > data-boolean-dot
+          if (installed) {
+            if (disabled) {
+              extensionEnabledDotSpan.classList.add("dot-ext-disabled");                 // extension-list-item > extension-list-data > dot-ext-disabled
+            } else {
+              extensionEnabledDotSpan.classList.add("dot-ext-enabled");                  // extension-list-item > extension-list-data > dot-ext-enabled
+            }
+          } else {
+            extensionEnabledDotSpan.classList.add("dot-ext-not-enabled-not-installed");  // extension-list-item > extension-list-data > dot-ext-not-enabled-not-installed
+          }
+        extensionEnabledTD.appendChild(extensionEnabledDotSpan);
+      extensionTR.appendChild(extensionEnabledTD);
+
       // Create Extension Name element and add it to the row
       const extensionNameTD = document.createElement("td");
         extensionNameTD.classList.add("extension-list-data");           // extension-list-item > extension-list-data
@@ -988,20 +1093,25 @@ class OptionsUI {
       if (this.showExtensionStats) {
         // Create Extension DirectoryExists element and add it to the row
         const extensionDirExistsTD = document.createElement("td");
-          extensionDirExistsTD.classList.add("extension-list-data");             // extension-list-item > extension-list-data
-          extensionDirExistsTD.classList.add("extension-list-stats-dir-exists"); // extension-list-item > extension-list-stats-dir-exists
-          if (extDirStats) {
-            extensionDirExistsTD.appendChild( document.createTextNode("+++") );
-          } else {
-            extensionDirExistsTD.appendChild( document.createTextNode("---") );
-          }
+          extensionDirExistsTD.classList.add("extension-list-data");                 // extension-list-item > extension-list-data
+          extensionDirExistsTD.classList.add("data-boolean");                        // extension-list-item > data-boolean
+          extensionDirExistsTD.classList.add("extension-list-stats-dir-exists");     // extension-list-item > extension-list-stats-dir-exists
+
+          const extensionDirExistsDotSpan = document.createElement("td");
+            extensionDirExistsDotSpan.classList.add("data-boolean-dot");             // extension-list-item > extension-list-data > data-boolean-dot
+            if (extDirStats) {
+              extensionDirExistsDotSpan.classList.add("dot-stats-dir-exists");       // extension-list-item > extension-list-data > dot-stats-dir-exists
+            } else {
+              extensionDirExistsDotSpan.classList.add("dot-stats-not-dir-exists");   // extension-list-item > extension-list-data > dot-stats-not-dir-exists
+            }
+          extensionDirExistsTD.appendChild(extensionDirExistsDotSpan);
         extensionTR.appendChild(extensionDirExistsTD);
 
         // Create Extension TotalSize (formatted) element and add it to the row
         const extensionItemCountTD = document.createElement("td");
           extensionItemCountTD.classList.add("extension-list-data");             // extension-list-item > extension-list-data
-          extensionItemCountTD.classList.add("extension-list-stats-item-count"); // extension-list-item > extension-list-stats-item-count
           extensionItemCountTD.classList.add("data-numeric");                    // extension-list-item > data-numeric
+          extensionItemCountTD.classList.add("extension-list-stats-item-count"); // extension-list-item > extension-list-stats-item-count
           if (extDirStats) {
             extensionItemCountTD.appendChild( document.createTextNode( extDirStats.count_children.toString() ) );
           } else {
@@ -1012,8 +1122,8 @@ class OptionsUI {
         // Create Extension TotalSize (formatted) element and add it to the row
         const extensionTotalSizeFmtTD = document.createElement("td");
           extensionTotalSizeFmtTD.classList.add("extension-list-data");                 // extension-list-item > extension-list-data
-          extensionTotalSizeFmtTD.classList.add("extension-list-stats-total-size-fmt"); // extension-list-item > extension-list-stats-total-size-fmt
           extensionTotalSizeFmtTD.classList.add("data-numeric");                        // extension-list-item > data-numeric
+          extensionTotalSizeFmtTD.classList.add("extension-list-stats-total-size-fmt"); // extension-list-item > extension-list-stats-total-size-fmt
           if (extDirStats) {
             extensionTotalSizeFmtTD.appendChild( document.createTextNode( await messenger.messengerUtilities.formatFileSize( extDirStats.size_total ) ) );
           } else {
@@ -1024,8 +1134,8 @@ class OptionsUI {
         // Create Extension TotalSize (in bytes) element and add it to the row
         const extensionTotalSizeBytesTD = document.createElement("td");
           extensionTotalSizeBytesTD.classList.add("extension-list-data");                   // extension-list-item > extension-list-data
-          extensionTotalSizeBytesTD.classList.add("extension-list-stats-total-size-bytes"); // extension-list-item > extension-list-stats-total-size-bytes
           extensionTotalSizeBytesTD.classList.add("data-numeric");                          // extension-list-item > data-numeric
+          extensionTotalSizeBytesTD.classList.add("extension-list-stats-total-size-bytes"); // extension-list-item > extension-list-stats-total-size-bytes
           if (extDirStats) {
             extensionTotalSizeBytesTD.appendChild( document.createTextNode( extDirStats.size_total.toString() ) );
           } else {
