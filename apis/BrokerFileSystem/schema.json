@@ -656,6 +656,12 @@
             "optional": true,
 
             "properties": {
+              "returnNotExist": {
+                "type": "boolean",
+                "optional": true,
+                "description": "Optional. If true, and the directory for the Extention does not exist, return { 'exists': false }."
+              },
+
               "includeChildInfo": {
                 "type": "boolean",
                 "optional": true,

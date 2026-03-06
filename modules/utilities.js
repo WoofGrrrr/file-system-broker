@@ -513,31 +513,7 @@ export function isValidGUID(guid) {
 
 
 export function isValidExtensionId(extensionId) {
-  if (typeof extensionId !== 'string' || extensionId.length < 1 || extensionId.length > 64) return false;
-
-  // note: no upper-case
-  const LIKE_EMAIL_REGEX = /\A(?=[a-z0-9@.!#$%&'*+/=?^_`{|}~-]{6,254}\z)(?=[a-z0-9.!#$%&'*+/=?^_`{|}~-]{1,64}@)[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:(?=[a-z0-9-]{1,63}\.)[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+(?=[a-z0-9-]{1,63}\z)[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\z/;
-
-//const ENCLOSED_GUID_REGEX   = /^\{[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}\}$/;
-//const UNENCLOSED_GUID_REGEX = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
-
-  // note: no upper-case
-  const ENCLOSED_GUID_REGEX   = /^\{[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\}$/;
-  const UNENCLOSED_GUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
-
-  if (! LIKE_EMAIL_REGEX.test(extensionId)) {
-    if (extensionId[0] === '{') {
-      if (ENCLOSED_GUID_REGEX.test(extensionId)) return true;
-    } else {
-      if (UNENCLOSED_GUID_REGEX.test(extensionId)) return true;
-    }
-  }
-  
-//const ILLEGAL_CHARS = /<>:"/\\|?*\x00-\x1F]/g;
-//if (ILLEGAL_CHARS.test(extensionId)) return false;
-
-  const RESERVED_NAMES = /^(\.\.|con|prn|aux|nul|com[0-9]|lpt[0-9])$/i;
-  if (RESERVED_NAMES.test(extensionId)) return false;
-
-  return true;
+  if ((typeof extensionId !== 'string') || extensionId.length < 1 || extensionId.length > 80) return false;
+  const regex = /^(\{[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\}|[a-z0-9]+[a-z0-9-._]*@[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,6})$/i;
+  return regex.test(extensionId);
 }

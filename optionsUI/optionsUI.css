@@ -867,7 +867,7 @@ input.extension-edit-text { /* any input type="text" */
   background-image: url("../images/icons/edit_medium_gray_32x32.png") !important;
   cursor:           var(--cursor-disabled);
 }
-#fsbOptionsWrapper button.delete-extension[disabled] {
+#fsbOptionsWrapper button.remove-extension[disabled] {
   background-image: url("../images/icons/trashcan-gray-24x24.png") !important;
   cursor:           var(--cursor-disabled);
 }
@@ -887,7 +887,7 @@ input.extension-edit-text { /* any input type="text" */
 #fsbOptionsWrapper button.edit-extension:not([disabled]) {
   background-image: url("../images/icons/edit_light_gray_32x32.png") !important;
 }
-#fsbOptionsWrapper button.delete-extension:not([disabled]) {
+#fsbOptionsWrapper button.remove-extension:not([disabled]) {
   background-image: url("../images/icons/trashcan-red-24x24.png") !important;
 }
 #fsbOptionsWrapper button#extensionEditCancelButton:not([disabled]) {
@@ -909,7 +909,7 @@ input.extension-edit-text { /* any input type="text" */
 #fsbOptionsWrapper button.edit-extension:not([disabled]):hover {
   background-image: url("../images/icons/edit_white_32x32.png") !important;
 }
-#fsbOptionsWrapper button.delete-extension:not([disabled]):hover {
+#fsbOptionsWrapper button.remove-extension:not([disabled]):hover {
   background-image: url("../images/icons/trashcan-red-lighter-24x24.png") !important;
 }
 #fsbOptionsWrapper button#extensionEditCancelButton:not([disabled]):hover {

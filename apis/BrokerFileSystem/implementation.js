@@ -137,7 +137,8 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
             return exists;
           } catch (error) {
             caught(error, "exists -- FILE SYSTEM ERROR", `Calling IOUtils.exists() for Item "${itemName}" at "${itemPath}"`);
-            throw new ExtensionError(`BrokerFileSystem.exists -- Error checking existence of File "${itemName}" at "${itemPath}"`);
+            return ( { 'error': `Internal Error - BrokerFileSystem.exists -- Error checking existence of Item "${itemName}" at "${itemPath}": ${error.name} - ${error.message}` } );
+// MABXXX //throw new ExtensionError(`BrokerFileSystem.exists -- Error checking existence of Item "${itemName}" at "${itemPath}"`);
           }
         },
 
@@ -1673,10 +1674,12 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
 
 
 
-        // optional 'parameters' parameter must be object - schema.json makes sure of this
-        // optional parameters.includeChildInfo must be a boolean - schema.json makes sure of this
-        // optional parameters.types must be an array of String - schema.json makes sure of this
+        // optional 'parameters' parameter must be object - schema.json makes sure of this as well
+        // optional parameters.returnNotExist must be a boolean - schema.json makes sure of this as well
+        // optional parameters.includeChildInfo must be a boolean - schema.json makes sure of this as well
+        // optional parameters.types must be an array of String - schema.json makes sure of this as well
         async stats(extensionId, parameters) {
+          debug("stats", `extensionId="${extensionId}"\n---parameters:\n`, parameters, "\n---types:\n", parameters?.types);
           if (! checkExtensionId(extensionId)) { // the ID of the extension for which the call is being made
             debug(`stats -- extensionId is invalid: "${extensionId}"`);
             throw new ExtensionError(`BrokerFileSystem.stats -- extensionId is invalid: "${extensionId}"`);
@@ -1687,8 +1690,16 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
             throw new ExtensionError(`BrokerFileSystem.stats -- 'parameters' parameter is not 'object': type='${typeof parameters}'`);
           }
 
+          var returnNotExist = parameters?.returnNotExist;
+          if (returnNotExist === null || (typeof returnNotExist) === 'undefined') {
+            returnNotExist = false;
+          } else if (typeof returnNotExist !== 'boolean') { // schema.json also vaildates this.
+            debug(`stats -- 'parameters.returnNotExist' parameter is not 'boolean': type='${typeof returnNotExist}'`);
+            throw new ExtensionError(`BrokerFileSystem.stats -- 'parameters.returnNotExist' parameter is not 'boolean': type='${typeof returnNotExist}'`);
+          }
+
           var includeChildInfo = parameters?.includeChildInfo;
-          if (includeChildInfo == null || (typeof includeChildInfo) === 'undefined') {
+          if (includeChildInfo === null || (typeof includeChildInfo) === 'undefined') {
             includeChildInfo = false;
           } else if (typeof includeChildInfo !== 'boolean') { // schema.json also vaildates this.
             debug(`stats -- 'parameters.includeChildInfo' parameter is not 'boolean': type='${typeof includeChildInfo}'`);
@@ -1721,32 +1732,27 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
           }
 
           try {
-            const response = await getStatsForDir(context, "stats", extensionId, includeChildInfo, types);
+            const response = await getStatsForDir(context, "stats", extensionId, returnNotExist, includeChildInfo, types);
             if (! response) {
               debug(`stats -- Failed to get response from getStatsForDir():  "${extensionId}"`);
-              // MABXXX return "error" response instead???
-              throw new ExtensionError(`BrokerFileSystem.stats -- Failed to get stats for Extension: "${extensionId}"`);
-
+              return ( { 'error': `Internal Error - BrokerFileSystem.stats -- Failed to get stats for Extension "${extensionId}"` } );
             } else if (response.error) {
               debug(`stats -- 'error' response from getStatsForDir(): "${response.error}"`);
               return response;
-
             } else if (response.invalid) {
               debug(`stats -- 'invalid' response from getStatsForDir(): "${response.invalid}"`);
               return response;
-
             } else if (! response.stats) {
               debug(`stats -- No 'stats' response from getStatsForDir(): "${response.invalid}"`);
-              // MABXXX return "error" response instead???
-              throw new ExtensionError(`BrokerFileSystem.stats -- Failed to get stats for Extension: "${extensionId}"`);
-
+              return ( { 'error': `Internal Error - BrokerFileSystem.stats -- Failed to get stats for Extension "${extensionId}"` } );
             } else {
               const result = {};
               result[extensionId] = response.stats;
               return result;
             }
           } catch (error) {
-            caught(error, "stats -- UNEXPECTED ERROR", `Extension "${extensionId}"`); // MABXXX RETURN WHAT???
+            caught(error, "stats -- UNEXPECTED ERROR", `Extension "${extensionId}"`);
+            return ( { 'error': `Internal Error - BrokerFileSystem.stats -- Error getting stats for Extension "${extensionId}": ${error.name} - ${error.message}` } );
           }
         }, // END async stats()
 
@@ -1776,7 +1782,7 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
             matchRegExp = globToRegExp(matchGLOB);
           }
 
-          if (types == null || (typeof types) === 'undefined') {
+          if (types === null || (typeof types) === 'undefined') {
             // this is ok
           } else if ((typeof types) !== 'object') { // schema.json also validates this.
             debug(`fsbListInfo -- Invalid 'parameters.types' parameter type - Must be 'object': type='${(typeof types)}'`);
@@ -1901,7 +1907,7 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
             matchRegExp = globToRegExp(matchGLOB);
           }
 
-          if (types == null || (typeof types) === 'undefined') {
+          if (types === null || (typeof types) === 'undefined') {
             // this is ok
           } else if ((typeof types) !== 'object') { // schema.json also validates this.
             debug(`fsbList -- Invalid 'parameters.types' parameter type - Must be 'object': type='${(typeof types)}'`);
@@ -2417,7 +2423,7 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
 //                                                  }
 //            }
 //   }
-async function getStatsForDir(context, cmdName, dirName, includeChildInfo, types) {
+async function getStatsForDir(context, cmdName, dirName, returnNotExist, includeChildInfo, types) {
   if (! context || (typeof context) !== 'object') {
     error(`BrokerFileSystem.${cmdName}`, "-- ERROR: 'context' parameter must be 'object'");
     return ( { 'error': `Internal Error - BrokerFileSystem.${cmdName} -- getStatsForDir(): parameter 'context' must be 'object'` } );
@@ -2447,8 +2453,13 @@ async function getStatsForDir(context, cmdName, dirName, includeChildInfo, types
   }
 
   if (! exists) {
-    error(`BrokerFileSystem.${cmdName}`, `-- ERROR: Item "${dirName}" does not exist: "${dirPath}"`);
-    return ( { 'error': `Internal Error - BrokerFileSystem.${cmdName} -- getStatsForDir(): Item "${dirName}" at path "${dirPath}" does not exist` } );
+    if (returnNotExist) {
+      debug(`BrokerFileSystem.${cmdName}`, `-- Item "${dirName}" does not exist: "${dirPath}"`);
+      return ( { 'exists': false } );
+    } else {
+      error(`BrokerFileSystem.${cmdName}`, `-- ERROR: Item "${dirName}" does not exist: "${dirPath}"`);
+      return ( { 'error': `Internal Error - BrokerFileSystem.${cmdName} -- getStatsForDir(): Item "${dirName}" at path "${dirPath}" does not exist` } );
+    }
   }
 
   var dirFileInfo;

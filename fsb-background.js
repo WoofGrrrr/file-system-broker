@@ -210,11 +210,22 @@ class FileSystemBroker {
     const parameters = { 'numDays': numDays };
     if (this.#LOG_PURGE_OLD_LOG_FILES) await this.#fsbEventLogger.logInternalEvent("autoPurgeOldLogFiles", "request", parameters, "");
 
-    if (numDays > 0) {
-      await this.#fsbEventLogger.deleteOldEventLogs(numDays); // this event is already logged inside call
+    var result = "";
+    if (numDays < 1) {
+      result = "Auto Log Purge Disabled";
+    } else {
+      const response = await this.#fsbEventLogger.deleteOldEventLogs(numDays); // this event is already logged inside call
+      if (! response) {
+        result = "NO RESPONSE from deleteOldEventLogs";
+      } else {
+        result =     `deleted=${response.count_deleted}`
+                 + `, failed=${response.count_failed}`
+                 + `, notDeleted=${response.count_notDeleted}`
+                 + `, files=${response.count_files}`;
+      }
     }
 
-    if (this.#LOG_PURGE_OLD_LOG_FILES) await this.#fsbEventLogger.logInternalEvent("autoPurgeOldLogFiles", "success", parameters, "");
+    if (this.#LOG_PURGE_OLD_LOG_FILES) await this.#fsbEventLogger.logInternalEvent("autoPurgeOldLogFiles", "success", parameters, result);
   }
 
   async autoRemoveUninstalledExtensions() {

@@ -12,6 +12,8 @@ export class FileSystemBrokerCommands {
   #LOG          = false;
   #DEBUG        = false;
 
+  #LOG_INTERNAL_COMMANDS = false;
+
   #logger;
   #fsbOptionsApi;
   #fsbEventLogger;
@@ -110,44 +112,62 @@ export class FileSystemBrokerCommands {
 
 
   async processInternalCommand(timeMS, Command, extensionId) {
+    const logCommand = await this.#fsbOptionsApi.isEnabledInternalMessageLogging();
+    const logResult  = await this.#fsbOptionsApi.isEnabledInternalMessageResultLogging();
+
     var formattedParameters;
 
-    if (await this.#fsbOptionsApi.isEnabledInternalMessageLogging()) {
+    if (this.#LOG_INTERNAL_COMMANDS) {
       formattedParameters = this.formatParameters(Command);
 
-      this.logAlways( "\n--- Processing Internal Command ---",              // MABXXX do this in logCommand???
+      this.logAlways( "\n--- Processing Internal Command ---",
                       `\n- command="${Command.command}"`,
                       `\n- parameters: ${formattedParameters}`,
                       "\n- parameters object:", Command.parameters,
                     );
-      if (this.#fsbEventLogger) this.#fsbEventLogger.logCommand(timeMS, "INTERNAL", Command);
+    }
+
+    if (logCommand && this.#fsbEventLogger) {
+      this.#fsbEventLogger.logCommand(timeMS, "INTERNAL", Command);
     }
 
     try {
       const result = await this.processCommand(Command, extensionId);
 
       if (! result) {
+        if (this.#fsbEventLogger) { // MABXXX this is logged regardless of whether the Command or Result Logging Options are enabled
+          this.#fsbEventLogger.logCommandResult(timeMS, "INTERNAL", Command, `INTERNAL ERROR: NO RESULT FROM processCommand`);
+        }
+
         this.error("-- NO COMMAND RESULT", message);
         return { "error": "Failed to get a Command Result",
-                 "code":  "500"
+                 "code":  "500",
                };
       } else {
-        if (await this.#fsbOptionsApi.isEnabledInternalMessageResultLogging()) {
+        if (this.#LOG_INTERNAL_COMMANDS) {
           const formattedResult = this.formatCommandResult(Command, result);
-          this.logAlways( "\n--- RESULT ---",
-                          "\n- INTERNAL",
-                          `\n- Command="${Command.command}"`,
-                          `\n- result: ${formattedResult}`,
-                          `\n- parameters: ${formattedParameters}`,
-                          "\n- parameters object:", Command.parameters,
-                        );
-          if (this.#fsbEventLogger) this.#fsbEventLogger.logCommandResult(timeMS, "INTERNAL", Command, result);
+
+          this.log( "\n--- RESULT ---",
+                    "\n- INTERNAL",
+                    `\n- Command="${Command.command}"`,
+                    `\n- result: ${formattedResult}`,
+                    `\n- parameters: ${formattedParameters}`,
+                    "\n- parameters object:", Command.parameters,
+                  );
+        }
+
+        if (logResult && this.#fsbEventLogger) {
+          this.#fsbEventLogger.logCommandResult(timeMS, "INTERNAL", Command, result);
         }
       }
 
       return result;
 
     } catch (error) {
+      if (this.#fsbEventLogger) { // MABXXX this is logged regardless of whether the Command or Result Logging Options are enabled
+        this.#fsbEventLogger.logCommandResult(timeMS, "INTERNAL", Command, `INTERNAL ERROR: ${error.name} - ${error.message}`);
+      }
+
       this.caught(error, "Error Processing Internal Command - Code 500");
       return { "error": "Internal Error", "code":  "500" };
     }
@@ -165,70 +185,63 @@ export class FileSystemBrokerCommands {
   // Since extensionId === this.#extensionID, it will delete a file only
   // in the top-most File System directory.
   //
-  // It DOES do complete pre-validation using direct calls to the messenger.FileSystemBroker API.
-  // BUT WHY??? processInternalCommand() -> processCommand() -> fsbDeleteFileCommand() does validation as well.
-  //
   // You can use this when you cannot use messaging to run the command
   // like it would do if you were to use the the FileSystemBrokerAPI class
   // (not the same as messenger.FileSystemBrokerAPI.)
-  async deleteFile(fileName) { // copied from modules/commands.js and slightly modified
+  async deleteFile(fileName) {
     const nowMS = Date.now();
     this.debug(`~~~~~~~~~~~~~~~~~~~~ fileName="${fileName}"`);
 
-    if (! fileName) {
-      this.error("-- No 'fileName' parameter");
-      return ( { "invalid": "deleteFile no 'fileName' parameter" } );
-    }
-    if ((typeof fileName) !== 'string') {
-      this.error("-- 'fileName' parameter type is not 'string'");
-      return ( { "invalid": "deleteFile: 'fileName' parameter type must be 'string'" } );
-    }
-    if (! isValidFileName(fileName)) {
-      this.error(`-- 'fileName' parameter is invalid: "${fileName}"`);
-      return ( { "invalid": `deleteFile: 'fileName' parameter is invalid: "${fileName}"` } );
-    }
+    const Command = {
+      'command':  'deleteFile',
+      'fileName': fileName,
+    };
 
-    try {
-      const exists = await messenger.BrokerFileSystem.exists(this.EXTENSION_ID, fileName); // <-------------- direct call to FileSystemBroker API!!!
-      if (! exists) {
-        this.error(`-- File does not exist: "${fileName}"`);
-        return ( { "invalid": `deleteFile: File does not exist: "${fileName}"` } );
-      }
-
-      const isRegularFile = await messenger.BrokerFileSystem.isRegularFile(this.EXTENSION_ID, fileName); // <-------------- direct call to FileSystemBroker API!!!
-      if (! isRegularFile) {
-        this.error(`-- File is not a Regular File: "${fileName}"`);
-        return ( { "invalid": `deleteFile: File is not a Regular File: "${fileName}"` } );
-      }
-
-      this.debug(`-- deleting file "${fileName}" for extension "${this.EXTENSION_ID}"`);
-      const Command = {
-        'command':  'deleteFile',
-        'fileName': fileName,
-      };
-
-      const result = await this.processInternalCommand(nowMS, Command, this.#EXTENSION_ID); // <-------------- **NOT** direct call to FileSystemBroker API!!!
+    const result = await this.processInternalCommand(nowMS, Command, this.#EXTENSION_ID); // <-------------- **NOT** direct call to FileSystemBroker API!!!
   
-      return result;
-
-    } catch (error) {
-      this.caught(error, `-- Caught error while deleting file "${fileName}":`);
-      return ( { "error": `Error Processing deleteFile: ${error.name}: ${error.message}`, "code": "500" } );
-    }
-
-    return false; // this should never happen
+    return result;
   }
 
 
 
   // This method is a shortcut for just calling processInternalCommand(),
   // but it creates the Command object for you,
-  // it uses this.#extensionID as the extensionId,
-  // it sets 'recursive' and 'returnNotExist' to true,
   // and it DOES NOT use messaging.
   //
-  // Since extensionId === this.#extensionID, it will delete a directory only
-  // in the top-most File System directory.
+  // It does not return invalid/error if the directory for the extension does not exist.
+  // If the directory does not exist, it instead returns:
+  //    { 'exists': false }
+  //
+  // You can use this when you cannot use messaging to run the command
+  // like it would do if you were to use the the FileSystemBrokerAPI class
+  // (not the same as messenger.FileSystemBrokerAPI.)
+  async extensionStats(extensionId, includeChildInfo) {
+    const nowMS = Date.now();
+
+    const parameters = {
+      'returnNotExist': true
+    };
+
+    if (includeChildInfo !== undefined) {
+      parameters['includeChildInfo'] = includeChildInfo;
+    }
+
+    const Command = {
+      'command':   'stats',
+      'parameters': parameters,
+    };
+
+    const result = await this.processInternalCommand(nowMS, Command, extensionId); // <---- passed-in extensionId
+
+    return result;
+  }
+
+
+
+  // This method is a shortcut for just calling processInternalCommand(),
+  // but it creates the Command object for you,
+  // it sets 'recursive' and 'returnNotExist' to true,
+  // and it DOES NOT use messaging.
   //
   // It does not return invalid/error if the directory for the extension does not exist.
   // If the directory does not exist, it instead returns:
@@ -240,13 +253,13 @@ export class FileSystemBrokerCommands {
   // (not the same as messenger.FileSystemBrokerAPI.)
   async deleteExtensionDirectory(extensionId) {
     const nowMS = Date.now();
+
     const Command = {
       'command':        'deleteDirectory',
       'recursive':      true,
       'returnNotExist': true, // no invalid/error response if it does not exist
     };
 
-    // full validation is done in processInternalCommand() -> processCommand() -> deleteDirectoryCommand()
     const result = await this.processInternalCommand(nowMS, Command, extensionId); // <---- passed-in extensionId
 
     return result;
@@ -259,11 +272,11 @@ export class FileSystemBrokerCommands {
   // it uses this.#extensionID as the extensionId,
   // and it DOES NOT use messaging.
   //
-  // Since extensionId === this.#extensionID, it will list files only
-  // in the top-most File System directory.
-  //
   // fsbListInfo is an INTERNAL-ONLY COMMAND, so the extensionId MUST BE this.#EXTENSION_ID
   // (see fsbListInfoCommand() below)
+  //
+  // Since extensionId === this.#extensionID, it will list files only
+  // in the top-most File System directory.
   //
   // You can use this when you cannot use messaging to run the command
   // like it would do if you were to use the the FileSystemBrokerAPI class
@@ -274,11 +287,7 @@ export class FileSystemBrokerCommands {
       'command': 'fsbListInfo',
     };
 
-    // full validation is done in processInternalCommand() -> processCommand() -> fsbListInfoCommand()
-    if (parameters && (typeof parameters) !== 'object') {
-      this.error(`fsbListInfo -- 'parameters' parameter is not type 'object', type='${(typeof parameters)}'`);
-      return ( { "invalid": `fsbListInfo: 'parameter' parameter is not type 'object', type='${(typeof parameters)}'` } );
-    } else if (parameters) {
+    if (parameters !== undefined) {
       Command['parameters'] = parameters;
     }
 
@@ -294,11 +303,11 @@ export class FileSystemBrokerCommands {
   // it uses this.#extensionID as the extensionId,
   // and it DOES NOT use messaging.
   //
-  // Since extensionId === this.#extensionID, it will list files only
-  // in the top-most File System directory.
-  //
   // fsbList is an INTERNAL-ONLY COMMAND, so the extensionId MUST BE this.#EXTENSION_ID
   // (see fsbListCommand() below)
+  //
+  // Since extensionId === this.#extensionID, it will list files only
+  // in the top-most FileSystemBroker directory.
   //
   // You can use this when you cannot use messaging to run the command
   // like it would do if you were to use the the FileSystemBrokerAPI class
@@ -309,11 +318,7 @@ export class FileSystemBrokerCommands {
       'command': 'fsbList',
     };
 
-    // full validation is done in processInternalCommand() -> processCommand() -> fsbListCommand()
-    if (parameters && (typeof parameters) !== 'object') {
-      this.error(`fsbList -- 'parameters' parameter is not an 'object', type='${(typeof parameters)}'`);
-      return ( { "invalid": `fsbList: 'parameters' parameter is not an 'object', type='${(typeof parameters)}'` } );
-    } else if (parameters) {
+    if (parameters !== undefined) {
       Command['parameters'] = parameters;
     }
 
@@ -328,9 +333,6 @@ export class FileSystemBrokerCommands {
   // but it creates the Command object for you,
   // it uses this.#extensionID as the extensionId,
   // and it DOES NOT use messaging.
-  //
-  // Since extensionId === this.#extensionID, it will list files only
-  // in the top-most File System directory.
   //
   // fsbStats is an INTERNAL-ONLY COMMAND, so the extensionId MUST BE this.#EXTENSION_ID
   // (see fsbStatsCommand() below)
@@ -344,11 +346,7 @@ export class FileSystemBrokerCommands {
       'command': 'fsbStats',
     };
 
-    // full validation is done in processInternalCommand() -> processCommand() -> fsbStatsCommand()
-    if (parameters && (typeof parameters) !== 'object') {
-      this.error(`fsbStats -- 'parameters' parameter is not an 'object', type='${(typeof parameters)}'`);
-      return ( { "invalid": `fsbStats: 'parameters' parameter is not an 'object', type='${(typeof parameters)}'` } );
-    } else if (parameters) {
+    if (parameters !== undefined) {
       Command['parameters'] = parameters;
     }
 
@@ -364,11 +362,11 @@ export class FileSystemBrokerCommands {
   // it uses this.#extensionID as the extensionId,
   // and it DOES NOT use messaging.
   //
-  // Since extensionId === this.#extensionID, it will list files only
-  // in the top-most File System directory.
-  //
   // fsbDeleteDirectory is an INTERNAL-ONLY COMMAND, so the extensionId MUST BE this.#EXTENSION_ID
   // (see fsbDeleteDirectory() below)
+  //
+  // Since extensionId === this.#extensionID, it will delete directories only
+  // in the top-most BrokerFileSystem directory.
   //
   // You can use this when you cannot use messaging to run the command
   // like it would do if you were to use the the FileSystemBrokerAPI class
@@ -377,14 +375,13 @@ export class FileSystemBrokerCommands {
     const nowMS = Date.now();
     const Command = {
       'command': 'fsbDeleteDirectory',
-      'directoryName': directoryName,
     };
 
-    // full validation is done in processInternalCommand() -> processCommand() -> fsbDeleteDirectoryCommand()
-    if (parameters && (typeof parameters) !== 'object') {
-      this.error(`fsDeleteDirectory -- 'parameters' parameter is not an 'object', type='${(typeof parameters)}'`);
-      return ( { "invalid": `fsbDeleteDirectory: 'parameters' parameter is not an 'object', type='${(typeof parameters)}'` } );
-    } else if (parameters) {
+    if (directoryName !== undefined) {
+      Command['directoryName'] = directoryName;
+    }
+
+    if (parameters !== undefined) {
       Command['parameters'] = parameters;
     }
 
@@ -527,7 +524,7 @@ export class FileSystemBrokerCommands {
       } else {
         this.caught(error, `existsCommand -- Caught error while checking if file "${extensionId}" exists:`);
       }
-      return ( { "error": `Error Processing exists Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing exists Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
     return false;
@@ -559,7 +556,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `isRegularFileCommand -- Caught error while checking if Item "${command.fileName}" exists and is a Regular File:`);
-      return ( { "error": `Error Processing isRegularFile Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing isRegularFile Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
     return false;
@@ -599,7 +596,7 @@ export class FileSystemBrokerCommands {
       } else {
         this.caught(error, `isDirectoryCommand -- Caught error while checking if Item "${extensionId}" exists and is a Directory:`);
       }
-      return ( { "error": `Error Processing isDirectory Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing isDirectory Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
     return false;
@@ -648,7 +645,7 @@ export class FileSystemBrokerCommands {
       } else {
         this.caught(error, `hasFilesCommand -- Caught error while checking if Item "${extensionId}" exists and is a Directory:`);
       }
-      return ( { "error": `Error Processing hasFiles Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing hasFiles Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
     try {
@@ -668,7 +665,7 @@ export class FileSystemBrokerCommands {
       } else {
         this.caught(error, `hasFilesCommand -- Caught error while checking if file "${extensionId}" contains files:`);
       }
-      return ( { "error": `Error Processing hasFiles Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing hasFiles Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
     return false;
@@ -717,7 +714,7 @@ export class FileSystemBrokerCommands {
       } else {
         this.caught(error, `getFileCountCommand -- Caught error while checking if Item "${extensionId}" exists and is a Directory:`);
       }
-      return ( { "error": `Error Processing getFileCount Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing getFileCount Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
     try {
@@ -737,7 +734,7 @@ export class FileSystemBrokerCommands {
       } else {
         this.caught(error, `getFileCountCommand -- Caught error while getting the file count for Directory "${extensionId}":`);
       }
-      return ( { "error": `Error Processing getFileCount Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing getFileCount Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
     return false;
@@ -756,7 +753,7 @@ export class FileSystemBrokerCommands {
       return ( { "invalid": "writeFile Command: 'fileName' parameter type must be 'string'" } );
     }
 
-    if ((typeof command.data) === 'undefined' || command.data == null) {
+    if ((typeof command.data) === 'undefined' || command.data === null) {
       this.debug("writeFileCommand -- Message has no 'data' parameter");
       return ( { "invalid": "writeFile Command: no 'data' parameter" } );
     } else if ((typeof command.data) !== 'string') {
@@ -803,7 +800,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `writeFileCommand -- Caught error while writing file "${command.fileName}":`);
-      return ( { "error": `Error Processing writeFile Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing writeFile Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
     return false;
@@ -822,7 +819,7 @@ export class FileSystemBrokerCommands {
       return ( { "invalid": "replaceFile Command: 'fileName' parameter type must be 'string'" } );
     }
 
-    if ((typeof command.data) === 'undefined' || command.data == null) {
+    if ((typeof command.data) === 'undefined' || command.data === null) {
       this.debug("replaceFileCommand -- Message has no 'data' parameter");
       return ( { "invalid": "replaceFile Command: no 'data' parameter" } );
     } else if ((typeof command.data) !== 'string') {
@@ -843,7 +840,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `replaceFileCommand -- Caught error while writing file "${command.fileName}":`);
-      return ( { "error": `Error Processing replaceFile Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing replaceFile Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
     return false;
@@ -862,7 +859,7 @@ export class FileSystemBrokerCommands {
       return ( { "invalid": "appendToFile Command: 'fileName' parameter type must be 'string'" } );
     }
 
-    if ((typeof command.data) === 'undefined' || command.data == null) {
+    if ((typeof command.data) === 'undefined' || command.data === null) {
       this.debug("appendToFileCommand -- Message has no 'data' parameter");
       return ( { "invalid": "appendToFile Command: no 'data' parameter" } );
     } else if ((typeof command.data) !== 'string') {
@@ -883,7 +880,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `appendToFileCommand -- Caught error while writing file "${command.fileName}":`);
-      return ( { "error": `Error Processing appendToFile Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing appendToFile Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
     return false;
@@ -902,7 +899,7 @@ export class FileSystemBrokerCommands {
       return ( { "invalid": "writeJSONFile Command: 'fileName' parameter type must be 'string'" } );
     }
 
-    if ((typeof command.data) === 'undefined' || command.data == null) {
+    if ((typeof command.data) === 'undefined' || command.data === null) {
       this.debug("writeJSONFileCommand -- Message has no 'data' parameter");
       return ( { "invalid": "writeJSONFile Command: no 'data' parameter" } );
     } else if ((typeof command.data) !== 'string') {
@@ -946,7 +943,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `writeJSONFileCommand -- Caught error while writing file "${command.fileName}":`);
-      return ( { "error": `Error Processing writeJSONFile Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing writeJSONFile Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
     return false;
@@ -965,7 +962,7 @@ export class FileSystemBrokerCommands {
       return ( { "invalid": "writeObjectToJSONFile Command: 'fileName' parameter type must be 'string'" } );
     }
 
-    if ((typeof command.object) === 'undefined' || command.object == null) {
+    if ((typeof command.object) === 'undefined' || command.object === null) {
       this.debug("writeObjectToJSONFileCommand -- Message has no 'object' parameter");
       return ( { "invalid": "writeObjectToJSONFile Command: no 'object' parameter" } );
     } else if ((typeof command.object) !== 'object') {
@@ -1010,7 +1007,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `writeObjectToJSONFileCommand -- Caught error while writing file "${command.fileName}":`);
-      return ( { "error": `Error Processing writeObjectToJSONFile Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing writeObjectToJSONFile Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
     return false;
@@ -1054,7 +1051,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `readFileCommand -- Caught error while reading file "${command.fileName}":`);
-      return ( { "error": `Error Processing readFile Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing readFile Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
     return false;
@@ -1099,7 +1096,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `readJSONFileCommand -- Caught error while reading file "${command.fileName}":`);
-      return ( { "error": `Error Processing readJSONFile Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing readJSONFile Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
     return false;
@@ -1143,7 +1140,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `readObjectFromJSONFileCommand -- Caught error while reading file "${command.fileName}":`);
-      return ( { "error": `Error Processing readObjectFromJSONFile Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing readObjectFromJSONFile Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
     return false;
@@ -1205,7 +1202,7 @@ export class FileSystemBrokerCommands {
       } else {
         this.caught(error, `getFileInfoCommand -- Caught error while getting File Info for file "${extensionId}":`);
       }
-      return ( { "error": `Error Processing getFileInfo Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing getFileInfo Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
     return; // undefined .. maybe "invalid" instead???
@@ -1257,7 +1254,7 @@ export class FileSystemBrokerCommands {
       }
     } catch (error) {
       this.caught(error, `renameFileCommand -- Caught error getting info for From file "${command.fromFileName}":`);
-      return ( { "error": `Error Processing renameFile Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing renameFile Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
     var toFileOverwrite = false;
@@ -1276,7 +1273,7 @@ export class FileSystemBrokerCommands {
         }
       } catch (error) {
         this.caught(error, `renameFileCommand -- Caught error getting info for To file "${command.toFileName}":`);
-        return ( { "error": `Error Processing renameFile Command: ${error.message}`, "code": "500" } );
+        return ( { "error": `Error Processing renameFile Command: ${error.name} - ${error.message}`, "code": "500" } );
       }
     }
 
@@ -1285,7 +1282,7 @@ export class FileSystemBrokerCommands {
       return ( { "fromFileName": command.fromFileName, "toFileName": command.toFileName, 'renamed': renamed } );
     } catch (error) {
       this.caught(error, `renameFileCommand -- Caught error renaming file "${command.fromFileName}" to "${command.toFileName}":`);
-      return ( { "error": `Error Processing renameFile Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing renameFile Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
     return; // undefined .. maybe "invalid" instead???
@@ -1312,7 +1309,7 @@ export class FileSystemBrokerCommands {
     var returnNotExist = false;
     if ((typeof command.returnNotExist) === 'boolean') {
       returnNotExist = command.returnNotExist;
-    } else if (command.returnNotExist !== null && (typeof command.returnNotExist) !== 'undefined') {
+    } else if ((typeof command.returnNotExist) !== 'undefined') {
       this.debug(`deleteFileCommand -- Message 'returnNotExist' parameter type is not 'boolean'. It is '${typeof command.returnNotExist}'`);
       return ( { "invalid": `deleteFile Command: 'returnNotExist' parameter must be type 'boolean'. It is '${typeof command.returnNotExist}'` } );
     }
@@ -1341,7 +1338,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `deleteFileCommand -- Caught error while deleting file "${command.fileName}":`);
-      return ( { "error": `Error Processing deleteFile Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing deleteFile Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
     return false;
@@ -1376,7 +1373,7 @@ export class FileSystemBrokerCommands {
     var returnNotExist = false;
     if ((typeof command.returnNotExist) === 'boolean') {
       returnNotExist = command.returnNotExist;
-    } else if (command.returnNotExist !== null && (typeof command.returnNotExist) !== 'undefined') {
+    } else if ((typeof command.returnNotExist) !== 'undefined') {
       this.debug(`deleteDirectoryCommand -- Message 'returnNotExist' parameter type is not 'boolean'. It is '${typeof command.returnNotExist}'`);
       return ( { "invalid": `deleteDirectory Command: 'returnNotExist' parameter must be type 'boolean'. It is '${typeof command.returnNotExist}'` } );
     }
@@ -1446,7 +1443,7 @@ export class FileSystemBrokerCommands {
       } else {
         this.caught(error, `deleteDirectoryCommand -- Caught error while deleting directory "${extensionId}":`);
       }
-      return ( { "error": `Error Processing deleteDirectory Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing deleteDirectory Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
     return false;
@@ -1465,7 +1462,7 @@ export class FileSystemBrokerCommands {
       }
     } catch (error) {
       this.caught(error, `makeDirectoryCommand -- Caught error while checking for existing file or directory "${extensionId}":`);
-      return ( { "error": `Error Processing makeDirectory Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing makeDirectory Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
     try {
@@ -1475,7 +1472,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `makeDirectoryCommand -- Caught error while creating directory "${extensionId}":`);
-      return ( { "error": `Error Processing makeDirectory Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing makeDirectory Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
     return false;
@@ -1507,7 +1504,7 @@ export class FileSystemBrokerCommands {
       }
     } catch (error) {
       this.caught(error, `hasFilesCommand -- Caught error while checking if Item "${extensionId}" exists and is a Directory:`);
-      return ( { "error": `Error Processing listFiles Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing listFiles Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
     try {
@@ -1518,7 +1515,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `listFilesCommand -- Caught error while listing files for extension "${extensionId}":`);
-      return ( { "error": `Error Processing listFiles Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing listFiles Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
   }
 
@@ -1548,7 +1545,7 @@ export class FileSystemBrokerCommands {
       }
     } catch (error) {
       this.caught(error, `hasFilesCommand -- Caught error while checking if Item "${extensionId}" exists and is a Directory:`);
-      return ( { "error": `Error Processing listFileInfo Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing listFileInfo Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
     try {
@@ -1559,7 +1556,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `listFileInfoCommand -- Caught error while listing files for extension "${extensionId}":`);
-      return ( { "error": `Error Processing listFileInfo Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing listFileInfo Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
   }
 
@@ -1589,7 +1586,7 @@ export class FileSystemBrokerCommands {
       }
     } catch (error) {
       this.caught(error, `hasFilesCommand -- Caught error while checking if Item "${extensionId}" exists and is a Directory:`);
-      return ( { "error": `Error Processing list Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing list Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
     try {
@@ -1600,7 +1597,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `list -- Caught error while listing items for extension "${extensionId}":`);
-      return ( { "error": `Error Processing list Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing list Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
   }
 
@@ -1630,7 +1627,7 @@ export class FileSystemBrokerCommands {
       }
     } catch (error) {
       this.caught(error, `hasFilesCommand -- Caught error while checking if Item "${extensionId}" exists and is a Directory:`);
-      return ( { "error": `Error Processing listInfo Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing listInfo Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
     try {
@@ -1641,7 +1638,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `listInfo -- Caught error while listing items for extension "${extensionId}":`);
-      return ( { "error": `Error Processing listInfo Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing listInfo Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
   }
 
@@ -1679,7 +1676,7 @@ export class FileSystemBrokerCommands {
       } else {
         this.caught(error, `getFullPathNameCommand -- Caught error while getting full pathname for file "${extensionId}":`);
       }
-      return ( { "error": `Error Processing getFullPathName Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing getFullPathName Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
     return false;
@@ -1706,7 +1703,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `isValidFileNameCommand -- Caught error while checking for valid fileName for file "${command.fileName}":`);
-      return ( { "error": `Error Processing isValidFileName Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing isValidFileName Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
     return false;
@@ -1733,7 +1730,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `isValidDirectoryNameCommand -- Caught error while checking for valid directoryName for directory "${command.directoryName}":`);
-      return ( { "error": `Error Processing isValidDirectoryName Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing isValidDirectoryName Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
     return false;
@@ -1752,7 +1749,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, "getFileSystemPathNameCommand -- Caught error while getting full pathName for FileSystem:");
-      return ( { "error": `Error Processing getFileSystemPathName Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing getFileSystemPathName Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
     return false;
@@ -1776,19 +1773,29 @@ export class FileSystemBrokerCommands {
       }
     }
 
+    var returnNotExist = parameters?.returnNotExist;
+    if (returnNotExist === null || (typeof returnNotExist) === 'undefined') {
+      // this is ok
+      returnNotExist = false;
+    } else if ((typeof returnNotExist) !== 'boolean') {
+      this.debug(`statsCommand -- Message 'parameters.returnNotExist' type is not 'boolean'. It is '${typeof returnNotExist}'`);
+      return ( { "invalid": `stats Command: 'parameters.returnNotExist' must be type 'boolean'. It is '${typeof returnNotExist}'` } );
+    }
+
     var includeChildInfo = parameters?.includeChildInfo;
-    if (includeChildInfo == null || (typeof includeChildInfo) === 'undefined') {
+    if (includeChildInfo === null || (typeof includeChildInfo) === 'undefined') {
+      // this is ok
       includeChildInfo = false;
     } else if ((typeof includeChildInfo) !== 'boolean') {
       this.debug(`statsCommand -- 'parameters.includeChildInfo' type is not 'boolean': '${typeof includeChildInfo}'` );
-      return ( { "invalid": `stats Command: 'parameters.includeChlidInfo' type must be 'boolean': type='${typeof includeChildInfo}'` } );
+      return ( { "invalid": `stats Command: 'parameters.includeChlidInfo' must be type 'boolean': It is '${typeof includeChildInfo}'` } );
     }
 
     var types = parameters?.types;
-    if (types == null && (typeof types) === 'undefined') {
+    if (types === null || (typeof types) === 'undefined') {
       // this is ok
     } else if (! includeChildInfo) {
-      this.debug("statsCommand -- 'parameters.types' parameter is not allowed when 'parameters.includeChildInfo is not 'true'");
+      this.debug("statsCommand -- 'parameters.types' parameter is not allowed when 'parameters.includeChildInfo is not 'true' - parameters:\n", parameters);
       return ( { "invalid": "stats -- 'parameters.types' parameter is not allowed when 'parameters.includeChildInfo' is not 'true'" } );
     } else if ((typeof types) !== 'object') {
       this.debug(`statsCommand -- Invalid 'parameters.types' parameter type - Must be 'object': type='${(typeof types)}'`);
@@ -1814,8 +1821,12 @@ export class FileSystemBrokerCommands {
     try {
       const exists = await messenger.BrokerFileSystem.exists(extensionId);
       if (! exists) {
-        this.debug(`statsCommand -- Directory does not exist: "${extensionId}"`);
-        return ( { "invalid": `stats Command: Extension Directory does not exist: "${extensionId}"` } );
+        this.debug(`statsCommand -- Extension directory does not exist: "${extensionId}"`);
+        if (returnNotExist) {
+          return ( { "exists": false } );
+        } else {
+          return ( { "invalid": `stats Command: Extension Directory does not exist: "${extensionId}"` } );
+        }
       }
 
       const isDirectory = await messenger.BrokerFileSystem.isDirectory(extensionId);
@@ -1825,18 +1836,11 @@ export class FileSystemBrokerCommands {
       }
     } catch (error) {
       this.caught(error, `statsCommand -- Caught error while checking if Item "${extensionId}" exists and is a Directory:`);
-      return ( { "error": `Error Processing stats Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing stats Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
     try {
-      this.debug(`statsCommand -- getting stats for extension "${extensionId}"`);
-this.debug(
-  "\n\n++++++++++stats++++++++++",
-  `\n extensionId type='${(typeof extensionId)}' value=${extensionId} :::`, extensionId,
-  `\n includeChildInfo type='${(typeof includeChildInfo)}' value=${includeChildInfo} :::`, includeChildInfo,
-  `\n types type='${(typeof types)}' value=${types} :::`, types,
-  "\n\n++++++++++stats++++++++++\n\n",
-);
+      this.debug(`statsCommand -- getting stats for extension "${extensionId}", parameters:\n`, parameters);
       const stats = await messenger.BrokerFileSystem.stats(extensionId, parameters);
       this.debug(`statsCommand -- stats.extenstionId=${stats.extenstionId}\n`, stats);
 
@@ -1846,7 +1850,7 @@ this.debug(
 
     } catch (error) {
       this.caught(error, `statsCommand -- Caught error getting stats for extension "${extensionId}":`);
-      return ( { "error": `Error Processing stats Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing stats Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
   }
 
@@ -1875,7 +1879,7 @@ this.debug(
     }
 
     const types = parameters?.types;
-    if (types == null || (typeof types) === 'undefined') {
+    if (types === null || (typeof types) === 'undefined') {
       // this is ok
     } else if ((typeof types) !== 'object') {
       this.debug(`fsbList -- Invalid 'types' parameter type - Must be 'object': type='${(typeof types)}'`);
@@ -1926,7 +1930,7 @@ this.debug(
 //    }
 //  } catch (error) {
 //    this.caught(error, `fsbListInfoCommand -- Caught error while checking if Item "${extensionId}" exists and is a Directory:`);
-//    return ( { "error": `Error Processing fsbListInfo Command: ${error.message}`, "code": "500" } );
+//    return ( { "error": `Error Processing fsbListInfo Command: ${error.name} - ${error.message}`, "code": "500" } );
 //  }
 
     try {
@@ -1940,7 +1944,7 @@ this.debug(
 
     } catch (error) {
       this.caught(error, `fsbListInfoCommand -- Caught error while listing items for the Extension FileSystem`);
-      return ( { "error": `Error Processing fsbListInfo Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing fsbListInfo Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
   }
 
@@ -1969,7 +1973,7 @@ this.debug(
     }
 
     const types = parameters?.types;
-    if (types == null || (typeof types) === 'undefined') {
+    if (types === null || (typeof types) === 'undefined') {
       // this is ok
     } else if ((typeof types) !== 'object') {
       this.debug(`fsbList -- Invalid 'types' parameter type - Must be 'object': type='${(typeof types)}'`);
@@ -2020,7 +2024,7 @@ this.debug(
 //    }
 //  } catch (error) {
 //    this.caught(error, `fsbListCommand -- Caught error while checking if Item "${extensionId}" exists and is a Directory:`);
-//    return ( { "error": `Error Processing fsbList Command: ${error.message}`, "code": "500" } );
+//    return ( { "error": `Error Processing fsbList Command: ${error.name} - ${error.message}`, "code": "500" } );
 //  }
 
     try {
@@ -2034,7 +2038,7 @@ this.debug(
 
     } catch (error) {
       this.caught(error, `fsbListCommand -- Caught error while listing items for the Extension FileSystem`);
-      return ( { "error": `Error Processing fsbList Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing fsbList Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
   }
 
@@ -2062,7 +2066,7 @@ this.debug(
     }
 
     var includeDirStats = parameters?.includeDirStats;
-    if (includeDirStats == null || (typeof includeDirStats) === 'undefined') {
+    if (includeDirStats === null || (typeof includeDirStats) === 'undefined') {
       includeDirStats = true; // <----------------------------------------------------- NOTE: DEFAULT IS true -------------------------<<<<<
     } else if ((typeof includeDirStats) !== 'boolean') {
       this.debug(`fsbStatsCommand -- 'parameters.includeDirStats' type is not 'boolean': '${typeof includeDirStats}'` );
@@ -2079,7 +2083,7 @@ this.debug(
 
     } catch (error) {
       this.caught(error, `fsbStatsCommand -- Caught error while listing items for the Extension FileSystem`);
-      return ( { "error": `Error Processing fsbStats Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing fsbStats Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
   }
 
@@ -2136,7 +2140,7 @@ this.debug(
 
     } catch (error) {
       this.caught(error, `fsbDeleteDirectoryCommand -- Caught error while deleting a directory in the Extension FileSystem: "${command.directoryName}"`);
-      return ( { "error": `Error Processing fsbDeleteDirectory Command: ${error.message}`, "code": "500" } );
+      return ( { "error": `Error Processing fsbDeleteDirectory Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
   }
 
@@ -2165,7 +2169,7 @@ this.debug(
   //   otherwise use (key + ":object.entries.length") as the key and object.entries.length as the value
   addCommandToObject(command, toObject) {
     // why for the love of puppies is (typeof null) === 'object'???
-    if (command == null || toObject == null || (typeof command) !== 'object' || (typeof toObject) !== 'object') {
+    if (command === null || toObject === null || (typeof command) !== 'object' || (typeof toObject) !== 'object') {
       // MABXXX
     } else {
       for (const [key, value] of Object.entries(command)) {
@@ -2503,6 +2507,7 @@ this.debug(
     for (const key of Object.keys(parms)) {
       if ((typeof key) !== 'string') return '(not a string)';
       switch (key) {
+        case 'returnNotExist':
         case 'includeChildInfo':
         case 'types':
           break;

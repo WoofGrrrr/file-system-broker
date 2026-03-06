@@ -4,7 +4,7 @@ import { FileSystemBrokerCommands  } from '../modules/commands.js';
 import { FsbEventLogger            } from '../modules/event_logger.js';
 import { FileSystemBrokerAPI       } from '../modules/FileSystemBroker/filesystem_broker_api.js';
 import { FileSystemBrokerSelfTests } from '../modules/selftests.js';
-import { logProps, getExtensionId, getI18nMsg, parseDocumentLocation, formatMsToDateTime12HR } from '../modules/utilities.js';
+import { logProps, getExtensionId, isValidExtensionId, getI18nMsg, getI18nMsgSubst, parseDocumentLocation, formatMsToDateTime12HR } from '../modules/utilities.js';
 
 
 class OptionsUI {
@@ -167,18 +167,18 @@ class OptionsUI {
         }
       }
     }
-    
+
     if (false) {
       var parameters;
 
       parameters = { 'includeChildInfo': true };
       const stats1 = await this.fsBrokerApi.stats(parameters); // get statitics for our own extension directory
       this.debugAlways("\n\n========== EXTENSION STATS1 ==========\n", stats1, "\n\n========== EXTENSION STATS1 ==========\n\n");
-      
+
       parameters = { 'includeChildInfo': true, 'types': ['regular'] };
       const stats2 = await this.fsBrokerApi.stats(parameters); // get statitics for our own extension directory
       this.debugAlways("\n\n========== EXTENSION STATS2 ==========\n", stats2, "\n\n========== EXTENSION STATS2 ==========\n\n");
-      
+
       parameters = { 'matchGLOB': '*', 'types': ['directory','regular'] };
       const info1 = await this.fsBrokerApi.fsbListInfo(parameters); // using messaging
       this.debugAlways("\n\n========== FSB INFO1 ==========\n", info1, "\n\n========== FSB INFO1 ==========\n\n");
@@ -290,7 +290,7 @@ class OptionsUI {
   async setupListeners() {
     this.debug(`-- start -- windowMode=${this.windowMode}`);
 
-    document.addEventListener( "change", (e) => this.optionChanged(e) );   // One of the checkboxes or radio buttons was clicked or a select has changed
+    document.addEventListener( "change", (e) => this.optionChanged(e) );   // One of the checkboxes or radio buttons, etc, was clicked or a select has changed
     document.addEventListener( "click",  (e) => this.actionClicked(e) );   // An Actions button was clicked (or a label, since <label for="xx"> does not work)
 
     const extensionOptionsTitleDiv = document.querySelector("#fsbExtensionOptionsTitle");
@@ -498,6 +498,8 @@ class OptionsUI {
     this.debug("-- end");
   }
 
+
+
   enableExtensionAccessControls(enable) {
     this.debug(`-- start -- enable=${enable}`);
 
@@ -653,7 +655,7 @@ class OptionsUI {
             {
               return (extension.type === 'extension' && extension.id === extensionId);
             }
-          );  
+          );
           this.debug("---extensionInfo\n", extensionInfo);
         }
 
@@ -664,7 +666,7 @@ class OptionsUI {
         }
 
         var extDirStats = (this.fsbStats && this.fsbStats.dirStats && (extensionId in this.fsbStats.dirStats)) ? this.fsbStats.dirStats[extensionId] : null;
-         
+
         const extensionListItemUI = await this.buildExtensionListItemUI(extensionId, extensionProps, extDirStats, extensionInfo);
         domFsbExtensionList.appendChild(extensionListItemUI);
 
@@ -760,7 +762,7 @@ class OptionsUI {
 //      const controlsRightLabel = document.createElement("label");
 //      controlsRightTH.appendChild(controlsRightLabel);
 //    thead.appendChild(controlsRightTH);
-  
+
       // Create controls-right element and add it to the row
       const controlsRightTH = document.createElement("td");
         controlsRightTH.classList.add("extension-head-controls-right"); // extension-head-item > extension-head-controls-right
@@ -783,7 +785,7 @@ class OptionsUI {
 //          deleteButton.classList.add("extension-head-button");    // extension-head-item > extension-head-controls-right > extension-edit-controls > extension-head-button
 //          deleteButton.classList.add("extension-icon-button");    // extension-head-item > extension-head-controls-right > extension-edit-controls > extension-icon-button
 //          deleteButton.classList.add("icon-only");                // extension-head-item > extension-head-controls-right > extension-edit-controls > icon-only
-//          deleteButton.classList.add("delete-extension");         // extension-head-item > extension-head-controls-right > extension-edit-controls > delete-extension
+//          deleteButton.classList.add("remove-extension");         // extension-head-item > extension-head-controls-right > extension-edit-controls > remove-extension
 //          deleteButton.setAttribute("extensionId", extensionId);
 //          if (this.tooltip_button_delete) deleteButton.setAttribute("title", this.tooltip_button_delete);
 //          if (locked) {
@@ -824,7 +826,7 @@ class OptionsUI {
       extensionEditTitleTR.appendChild(emptyRightTD);
 
     return extensionEditTitleTR;
-  }  
+  }
 
 
 
@@ -912,7 +914,7 @@ class OptionsUI {
       extensionEditTR.appendChild(controlsRightTD);
 
     return extensionEditTR;
-  }  
+  }
 
 
 
@@ -970,7 +972,7 @@ class OptionsUI {
       extensionEditErrorTR.appendChild(emptyRightTD);
 
     return extensionEditErrorTR;
-  }  
+  }
 
 
 
@@ -993,6 +995,7 @@ class OptionsUI {
                 `\n- locked .............. ${locked}`,
                 `\n- installed ........... ${installed}`,
                 `\n- disabled ............ ${disabled}`,
+                `\n- allowAccess ......... ${allowAccess}`,
               );
 
     if (extIdFromProps !== extensionId) {
@@ -1004,11 +1007,11 @@ class OptionsUI {
     }
 
     const extensionTR = document.createElement("tr");
-                         extensionTR.classList.add( "extension-list-item" );               // extension-list-item
-      if (installed)     extensionTR.classList.add( "extension-installed" );
-      if (locked)        extensionTR.classList.add( "extension-locked"    );
-      if (disabled)      extensionTR.classList.add( "extension-disabled"  );
-      if (! allowAccess) extensionTR.classList.add( "access-disallowed"   );
+                                     extensionTR.classList.add( "extension-list-item" );               // extension-list-item
+      if (installed)                 extensionTR.classList.add( "extension-installed" );
+      if (locked)                    extensionTR.classList.add( "extension-locked"    );
+      if (disabled)                  extensionTR.classList.add( "extension-disabled"  );
+      if (! allowAccess && ! locked) extensionTR.classList.add( "access-disallowed"   );
 
                        extensionTR.setAttribute( "extensionId",   extensionId   );
                        extensionTR.setAttribute( "extensionName", extensionName );
@@ -1016,10 +1019,9 @@ class OptionsUI {
 
 
       if (! locked) {
-        extensionTR.addEventListener("click",    (e) => this.extensionClicked(e), true);       // <====== NOTE: event "capturing" phase
-        extensionTR.addEventListener("dblclick", (e) => this.extensionDoubleClicked(e), true); // <====== NOTE: event "capturing" phase
+        extensionTR.addEventListener("click",    (e) => this.extensionClicked(e),       true); // <====== NOTE: true: event "capturing" phase
+        extensionTR.addEventListener("dblclick", (e) => this.extensionDoubleClicked(e), true); // <====== NOTE: true: event "capturing" phase
       }
-
 
       // Create allow-access-check checkbox inside a TD and add it to the row
       const controlsLeftTD = document.createElement("td");
@@ -1171,7 +1173,7 @@ class OptionsUI {
             deleteButton.classList.add("extension-list-button");    // extension-list-item > extension-list-controls-right > extension-edit-controls > extension-list-button
             deleteButton.classList.add("extension-icon-button");    // extension-list-item > extension-list-controls-right > extension-edit-controls > extension-icon-button
             deleteButton.classList.add("icon-only");                // extension-list-item > extension-list-controls-right > extension-edit-controls > icon-only
-            deleteButton.classList.add("delete-extension");         // extension-list-item > extension-list-controls-right > extension-edit-controls > delete-extension
+            deleteButton.classList.add("remove-extension");         // extension-list-item > extension-list-controls-right > extension-edit-controls > remove-extension
             deleteButton.setAttribute("extensionId", extensionId);
             if (this.tooltip_button_delete) deleteButton.setAttribute("title", this.tooltip_button_delete);
             if (locked) {
@@ -1184,7 +1186,7 @@ class OptionsUI {
       extensionTR.appendChild(controlsRightTD);
 
     return extensionTR;
-  }  
+  }
 
 
 
@@ -1289,107 +1291,147 @@ class OptionsUI {
 
 
 
-  // One of the Options checkboxes or radio buttons (etc) has been clicked or a select has changed
+  // Some input element on the Page was changed.
+  //
+  // Check to see if one of the Options checkboxes or radio buttons (etc) has been clicked or a select has changed
+  //
+  // NOTE: This listener is set on the DOCUMENT!!!
   async optionChanged(e) {
-    if (e == null) return;
+    if (e === null) return;
     this.debug(`-- tagName="${e.target.tagName}" type="${e.target.type}" fsbGeneralOption? ${e.target.classList.contains("fsbGeneralOption")} id="${e.target.id}"`);
 
     this.resetErrors();
 
     var target = e.target;
-    if ( target.tagName == "INPUT"
-         && target.classList.contains("fsbGeneralOption")
-         && ( target.type == "checkbox"
-              || target.type == "radio"
-            )
-       )
-    {
-      const optionName  = target.id;
-      const optionValue = target.checked;
+    if ( ! target.classList.contains('fsbGeneralOption') ) {
 
-      /* if it's a radio button, set the values for all the other buttons in the group to false */
-      if (target.type == "radio") { // is it a radio button?
-        this.debug(`-- radio buttton selected ${optionName}=<${optionValue}> - group=${target.name}`);
+      this.debug(`-- Event Target Element '${target.tagName}' classList does not contain class 'fsbGeneralOption'`);
 
-        // first, set this option
-        this.debug(`optionChanged -- Setting Radio Option {[${optionName}]: ${optionValue}}`);
-        await this.fsbOptionsApi.storeOption(
-          { [optionName]: optionValue }
-        );
+    } else {
 
-        // get all the elements with the same name, and if they're a radio, un-check them
-        if (target.name) { /* && (optionValue == true || optionValue == 'true')) { Don't need this. Event fired *ONLY* when SELECTED, i.e. true */
-          const radioGroupName = target.name;
-          const radioGroup = document.querySelectorAll(`input[type="radio"][name="${radioGroupName}"]`);
-          if (! radioGroup) {
-            this.debug('-- no radio group found');
-          } else {
-            this.debug(`-- radio group members length=${radioGroup.length}`);
-            if (radioGroup.length < 2) {
-              this.debug('-- no radio group members to reset (length < 2)');
-            } else {
-              for (const radio of radioGroup) {
-                if (radio.id != optionName) { // don't un-check the one that fired
-                  this.debug(`-- resetting radio button {[${radio.id}]: false}`);
-                  await this.fsbOptionsApi.storeOption(
-                    { [radio.id]: false }
-                  );
+      if (target.tagName === "INPUT") {
+        switch (target.type) {
+          case 'checkbox':
+          case 'radio': {
+              const optionName  = target.id;
+              const optionValue = target.checked;
+
+              /* if it's a radio button, set the values for all the other buttons in the group to false */
+              if (target.type === "radio") { // is it a radio button?
+                this.debug(`-- radio buttton selected ${optionName}=<${optionValue}> - group=${target.name}`);
+
+                // first, set this option
+                this.debug(`optionChanged -- Setting 'input' type='radio' Option {[${optionName}]: ${optionValue}}`);
+                await this.fsbOptionsApi.storeOption(
+                  { [optionName]: optionValue }
+                );
+
+                // get all the elements with the same name, and if they're a radio, un-check them
+                if (target.name) { /* && (optionValue === true || optionValue === 'true')) { Don't need this. Event fired *ONLY* when SELECTED, i.e. true */
+                  const radioGroupName = target.name;
+                  const radioGroup = document.querySelectorAll(`input[type="radio"][name="${radioGroupName}"]`);
+                  if (! radioGroup) {
+                    this.debug('-- no radio group found');
+                  } else {
+                    this.debug(`-- radio group members length=${radioGroup.length}`);
+                    if (radioGroup.length < 2) {
+                      this.debug('-- no radio group members to reset (length < 2)');
+                    } else {
+                      for (const radio of radioGroup) {
+                        if (radio.id !== optionName) { // don't un-check the one that fired
+                          this.debug(`-- resetting radio button {[${radio.id}]: false}`);
+                          await this.fsbOptionsApi.storeOption(
+                            { [radio.id]: false }
+                          );
+                        }
+                      }
+                    }
+                  }
+                }
+
+              } else {
+
+                this.debug(`-- Setting 'input' type='checkbox' Option {[${optionName}]: ${optionValue}}`);
+                await this.fsbOptionsApi.storeOption(
+                  { [optionName]: optionValue }
+                );
+
+                // special processing for these checkboxes
+                switch (optionName) {
+                  case "fsbExtensionAccessControlEnabled":
+                    this.extensionAccessControlCheckClicked(e, optionValue);
+                    break;
+                  case "fsbShowLoggingOptions":
+                    this.showHideLoggingOptions(optionValue);
+                    break;
+                  case "fsbShowOptionsHints":
+                    this.showHideHints(optionValue);
+                    break;
+                  case "fsbShowOptionsActions":
+                    this.showHideActions(optionValue);
+                    break;
                 }
               }
-            }
-          }
-        }
-      } else { // since we already tested for it, it's got to be a checkbox
 
-        this.debug(`-- Setting Checkbox Option {[${optionName}]: ${optionValue}}`);
+              break;
+            }
+
+          case 'email':
+          case 'number':
+          case 'password':
+          case 'text': {
+              const optionName  = target.id;
+              const optionValue = target.value;
+              this.debug(`-- Setting 'input' type='${tag.type}' Option {[${optionName}]: ${optionValue}}`);
+              await this.fsbOptionsApi.storeOption(
+                { [optionName]: optionValue }
+              );
+
+              break;
+            }
+
+          default:
+
+            this.debug(`-- Not configured to handle 'input' with type='${tag.type}' changed events`);
+        } // END switch (target.type)
+
+      } else if (target.tagName === 'SELECT') {
+
+        const optionName  = target.id;
+        var   optionValue = target.value;
+
+        // too bad target.value returns a string
+        switch (optionName) {
+          case 'fsbAutoLogPurgeDays':
+            optionValue = Number(optionValue);
+            if (Number.isNaN(optionValue)) {
+              optionValue = 14; // 14 is the default
+              // target.value = optionValue; ??? // MABXXX fix it???
+            }
+            break;
+          case 'fsbAutoRemoveUninstalledExtensionsDays':
+            optionValue = Number(optionValue);
+            if (Number.isNaN(optionValue)) {
+              optionValue = 2; // 2 is the default
+              // target.value = optionValue; ??? // MABXXX fix it???
+            }
+            break;
+        }
+
+        this.debug(`-- Setting 'select' Option {[${optionName}]: ${optionValue}}`);
         await this.fsbOptionsApi.storeOption(
           { [optionName]: optionValue }
         );
 
-        // special processing for these checkboxes
-        switch (optionName) {
-          case "fsbExtensionAccessControlEnabled": 
-            this.extensionAccessControlCheckClicked(e, optionValue);
-            break;
-          case "fsbShowLoggingOptions": 
-            this.showHideLoggingOptions(optionValue);
-            break;
-          case "fsbShowOptionsHints": 
-            this.showHideHints(optionValue);
-            break;
-          case "fsbShowOptionsActions": 
-            this.showHideActions(optionValue);
-            break;
-        }
-      }
-    } else if ( target.tagName === 'SELECT'
-                && target.classList.contains("fsbGeneralOption")
-              )
-    {
-      const optionName  = target.id;
-      var   optionValue = target.value;
+      } else if (target.tagName === 'TEXTAREA') {
 
-      // too bad target.value returns a string
-      switch (optionName) {
-        case 'fsbAutoLogPurgeDays':
-          optionValue = +optionValue;
-          if (Number.isNaN(optionValue)) {
-            optionValue = 14; // 14 is the default
-            // target.value = optionValue; ???
-          }
-          break;
-        case 'fsbAutoRemoveUninstalledExtensionsDays':
-          optionValue = +optionValue;
-          if (Number.isNaN(optionValue)) {
-            optionValue = 2; // 2 is the default
-            // target.value = optionValue; ???
-          }
-          break;
+        this.debug("-- Not configured to handle 'textarea' changed events");
+
+      } else {
+
+        this.debug(`-- Not configured to handle '${target.tagName}' changed events`);
+
       }
-      this.debug(`-- Setting Select Option {[${optionName}]: ${optionValue}}`);
-      await this.fsbOptionsApi.storeOption(
-        { [optionName]: optionValue }
-      );
     }
   }
 
@@ -1450,7 +1492,7 @@ class OptionsUI {
 
 
 
-  // the user clicked an extension-head-button or extension-list-button or extension-edit-button: .edit-extension, .delete-extension, etc
+  // the user clicked an extension-head-button or extension-list-button or extension-edit-button: .edit-extension, .remove-extension, etc
   async extensionControlButtonClicked(e) {
     e.preventDefault();
     e.stopPropagation();
@@ -1467,16 +1509,21 @@ class OptionsUI {
                                       + `\n- extension-edit-button?=${e.target.classList.contains("extension-edit-button")}`
                                       + `\n- add-extension?=${e.target.classList.contains("add-extension")}`
                                       + `\n- edit-extension?=${e.target.classList.contains("edit-extension")}`
-                                      + `\n- delete-extension?=${e.target.classList.contains("delete-extension")}`
+                                      + `\n- remove-extension?=${e.target.classList.contains("remove-extension")}`
                                       + `\n- extensionId="${e.target.getAttribute('extensionId')}"`
                                     );
 
-    const button = e.target.closest("button");
+    var button;
+    if (e.target.tagName === "BUTTON") {
+      button = e.target;
+    } else if (e.target.tagName === "LABEL" && e.target.parentElement && e.target.parentElement.tagName === "BUTTON") {
+      button = e.target.parentElement;
+    }
 
     if (button) {
       if (button.classList.contains("extension-edit-button")) {
         const buttonId = button.getAttribute("id");
-        this.debug(`-- got edit button class "extension-edit-button", buttonId="${buttonId}"`); 
+        this.debug(`-- got edit button class "extension-edit-button", buttonId="${buttonId}"`);
 
         switch (buttonId) {
           case "extensionEditCancelButton":
@@ -1485,9 +1532,9 @@ class OptionsUI {
           case "extensionEditSaveButton":
             await this.extensionEditSaveButtonClicked(e);
             break;
-          default:  
-            this.debug(`-- UNKNOWN extension-edit-button BUTTON --  buttonId="${buttonId}"`); 
-        }    
+          default:
+            this.debug(`-- UNKNOWN extension-edit-button BUTTON --  buttonId="${buttonId}"`);
+        }
 
       } else if (button.classList.contains("extension-head-button")) {
         if (button.classList.contains("add-extension")) {
@@ -1496,11 +1543,11 @@ class OptionsUI {
 
       } else if (button.classList.contains("extension-list-button")) {
         if ( button.classList.contains("edit-extension")
-             || button.classList.contains("delete-extension")
+             || button.classList.contains("remove-extension")
            )
         {
           if (! button.hasAttribute("extensionId")) {
-            this.debug("-- I DIDN'T GET AN \"extensionId\" - I CAN'T DO ANYTHING!!!");
+            this.error("-- Cannot Edit or Remove - Button has no \"extensionId\" Atttribute!!!");
 
           } else {
             const extensionId = button.getAttribute("extensionId");
@@ -1509,19 +1556,19 @@ class OptionsUI {
 
             if (extensionTR.classList.contains("extension-locked"))  {
               // Should never happen - We should not have added an event listener to this TR
-              this.debug(`-- Extension is LOCKED: extensionId="${extensionId}"`);
+              this.error(`-- Cannot Edit or Delete - Extension is LOCKED: extensionId="${extensionId}"`);
 
             } else {
               if (button.classList.contains("edit-extension")) {
                 await this.editExtension(e, extensionId);
 
-              } else if (button.classList.contains("delete-extension")) {
-                await this.deleteExtension(e, extensionId);
+              } else if (button.classList.contains("remove-extension")) {
+                await this.removeExtension(e, extensionId);
               }
             }
           }
         } else {
-          this.debug("-- NOT OUR BUTTON -- got expected class \"extension-list-button\", but noot expected button-specific class --"); 
+          this.debug("-- NOT OUR BUTTON -- got expected class \"extension-list-button\", but noot expected button-specific class --");
         }
       } else {
         this.debug("-- NOT OUR BUTTON -- expected class \"extension-edit-button\" or \"extension-list-button\" not found --");
@@ -1538,7 +1585,7 @@ class OptionsUI {
   async extensionEditSaveButtonClicked(e) {
     e.preventDefault();
 
-    this.debug( "--" 
+    this.debug( "--"
                 + `\n- this.editorModeAdd         = ${this.editorModeAdd}`
                 + `\n- this.editorModeEdit        = ${this.editorModeEdit}`
                 + `\n- this.editorEditExtensionId = "${this.editorEditExtensionId}"`
@@ -1575,6 +1622,10 @@ class OptionsUI {
       if (! newExtensionId) {
         this.debug("-- Empty Extension ID");
         idErrorLabel.textContent = this.extensionListEditErrorExtensionIdEmpty;
+        errors++;
+      } else if ( ! isValidExtensionId(newExtensionId, true) ) { // allowUpperCase=true // && (newExtensionId !== this.editorEditExtensionId) ???
+        this.debugAlways(`-- Invalid Extension ID: "${newExtensionId}"`);
+        idErrorLabel.textContent = this.extensionListEditErrorExtensionIdInvalid;
         errors++;
       }
 
@@ -1719,7 +1770,7 @@ class OptionsUI {
           element.disabled = false;
         }
 
-        selector = `button.delete-extension[extensionId='${extensionId}']`;
+        selector = `button.remove-extension[extensionId='${extensionId}']`;
         element = domExtensionTR.querySelector(selector);
         if (! element) {
           this.debug(`-- Failed to select DELETE Button for Extension: extensionId="${extensionId}" selector="${selector}"`);
@@ -1742,7 +1793,7 @@ class OptionsUI {
 
   // the user clicked a allowAccess checkbox for an Extension, etc
   async extensionOptionCheckClicked(e) {
-    if (e == null) return;
+    if (e === null) return;
 
     this.resetErrors();
 
@@ -1761,12 +1812,13 @@ class OptionsUI {
     var target = e.target;
     if (e.target.tagName === 'LABEL') {
       const forID = e.target.getAttribute("for");
-this.debugAlways(`-- LABEL CLICKED -- id="${e.target.getAttribute('id')}" forId="${forId}" `);
+      this.debug(`-- LABEL CLICKED -- id="${e.target.getAttribute('id')}" forId="${forId}" `);
+
       if (forId) {
         const forElement = document.getElementById(forId);
         if (forElement) {
           target = forElement
-this.debugAlways(`-- LABEL CLICKED, FOR ELEMENT FOUND -- id="${target.getAttribute('id')}"`);
+          this.debugs(`-- LABEL CLICKED, FOR ELEMENT FOUND -- id="${target.getAttribute('id')}"`);
         }
       }
     }
@@ -1813,7 +1865,7 @@ this.debugAlways(`-- LABEL CLICKED, FOR ELEMENT FOUND -- id="${target.getAttribu
 
           } else if (e.target.classList.contains("XXX-check")) { // extension-list-item > extension-list-controls-left > XXX-check
             // Just a place-holder for future expansion
-            
+
           } else {
             // We don't know exactly which checkbox it is!!!  The outer "if" test should have prevented this
             this.debug("-- NOT OUR CHECKBOX --");
@@ -1867,12 +1919,16 @@ this.debugAlways(`-- LABEL CLICKED, FOR ELEMENT FOUND -- id="${target.getAttribu
 
 
 
-  // an Action button was clicked - refesh, allow/disallow all, allow/disallow selected, add, delete selected, etc
+  // Something on the Page was clicked.
+  //
+  // Check to see if an Action button was clicked - refesh, allow/disallow all, allow/disallow selected, add, remove selected, etc
   // or a label was clicked, so check it has a for="" attribute,
   // or the extension settings title was clicked
+  //
+  // NOTE: This listener is set on the DOCUMENT!!!
   async actionClicked(e) {
     this.debug('--');
-    if (e == null) return;
+    if (e === null) return;
 
     this.resetErrors();
 
@@ -1882,8 +1938,9 @@ this.debugAlways(`-- LABEL CLICKED, FOR ELEMENT FOUND -- id="${target.getAttribu
       this.debug(`-- BUTTON OR LABEL CLICKED tagName="${e.target.tagName}" id="${e.target.id}"`);
 
       // I thought the browser was supposed to take care of this <label> with a "for" attribute stuff...
-      if (e.target.tagName === 'LABEL' && ! e.target.parentElement || e.target.parentElement.tagName !== 'BUTTON') {
+      if (e.target.tagName === 'LABEL' && (! e.target.parentElement || e.target.parentElement.tagName !== 'BUTTON')) {
         // ignore it - let optionChanged() handle it
+        this.debug(`-- LABEL CLICKED, but it has no parentElement or its parentElement is not a BUTTON `);
       } else {
         e.preventDefault();
 
@@ -1928,17 +1985,17 @@ this.debugAlways(`-- LABEL CLICKED, FOR ELEMENT FOUND -- id="${target.getAttribu
             await this.showStatsManager(e);
             break;
           case "fsbDeleteSelectedButton":
-            await this.deleteSelectedExtensions(e);
+            await this.removeSelectedExtensions(e);
             break;
           default:
             this.debug(`-- NOT OUR BUTTON -- tagName="${e.target.tagName}" id="${e.target.id}"`);
         }
       }
-    } else if (e.target.tagName == "DIV") {
+    } else if (e.target.tagName === "DIV") {
       this.debug(`-- DIV CLICKED id="${e.target.id}"`);
 
       const divId = e.target.id;
-      if (divId == "fsbExtensionOptionsTitle") {
+      if (divId === "fsbExtensionOptionsTitle") {
         await this.extensionOptionsTitleDivClicked(e);
       }
     } else {
@@ -1972,10 +2029,10 @@ this.debugAlways(`-- LABEL CLICKED, FOR ELEMENT FOUND -- id="${target.getAttribu
 
     this.resetErrors();
 
-    if (e.target.tagName == "DIV") {
+    if (e.target.tagName === "DIV") {
       const divId = e.target.id;
 
-      if (divId == "fsbExtensionOptionsTitle") {
+      if (divId === "fsbExtensionOptionsTitle") {
         if (this.extensionOptionsTitleClickTimeout) {
           const timeout = this.extensionOptionsTitleClickTimeout;
           this.extensionsOptionTitleClickTimeout = null;
@@ -2293,7 +2350,7 @@ this.debugAlways(`-- LABEL CLICKED, FOR ELEMENT FOUND -- id="${target.getAttribu
           showOptionsWindowOnStartupDiv.appendChild(showOptionsWindowOnStartupLabel);
         devloperOptionsDiv.appendChild(showOptionsWindowOnStartupDiv);
 
-  /*  
+  /*
         const showOptionsWindowOnStartupDiv = document.createElement("div");
           showOptionsWindowOnStartupDiv.classList.add("option-panel");
           showOptionsWindowOnStartupDiv.classList.add("dev-option-panel");
@@ -2618,13 +2675,13 @@ this.debugAlways(`-- LABEL CLICKED, FOR ELEMENT FOUND -- id="${target.getAttribu
 
     this.resetErrors();
 
-    if (e.detail == 1 && (e.target.tagName == "TR" || e.target.tagName == "TD")) {
+    if (e.detail === 1 && (e.target.tagName === "TR" || e.target.tagName === "TD")) {
       this.debug("-- TR or TD Clicked");
 
       var trElement;
-      if (e.target.tagName == "TR") {
+      if (e.target.tagName === "TR") {
         trElement = e.target;
-      } else if (e.target.tagName == "TD" && e.target.parentElement && e.target.parentElement.tagName == "TR") {
+      } else if (e.target.tagName === "TD" && e.target.parentElement && e.target.parentElement.tagName === "TR") {
         trElement = e.target.parentElement;
       }
 
@@ -2690,21 +2747,21 @@ this.debugAlways(`-- LABEL CLICKED, FOR ELEMENT FOUND -- id="${target.getAttribu
     // Otherwise disable them
     const allowSelectedButton    = document.getElementById("fsbAllowSelectedButton");
     const disallowSelectedButton = document.getElementById("fsbDisallowSelectedButton");
-    const deleteSelectedButton   = document.getElementById("fsbDeleteSelectedButton");
-    if (this.getSelectedExtensionCount(e) == 0) {
+    const removeSelectedButton   = document.getElementById("fsbDeleteSelectedButton");
+    if (this.getSelectedExtensionCount(e) === 0) {
       allowSelectedButton.disabled    = true;
       disallowSelectedButton.disabled = true;
-      deleteSelectedButton.disabled   = true;
+      removeSelectedButton.disabled   = true;
       allowSelectedButton.setAttribute(    "disabled", "" );
       disallowSelectedButton.setAttribute( "disabled", "" );
-      deleteSelectedButton.setAttribute(   "disabled", "" );
+      removeSelectedButton.setAttribute(   "disabled", "" );
     } else {
       allowSelectedButton.disabled    = false;
       disallowSelectedButton.disabled = false;
-      deleteSelectedButton.disabled   = false;
+      removeSelectedButton.disabled   = false;
       allowSelectedButton.removeAttribute(    "disabled" );
       disallowSelectedButton.removeAttribute( "disabled" );
-      deleteSelectedButton.removeAttribute(   "disabled" );
+      removeSelectedButton.removeAttribute(   "disabled" );
     }
   }
 
@@ -2723,13 +2780,13 @@ this.debugAlways(`-- LABEL CLICKED, FOR ELEMENT FOUND -- id="${target.getAttribu
 
     this.debug(`-- e.target.tagName="${e.target.tagName}" e.detail=${e.detail}`);
 
-    if (e.detail == 2 && (e.target.tagName == "TR" || e.target.tagName == "TD")) {
+    if (e.detail === 2 && (e.target.tagName === "TR" || e.target.tagName === "TD")) {
       this.debug("-- TR or TD Double-Clicked");
 
       var trElement;
-      if (e.target.tagName == "TR") {
+      if (e.target.tagName === "TR") {
         trElement = e.target;
-      } else if (e.target.tagName == "TD" && e.target.parentElement && e.target.parentElement.tagName == "TR") {
+      } else if (e.target.tagName === "TD" && e.target.parentElement && e.target.parentElement.tagName === "TR") {
         trElement = e.target.parentElement;
       }
 
@@ -2769,7 +2826,7 @@ this.debugAlways(`-- LABEL CLICKED, FOR ELEMENT FOUND -- id="${target.getAttribu
     const props = await this.fsbOptionsApi.getExtensionPropsById(extensionId);
 
     if (! props) {
-      this.debug(`-- DID NOT GET EXTENSION PROPERTIES -- extensionId="${extensionId}"`);
+      this.error(`-- DID NOT GET EXTENSION PROPERTIES -- extensionId="${extensionId}"`);
     } else {
       this.enterEditMode(false, true, props.id, props.id, props.name, props.allowAccess);
     }
@@ -2808,7 +2865,7 @@ this.debugAlways(`-- LABEL CLICKED, FOR ELEMENT FOUND -- id="${target.getAttribu
     const extensionEditErrorTR    = document.getElementById("extension_edit_error");
     const nameErrorLabel          = document.getElementById("extension_edit_error_name");
     const idErrorLabel            = document.getElementById("extension_edit_error_id");
- 
+
     extensionListTable.classList.add("edit-mode");
 
     extensionEditTitleTR.classList.remove('display-none'); // SHOW the Editor Title Row - turn OFF display: none
@@ -2869,7 +2926,7 @@ this.debugAlways(`-- LABEL CLICKED, FOR ELEMENT FOUND -- id="${target.getAttribu
         element.disabled = true;
       }
 
-      selector = `button.delete-extension[extensionId='${extensionId}']`;
+      selector = `button.remove-extension[extensionId='${extensionId}']`;
       element = domExtensionTR.querySelector(selector);
       if (! element) {
         this.debug(`-- Failed to select DELETE Button for Extension: extensionId="${extensionId}" selector="${selector}"`);
@@ -2885,7 +2942,7 @@ this.debugAlways(`-- LABEL CLICKED, FOR ELEMENT FOUND -- id="${target.getAttribu
 
 
 
-  async deleteExtension(e, extensionId) {
+  async removeExtension(e, extensionId) {
     if (! extensionId) return;
 
     this.debug(`-- extensionId="${extensionId}"`);
@@ -2893,29 +2950,311 @@ this.debugAlways(`-- LABEL CLICKED, FOR ELEMENT FOUND -- id="${target.getAttribu
     const extensionTR = e.target.closest(selectorTR);
 
     if (! extensionTR) {
-      this.error(`-- Failed to get Extension container for delete: selector="${selectorTR}"`);
+      this.error(`-- Failed to get Extension container for remove: selector="${selectorTR}"`);
 
     } else if (extensionTR.classList.contains("extension-locked")) {
-      this.debug(`-- Extension is LOCKED`);
+      this.error(`-- Extension is LOCKED`);
 
     } else {
-      // returns the props for the Extension that was removed or 'undefined' if not
-      const removedExtensionProps = await this.fsbOptionsApi.removeExtension(extensionId);
+      const extensionName = extensionTR.getAttribute("extensionName");
 
-      if (! removedExtensionProps) {
-        this.error(`-- EXTENSION NOT DELETED extensionId="${extensionId}"`);
-        this.setErrorFor("fsbExtensionOptionsTitle", "options_message_error_extensionDeleteFailed");
+      const deleteExtDirs = await this.fsbOptionsApi.isEnabledOnRemoveExtensionDeleteDirectory();
 
+      this.debug(`Removing Extension id="${extensionId}" name="${extensionName}" deleteExtDirs=${deleteExtDirs}`);
+
+      var   extensionStats;
+      const statsResponse = await this.fsbCommandsApi.extensionStats(extensionId);
+      this.debug(`Stats Response for Extension "${extensionId}":\n`, statsResponse);
+
+      if (! statsResponse) {
+        this.debug(`Failed to get Response from call to extensionStats("${extensionId}")`);
+      } else if (statsResponse.stats) {
+        this.debug(`Stats for Extension "${extensionId}":\n`, statsResponse.stats);
+        extensionStats = statsResponse.stats;
+      } else if ((typeof statsResponse.exists) === 'boolean' && ! statsResponse.exists) {
+        this.debug(`Directory for Extension "${extensionId}" does not exist`);
+      } else if (statsResponse.error) {
+        this.debug(`"Error" Response getting stats for Extension "${extensionId}": "${statsResponse.error}"`);
+      } else if (statsResponse.invalid) {
+        this.debug(`"Invalid" Response getting stats for Extension "${extensionId}": "${statsResponse.invalid}"`);
       } else {
-        this.debug(`-- Extension Deleted extensionId="${extensionId}" removedExtensionProps.id="${removedExtensionProps.id}"` );
-        extensionTR.remove();
-        const deleteExtensionDirectories = await this.fsbOptionsApi.isEnabledOnRemoveExtensionDeleteDirectory();
-        if (deleteExtensionDirectories) {
-          const result = await this.fsbCommandsApi.deleteExtensionDirectory(extensionId); // this method is a shortcut to just calling fsbCommandsApi.processInternalCommand()
-          // do we care about the result?
+        this.error(`UNEXPECTED RESPONSE GETTING STATS for Extension "${extensionId}":\n`, statsResponse);
+      }
+
+      const confirmed = await this.#showRemoveExtensionConfirmDialog(extensionId, extensionName, extensionStats, deleteExtDirs);
+
+      if (! confirmed) {
+        this.debug(`The user has chosen NOT to continue with the removal of Extension id="${extensionId}" name="${extensionName}`);
+      } else {
+        this.debug(`The user has chosen to CONTINUE with the removal of Extension id="${extensionId}" name="${extensionName}`);
+
+        // returns the props for the Extension that was removed or 'undefined' if not
+        const removedExtensionProps = await this.fsbOptionsApi.removeExtension(extensionId);
+
+        if (! removedExtensionProps) {
+          this.error(`-- EXTENSION NOT REMOVED extensionId="${extensionId}"`);
+          this.setErrorFor("fsbExtensionOptionsTitle", "options_message_error_extensionDeleteFailed");
+
+        } else {
+          this.debug(`-- Extension Deleted extensionId="${extensionId}" removedExtensionProps:\n`, removedExtensionProps);
+
+          if (deleteExtDirs) {
+            // this method is a shortcut to just calling fsbCommandsApi.processInternalCommand()
+            // responds with { 'exists': false } if the directory does not exist
+            const deleteResponse = this.fsbCommandsApi.deleteExtensionDirectory(extensionId);
+            // do we care about the response?
+          }
+
+          extensionTR.remove();
         }
       }
     }
+  }
+
+
+
+  async #showRemoveExtensionConfirmDialog(extId, extName, extStats, willDeleteDir) {
+    const dirStats = extStats? extStats[extId] : undefined;
+
+    this.debugAlways( "\n--- parameters:",
+                `\n- extId ........... "${extId}"`,
+                `\n- extName ......... "${extName}"`,
+                `\n- dirName ......... "${extStats ? extStats.dirName : '(no directory)'}"`,
+                `\n- willDeleteDir ... ${willDeleteDir}`,
+                "\n- extStats:\n", extStats,
+                "\n- dirStats:\n", dirStats,
+              );
+
+
+    var   popupLeft   = 100;
+    var   popupTop    = 100;
+    var   popupHeight = 500;
+    var   popupWidth  = 600;
+    const mainWindow  = await messenger.windows.getCurrent();
+
+    if (! mainWindow) {
+      this.debug("-- DID NOT GET THE CURRENT (MAIN, mail:3pane) WINDOW!!! ---");
+
+    } else {
+      this.debug( "\n--- Got the Current (Main, mail:3pane) Window:",
+                  `\n- mainWindow.top=${mainWindow.top}`,
+                  `\n- mainWindow.left=${mainWindow.left}`,
+                  `\n- mainWindow.height=${mainWindow.height}`,
+                  `\n- mainWindow.width=${mainWindow.width}`,
+                );
+  //////popupTop  = mainWindow.top  + mainWindow. / 2;
+      popupTop  = mainWindow.top  + Math.round( (mainWindow.height - popupHeight) / 2 );
+  //////popupLeft = mainWindow.left + 100;
+      popupLeft = mainWindow.left + Math.round( (mainWindow.width  - popupWidth)  / 2 );
+      if (mainWindow.height - 200 > popupHeight) popupHeight - mainWindow.Height - 200;   // make it higher, but not shorter
+  ////////if (mainWindow.Width  - 200 > popupWidth)  popupWidth  = mainWindow.Width  - 200;   // make it wider,  but not narrower --- eh, don't need it wider
+    }
+
+    const bounds = await this.fsbOptionsApi.getWindowBounds("RemoveExtensionConfirmDialog"); // MABXXX PERHAPS THIS SHOULD ALWAYS BE CENTERED??????
+
+    if (! bounds) {
+      this.debug("-- no previous window bounds");
+    } else if (typeof bounds !== 'object') {
+      this.error(`-- PREVIOUS WINDOW BOUNDS IS NOT AN OBJECT: typeof='${typeof bounds}' #####`);
+    } else {
+      this.debug( "\n--- restoring previous window bounds:",
+                  `\n- bounds.top=${bounds.top}`,
+                  `\n- bounds.left=${bounds.left}`,
+                  `\n- bounds.width=${bounds.width}`,
+                  `\n- bounds.height=${bounds.height}`,
+                );
+  //    popupTop    = bounds.top;
+      popupTop    = mainWindow ? mainWindow.top  + Math.round( (mainWindow.height - bounds.height) / 2 ) : bounds.top; // CENTER ON THE MAIN WINDOW!!!
+  //    popupLeft   = bounds.left;
+      popupLeft   = mainWindow ? mainWindow.left + Math.round( (mainWindow.width  - bounds.width)  / 2 )  : bounds.left; // CENTER ON THE MAIN WINDOW!!!
+      popupWidth  = bounds.width;
+      popupHeight = bounds.height;
+    }
+
+    this.debug( "\n--- window bounds:",
+                `\n- popupTop=${popupTop}`,
+                `\n- popupLeft=${popupLeft}`,
+                `\n- popupWidth=${popupWidth}`,
+                `\n- popupHeight=${popupHeight}`,
+              );
+
+
+
+    // window.id does not exist.  how do we get our own window id???
+    var   ourTabId;
+    var   ourWindowId;
+    const currentTab = await messenger.tabs.getCurrent();
+    if (! currentTab) {
+      this.debug("-- messenger.tabs.getCurrent() didn't return a Tab");
+    } else {
+      this.debug(`-- currentTab.id="${currentTab.id}" currentTab.windowId="${currentTab.windowId}"`);
+      ourTabId    = currentTab.id;
+      ourWindowId = currentTab.windowId;
+    }
+
+    const title           = getI18nMsg("fsbOptions_dialog_confirmRemoveExtension_title");           // "Confirm Extension Removal
+    const button1MsgId    = "fsbOptions_dialog_confirmRemoveExtension_button_continue.label";
+    const button2MsgId    = "fsbOptions_dialog_confirmRemoveExtension_button_cancel.label";
+    const messageContinue = getI18nMsg("fsbOptions_dialog_confirmRemoveExtension_message_continue"); // "Do you wish to continue?"
+
+    var  confirmDialogUrl = messenger.runtime.getURL("../dialogs/confirm.html")
+                             + `?windowName=${encodeURIComponent("RemoveExtensionConfirmDialog")}`
+                             + `&title=${encodeURIComponent(title)}`
+                             + `&tc=${encodeURIComponent('yellow')}`
+                             + "&buttons_3=false"
+                             + `&button1MsgId=${encodeURIComponent(button1MsgId)}`
+                             + `&button2MsgId=${encodeURIComponent(button2MsgId)}`;
+
+    var msgNum  = 0;
+    var ulNum   = 0;
+    var fmsgNum = 0;
+    var message = '';
+
+    message = getI18nMsgSubst("fsbOptions_dialog_confirmRemoveExtension_message_extId_willBeRemoved", extId);
+    confirmDialogUrl += `&message${++msgNum}=${encodeURIComponent(message)}`
+    confirmDialogUrl += `&mw${msgNum}=${encodeURIComponent('bolder')}`
+
+    if (dirStats) {
+      message = getI18nMsg("fsbOptions_dialog_confirmRemoveExtension_message_hasDirectory");
+      confirmDialogUrl += `&u${++ulNum}=${encodeURIComponent(message)}`
+      confirmDialogUrl += `&ua${ulNum}=${encodeURIComponent('left')}`
+      if (dirStats.count_children === undefined || dirStats.count_children === 0) {
+        message = getI18nMsg("fsbOptions_dialog_confirmRemoveExtension_message_directoryIsEmpty");
+        confirmDialogUrl += `&u${++ulNum}=${encodeURIComponent(message)}`
+        confirmDialogUrl += `&ua${ulNum}=${encodeURIComponent('left')}`
+      } else if (dirStats.count_children === 1) {
+        message = getI18nMsg("fsbOptions_dialog_confirmRemoveExtension_message_directoryHasOneItem");
+        confirmDialogUrl += `&u${++ulNum}=${encodeURIComponent(message)}`
+        confirmDialogUrl += `&ua${ulNum}=${encodeURIComponent('left')}`
+      } else {
+        message = getI18nMsgSubst("fsbOptions_dialog_confirmRemoveExtension_message_directoryHasNNItems", dirStats.count_children);
+        confirmDialogUrl += `&u${++ulNum}=${encodeURIComponent(message)}`
+        confirmDialogUrl += `&ua${ulNum}=${encodeURIComponent('left')}`
+      }
+      if (willDeleteDir) {
+        message = getI18nMsg("fsbOptions_dialog_confirmRemoveExtension_message_willDeleteDirectory");
+        confirmDialogUrl += `&u${++ulNum}=${encodeURIComponent(message)}`
+        confirmDialogUrl += `&ua${ulNum}=${encodeURIComponent('left')}`
+        confirmDialogUrl += `&uw${ulNum}=${encodeURIComponent('bold')}`
+        confirmDialogUrl += `&uc${ulNum}=${encodeURIComponent('red')}`
+      } else {
+        message = getI18nMsg("fsbOptions_dialog_confirmRemoveExtension_message_willNotDeleteDirectory");
+        confirmDialogUrl += `&u${++ulNum}=${encodeURIComponent(message)}`
+        confirmDialogUrl += `&ua${ulNum}=${encodeURIComponent('left')}`
+      }
+    } else {
+      message = getI18nMsg("fsbOptions_dialog_confirmRemoveExtension_message_noDirectory");
+      confirmDialogUrl += `&u${++ulNum}=${encodeURIComponent(message)}`
+      confirmDialogUrl += `&ua${ulNum}=${encodeURIComponent('left')}`
+    }
+
+    confirmDialogUrl += `&f${++fmsgNum}=${encodeURIComponent(" ")}`;                // empty line
+
+    confirmDialogUrl += `&f${++fmsgNum}=${encodeURIComponent(messageContinue)}`;
+    confirmDialogUrl += `&fw${fmsgNum}=${encodeURIComponent('bold')}`;
+
+    confirmDialogUrl += `&c=${encodeURIComponent(msgNum)}`;
+    confirmDialogUrl += `&u=${encodeURIComponent(ulNum)}`;
+    confirmDialogUrl += `&f=${encodeURIComponent(fmsgNum)}`;
+
+    this.debug(`confirmDialogUrl="${confirmDialogUrl}"`);
+
+    // MABXXX DAMN!!! THERE'S NO WAY TO MAKE THIS MODAL!!! MUST USE action "default_popup".  But how to get Extension ID, etc?
+    // The window.confirm() function doesn't give a way to specify button text.
+    // Which is worse? Ugly ugly UGLY!!!
+    const confirmDialogWindow = await messenger.windows.create(
+      {
+        'url':                 confirmDialogUrl,
+        'type':                "popup",
+        'titlePreface':        getI18nMsg("extensionName") + " - ",
+        'top':                 popupTop,
+        'left':                popupLeft,
+        'height':              popupHeight,
+        'width':               popupWidth,
+        'allowScriptsToClose': true,
+      }
+    );
+
+    this.debug( "\n--- Delete Directories Confirmation Popup Window Created --",
+                `\n-from ourTabId="${ourTabId}"`,
+                `\n-from ourWindowId="${ourWindowId}"`,
+                `\n-confirmDialogWindow.id="${confirmDialogWindow.id}"`,
+                `\n-URL="${confirmDialogUrl}"`,
+              );
+
+    // Re-focus on the confirmDialog window when our window gets focus
+    // MABXXX PERHAPS THIS SHOULD BE DONE INSIDE #confirmDialogPrompt() ???
+  //  const focusListener = async (windowId) => this.windowFocusChanged(windowId, ourTabId, ourWindowId, confirmDialogWindow.id);
+    const focusListener = null;
+  //  messenger.windows.onFocusChanged.addListener(focusListener);
+
+    // ConfirmDialogResponse - expected:
+    // - null     - the user closed the popup window        (set by our own windows.onRemoved listener - the defaultResponse sent to #confirmDialogPrompt)
+    // - CLOSED   - the user closed the popup window        (sent by the ConfirmDialog window's window.onRemoved listener -- NOT REALLY - we use our own onRemoved listener)
+    // - BUTTON_1 - the user clicked button 1               (sent by the ConfirmDialog window's button listener)
+    // - BUTTON_2 - the user clicked button 2               (sent by the ConfirmDialog window's button listener)
+    // - BUTTON_3 - the user clicked button 3               (sent by the ConfirmDialog window's button listener)
+
+    const confirmDialogResponse = await this.#confirmRemoveExtensionDialogPrompt(confirmDialogWindow.id, focusListener, null);
+    this.debug(`-- confirmDialogResponse="${confirmDialogResponse}"`);
+
+    switch (confirmDialogResponse) {
+      case 'BUTTON_1': // 'Yes' button - Continue
+        this.debug("-- ConfirmDialog 'Continue' clicked");
+        return true;
+      case 'BUTTON_2': // 'No' button - Cancel
+        this.debug("-- ConfirmDialog 'Cancel' clicked");
+        return false;
+      case 'CLOSED':   // this never happens - see comments in ConfirmDialog regarding conduit failure
+      case null:       // closed using the window close button
+        this.debug("-- ConfirmDialog window closed");
+        return false;
+      default:
+        this.error(`-- UNKNOWN ConfirmDialog Response - NOT A KNOWN RESPONSE: "${confirmDialogResponse}"`);
+    }
+  }
+
+  async #confirmRemoveExtensionDialogPrompt(confirmDialogWindowId, focusListener, defaultResponse) {
+    try {
+      await messenger.windows.get(confirmDialogWindowId);
+    } catch (error) {
+      // Window does not exist, assume closed.
+      this.caught(error, "-- PERHAPS WINDOW CLOSED???");
+      return defaultResponse;
+    }
+
+    return new Promise(resolve => {
+      var response = defaultResponse;
+
+      function windowRemovedListener(windowId) {
+        if (windowId === confirmDialogWindowId) {
+
+          messenger.runtime.onMessage.removeListener(messageListener);
+          messenger.windows.onRemoved.removeListener(windowRemovedListener);
+  //////////messenger.windows.onFocusChanged.removeListener(focusListener);
+
+          resolve(response);
+        }
+      }
+
+      /* The ConfirmDialog sends a message as ConfirmDialogResponse:
+       * - CLOSED   - the user closed the popup window   (sent by the ConfirmDialog window's window.onRemoved listener -- NOT REALLY -- using OUR onRemoved instead)
+       * - BUTTON_1 - the user clicked button 1          (sent by the ConfirmDialog window's button listener)
+       * - BUTTON_2 - the user clicked button 2          (sent by the ConfirmDialog window's button listener)
+       * - BUTTON_3 - the user clicked button 3          (sent by the ConfirmDialog window's button listener)
+       * Save this ConfirmDialogResponse into response for resolve()
+       */
+      function messageListener(request, sender, sendResponse) {
+        if (sender.tab && sender.tab.windowId === confirmDialogWindowId && request && request.hasOwnProperty("ConfirmDialogResponse")) {
+          response = request.ConfirmDialogResponse;
+        }
+
+        return false; // we're not sending any response 
+      }
+
+      messenger.runtime.onMessage.addListener(messageListener);
+      messenger.windows.onRemoved.addListener(windowRemovedListener);
+    });
   }
 
 
@@ -3003,7 +3342,7 @@ this.debugAlways(`-- LABEL CLICKED, FOR ELEMENT FOUND -- id="${target.getAttribu
     // MABXXX PERHAPS THIS SHOULD BE DONE INSIDE extensionChooserPrompt() ???
     const focusListener = async (windowId) => this.windowFocusChanged(windowId, ourTabId, ourWindowId, extensionChooserWindow.id);
     messenger.windows.onFocusChanged.addListener(focusListener);
- 
+
     // editorResponse - expected:
     // - null               - the user closed the popup window                 (set by our own windows.onRemoved listener - the defaultResponse sent to extensionChooserPrompt)
     // - CLOSED             - the user closed the popup window                 (sent by the ExtensionChooser window's window.onClosed listener)
@@ -3060,7 +3399,7 @@ this.debugAlways(`-- LABEL CLICKED, FOR ELEMENT FOUND -- id="${target.getAttribu
       var response = defaultResponse;
 
       function windowRemovedListener(windowId) {
-        if (windowId == extensionChooserWindowId) {
+        if (windowId === extensionChooserWindowId) {
 
           messenger.runtime.onMessage.removeListener(messageListener);
           messenger.windows.onRemoved.removeListener(windowRemovedListener);
@@ -3077,7 +3416,7 @@ this.debugAlways(`-- LABEL CLICKED, FOR ELEMENT FOUND -- id="${target.getAttribu
        * Save this ExtensionChooserResponse into response for resolve()
        */
       function messageListener(request, sender, sendResponse) {
-        if (sender.tab && sender.tab.windowId == extensionChooserWindowId && request && request.hasOwnProperty("ExtensionChooserResponse")) {
+        if (sender.tab && sender.tab.windowId === extensionChooserWindowId && request && request.hasOwnProperty("ExtensionChooserResponse")) {
           response = request.ExtensionChooserResponse;
         }
         return false; // we're not sending any response
@@ -3177,7 +3516,7 @@ this.debugAlways(`-- LABEL CLICKED, FOR ELEMENT FOUND -- id="${target.getAttribu
     // MABXXX PERHAPS THIS SHOULD BE DONE INSIDE backupManagerPrompt() ???
     const focusListener = async (windowId) => this.windowFocusChanged(windowId, ourTabId, ourWindowId, backupManagerWindow.id);
     messenger.windows.onFocusChanged.addListener(focusListener);
- 
+
     // BackupManagerResponse - expected:
     // - null                     - the user closed the popup window               (set by our own windows.onRemoved listener - the defaultResponse sent to backupManagerPrompt)
     // - CLOSED                   - the user closed the popup window               (sent by the BackupManager window's window.onClosed listener)
@@ -3207,7 +3546,7 @@ this.debugAlways(`-- LABEL CLICKED, FOR ELEMENT FOUND -- id="${target.getAttribu
             if (typeof fileName !== 'string') {
               this.error(`-- MALFORMED BackupManager Response - Invalid 'RESTORED' Property type - expected string, got: "${typeof fileName}"`);
 
-            } else if (fileName.length == 0) {
+            } else if (fileName.length === 0) {
               this.error(`-- MALFORMED BackupManager Response - Invalid 'RESTORED' Property fileName.length=${fileName.length}`);
 
             } else {
@@ -3234,7 +3573,7 @@ this.debugAlways(`-- LABEL CLICKED, FOR ELEMENT FOUND -- id="${target.getAttribu
       var response = defaultResponse;
 
       function windowRemovedListener(windowId) {
-        if (windowId == backupManagerWindowId) {
+        if (windowId === backupManagerWindowId) {
 
           messenger.runtime.onMessage.removeListener(messageListener);
           messenger.windows.onRemoved.removeListener(windowRemovedListener);
@@ -3251,7 +3590,7 @@ this.debugAlways(`-- LABEL CLICKED, FOR ELEMENT FOUND -- id="${target.getAttribu
        * Save this BackupManagerResponse into response for resolve()
        */
       function messageListener(request, sender, sendResponse) {
-        if (sender.tab && sender.tab.windowId == backupManagerWindowId && request && request.hasOwnProperty("BackupManagerResponse")) {
+        if (sender.tab && sender.tab.windowId === backupManagerWindowId && request && request.hasOwnProperty("BackupManagerResponse")) {
           response = request.BackupManagerResponse;
         }
         return false; // we're not sending any response
@@ -3351,7 +3690,7 @@ this.debugAlways(`-- LABEL CLICKED, FOR ELEMENT FOUND -- id="${target.getAttribu
     // MABXXX PERHAPS THIS SHOULD BE DONE INSIDE eventLogManagerPrompt() ???
     const focusListener = async (windowId) => this.windowFocusChanged(windowId, ourTabId, ourWindowId, eventLogManagerWindow.id);
     messenger.windows.onFocusChanged.addListener(focusListener);
- 
+
     // EventLogManagerResponse - expected:
     // - null                     - the user closed the popup window               (set by our own windows.onRemoved listener - the defaultResponse sent to eventLogManagerPrompt)
     // - CLOSED                   - the user closed the popup window               (sent by the EventLogManager window's window.onClosed listener)
@@ -3385,7 +3724,7 @@ this.debugAlways(`-- LABEL CLICKED, FOR ELEMENT FOUND -- id="${target.getAttribu
       var response = defaultResponse;
 
       function windowRemovedListener(windowId) {
-        if (windowId == eventLogManagerWindowId) {
+        if (windowId === eventLogManagerWindowId) {
 
           messenger.runtime.onMessage.removeListener(messageListener);
           messenger.windows.onRemoved.removeListener(windowRemovedListener);
@@ -3401,7 +3740,7 @@ this.debugAlways(`-- LABEL CLICKED, FOR ELEMENT FOUND -- id="${target.getAttribu
        * Save this EventLogManagerResponse into response for resolve()
        */
       function messageListener(request, sender, sendResponse) {
-        if (sender.tab && sender.tab.windowId == eventLogManagerWindowId && request && request.hasOwnProperty("EventLogManagerResponse")) {
+        if (sender.tab && sender.tab.windowId === eventLogManagerWindowId && request && request.hasOwnProperty("EventLogManagerResponse")) {
           response = request.EventLogManagerResponse;
         }
         return false; // we're not sending any response
@@ -3501,7 +3840,7 @@ this.debugAlways(`-- LABEL CLICKED, FOR ELEMENT FOUND -- id="${target.getAttribu
     // MABXXX PERHAPS THIS SHOULD BE DONE INSIDE statsManagerPrompt() ???
     const focusListener = async (windowId) => this.windowFocusChanged(windowId, ourTabId, ourWindowId, statsManagerWindow.id);
     messenger.windows.onFocusChanged.addListener(focusListener);
- 
+
     // StatsManagerResponse - expected:
     // - null                     - the user closed the popup window               (set by our own windows.onRemoved listener - the defaultResponse sent to statsManagerPrompt)
     // - CLOSED                   - the user closed the popup window               (sent by the StatsManager window's window.onClosed listener)
@@ -3535,7 +3874,7 @@ this.debugAlways(`-- LABEL CLICKED, FOR ELEMENT FOUND -- id="${target.getAttribu
       var response = defaultResponse;
 
       function windowRemovedListener(windowId) {
-        if (windowId == statsManagerWindowId) {
+        if (windowId === statsManagerWindowId) {
 
           messenger.runtime.onMessage.removeListener(messageListener);
           messenger.windows.onRemoved.removeListener(windowRemovedListener);
@@ -3551,7 +3890,7 @@ this.debugAlways(`-- LABEL CLICKED, FOR ELEMENT FOUND -- id="${target.getAttribu
        * Save this StatsManagerResponse into response for resolve()
        */
       function messageListener(request, sender, sendResponse) {
-        if (sender.tab && sender.tab.windowId == statsManagerWindowId && request && request.hasOwnProperty("StatsManagerResponse")) {
+        if (sender.tab && sender.tab.windowId === statsManagerWindowId && request && request.hasOwnProperty("StatsManagerResponse")) {
           response = request.StatsManagerResponse;
         }
         return false; // we're not sending any response
@@ -3581,13 +3920,13 @@ this.debugAlways(`-- LABEL CLICKED, FOR ELEMENT FOUND -- id="${target.getAttribu
               );
 
     if ( windowId
-         && windowId                 != messenger.windows.WINDOW_ID_NONE
-         && windowId                 != extensionChooserWindowId
-         && windowId                 == creatorWindowId
-/////////&& creatorWindowId          != lastFocusedWindowId
+         && windowId                 !== messenger.windows.WINDOW_ID_NONE
+         && windowId                 !== extensionChooserWindowId
+         && windowId                 === creatorWindowId
+/////////&& creatorWindowId          !== lastFocusedWindowId
          && extensionChooserWindowId
-/////////&& extensionChooserWindowId != lastFocusedWindowId
-         && extensionChooserWindowId != this.prevFocusedWindowId
+/////////&& extensionChooserWindowId !== lastFocusedWindowId
+         && extensionChooserWindowId !== this.prevFocusedWindowId
        )
     {
       this.debug( "-- Creator Window got focus, bring Extension Chooser Window into focus above it --"
@@ -3703,23 +4042,28 @@ this.debugAlways(`-- LABEL CLICKED, FOR ELEMENT FOUND -- id="${target.getAttribu
 
     const domAllowAccessChecks = document.querySelectorAll("input[type='checkbox'].allow-access-check");
     this.debug(`-- domAllowAccessChecks.length=${domAllowAccessChecks.length}`);
+
     for (const check of domAllowAccessChecks) {
+      // MABXXX should we check if it's DISABLED???
+
       const extensionId = check.getAttribute("extensionId");
 
-      this.debug(`-- extensionId="${extensionId}" setting check=false`);
-      check.checked = false;
-
-      const selectorTR      = `tr.extension-list-item[extensionId='${extensionId}']`;
-      const extensionItemTR = check.closest(selectorTR);
-      if (! extensionItemTR) {
-        this.debug(`-- FAILED TO SELECT ANCESTOR TR "${selectorTR}"`);
-
-      } else if (extensionItemTR.classList.contains("extension-locked")) {
-        this.debug(`-- Extension is LOCKED`);
-
+      if (! extensionId) {
+        this.error(`-- allow-access-check checkbox has no extensionId Attribute`);
       } else {
-        this.debug(`-- adding class "access-disallowed"`);
-        extensionItemTR.classList.add("access-disallowed");
+        const selectorTR      = `tr.extension-list-item[extensionId='${extensionId}']`;
+        const extensionItemTR = check.closest(selectorTR);
+
+        if (! extensionItemTR) {
+          this.error(`-- FAILED TO SELECT ANCESTOR TR: "${selectorTR}"`);
+        } else if (extensionItemTR.classList.contains("extension-locked")) {
+          this.debug(`-- Extension is LOCKED`);
+        } else {
+          this.debug(`-- extensionId="${extensionId}" setting check=false`);
+          check.checked = false;
+          this.debug(`-- adding class "access-disallowed"`);
+          extensionItemTR.classList.add("access-disallowed");
+        }
       }
     }
 
@@ -3890,7 +4234,7 @@ this.debugAlways(`-- LABEL CLICKED, FOR ELEMENT FOUND -- id="${target.getAttribu
     if (errorLabels) {
       for (const errorLabel of errorLabels) {
         errorLabel.setAttribute("error", "false");
-        errorLabel.innerText = ""; // THIS IS A HUGE LESSON:  DO NOT USE: <label/>   USE: <label></label> 
+        errorLabel.innerText = ""; // THIS IS A HUGE LESSON:  DO NOT USE: <label/>   USE: <label></label>
       }
     }
   }

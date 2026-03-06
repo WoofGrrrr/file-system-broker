@@ -578,6 +578,8 @@ export class FsbOptions {
     return false;
   }
 
+
+
   async storeExtensionsProps(props) { // MABXXX an array???
     // MABXXX SHOULD WE REMOVE ALL THE STUFF THAT WE DON'T ALLOW THE USER TO CHANGE - and thus we should always be getting from messenger.management.getAll() ???
     //        - id
@@ -602,8 +604,8 @@ export class FsbOptions {
       //        - shortName
       //        - version
       //        - versionName
-    // MABXXX IF AN EXTENSION GETS UNINSTALLED, THUS IT WON'T BE RETURNED FROM messenger.management.getAll(), THESE WILL BE THE LAST-KNOWN VALUES
-    //        But uninstalled should be true.
+      // MABXXX IF AN EXTENSION GETS UNINSTALLED, THUS IT WON'T BE RETURNED FROM messenger.management.getAll(), THESE WILL BE THE LAST-KNOWN VALUES
+      //        But uninstalled should be true.
       const extensionsProps = await this.getExtensionsProps();
       extensionsProps[extensionId] = props; // MABXXX DANGER!!! THIS COULD CHANGE THE extensionId!!!
       await this.storeExtensionsProps(extensionsProps);
@@ -643,32 +645,37 @@ export class FsbOptions {
 
   // Delete the extensionProps for the Extension (not the Extension istself)
   // with the given extensionId and return it.
-  async removeExtension(extensionId) {
-    this.log(`-- begin extensionId="${extensionId}"`);
+  async removeExtension(extensionId, ignoreLocks) {
+    const removeLocked = (typeof ignoreLocks) === 'boolean' ? ignoreLocks : false;
 
-    let deleted;
+    this.log(`-- begin extensionId="${extensionId}", removeLocked=${removeLocked}`);
+
+    let deletedProps;
     if (extensionId && (typeof extensionId === 'string') && extensionId.length > 0) {
       const allExtensionsProps = await this.getExtensionsProps();
       if (allExtensionsProps) {
         const props = allExtensionsProps[extensionId];
         if (! props) {
-        } else {
+          //
+        } else if (props.locked && ! removeLocked) {
+          //
+        } else{
           this.log(`-- deleting extensionId="${extensionId}"`);
           delete allExtensionsProps[extensionId];
-          deleted = props;
+          deletedProps = props;
           await this.storeExtensionsProps(allExtensionsProps);
         }
       }
     }
 
     this.log(`-- end extensionId="${extensionId}"`);
-    return deleted;
+    return deletedProps;
   }
 
   // Remove the extensionProps for the Extensions with the given extensionIds
   // and return the props of those that were actually deleted
   async removeExtensions(extensionIds, ignoreLocks) {
-    var   deletedLocked         = (typeof ignoreLocks) === 'boolean' ? ignoreLocks : false;
+    const removeLocked          = (typeof ignoreLocks) === 'boolean' ? ignoreLocks : false;
     const removedExtensionProps = [];
     var   count                 = 0;
 
@@ -678,7 +685,11 @@ export class FsbOptions {
         for (const extensionId of extensionIds) {
           if (extensionId && (typeof extensionId === 'string') && extensionId.length > 0) {
             const props = allExtensionsProps[extensionId];
-            if (props) {
+            if (! props) {
+              //
+            } else if (props.locked && ! removedLocked) {
+              //
+            } else {
               removedExtensionProps.push(props);
               count++;
               delete allExtensionsProps[extensionId];
@@ -729,7 +740,7 @@ export class FsbOptions {
         var alreadyRecorded   = false;
         var uninstalledTimeMS = nowMS;
 
-        if (extProps.uninstalled) {
+        if (extProps.uninstalled && ! extProps.locked) {
           var installedExtension = installedExtensionById[extensionId];
           if (installedExtension) {
             this.debugAlways(`-- Extension recorded as Uninstalled IS Installed (again?,) ID="${extensionId}"`);
@@ -792,13 +803,18 @@ export class FsbOptions {
 
 
   // Set allowAccess=true for the extensionProps for ALL Extensions
+  // (except where extensionProps.locked)
   // and return a count of how many were actually changed
   async allowAccessAllExtensions() {
     let count = 0;
     const allExtensionsProps = await this.getExtensionsProps();
     if (allExtensionsProps) {
       for (const [extensionId, props] of Object.entries(allExtensionsProps)) {
-        if (props && ! props.allowAccess) {
+        if (props.allowAccess) { // already allowed
+          //
+        } else if (props.locked) {
+          //
+        } else {
           count++;
           props.allowAccess = true;
         }
@@ -809,13 +825,18 @@ export class FsbOptions {
   }
 
   // Set allowAccess=false for the extensionProps for ALL Extensions
+  // (except where extensionProps.locked)
   // and return a count of how many were actually changed
   async disallowAccessAllExtensions() {
     let count = 0;
     const allExtensionsProps = await this.getExtensionsProps();
     if (allExtensionsProps) {
       for (const [extensionId, props] of Object.entries(allExtensionsProps)) {
-        if (props && props.allowAccess) {
+        if (! props.allowAccess) { // already disallowed
+          //
+        } else if (props.locked) {
+          //
+        } else {
           count++;
           props.allowAccess = false;
         }
@@ -829,6 +850,7 @@ export class FsbOptions {
 
   // Set allowAccess=true for the extensionProps
   // for the Extensions with the given extensionIds
+  // (except where extensionProps.locked)
   // and return a count of how many were actually changed
   async allowAccessSelectedExtensions(extensionIds) {
     let count = 0;
@@ -838,7 +860,13 @@ export class FsbOptions {
         for (const extensionId of extensionIds) {
           if (extensionId && (typeof extensionId === 'string') && extensionId.length > 0) {
             const props = allExtensionsProps[extensionId];
-            if (props && ! props.allowAccess) {
+            if (! props) {
+              //
+            } else if (props.allowAccess) { // already allowed
+              //
+            } else if (props.locked) {
+              //
+            } else {
               count++;
               props.allowAccess = true;
             }
@@ -852,6 +880,7 @@ export class FsbOptions {
 
   // Set allowAccess=false for the extensionProps
   // for the Extensions with the given extensionIds
+  // (except where extensionProps.locked)
   // and return a count of how many were actually changed
   async disallowAccessSelectedExtensions(extensionIds) {
     let count = 0;
@@ -861,7 +890,13 @@ export class FsbOptions {
         for (const extensionId of extensionIds) {
           if (extensionId && (typeof extensionId === 'string') && extensionId.length > 0) {
             const props = allExtensionsProps[extensionId];
-            if (props && props.allowAccess) {
+            if (! props) {
+              //
+            } else if (! props.allowAccess) { // already disallowed
+              //
+            } else if (props.locked) {
+              //
+            } else {
               count++;
               props.allowAccess = false;
             }
@@ -893,6 +928,15 @@ export class FsbOptions {
         const props = await this.getExtensionPropsById(extensionId);
 
         if (props) {
+          if (props.allowAccess) {
+            this.debug(`-- extensionId="${extensionId}" already has props, but it is already allowed Access`);
+            return true;
+          }
+          if (props.locked) {
+            this.debug(`-- extensionId="${extensionId}" already has props, but it is locked`);
+            return false;
+          }
+
           this.debug(`-- extensionId="${extensionId}" already has props, just change allowAccess and store`);
           props.allowAccess = true;
           await this.storeExtensionPropsById(extensionId, props);
@@ -932,7 +976,7 @@ export class FsbOptions {
         installedExtension = await messenger.management.get(extensionId);
       } catch (error) {
         if (! error.message.startsWith("No such addon")) {
-          this.caught(error, `Error getting Extentsion "${extensionId}"`);
+          this.caught(error, `Error getting Extension "${extensionId}"`);
         }
       }
 
@@ -943,7 +987,16 @@ export class FsbOptions {
         const props = await this.getExtensionPropsById(extensionId);
 
         if (props) {
-          this.debug(`-- extensionId="${extensionId}" already has props, just change allowAccess and store`);
+          if (! props.allowAccess) {
+            this.debug(`-- extensionId="${extensionId}" already has props, but it is already disallowed Access`);
+            return true;
+          }
+          if (props.locked) {
+            this.debug(`-- extensionId="${extensionId}" already has props, but it is LOCKED`);
+            return false;
+          }
+
+          this.debug(`-- extensionId="${extensionId}" already has props, just change allowAccess to false and store`);
           props.allowAccess = false;
           await this.storeExtensionPropsById(extensionId, props);
           return true;
@@ -1019,6 +1072,7 @@ export class FsbOptions {
         this.debugAlways("-- Backing up", allOptions);
         logProps("", "allOptions", allOptions);
       }
+
       const response = await this.fsBrokerApi.writeObjectToJSONFile(fileName, allOptions);
       this.debug(`--response: "${response}"`);
 
@@ -1031,7 +1085,7 @@ export class FsbOptions {
   }
 
   /* returns { "fileNames": [],    "length": number }
-   *         { "error":     string                   } If there was some error writing the file. The returned string gives the reason.
+   *         { "error":     string                  } If there was some error writing the file. The returned string gives the reason.
    */
   async listBackupFiles() {
     try {
@@ -1097,7 +1151,7 @@ export class FsbOptions {
         logProps("", "readOptionsFromBackupAndRestore", response.object);
       }
 
-      // sanity checks on the data?
+      // MABXXX sanity checks on the data?
 
       try {
         await messenger.storage.local.set(response.object);
@@ -1142,7 +1196,7 @@ export class FsbOptions {
       logProps("", "getOptionsFromBackupAndRestore", response.object);
     }
 
-    // sanity checks on the data?
+    // MABXXX sanity checks on the data?
 
     try {
       await messenger.storage.local.set(response.object);

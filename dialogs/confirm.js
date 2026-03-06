@@ -66,15 +66,36 @@ class ConfirmDialog {
     const noButtonLabelMsgId     = "fsbConfirmDialog_noButton.label";
 
     var   buttons_3              = false;
+
     var   title                  = getI18nMsg("fsbConfirmDialogTitle", "Please Confirm");
+    var   titleBGColor;
     var   titleColor;
     var   titleSize;
     var   titleWeight;
-    const messages               = [];
-    const msgAligns              = [];
+
+    var   msgCount               = 6;   // for backward-compatibility for older users that don't pass a message count
+    const msgTexts               = [];
+    const msgBGColors            = [];
     const msgColors              = [];
-    const msgSizes               = [];
-    const msgWeights             = [];
+    const msgFontSizes           = [];
+    const msgFontWeights         = [];
+    const msgTextAligns          = [];
+
+    var   ulCount                = 0;
+    const ulTexts                = [];
+    const ulBGColors             = [];
+    const ulColors               = [];
+    const ulFontSizes            = [];
+    const ulFontWeights          = [];
+    const ulTextAligns           = [];
+
+    var   fmsgCount              = 0;
+    const fmsgTexts              = [];
+    const fmsgBGColors           = [];
+    const fmsgColors             = [];
+    const fmsgFontSizes          = [];
+    const fmsgFontWeights        = [];
+    const fmsgTextAligns         = [];
 
     var   button1LabelMsgId      = okButtonLabelMsgId;
     var   button2LabelMsgId      = cancelButtonLabelMsgId;
@@ -86,12 +107,15 @@ class ConfirmDialog {
 
     const docLocationInfo = parseDocumentLocation(document);
     const params          = docLocationInfo.params;
+
     if (params) {
       var   param;
-      var   msgCount = 6;
 
       param = params.get('title');
       if (param) title = param;
+
+      param = params.get('tb');
+      if (param) titleBGColor = param;
 
       param = params.get('tc');
       if (param) titleColor = param;
@@ -102,7 +126,7 @@ class ConfirmDialog {
       param = params.get('tw');
       if (param) titleWeight = param;
 
-      param = params.get('c');
+      param = params.get('c'); // msgCount
       if (param) {
         const num = Number(param);
         if (Number.isInteger(num)) {
@@ -112,19 +136,78 @@ class ConfirmDialog {
 
       for (var i = 1; i <= msgCount; ++i) {
         param = params.get(`message${i}`);
-        if (param) messages[i] = param;
+        if (param) msgTexts[i] = param;
 
-        param = params.get(`a${i}`);
-        if (param) msgAligns[i] = param;
-        if (param) msgSizes[i] = param;
+        param = params.get(`ma${i}`);
+        if (param) msgTextAligns[i] = param;
 
-        param = params.get(`c${i}`);
+        param = params.get(`mb${i}`);
+        if (param) msgBGColors[i] = param;
+
+        param = params.get(`mc${i}`);
         if (param) msgColors[i] = param;
 
-        param = params.get(`s${i}`);
+        param = params.get(`ms${i}`);
+        if (param) msgFontSizes[i] = param;
 
-        param = params.get(`w${i}`);
-        if (param) msgWeights[i] = param;
+        param = params.get(`mw${i}`);
+        if (param) msgFontWeights[i] = param;
+      }
+
+      param = params.get('u'); // ulCount
+      if (param) {
+        const num = Number(param);
+        if (Number.isInteger(num)) {
+          ulCount = num;
+        }
+      }
+
+      for (var i = 1; i <= ulCount; ++i) {
+        param = params.get(`u${i}`);
+        if (param) ulTexts[i] = param;
+
+        param = params.get(`ua${i}`);
+        if (param) ulTextAligns[i] = param;
+
+        param = params.get(`ub${i}`);
+        if (param) ulBGColors[i] = param;
+
+        param = params.get(`uc${i}`);
+        if (param) ulColors[i] = param;
+
+        param = params.get(`us${i}`);
+        if (param) ulFontSizes[i] = param;
+
+        param = params.get(`uw${i}`);
+        if (param) ulFontWeights[i] = param;
+      }
+
+      param = params.get('f'); // fmsgCount
+      if (param) {
+        const num = Number(param);
+        if (Number.isInteger(num)) {
+          fmsgCount = num;
+        }
+      }
+
+      for (var i = 1; i <= fmsgCount; ++i) {
+        param = params.get(`f${i}`);
+        if (param) fmsgTexts[i] = param;
+
+        param = params.get(`fa${i}`);
+        if (param) fmsgTextAligns[i] = param;
+
+        param = params.get(`fb${i}`);
+        if (param) fmsgBGColors[i] = param;
+
+        param = params.get(`fc${i}`);
+        if (param) fmsgColors[i] = param;
+
+        param = params.get(`fs${i}`);
+        if (param) fmsgFontSizes[i] = param;
+
+        param = params.get(`fw${i}`);
+        if (param) fmsgFontWeights[i] = param;
       }
 
       param = params.get('yes_no');
@@ -171,7 +254,7 @@ class ConfirmDialog {
     if (! button2LabelText && button2LabelMsgId) button2LabelText = getI18nMsg(button2LabelMsgId, "BUTTON_2"); // button2 overrides button2MsgId
     if (! button3LabelText && button3LabelMsgId) button3LabelText = getI18nMsg(button3LabelMsgId, "BUTTON_3"); // button3 overrides button3MsgId
 
-    if (! button2LabelText) button1LabelText = "BUTTON_1";
+    if (! button1LabelText) button1LabelText = "BUTTON_1";
     if (! button2LabelText) button2LabelText = "BUTTON_2";
     if (! button3LabelText) button3LabelText = "BUTTON_3";
 
@@ -185,12 +268,12 @@ class ConfirmDialog {
     this.debug( "--"
                 + `\n- title="${title}"`
                 + `\n- msgCount="${msgCount}"`
-                + `\n- messages[0]="${messages[0]}"`
-                + `\n- messages[1]="${messages[1]}"`
-                + `\n- messages[2]="${messages[2]}"`
-                + `\n- messages[3]="${messages[3]}"`
-                + `\n- messages[4]="${messages[4]}"`
-                + `\n- messages[5]="${messages[5]}"`
+                + `\n- msgTexts[1]="${msgTexts[1]}"`
+                + `\n- msgTexts[2]="${msgTexts[2]}"`
+                + `\n- msgTexts[3]="${msgTexts[3]}"`
+                + `\n- msgTexts[4]="${msgTexts[4]}"`
+                + `\n- msgTexts[5]="${msgTexts[5]}"`
+                + `\n- msgTexts[6]="${msgTexts[6]}"`
                 + `\n- buttons_3=${buttons_3}`
                 + `\n- button1LabelText="${button1LabelText}"`
                 + `\n- button2LabelText="${button2LabelText}"`
@@ -200,35 +283,107 @@ class ConfirmDialog {
 
     const messagesPanel = document.getElementById("ConfirmDialogMessagesPanel");
 
-    if (messages.length < 1) {
-      messagesPanel.style.display = "none";
+    if (msgTexts.length < 1) {
+//////messagesPanel.style.display = "none";
 
     } else {
       for (var i = 1; i <= msgCount; ++i) {
-        const msg    = messages[i];
-        const align  = msgAligns[i];
-        const color  = msgColors[i];
-        const size   = msgSizes[i];
-        const weight = msgWeights[i];
+        const msgText    = msgTexts[i];
+        const bgColor    = msgBGColors[i];
+        const color      = msgColors[i];
+        const fontSize   = msgFontSizes[i];
+        const fontWeight = msgFontWeights[i];
+        const textAlign  = msgTextAligns[i];
 
-        if (msg !== undefined) {
+        if (msgText !== undefined) {
           const messageDiv = document.createElement('div');
             messageDiv.classList.add('confirm-dialog-message');
 
-            if (align)  messageDiv.style.textAlign  = align;
-            if (color)  messageDiv.style.color      = color;
-            if (size)   messageDiv.style.fontSize   = size;
-            if (weight) messageDiv.style.fontWeight = weight;
+            if (bgColor)    messageDiv.style.backgroundColor = bgColor;
+            if (color)      messageDiv.style.color           = color;
+            if (fontSize)   messageDiv.style.fontSize        = fontSize;
+            if (fontWeight) messageDiv.style.fontWeight      = fontWeight;
+            if (textAlign)  messageDiv.style.textAlign       = textAlign;
 
             const messageLabel = document.createElement('label');
-              if (msg === " ") messageLabel.innerHTML = "&nbsp;";
-              else             messageLabel.innerText = msg;
+              if (msgText === " ") messageLabel.innerHTML = "&nbsp;";
+              else                 messageLabel.innerText = msgText;
             messageDiv.appendChild(messageLabel);
           messagesPanel.appendChild(messageDiv);
         }
       }
 
-      messagesPanel.style.display = "block";
+//////messagesPanel.style.display = "block";
+    }
+
+    if (ulTexts.length < 1) {
+      //
+    } else {
+      const ul = document.createElement('ul');
+
+        for (var i = 1; i <= ulCount; ++i) {
+          const text       = ulTexts[i];
+          const bgColor    = ulBGColors[i];
+          const color      = ulColors[i];
+          const fontSize   = ulFontSizes[i];
+          const fontWeight = ulFontWeights[i];
+          const textAlign  = ulTextAligns[i];
+
+          if (text !== undefined) {
+            const li = document.createElement('li');
+              if (textAlign)  li.style.textAlign = textAlign;
+
+              const liSpan = document.createElement('span');
+                liSpan.classList.add('confirm-dialog-message');
+
+                if (bgColor)    liSpan.style.backgroundColor = bgColor;
+                if (color)      liSpan.style.color           = color;
+                if (fontSize)   liSpan.style.fontSize        = fontSize;
+                if (fontWeight) liSpan.style.fontWeight      = fontWeight;
+
+                const liLabel = document.createElement('label');
+                  if (text === " ") liLabel.innerHTML = "&nbsp;";
+                  else              liLabel.innerText = text;
+                liSpan.appendChild(liLabel);
+              li.appendChild(liSpan);
+            ul.appendChild(li);
+          }
+        }
+
+      messagesPanel.appendChild(ul);
+    }
+
+    if (fmsgTexts.length < 1) {
+//////messagesPanel.style.display = "none";
+
+    } else {
+      for (var i = 1; i <= fmsgCount; ++i) {
+        const msgText    = fmsgTexts[i];
+        const bgColor    = fmsgBGColors[i];
+        const color      = fmsgColors[i];
+        const fontSize   = fmsgFontSizes[i];
+        const fontWeight = fmsgFontWeights[i];
+        const textAlign  = fmsgTextAligns[i];
+
+        if (msgText !== undefined) {
+          const messageDiv = document.createElement('div');
+            messageDiv.classList.add('confirm-dialog-message');
+
+            if (bgColor)    messageDiv.style.backgroundColor = bgColor;
+            if (color)      messageDiv.style.color           = color;
+            if (fontSize)   messageDiv.style.fontSize        = fontSize;
+            if (fontWeight) messageDiv.style.fontWeight      = fontWeight;
+            if (textAlign)  messageDiv.style.textAlign       = textAlign;
+
+            const messageLabel = document.createElement('label');
+              if (msgText === " ") messageLabel.innerHTML = "&nbsp;";
+              else                 messageLabel.innerText = msgText;
+            messageDiv.appendChild(messageLabel);
+          messagesPanel.appendChild(messageDiv);
+        }
+      }
+
+//////messagesPanel.style.display = "block";
     }
 
     const button1Label = document.getElementById("ConfirmDialogButton1Label");

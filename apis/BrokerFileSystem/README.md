@@ -590,16 +590,23 @@ __Sub-directories are currently not supported.__
 <br>
 <br>
 
-### stats( [ { ['includeChildInfo': boolean] ['types': array of String] } ] )
+### stats( extensionId[, { ['returnNotExist': boolean] [,'includeChildInfo': boolean[, 'types': array of String] ] } ] )
 
     Returns a JavaScript object that contains information
     about the directory and the items in the directory
     for the given extensionId.
 <br>
 <br>
-    The 'parameters' parameter is optional. If it is not
-    provided, information for each child is NOT included
-    in the result.
+    The second parameter - the 'parameters' object - is
+    optional. If it is not provided, 'returnNotEixst'
+    and 'includeChildInfo' default to false.
+<br>
+<br>
+    The returnNotExist parameter is optional.
+    If it is not provided, it defaults to false. If true,
+    and the directory for extension does not exist, the
+    response { 'exists': false } is returned, otherwise
+    an "invalid" response is returned.
 <br>
 <br>
     The includeChildInfo parameter is optional.
@@ -621,6 +628,10 @@ __Sub-directories are currently not supported.__
 <br>
 <br>
     The returned object:
+```
+      { 'exists': false }
+```
+    - OR -
 ```
       { directoryName:
           {

@@ -24,7 +24,8 @@ class BackupManager {
     this.listHeaderTextFileName                 = getI18nMsg( "fsbBackupManager_listHeader_fileName",             "File Name"          );
     this.listHeaderTextFileCreationDateTime     = getI18nMsg( "fsbBackupManager_listHeader_fileTimeCreated",      "Time Created"       );
     this.listHeaderTextFileLastModifiedDateTime = getI18nMsg( "fsbBackupManager_listHeader_fileTimeLastModified", "Time Last Modified" );
-    this.listHeaderTextFileSize                 = getI18nMsg( "fsbBackupManager_listHeader_fileSize",             "Size (bytes)"       );
+    this.listHeaderTextFileSizeFmt              = getI18nMsg( "fsbBackupManager_listHeader_fileSizeFmt",          "Size"               );
+    this.listHeaderTextFileSizeBytes            = getI18nMsg( "fsbBackupManager_listHeader_fileSizeBytes",        "Size (bytes)"       );
   }
 
 
@@ -91,7 +92,7 @@ class BackupManager {
     await this.updateOptionsUI();
     await this.updateBackupFilesDirectoryUI();
     await this.localizePage();
-    await this.buildFileNameListUI();
+    await this.buildFileListUI();
     this.setupEventListeners();
   }
 
@@ -316,29 +317,29 @@ class BackupManager {
 
 
 
-  async buildFileNameListUI() {
-    const domFileNameList = document.getElementById("fsbBackupManagerFileNameList");
-    if (! domFileNameList) {
-      this.debug("-- failed to get domFileNameList");
+  async buildFileListUI() {
+    const domFileList = document.getElementById("fsbBackupManagerFileList");
+    if (! domFileList) {
+      this.debug("-- failed to get domFileList");
       // MABXXX DISPLAY MESSAGE TO USER
       return;
     }
 
-    domFileNameList.innerHTML = '';
+    domFileList.innerHTML = '';
     this.updateUIOnSelectionChanged();
 
     const i18nMessage = getI18nMsg("fsbBackupManager_message_fileNamesLoading", "...");
     const loadingTR = document.createElement("tr");
     loadingTR.classList.add("identities-loading");
     loadingTR.appendChild( document.createTextNode(i18nMessage) ); // you can put a text node in a TR ???
-    domFileNameList.appendChild(loadingTR);
+    domFileList.appendChild(loadingTR);
 
     const backupFileInfo = await this.getBackupFileInfo();
 
-    domFileNameList.innerHTML = '';
+    domFileList.innerHTML = '';
 
-    const headerItemUI = this.buildFileNameListHeaderUI();
-    domFileNameList.append(headerItemUI);
+    const headerItemUI = this.buildFileListHeaderUI();
+    domFileList.append(headerItemUI);
 
     if (! backupFileInfo) {
       // MABXXX
@@ -346,54 +347,62 @@ class BackupManager {
       // MABXXX
     } else {
       for (const fileInfo of backupFileInfo) {
-        const listItemUI = this.buildFileNameListItemUI(fileInfo);
-        domFileNameList.append(listItemUI);
+        const listItemUI = await this.buildFileListItemUI(fileInfo);
+        domFileList.append(listItemUI);
       }
     }
   }
 
 
 
-  buildFileNameListHeaderUI() {
+  buildFileListHeaderUI() {
     this.debug("-- BUILD LIST HEADER UI");
 
     const fileNameItemTR = document.createElement("tr");
-      fileNameItemTR.classList.add("filename-list-header");             // filename-list-header
+      fileNameItemTR.classList.add("file-list-header");             // file-list-header
 
       // Create FileName element and add it to the row
       const fileNameTH = document.createElement("th");
-        fileNameTH.classList.add("filename-list-header-data");          // filename-list-header > filename-list-header-data
-        fileNameTH.classList.add("filename-list-header-filename");      // filename-list-header > filename-list-header-filename
+        fileNameTH.classList.add("file-list-header-data");          // file-list-header > file-list-header-data
+        fileNameTH.classList.add("file-list-header-filename");      // file-list-header > file-list-header-filename
         fileNameTH.appendChild( document.createTextNode(this.listHeaderTextFileName) );
       fileNameItemTR.appendChild(fileNameTH);
 
       // Create Creation Date/Time element and add it to the row
       const creationTimeTH = document.createElement("th");
-        creationTimeTH.classList.add("filename-list-header-data");               // filename-list-header > filename-list-header-data
-        creationTimeTH.classList.add("filename-list-header-time-last-modified"); // filename-list-header > filename-list-header-time-last-modified
+        creationTimeTH.classList.add("file-list-header-data");               // file-list-header > file-list-header-data
+        creationTimeTH.classList.add("file-list-header-time-last-modified"); // file-list-header > file-list-header-time-last-modified
         creationTimeTH.appendChild( document.createTextNode(this.listHeaderTextFileCreationDateTime) );
       fileNameItemTR.appendChild(creationTimeTH);
 
-//    // Create Last Modified Date/Time element and add it to the row
-//    const lastModifiedTimeTH = document.createElement("th");
-//      lastModifiedTimeTH.classList.add("filename-list-header-data");               // filename-list-header > filename-list-header-data
-//      lastModifiedTimeTH.classList.add("filename-list-header-time-lastModified"); // filename-list-header > filename-list-header-time-lastModified
-//      lastModifiedTimeTH.appendChild( document.createTextNode(this.listHeaderTextFileLastModifiedDateTime) );
-//    fileNameItemTR.appendChild(lastModifiedTimeTH);
+      // Create Last Modified Date/Time element and add it to the row
+      const lastModifiedTimeTH = document.createElement("th");
+        lastModifiedTimeTH.classList.add("file-list-header-data");               // file-list-header > file-list-header-data
+        lastModifiedTimeTH.classList.add("file-list-header-time-lastModified"); // file-list-header > file-list-header-time-lastModified
+        lastModifiedTimeTH.appendChild( document.createTextNode(this.listHeaderTextFileLastModifiedDateTime) );
+      fileNameItemTR.appendChild(lastModifiedTimeTH);
+
+      // Create file size (formatted) element and add it to the row
+      const fileSizeFmtTH = document.createElement("th");
+        fileSizeFmtTH.classList.add("file-list-header-data");          // file-list-header > file-list-header-data
+        fileSizeFmtTH.classList.add("file-list-header-filesize");      // file-list-header > file-list-header-filesize
+        fileSizeFmtTH.appendChild( document.createTextNode(this.listHeaderTextFileSizeFmt) );
+      fileNameItemTR.appendChild(fileSizeFmtTH);
 
       // Create file size element and add it to the row
-      const fileSizeTH = document.createElement("th");
-        fileSizeTH.classList.add("filename-list-header-data");          // filename-list-header > filename-list-header-data
-        fileSizeTH.classList.add("filename-list-header-filesize");      // filename-list-header > filename-list-header-filesize
-        fileSizeTH.appendChild( document.createTextNode(this.listHeaderTextFileSize) );
-      fileNameItemTR.appendChild(fileSizeTH);
+      const fileSizeBytesTH = document.createElement("th");
+        fileSizeBytesTH.classList.add("file-list-header-data");          // file-list-header > file-list-header-data
+        fileSizeBytesTH.classList.add("file-list-header-filesize");      // file-list-header > file-list-header-filesize
+        fileSizeBytesTH.appendChild( document.createTextNode(this.listHeaderTextFileSizeBytes) );
+      fileNameItemTR.appendChild(fileSizeBytesTH);
 
     return fileNameItemTR;
   }  
 
 
 
-  buildFileNameListItemUI(fileInfo) {
+  // async only because of messenger.messengerUtilities.formatFileSize()
+  async buildFileListItemUI(fileInfo) {
 /*  FileInfo has these values:
     - fileName: the fileName
     - path: the full pathName
@@ -407,33 +416,47 @@ class BackupManager {
 
     this.debug(`-- BUILD LIST ITEM UI: -- fileInfo.path="${fileInfo.path}" fileName="${fileInfo.fileName}"`);
 
-    const fileNameItemTR = document.createElement("tr");
-      fileNameItemTR.classList.add("filename-list-item");             // filename-list-item
-      fileNameItemTR.setAttribute("fileName", fileInfo.fileName);
-      fileNameItemTR.addEventListener("click", (e) => this.backupFilenameClicked(e));
+    const fileItemTR = document.createElement("tr");
+      fileItemTR.classList.add("file-list-item");             // file-list-item
+      fileItemTR.setAttribute("fileName", fileInfo.fileName);
+      fileItemTR.addEventListener("click", (e) => this.backupFilenameClicked(e));
 
       // Create FileName element and add it to the row
       const fileNameTD = document.createElement("td");
-        fileNameTD.classList.add("filename-list-item-data");          // filename-list-item > filename-list-item-data
-        fileNameTD.classList.add("filename-list-item-filename");      // filename-list-item > filename-list-item-filename
+        fileNameTD.classList.add("file-list-item-data");          // file-list-item > file-list-item-data
+        fileNameTD.classList.add("file-list-item-filename");      // file-list-item > file-list-item-filename
         fileNameTD.appendChild(document.createTextNode(fileInfo.fileName));
-      fileNameItemTR.appendChild(fileNameTD);
+      fileItemTR.appendChild(fileNameTD);
 
-      // Create Creation Date/Time element and add it to the row
+      // Create Creation Date/Time element and add it to the row // BUT IT'S Windows and MacOS only???
       const creationTimeTD = document.createElement("td");
-        creationTimeTD.classList.add("filename-list-item-data");          // filename-list-item > filename-list-item-data
-        creationTimeTD.classList.add("filename-list-item-time-creation"); // filename-list-item > filename-list-item-time-creation
+        creationTimeTD.classList.add("file-list-item-data");          // file-list-item > file-list-item-data
+        creationTimeTD.classList.add("file-list-item-time-creation"); // file-list-item > file-list-item-time-creation
         creationTimeTD.appendChild( document.createTextNode( formatMsToDateTime24HR(fileInfo.creationTime) ) );
-      fileNameItemTR.appendChild(creationTimeTD);
+      fileItemTR.appendChild(creationTimeTD);
 
-      // Create file size element and add it to the row
-      const fileSizeTD = document.createElement("td");
-        fileSizeTD.classList.add("filename-list-item-data");          // filename-list-item > filename-list-item-data
-        fileSizeTD.classList.add("filename-list-item-filesize");      // filename-list-item > filename-list-item-filesize
-        fileSizeTD.appendChild( document.createTextNode(fileInfo.size) );
-      fileNameItemTR.appendChild(fileSizeTD);
+      // Create Last Modified Date/Time element and add it to the row
+      const lastModifiedTimeTD = document.createElement("td");
+        lastModifiedTimeTD.classList.add("file-list-item-data");               // file-list-item > file-list-item-data
+        lastModifiedTimeTD.classList.add("file-list-item-time-last-modified"); // file-list-item > file-list-item-time-last-modified
+        lastModifiedTimeTD.appendChild( document.createTextNode( formatMsToDateTime24HR(fileInfo.lastModified) ) );
+      fileItemTR.appendChild(lastModifiedTimeTD);
 
-    return fileNameItemTR;
+      // Create file size (formatted) element and add it to the row
+      const fileSizeFmtTD = document.createElement("td");
+        fileSizeFmtTD.classList.add("file-list-item-data");          // file-list-item > file-list-item-data
+        fileSizeFmtTD.classList.add("file-list-item-filesize");      // file-list-item > file-list-item-filesize
+        fileSizeFmtTD.appendChild( document.createTextNode( await messenger.messengerUtilities.formatFileSize(fileInfo.size) ) );
+      fileItemTR.appendChild(fileSizeFmtTD);
+
+      // Create file size (bytes) element and add it to the row
+      const fileSizeBytesTD = document.createElement("td");
+        fileSizeBytesTD.classList.add("file-list-item-data");          // file-list-item > file-list-item-data
+        fileSizeBytesTD.classList.add("file-list-item-filesize");      // file-list-item > file-list-item-filesize
+        fileSizeBytesTD.appendChild( document.createTextNode(fileInfo.size) );
+      fileItemTR.appendChild(fileSizeBytesTD);
+
+    return fileItemTR;
   }  
 
 
@@ -464,7 +487,7 @@ class BackupManager {
     const restoreBtn = document.getElementById("fsbBackupManagerRestoreButton");
     const deleteBtn  = document.getElementById("fsbBackupManagerDeleteButton");
 ////const doneBtn    = document.getElementById("fsbBackupManagerDoneButton");
-    const selectedCount = this.getSelectedDomFileNameListItemCount();
+    const selectedCount = this.getSelectedDomFileListItemCount();
 
     if (selectedCount == 0) {
       restoreBtn.disabled = true;
@@ -480,7 +503,7 @@ class BackupManager {
 
 
 
-  // and filename-list-item (TR or TD) was clicked
+  // and file-list-item (TR or TD) was clicked
   async backupFilenameClicked(e) {
     if (! e) return;
 
@@ -502,9 +525,9 @@ class BackupManager {
 
       } else {
         this.debug(  "-- Got our TR --"
-                    + ` filename-list-item? ${trElement.classList.contains("filename-list-item")}`
+                    + ` file-list-item? ${trElement.classList.contains("file-list-item")}`
                   );
-        if (trElement.classList.contains("filename-list-item")) {
+        if (trElement.classList.contains("file-list-item")) {
           const fileName = trElement.getAttribute("fileName");
           const wasSelected = trElement.classList.contains('selected');
       
@@ -523,12 +546,14 @@ class BackupManager {
   }
 
   deselectAllFileNames() {
-    const domFileNameList = document.getElementById("fsbBackupManagerFileNameList");
-    if (! domFileNameList) {
-      this.debug("-- failed to get domFileNameList");
+    const domFileList = document.getElementById("fsbBackupManagerFileList");
+    if (! domFileList) {
+      this.error("-- failed to get domFileList");
     } else {
-      for (const listItem of domFileNameList.children) {
-        listItem.classList.remove('selected');
+      for (const listItem of domFileList.children) {
+        if (listItem.classList.contains("file-list-item")) {
+          listItem.classList.remove('selected');
+        }
       }
 
       this.updateUIOnSelectionChanged();
@@ -538,43 +563,43 @@ class BackupManager {
 
 
   // get only the FIRST!!!
-  getSelectedDomFileNameListItem() {
-    const domFileNameList = document.getElementById("fsbBackupManagerFileNameList");
-    if (! domFileNameList) {
-      this.debug("-- failed to get domFileNameList");
+  getSelectedDomFileListItem() {
+    const domFileList = document.getElementById("fsbBackupManagerFileList");
+    if (! domFileList) {
+      this.debug("-- failed to get domFileList");
     } else {
-      for (const domFileNameListItemTR of domFileNameList.children) {
-        if (domFileNameListItemTR.classList.contains('selected')) {
-          return domFileNameListItemTR;
+      for (const listItem of domFileList.children) {
+        if (listItem.classList.contains('selected')) {
+          return listItem;
         }
       }
     }
   }
 
-  getSelectedDomFileNameListItems() {
-    const domFileNameList = document.getElementById("fsbBackupManagerFileNameList");
-    if (! domFileNameList) {
-      this.debug("-- failed to get domFileNameList");
+  getSelectedDomFileListItems() {
+    const domFileList = document.getElementById("fsbBackupManagerFileList");
+    if (! domFileList) {
+      this.debug("-- failed to get domFileList");
     } else {
       const selected = [];
-      for (const domFileNameListItemTR of domFileNameList.children) {
-        if (domFileNameListItemTR.classList.contains('selected')) {
-          selected.push(domFileNameListItemTR);
+      for (const listItem of domFileList.children) {
+        if (listItem.classList.contains('selected')) {
+          selected.push(listItem);
         }
       }
       return selected;
     }
   }
 
-  getSelectedDomFileNameListItemCount() {
+  getSelectedDomFileListItemCount() {
     let   count           = 0;
-    const domFileNameList = document.getElementById("fsbBackupManagerFileNameList");
+    const domFileList = document.getElementById("fsbBackupManagerFileList");
 
-    if (! domFileNameList) {
-      this.debug("-- failed to get domFileNameList");
+    if (! domFileList) {
+      this.debug("-- failed to get domFileList");
     } else {
-      for (const domFileNameListItemTR of domFileNameList.children) {
-        if (domFileNameListItemTR.classList.contains('selected')) {
+      for (const listItem of domFileList.children) {
+        if (listItem.classList.contains('selected')) {
           ++count;
         }
       }
@@ -596,26 +621,26 @@ class BackupManager {
     let   errors   = 0;
     const response = await this.fsbOptionsApi.backupToFile();
     if (! response) {
-      this.error("-- FAILED TO RESTORE OPTIONS -- NO RESPONSE RETURNED");
+      this.error("-- FAILED TO BACKUP OPTIONS -- NO RESPONSE RETURNED");
       ++errors;
     } else if (response.invalid) {
-      this.error("-- FAILED TO RESTORE OPTIONS -- INVALID RETURNED IN RESPONSE");
+      this.error("-- FAILED TO BACKUP OPTIONS -- INVALID RETURNED IN RESPONSE");
       ++errors;
     } else if (response.error) {
-      this.error("-- FAILED TO RESTORE OPTIONS -- ERROR RETURNED IN RESPONSE");
+      this.error("-- FAILED TO BACKUP OPTIONS -- ERROR RETURNED IN RESPONSE");
       ++errors;
     } else if (! response.fileName) {
-      this.error("-- FAILED TO RESTORE OPTIONS -- NO FILENAME RETURNED IN RESPONSE");
+      this.error("-- FAILED TO BACKUP OPTIONS -- NO FILENAME RETURNED IN RESPONSE");
       ++errors;
     } else if ((typeof response.bytesWritten) !== 'number') {
-      this.error(`-- FAILED TO RESTORE OPTIONS -- INVALID BYTES_WRITTEN RETURNED IN RESPONSE -- backupFileName="${response.fileName}"`);
+      this.error(`-- FAILED TO BACKUP OPTIONS -- INVALID BYTES_WRITTEN RETURNED IN RESPONSE -- backupFileName="${response.fileName}"`);
       ++errors;
     } else if (response.bytesWritten < 1) {
-      this.error(`-- FAILED TO RESTORE OPTIONS -- NO BYTES WRITTEN -- backupFileName="${response.fileName}"`);
+      this.error(`-- FAILED TO BACKUP OPTIONS -- NO BYTES WRITTEN -- backupFileName="${response.fileName}"`);
       ++errors;
     } else {
       this.debug(`-- backupFileName="${response.fileName}" bytesWritten=${response.bytesWritten}`);
-      await this.buildFileNameListUI();
+      await this.buildFileListUI();
     }
 
     if (errors) {
@@ -637,7 +662,7 @@ class BackupManager {
     const restoreBtn = document.getElementById("fsbBackupManagerRestoreButton");
     restoreBtn.disabled = true;
 
-    const domSelectedFileNameItemTR = this.getSelectedDomFileNameListItem();
+    const domSelectedFileNameItemTR = this.getSelectedDomFileListItem();
     let errors = 0;
 
     if (! domSelectedFileNameItemTR) {
@@ -717,7 +742,7 @@ class BackupManager {
     const deleteBtn = document.getElementById("fsbBackupManagerDeleteButton");
     deleteBtn.disabled = true;
 
-    const domSelectedFileNameItemTRs = this.getSelectedDomFileNameListItems();
+    const domSelectedFileNameItemTRs = this.getSelectedDomFileListItems();
     let errors = 0;
 
     if (! domSelectedFileNameItemTRs) {

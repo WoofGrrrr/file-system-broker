@@ -228,25 +228,25 @@
     "message": "Add the Extension information to the List"
   },
   "options_fsbExtensionEditErrorExtensionIdEmpty": {
-    "message": "ID Required"
+    "message": "Extension ID Required"
   },
   "options_fsbExtensionEditErrorExtensionIdInvalid": {
-    "message": "Invalid ID"
+    "message": "Invalid Extension ID"
   },
   "options_fsbExtensionEditErrorExtensionIdExists": {
-    "message": "ID Already Exists"
+    "message": "Extension ID Already Exists"
   },
   "options_fsbExtensionEditErrorExtensionNameEmpty": {
-    "message": "Name Required"
+    "message": "Extension Name Required"
   },
   "options_fsbExtensionEditErrorExtensionNameInvalid": {
-    "message": "Invalid Name"
+    "message": "Invalid Extension Name"
   },
   "options_fsbExtensionEditErrorAddFailed": {
-    "message": "Add Failed"
+    "message": "Extension Add Failed"
   },
   "options_fsbExtensionEditErrorUpdateFailed": {
-    "message": "Update Failed"
+    "message": "Extension Update Failed"
   },
   "options_fsbExtensionEditCancelButton.tooltip": {
     "message": "Cancel the changes and Clear the Extension Information"
@@ -361,6 +361,52 @@
   },
   "options_fsbEnableExternalMessageResultLoggingCheck.label": {
     "message": "Log External Command Results"
+  },
+  "fsbOptions_dialog_confirmRemoveExtension_title": {
+    "message": "Confirm Extension Removal"
+  },
+  "fsbOptions_dialog_confirmRemoveExtension_message_extId_willBeRemoved": {
+    "message": "Extension \"$EXT_ID$\" will be Removed from the list",
+    "placeholders": {
+      "ext_id": {
+        "content": "$1"
+      }
+    }
+  },
+  "fsbOptions_dialog_confirmRemoveExtension_message_noDirectory": {
+    "message": "There is a NO Directory for this Extension."
+  },
+  "fsbOptions_dialog_confirmRemoveExtension_message_hasDirectory": {
+    "message": "There is a Directory for this Extension."
+  },
+  "fsbOptions_dialog_confirmRemoveExtension_message_directoryIsEmpty": {
+    "message": "The Directory is empty."
+  },
+  "fsbOptions_dialog_confirmRemoveExtension_message_directoryHasOneItem": {
+    "message": "The Directory contains One Item."
+  },
+  "fsbOptions_dialog_confirmRemoveExtension_message_directoryHasNNItems": {
+    "message": "The Directory contains $NN$ Items.",
+    "placeholders": {
+      "nn": {
+        "content": "$1"
+      }
+    }
+  },
+  "fsbOptions_dialog_confirmRemoveExtension_message_willNotDeleteDirectory": {
+    "message": "The Directory will NOT be deleted."
+  },
+  "fsbOptions_dialog_confirmRemoveExtension_message_willDeleteDirectory": {
+    "message": "The Directory will be deleted as well."
+  },
+  "fsbOptions_dialog_confirmRemoveExtension_message_continue": {
+    "message": "Do you wish to continue?"
+  },
+  "fsbOptions_dialog_confirmRemoveExtension_button_continue.label": {
+    "message": "Continue"
+  },
+  "fsbOptions_dialog_confirmRemoveExtension_button_cancel.label": {
+    "message": "Cancel"
   },
   "options_fsbDevOptionsTitle.label": {
     "message": "Developer Options"
@@ -497,9 +543,6 @@
   "fsbBackupManager_instructions_1": {
     "message": "Click on a Backup File to Select it - it will be highlighted (more than one may be selected)"
   },
-  "fsbBackupManager_instructions_1": {
-    "message": "Click on a Backup File to Select it - it will be highlighted"
-  },
   "fsbBackupManager_instructions_2": {
     "message": "Click on the Backup File again to De-select it"
   },
@@ -516,7 +559,7 @@
     "message": "Backup Files are placed in this Directory:"
   },
   "fsbBackupManager_message_fileNamesLoading": {
-    "message": "...loading backup filenames..."
+    "message": "...loading backup file information..."
   },
   "fsbBackupManager_doneButton": {
     "message": "Done"
@@ -542,7 +585,10 @@
   "fsbBackupManager_listHeader_fileTimeLastModified": {
     "message": "Time Last Modified"
   },
-  "fsbBackupManager_listHeader_fileSize": {
+  "fsbBackupManager_listHeader_fileSizeFmt": {
+    "message": "Size"
+  },
+  "fsbBackupManager_listHeader_fileSizeBytes": {
     "message": "Size (bytes)"
   },
   "fsbBackupManager_message_error_restoreFailed": {
@@ -1109,7 +1155,7 @@
     "message": "Confirm Directory Deletion"
   },
   "fsbStatsManager_dialog_confirmDeleteDirectory_dirName": {
-    "message": "Directory '$DIR_NAME$' will be deleted.",
+    "message": "Directory \"$DIR_NAME$\" will be deleted.",
     "placeholders": {
       "dir_name": {
         "content": "$1"

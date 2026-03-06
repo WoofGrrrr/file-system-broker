@@ -87,7 +87,7 @@ input[type="checkbox"].open-close-check:not(checked) + label {
     grid-area: instructions;
   }
 
-  & #fsbBackupManagerFileNameListWrapper {
+  & #fsbBackupManagerFileListWrapper {
     grid-area: list-wrapper;
   }
 
@@ -137,7 +137,7 @@ input[type="checkbox"].open-close-check:not(checked) + label {
 
 
 
-#fsbBackupManagerFileNameListWrapper { /* this is a <DIV> */
+#fsbBackupManagerFileListWrapper { /* this is a <DIV> */
   background-color: var(--panel-background-color);
   border:           1px solid var(--panel-border-color);
   border-radius:    10px;
@@ -147,7 +147,7 @@ input[type="checkbox"].open-close-check:not(checked) + label {
   padding:          0.5em 1.0em 0.5em 1.0em;
 }
 
-#fsbBackupManagerFileNameList { /* this is a <TABLE> */
+#fsbBackupManagerFileList { /* this is a <TABLE> */
   border-radius:    10px;
   border-collapse:  separate;
   border-spacing:   2px 0px;
@@ -189,7 +189,7 @@ input[type="checkbox"].open-close-check:not(checked) + label {
 
 
 
-.filename-list-header { /* <TH>  FileName List Header Row */
+.file-list-header { /* <TH>  FileName List Header Row */
   background-color: var(--list-header-item-background-color);
   border:           none;
   color:            var(--list-header-item-color);
@@ -206,19 +206,19 @@ input[type="checkbox"].open-close-check:not(checked) + label {
   -moz-appearance:  none;
 }
 
-.filename-list-header-data { /* <TH>  FileName List Header Row */
+.file-list-header-data { /* <TH>  FileName List Header Row */
 }
-.filename-list-header-filename { /* <TH>  FileName List Header Row */
+.file-list-header-filename { /* <TH>  FileName List Header Row */
 }
-.filename-list-header-time-created { /* <TH>  FileName List Header Row */
+.file-list-header-time-created { /* <TH>  FileName List Header Row */
 }
-.filename-list-header-time-last-modified { /* <TH>  FileName List Header Row */
+.file-list-header-time-last-modified { /* <TH>  FileName List Header Row */
 }
-.filename-list-header-time-soze { /* <TH>  FileName List Header Row */
+.file-list-header-time-soze { /* <TH>  FileName List Header Row */
 }
 
 
-.filename-list-item { /* this is a <TR> */
+.file-list-item { /* this is a <TR> */
   background-color: transparent !important;
 
   border:           none !important;
@@ -232,21 +232,21 @@ input[type="checkbox"].open-close-check:not(checked) + label {
   white-space:      nowrap;
   width:            100%;
   -moz-appearance:  none;
+
+  & > :first-child {
+    border-bottom-left-radius: 5px;
+    border-left:               1px solid; /* var(--list-item-border-color) !important; */
+    border-top-left-radius:    5px;
+  }
+
+  & > :last-child {
+    border-bottom-right-radius: 5px;
+    border-right:               1px solid; /* var(--list-item-border-color) !important; */
+    border-top-right-radius:    5px;
+  }
 }
 
-.filename-list-item > :first-child {
-  border-bottom-left-radius: 5px;
-  border-left:               1px solid; /* var(--list-item-border-color) !important; */
-  border-top-left-radius:    5px;
-}
-
-.filename-list-item > :last-child {
-  border-bottom-right-radius: 5px;
-  border-right:               1px solid; /* var(--list-item-border-color) !important; */
-  border-top-right-radius:    5px;
-}
-
-.filename-list-item-data { /* this is a <TD> */
+.file-list-item-data { /* this is a <TD> */
   background-color: var(--list-item-background-color);
   border-bottom:    1px solid;
   border-top:       1px solid;
@@ -257,32 +257,37 @@ input[type="checkbox"].open-close-check:not(checked) + label {
   text-decoration:  var(--list-item-text-decoration);
   white-space:      nowrap;
   -moz-appearance:  none;
+
+  &.file-list-item-filename { /* .file-list-item > .file-list-item-filename - this is a <TD> */
+    min-width: 10em;
+    width:     auto;
+  }
+
+  &.file-list-item-time-creation { /* .file-list-item > .file-list-item-time-creation - this is a <TD> */
+    min-width: 12em;
+    width:     auto;
+  }
+
+  &.file-list-item-time-last-modified { /* .file-list-item > .file-list-item-time-clast-modified - this is a <TD> */
+    min-width: 12em;
+    width:     auto;
+  }
+
+  &.file-list-item-filesize { /* .file-list-item > .file-list-item-filesize - this is a <TD> */
+    min-width:  5em;
+    text-align: right;
+    width:      auto;
+  }
 }
 
-.filename-list-item-filename { /* .filename-list-item > .filename-list-item-filename - this is a <TD> */
-  min-width: 10em;
-  width:     auto;
-}
-
-.filename-list-item-time-creation { /* .filename-list-item > .filename-list-item-time-creation - this is a <TD> */
-  min-width: 12em;
-  width:     auto;
-}
-
-.filename-list-item-filesize { /* .filename-list-item > .filename-list-item-filesize - this is a <TD> */
-  min-width:  5em;
-  text-align: right;
-  width:      auto;
-}
-
-tr.filename-list-item.selected > td.filename-list-item-data {
+tr.file-list-item.selected > td.file-list-item-data {
   background-color: var(--list-item-selected-background-color);
   border-color:     var(--list-item-selected-border-color);
   color:            var(--list-item-selected-color);
   text-shadow:      1px 1px var(--list-item-selected-text-shadow-color);
 }
 
-tr.filename-list-item:hover > td.filename-list-item-data {
+tr.file-list-item:hover > td.file-list-item-data {
   background-color: var(--list-item-hover-background-color);
   background-image: var(--list-item-hover-background-image);
   border-color:     var(--list-item-hover-border-color);
@@ -292,7 +297,7 @@ tr.filename-list-item:hover > td.filename-list-item-data {
 
 
 
-tr.filename-list-item.selected > td.filename-list-item-data { /* selected & not configured */
+tr.file-list-item.selected > td.file-list-item-data { /* selected & not configured */
   text-decoration:  var(--list-item-selected-text-decoration);
 }
 

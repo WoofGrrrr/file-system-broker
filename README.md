@@ -988,9 +988,10 @@ in mind.
 
 #### stats - Returns statistics for the calling extension.
 
-    command message: { "Command": { "command": "stats" } }
+    command message: { "Command": { "command": "stats"[, "parameters": { ["returnNotExist": boolean] [, "includeChildInfo": boolean[, "types": array of string] ] } ] } }
 
     response:        { "stats": object }
+          or:        { "exists": false }
 <br>
 <br>
     Returns a JavaScript object that contains information
@@ -1001,6 +1002,13 @@ in mind.
     The 'parameters' parameter is optional. If it is not
     provided, information for each child is NOT included
     in the result.
+<br>
+<br>
+    The parameters.returnNotExist parameter is optional.
+    If it is not provided, it defaults to false. If true,
+    and the directory for extension does not exist, the
+    response { "exists": false } is returned, otherwise
+    an "invalid" response is returned.
 <br>
 <br>
     The parameters.includeChildInfo parameter is optional.

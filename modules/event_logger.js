@@ -300,13 +300,21 @@ export class FsbEventLogger {
       await this.logInternalEvent( "deleteOldEventLogs",
                                    "success",
                                    parameters,
-                                   `Deleted: ${numDeleted}, Delete Failed: ${numDeleteFailed}, Not Deleted ${numNotDeleted}, Total: ${numFiles}`
+                                   `Deleted: ${numDeleted}, Failed: ${numDeleteFailed}, Not Deleted ${numNotDeleted}, Total: ${numFiles}`
                                  );
     }
 
     this.logAlways(`-- end -- Deleted: ${numDeleted}, Delete Failed: ${numDeleteFailed}, Not Deleted ${numNotDeleted}, Total: ${numFiles}`);
 
-    return deletedFileNames;
+    const response = {
+      'count_files':      numFiles,
+      'count_deleted':    numDeleted,
+      'count_failed':     numDeleteFailed,
+      'count_notDeleted': numNotDeleted,
+      'fileNames':        deletedFileNames,
+    };
+
+    return response;
   }
 
 

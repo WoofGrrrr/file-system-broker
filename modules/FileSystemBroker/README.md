@@ -862,7 +862,7 @@ Use something like the following code in your JavaScript:
 <br>
 <br>
 
-### stats( [ { ['includeChildInfo': boolean] ['types': array of string] ] )
+### stats( [ 'parameters': { ['returnNotExist': boolean] [, 'includeChildInfo': boolean[, 'types': array of string] ] } ] )
 
     Returns a JavaScript object that contains information
     about the directory and the items in the directory
@@ -872,6 +872,13 @@ Use something like the following code in your JavaScript:
     The 'parameters' parameter is optional. If it is not
     provided, information for each child is NOT included
     in the result.
+<br>
+<br>
+    The parameters.returnNotExist parameter is optional.
+    If it is not provided, it defaults to false. If true,
+    and the directory for extension does not exist, the
+    response { 'exists': false } is returned, otherwise
+    an "invalid" response is returned.
 <br>
 <br>
     The parameters.includeChildInfo parameter is optional.
@@ -893,6 +900,10 @@ Use something like the following code in your JavaScript:
 <br>
 <br>
     The returned object:
+```
+      { 'exists': false }
+```
+    - OR -
 ```
       {
         'parameters':                               object:           the parameters object supplied to the incoming command
@@ -937,6 +948,8 @@ Use something like the following code in your JavaScript:
 <br>
     Returns "invalid" if parameters is provided and is not an object,
 <br>
+    or if paramaters.returnNotExist is provided and is not boolean,
+<br>
     or if paramaters.includeChildInfo is provided and is not boolean,
 <br>
     or if paramaters.types is provided and is not an Array that contains the expected values.
@@ -945,7 +958,6 @@ Use something like the following code in your JavaScript:
     Reurns "error" if the file's full pathName is > 255 characters,
 <br>
     or if there is an operating system error.
-
 <br>
 <br>
 <br>
