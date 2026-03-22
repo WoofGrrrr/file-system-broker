@@ -43,13 +43,80 @@ input[type="checkbox"].open-close-check + label {
   padding:           0px;;
 }
 
-input[type="checkbox"].open-close-check:checked + label {
-  background-image:  url("../images/icons/light-gray-triangle-outline-down_10x10.png") !important;
+
+
+.open-close-widget {
+  background-repeat:       no-repeat;
+  border:                  1px solid transparent;
+  border-radius:           5px; /* MABXXX <----------------------------------------<<<<< */
+  cursor:                  pointer !important;
+  padding:                 0px 4px;
+
+  & > input[type="checkbox"].open-close-check {
+    display:               NONE;
+
+    & + label {
+      background-position: center;
+      background-repeat:   no-repeat;
+      background-size:     auto;
+      border:              NONE;
+      height:              10px;
+      width:               10px;
+      display:             inline-block;
+      margin:              0px;
+    
+      & + label {
+        border:            NONE;
+        margin:            0px;
+      }
+    }
+  }
+
+  &:not(:hover) {
+    & > input[type="checkbox"].open-close-check {
+      &:checked {
+        & + label {
+          background-image:  url("../images/icons/triangle/light-gray-triangle-outline-down_10x10.png") !important;
+          & + label {
+          }
+        }
+      }
+
+      &:not(:checked) {
+        & + label {
+          background-image:  url("../images/icons/triangle/light-gray-triangle-outline-right_10x10.png") !important;
+          & + label {
+          }
+        }
+      }
+    }
+  }
+
+  &:hover {
+    background-image: var(--extension-hover-background-image);
+    border-color:     #90A0B0; /* MABXXX <----------------------------------------<<<<< */
+    font-weight:      BOLD;
+
+    & > input[type="checkbox"].open-close-check {
+      &:checked {
+        & + label {
+          background-image:  url("../images/icons/triangle/triangle-down-light-aqua-outline-white_10x10.png") !important;
+          & + label {
+          }
+        }
+      }
+
+      &:not(:checked) {
+        & + label {
+          background-image:  url("../images/icons/triangle/triangle-right-light-aqua-outline-white_10x10.png") !important;
+          & + label {
+          }
+        }
+      }
+    }
+  }
 }
 
-input[type="checkbox"].open-close-check:not(checked) + label {
-  background-image:  url("../images/icons/light-gray-triangle-outline-right_10x10.png") !important;
-}
 
 
 
@@ -600,13 +667,13 @@ input[type="checkbox"].open-close-check:not(checked) + label {
 
             &.button-delete-directory {
               &:not(disabled,:hover) {
-                background-image: url("../images/icons/trashcan-red-16x16.png") !important;
+                background-image: url("../images/icons/trashcan/trashcan-red-16x16.png") !important;
               }
               &:not(disabled):hover {
-                background-image: url("../images/icons/trashcan-red-lighter-16x16.png") !important;
+                background-image: url("../images/icons/trashcan/trashcan-red-lighter-16x16.png") !important;
               }
               &:is(disabled) {
-                background-image: url("../images/icons/trashcan-gray-16x16.png") !important;
+                background-image: url("../images/icons/trashcan/trashcan-gray-16x16.png") !important;
                 cursor:           not-allowed;
               }
             }

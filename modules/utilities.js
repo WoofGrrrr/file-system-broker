@@ -79,6 +79,49 @@ export function getBrowserAndVersion() {
 
 
 
+export function getExtensionInfo() {
+  const extInfo = {};
+
+  var manifest = messenger.runtime.getManifest();
+
+  if (manifest) {
+    extInfo['manifest_version']     = manifest.manifest_version;
+    extInfo['name']                 = manifest.name;
+    extInfo['short_name']           = manifest.short_name;
+    extInfo['description']          = manifest.description;
+    extInfo['author']               = manifest.author;
+    extInfo['homepage_url']         = manifest.homepage_url;
+    extInfo['version']              = manifest.version;
+////extInfo['version_name']         = manifest.version_name; // not supported by Gecko (Thunderbird?)
+    extInfo['default_locale']       = manifest.default_locale;
+    extInfo['permissions']          = manifest.permissions;
+    extInfo['optional_permissions'] = manifest.optional_permissions;
+
+    if (manifest.developer) {
+      extInfo['developer_name']     = manifest.developer.name; // if developer.name is present, it overrides author
+      extInfo['developer_url']      = manifest.developer.url;  // if developer.url is present, it overrides homepage_url
+    }
+
+    if (manifest.browser_specific_settings && manifest.browser_specific_settings.gecko) { // MABXXX applications is deprecated.  Use browser_specific_settings
+      const gecko = manifest.browser_specific_settings.gecko;
+      extInfo['id']                          = gecko.id                          ? gecko.id                          : '';
+      extInfo['strict_min_version']          = gecko.strict_min_version          ? gecko.strict_min_version          : '';
+      extInfo['strict_max_version']          = gecko.strict_max_version          ? gecko.strict_max_version          : '';
+      extInfo['update_url']                  = gecko.update_url                  ? gecko.update_url                  : '';
+      extInfo['data_collection_permissions'] = gecko.data_collection_permissions ? gecko.data_collection_permissions : '';
+    } else if (manifest.applications && manifest.applications.gecko) { // MABXXX applications is deprecated.  Use browser_specific_settings
+      const gecko = manifest.applications.gecko;
+      extInfo['id']                          = gecko.id                          ? gecko.id                          : '';
+      extInfo['strict_min_version']          = gecko.strict_min_version          ? gecko.strict_min_version          : '';
+      extInfo['strict_max_version']          = gecko.strict_max_version          ? gecko.strict_max_version          : '';
+      extInfo['update_url']                  = gecko.update_url                  ? gecko.update_url                  : '';
+      extInfo['data_collection_permissions'] = gecko.data_collection_permissions ? gecko.data_collection_permissions : '';
+    }
+  }
+
+  return extInfo;
+}
+
 export function getExtensionId(defaultExtId) {
   var extId = defaultExtId;
 
@@ -104,6 +147,49 @@ export function getExtensionName(defaultExtName) {
   }
 
   return extName;
+}
+
+export function getExtensionVersion(defaultExtVersion) {
+  var extVersion = defaultExtVersion;
+
+  var manifest = messenger.runtime.getManifest();
+  if (manifest && manifest.version) {
+    extVersion = manifest.version;
+  }
+
+  return extVersion;
+}
+
+export function getExtensionAppMinVersion() {
+  var minVersion;
+
+  var manifest = messenger.runtime.getManifest();
+  if (    manifest
+       && manifest.applications // MABXXX applications is deprecated.  Use browser_specific_settings
+       && manifest.applications.gecko
+       && manifest.applications.gecko.strict_min_version
+     )
+  {
+    minVersion = manifest.applications.gecko.strict_min_version;
+  }
+
+  return minVersion;
+}
+
+export function getExtensionAppMaxVersion() {
+  var maxVersion;
+
+  var manifest = messenger.runtime.getManifest();
+  if (    manifest
+       && manifest.applications // MABXXX applications is deprecated.  Use browser_specific_settings
+       && manifest.applications.gecko
+       && manifest.applications.gecko.strict_max_version
+     )
+  {
+    maxVersion = manifest.applications.gecko.strict_max_version;
+  }
+
+  return maxVersion;
 }
 
 

@@ -3,6 +3,8 @@
 
   --cursor-disabled:                               not-allowed;
 
+  --hover-background-image:                        linear-gradient(rgba(80,80,80,0.6) 20%, rgba(150,150,150,0.8) 80%);
+
   --page-background-color:                         rgb(  47,  47,  55 );
   --page-color:                                    rgb( 215, 215, 215 );
   --page-font:                                     message-box;
@@ -100,7 +102,7 @@
   --list-item-selected-text-shadow:                1px 1px var(--list-item-selected-text-shadow-color);
 
   --list-item-hover-background-color:              rgb(  60, 160, 165 );
-  --list-item-hover-background-image:              linear-gradient(rgba(80,80,80,0.6) 20%, rgba(150,150,150,0.8) 80%);
+  --list-item-hover-background-image:              var(--hover-background-image);
   --list-item-hover-border-color:                  rgb( 240, 240, 240 );
   --list-item-hover-color:                         rgb( 255, 255, 255 );
   --list-item-hover-text-shadow-color:             rgb(  20,  20,  20 );
@@ -168,7 +170,7 @@
   --extension-disabled-text-shadow:                -1px -1px var(--extension-disabled-text-shadow-color);
 
   --extension-hover-background-color:              var(--list-item-hover-background-color);
-  --extension-hover-background-image:              linear-gradient(rgba(80,80,80,0.6) 20%, rgba(150,150,150,0.8) 80%);
+  --extension-hover-background-image:              var(--list-item-hover-background-image);
   --extension-hover-border-color:                  var(--list-item-hover-border-color);
   --extension-hover-color:                         var(--list-item-hover-color);
   --extension-hover-text-decoration:               NONE;
@@ -182,17 +184,68 @@
   --extension-selected-text-shadow-color:          var(--list-item-selected-text-shadow-color);
   --extension-selected-text-shadow:                1px 1px var(--extension-selected-text-shadow-color);
 
+  --extension-edit-background-color:               rgb(  65, 134,  65 );
+  --extension-edit-color:                          color-mix(in srgb, var(--extension-color), WHITE 50%);
+  --extension-edit-font:                           var(--extension-font);
+  --extension-edit-font-size:                      var(--extension-font-size);
+  --extension-edit-font-weight:                    var(--extension-font-weight);
+
+  --extension-edit-hover-background-color:         var(--extension-edit-background-color);
+  --extension-edit-hover-background-image:         var(--list-item-hover-background-image);
+  --extension-edit-hover-border-color:             var(--extension-edit-color);
+  --extension-edit-hover-color:                    var(--extension-edit-color);
+  --extension-edit-hover-text-shadow:              1px 1px black;
+
+  --extension-edit-title-item-background-color:    var(--extension-edit-background-color);
+  --extension-edit-title-item-color:               var(--extension-edit-color);
+  --extension-edit-title-item-font:                var(--extension-edit-font);
+  --extension-edit-title-item-font-size:           calc( var(--extension-edit-font-size) + 10% );
+  --extension-edit-title-item-font-weight:         BOLD;
+  --extension-edit-title-item-text-decoration:     NONE;
+  --extension-edit-title-item-text-shadow:         1px 1px BLACK;
+
+  --extension-edit-item-background-color:          var(--extension-edit-background-color);
+  --extension-edit-item-color:                     var(--extension-edit-color);
+  --extension-edit-item-font:                      var(--extension-edit-font);
+  --extension-edit-item-font-size:                 var(--extension-edit-font-size);
+  --extension-edit-item-font-weight:               var(--extension-edit-font-weight);
+  --extension-edit-item-text-decoration:           NONE;
+  --extension-edit-item-text-shadow:               NONE;
+
+  --extension-edit-error-item-background-color:    rgb( 200,   0,   0 );
+  --extension-edit-error-item-color:               rgb( 255, 255, 255 );
+  --extension-edit-error-item-font:                var(--extension-edit-font);
+  --extension-edit-error-item-font-size:           var(--extension-edit-font-size);
+  --extension-edit-error-item-font-weight:         BOLD;
+  --extension-edit-error-item-text-decoration:     NONE;
+  --extension-edit-error-item-text-shadow:         1px 1px BLACK;
+
 
 
   --input-background-color:                        rgb( 240, 240, 240 );
   --input-border-color:                            rgb(  40,  40,  40 );
+  --input-border-size:                             1px;
+  --input-border-style:                            solid;
+  --input-border:                                  var(--input-border-size) var(--input-border-style) var(--input-border-color);
+  --input-border-radius:                           3px;
   --input-color:                                   rgb(  20,  20,  20 );
   --input-outline-color:                           transparent;
 
+  --input-disabled-background-color:               rgb( 200, 200, 200 );
+  --input-disabled-border-color:                   transparent;
+  --input-disabled-color:                          rgb(  80,  80,  80 );
+
+  --input-hover-background-color:                  rgb( 230, 255, 250 );
+  --input-hover-background-image:                  var(--hover-background-image);
+  --input-hover-border-color:                      rgb(  40,  40,  40 );
+  --input-hover-border:                            var(--input-border-size) var(--input-border-style) var(--input-hover-border-color);
+  --input-hover-color:                             rgb(   2,   0,   0 );
+
   --input-focus-background-color:                  rgb( 240, 240, 240 );
   --input-focus-border-color:                      rgb( 240, 240, 240 );
+  --input-focus-border:                            var(--input-border-size) var(--input-border-style) var(--input-focus-border-color);
   --input-focus-color:                             rgb(  20,  20,  20 );
-  --input-focus-outline-color:                     blue;
+  --input-focus-outline-color:                     rgb(   2, 195, 215 );
 
   --value-background-color:                        rgb(  66,  66,  70 );
   --value-border-color:                            rgb( 103, 108, 118 );
@@ -209,6 +262,7 @@
   --button-disabled-color:                         rgb(  80,  80,  85 );
 
   --button-hover-background-color:                 rgb(  60, 160, 165 );
+  --button-hover-background-image:                 var(--hover-background-image);
   --button-hover-border-color:                     rgb( 240, 240, 240 );
   --button-hover-color:                            rgb( 255, 255, 255 );
   --button-hover-text-shadow-color:                rgb(  20,  20,  20 );

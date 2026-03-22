@@ -2083,9 +2083,9 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
             var   earliestChildLastModifiedTime; // undefined when no children
             var   latestChildLastModifiedTime;   // undefined when no children
 
+            var   totalSize = 0;
             var   smallestSize;   // undefined when no children with type 'regular'
             var   largestSize;    // undefined when no children with type 'regular'
-            var   totalSize;      // undefined when no children with type 'regular'
 
             const statsByDirectoryName = [];
 
@@ -2142,7 +2142,7 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
                       if (regPathNames) regPathNames.push(itemPath);
                       smallestSize = (smallestSize === undefined) ? fileInfo.size : Math.min( fileInfo.size, smallestSize );
                       largestSize  = (largestSize  === undefined) ? fileInfo.size : Math.max( fileInfo.size, largestSize  );
-                      totalSize    = (totalSize    === undefined) ? fileInfo.size : totalSize + fileInfo.size;
+                      totalSize    = totalSize + fileInfo.size;
                       break;
                     }
 
@@ -2215,8 +2215,7 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
                                                                                                                   : Math.min( smallestSize, dirStats.size_smallest );
                       if ( Number.isInteger(dirStats.size_largest)  ) largestSize  = (largestSize  === undefined) ? dirStats.size_largest
                                                                                                                   : Math.max( largestSize,  dirStats.size_largest  );
-                      if ( Number.isInteger(dirStats.size_total)    ) totalSize    = (totalSize    === undefined) ? dirStats.size_total
-                                                                                                                  : totalSize + dirStats.size_total;
+                      if ( Number.isInteger(dirStats.size_total)    ) totalSize    =                                totalSize + dirStats.size_total;
 
                       if ( Number.isInteger(dirStats.time_childCreation_earliest) ) 
                         earliestChildCreationTime = (earliestChildCreationTime         === undefined) ? dirStats.time_childCreation_earliest
@@ -2522,9 +2521,9 @@ async function getStatsForDirFileInfo( context,
   var   numUnknown       = 0;
   var   numError         = 0;
 
+  var   totalSize        = 0;
   var   smallestSize;    // undefined when no children
   var   largestSize;     // undefined when no children
-  var   totalSize;       // undefined when no children
 
   var   earliestChildCreationTime;     // undefined when no children
   var   latestChildCreationTime;       // undefined when no children
@@ -2591,7 +2590,7 @@ async function getStatsForDirFileInfo( context,
             if (regPathNames) regPathNames.push(childPath);
             smallestSize = (smallestSize === undefined) ? fileInfo.size : Math.min( fileInfo.size, smallestSize );
             largestSize  = (largestSize  === undefined) ? fileInfo.size : Math.max( fileInfo.size, largestSize  );
-            totalSize    = (totalSize    === undefined) ? fileInfo.size : totalSize + fileInfo.size;
+            totalSize    = totalSize + fileInfo.size;
             if (includeChildInfo && (! types || types.includes('regular'))) {
               info['size'] = fileInfo.size;
               childInfo.push(info);

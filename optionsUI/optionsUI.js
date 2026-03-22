@@ -50,14 +50,40 @@ class OptionsUI {
     this.devRemovedUninstalledExtensionsTimeout     = null;
 
     // gather i18n messages for tooltips (and some other stuff) in the Extension List
-    // - the calls to getI18nMsg for tooltips will return null - NOT the message ID - if no message is configured - just no tooltip
-    this.tooltip_check_allowAccess                                         = getI18nMsg( "options_check_allowAccess.tooltip",            null );
-    this.tooltip_button_add                                                = getI18nMsg( "options_button_addExtension.tooltip",          null );
-    this.tooltip_button_edit                                               = getI18nMsg( "options_button_editExtension.tooltip",         null );
-    this.tooltip_button_delete                                             = getI18nMsg( "options_button_deleteExtension.tooltip",       null );
-    this.tooltip_button_edit_save                                          = getI18nMsg( "options_fsbExtensionEditSaveButton.tooltip",   null );
-    this.tooltip_button_edit_add                                           = getI18nMsg( "options_fsbExtensionEditAddButton.tooltip",    null );
-    this.tooltip_button_edit_cancel                                        = getI18nMsg( "options_fsbExtensionEditCancelButton.tooltip", null );
+    this.tooltip_button_add                                                  = getI18nMsg( "options_button_addExtension.tooltip",                        "" );
+
+    this.tooltip_checkbox_allowAccess_enabled                                = getI18nMsg( "options_checkbox_allowAccess_enabled.tooltip",               "" );
+    this.tooltip_checkbox_allowAccess_disabled_special                       = getI18nMsg( "options_checkbox_allowAccess_disabled_special.tooltip",      "" );
+    this.tooltip_checkbox_allowAccess_disabled_locked                        = getI18nMsg( "options_checkbox_allowAccess_disabled_locked.tooltip",       "" );
+
+    this.tooltip_dot_extension_installed                                     = getI18nMsg( "options_dot_extension_installed.tooltip",                    "" );
+    this.tooltip_dot_extension_not_installed                                 = getI18nMsg( "options_dot_extension_not_installed.tooltip",                "" );
+    this.tooltip_dot_extension_disabled                                      = getI18nMsg( "options_dot_extension_disabled.tooltip",                     "" );
+    this.tooltip_dot_extension_enabled                                       = getI18nMsg( "options_dot_extension_enabled.tooltip",                      "" );
+
+    this.tooltip_stats_dot_directory_found                                   = getI18nMsg( "options_stats_dot_directory_found.tooltip",                  "" );
+    this.tooltip_stats_dot_directory_not_found                               = getI18nMsg( "options_stats_dot_directory_not_found.tooltip",              "" );
+    this.tooltip_stats_item_count                                            = getI18nMsg( "options_stats_item_count.tooltip",                           "" );
+    this.tooltip_stats_total_size_formatted                                  = getI18nMsg( "options_stats_total_size_formatted.tooltip",                 "" );
+    this.tooltip_stats_total_size_bytes                                      = getI18nMsg( "options_stats_total_size_bytes.tooltip",                     "" );
+    this.tooltip_stats_directory_not_found                                   = getI18nMsg( "options_stats_directory_not_found.tooltip",                  "" );
+
+    this.tooltip_button_edit_disabled_special                                = getI18nMsg( "options_button_editExtension_disabled_special.tooltip",      "" );
+    this.tooltip_button_edit_disabled_locked                                 = getI18nMsg( "options_button_editExtension_disabled_locked.tooltip",       "" );
+    this.tooltip_button_edit_enabled                                         = getI18nMsg( "options_button_editExtension_enabled.tooltip",               "" );
+    this.tooltip_checkbox_lock_disabled_special                              = getI18nMsg( "options_checkbox_lockExtension_disabled_special.tooltip",    "" );
+    this.tooltip_checkbox_lock_enabled                                       = getI18nMsg( "options_checkbox_lockExtension_enabled.tooltip",             "" );
+    this.tooltip_checkbox_protect_disabled_special                           = getI18nMsg( "options_checkbox_protectExtension_disabled_special.tooltip", "" );
+    this.tooltip_checkbox_protect_disabled_locked                            = getI18nMsg( "options_checkbox_protectExtension_disabled_locked.tooltip",  "" );
+    this.tooltip_checkbox_protect_enabled                                    = getI18nMsg( "options_checkbox_protectExtension_enabled.tooltip",          "" );
+    this.tooltip_button_remove_disabled_special                              = getI18nMsg( "options_button_removeExtension_disabled_special.tooltip",    "" );
+    this.tooltip_button_remove_disabled_locked                               = getI18nMsg( "options_button_removeExtension_disabled_locked.tooltip",     "" );
+    this.tooltip_button_remove_enabled                                       = getI18nMsg( "options_button_removeExtension_enabled.tooltip",             "" );
+
+    this.tooltip_button_edit_save                                            = getI18nMsg( "options_fsbExtensionEditSaveButton.tooltip",                 "" );
+    this.tooltip_button_edit_add                                             = getI18nMsg( "options_fsbExtensionEditAddButton.tooltip",                  "" );
+    this.tooltip_button_edit_cancel                                          = getI18nMsg( "options_fsbExtensionEditCancelButton.tooltip",               "" );
+    this.tooltip_button_edit_error_dismiss                                   = getI18nMsg( "options_fsbExtensionEditErrorDismissButton.tooltip",         "" );
 
     this.extensionListHeader_text_installed                                  = getI18nMsg("options_fsbExtensionListHeader_text_installed.label");
     this.extensionListHeader_text_enabled                                    = getI18nMsg("options_fsbExtensionListHeader_text_enabled.label");
@@ -77,39 +103,44 @@ class OptionsUI {
     this.extensionListHeader_tooltip_totalSizeFmt                            = getI18nMsg("options_fsbExtensionListHeader_tooltip_totalSizeFmt.label");
     this.extensionListHeader_tooltip_totalSizeBytes                          = getI18nMsg("options_fsbExtensionListHeader_tooltip_totalSizeBytes.label");
 
-    this.extensionListEditorTitleAddMode                                   = getI18nMsg("options_fsbExtensionEditTitleAddMode");
-    this.extensionListEditorTitleEditMode                                  = getI18nMsg("options_fsbExtensionEditTitleEditMode");
-    this.extensionListEditErrorExtensionIdEmpty                            = getI18nMsg("options_fsbExtensionEditErrorExtensionIdEmpty");
-    this.extensionListEditErrorExtensionIdInvalid                          = getI18nMsg("options_fsbExtensionEditErrorExtensionIdInvalid");
-    this.extensionListEditErrorExtensionIdExists                           = getI18nMsg("options_fsbExtensionEditErrorExtensionIdExists");
-    this.extensionListEditErrorExtensionNameEmpty                          = getI18nMsg("options_fsbExtensionEditErrorExtensionNameEmpty");
-    this.extensionListEditErrorExtensionNameInvalid                        = getI18nMsg("options_fsbExtensionEditErrorExtensionNameInvalid");
-    this.extensionListEditErrorAddFailed                                   = getI18nMsg("options_fsbExtensionEditErrorAddFailed");
-    this.extensionListEditErrorUpdateFailed                                = getI18nMsg("options_fsbExtensionEditErrorUpdateFailed");
+    this.extensionList_marker_tooltip_special                                = getI18nMsg("options_fsbExtensionList_marker_tooltip_special");
+    this.extensionList_marker_tooltip_locked                                 = getI18nMsg("options_fsbExtensionList_marker_tooltip_locked");
+    this.extensionList_marker_tooltip_dirProtected                           = getI18nMsg("options_fsbExtensionList_marker_tooltip_dirProtected");
+
+    this.extensionListEditorTitleAddMode                                     = getI18nMsg("options_fsbExtensionEditTitleAddMode");
+    this.extensionListEditorTitleEditMode                                    = getI18nMsg("options_fsbExtensionEditTitleEditMode");
+    this.extensionListEditErrorExtensionIdEmpty                              = getI18nMsg("options_fsbExtensionEditErrorExtensionIdEmpty");
+    this.extensionListEditErrorExtensionIdInvalid                            = getI18nMsg("options_fsbExtensionEditErrorExtensionIdInvalid");
+    this.extensionListEditErrorExtensionIdExists                             = getI18nMsg("options_fsbExtensionEditErrorExtensionIdExists");
+    this.extensionListEditErrorExtensionNameEmpty                            = getI18nMsg("options_fsbExtensionEditErrorExtensionNameEmpty");
+    this.extensionListEditErrorExtensionNameInvalid                          = getI18nMsg("options_fsbExtensionEditErrorExtensionNameInvalid");
+    this.extensionListEditErrorAddFailed                                     = getI18nMsg("options_fsbExtensionEditErrorAddFailed");
+    this.extensionListEditErrorUpdateFailed                                  = getI18nMsg("options_fsbExtensionEditErrorUpdateFailed");
+    this.extensionListEditErrorUIUpdateFailed                                = getI18nMsg("options_fsbExtensionEditErrorUIUpdateFailed");
 
     // developer options
-    this.i18n_label_dev_options_title                                      = getI18nMsg("options_fsbDevOptionsTitle.label");
-    this.i18n_check_dev_skipOnboarding                                     = getI18nMsg("options_fsbDevSkipOnboardingCheck.label");
-    this.i18n_check_dev_showOptionsWindowOnStartup                         = getI18nMsg("options_fsbDevShowOptionsWindowOnStartupCheck.label");
-    this.i18n_button_dev_resetOptions                                      = getI18nMsg("options_fsbDevResetOptionsButton.label");
-    this.i18n_button_dev_runSelfTest                                       = getI18nMsg("options_fsbDevSelfTestButton.label");
-    this.i18n_button_dev_displayOptionsAsPopup                             = getI18nMsg("options_fsbDevDisplayOptionsAsPopupButton.label");
+    this.i18n_label_dev_options_title                                        = getI18nMsg("options_fsbDevOptionsTitle.label");
+    this.i18n_check_dev_skipOnboarding                                       = getI18nMsg("options_fsbDevSkipOnboardingCheck.label");
+    this.i18n_check_dev_showOptionsWindowOnStartup                           = getI18nMsg("options_fsbDevShowOptionsWindowOnStartupCheck.label");
+    this.i18n_button_dev_resetOptions                                        = getI18nMsg("options_fsbDevResetOptionsButton.label");
+    this.i18n_button_dev_runSelfTest                                         = getI18nMsg("options_fsbDevSelfTestButton.label");
+    this.i18n_button_dev_displayOptionsAsPopup                               = getI18nMsg("options_fsbDevDisplayOptionsAsPopupButton.label");
     //
-    this.i18n_button_dev_deleteOldEventLogs                                = getI18nMsg("options_fsbDevDeleteOldEventLogsButton.label");
-    this.i18n_label_dev_deleteOldEventLogsOlderThanNumDaysLabel            = getI18nMsg("options_fsbDevDeleteOldEventLogsOlderThanNumDaysLabel" );
-    this.i18n_label_dev_deleteOldEventLogsOlderThanDaysLabel               = getI18nMsg("options_fsbDevDeleteOldEventLogsOlderThanDaysLabel" );
-    this.i18n_label_dev_deleteOldEventLogsInNumMinutesLabel                = getI18nMsg("options_fsbDevDeleteOldEventLogsInNumMinutesLabel" );
-    this.i18n_label_dev_deleteOldEventLogsInMinutesLabel                   = getI18nMsg("options_fsbDevDeleteOldEventLogsInMinutesLabel" );
-    this.i18n_label_dev_deleteOldEventLogsInNumSecondsLabel                = getI18nMsg("options_fsbDevDeleteOldEventLogsInNumSecondsLabel" );
-    this.i18n_label_dev_deleteOldEventLogsInSecondsLabel                   = getI18nMsg("options_fsbDevDeleteOldEventLogsInSecondsLabel" );
+    this.i18n_button_dev_deleteOldEventLogs                                  = getI18nMsg("options_fsbDevDeleteOldEventLogsButton.label");
+    this.i18n_label_dev_deleteOldEventLogsOlderThanNumDaysLabel              = getI18nMsg("options_fsbDevDeleteOldEventLogsOlderThanNumDaysLabel" );
+    this.i18n_label_dev_deleteOldEventLogsOlderThanDaysLabel                 = getI18nMsg("options_fsbDevDeleteOldEventLogsOlderThanDaysLabel" );
+    this.i18n_label_dev_deleteOldEventLogsInNumMinutesLabel                  = getI18nMsg("options_fsbDevDeleteOldEventLogsInNumMinutesLabel" );
+    this.i18n_label_dev_deleteOldEventLogsInMinutesLabel                     = getI18nMsg("options_fsbDevDeleteOldEventLogsInMinutesLabel" );
+    this.i18n_label_dev_deleteOldEventLogsInNumSecondsLabel                  = getI18nMsg("options_fsbDevDeleteOldEventLogsInNumSecondsLabel" );
+    this.i18n_label_dev_deleteOldEventLogsInSecondsLabel                     = getI18nMsg("options_fsbDevDeleteOldEventLogsInSecondsLabel" );
     //
-    this.i18n_button_dev_removeUninstalledExtensions                       = getI18nMsg("options_fsbDevRemoveUninstalledExtensionsButton.label");
-    this.i18n_label_dev_removeExtensionsUninstalledMoreThanNumDaysAgoLabel = getI18nMsg("options_fsbDevRemoveExtensionsUninstalledMoreThanNumDaysAgoLabel" );
-    this.i18n_label_dev_removeExtensionsUninstalledMoreThanDaysAgoLabel    = getI18nMsg("options_fsbDevRemoveExtensionsUninstalledMoreThanDaysAgoLabel" );
-    this.i18n_label_dev_removeUninstalledExtensionsInNumMinutesLabel       = getI18nMsg("options_fsbDevRemoveUninstalledExtensionsInNumMinutesLabel" );
-    this.i18n_label_dev_removeUninstalledExtensionsInMinutesLabel          = getI18nMsg("options_fsbDevRemoveUninstalledExtensionsInMinutesLabel" );
-    this.i18n_label_dev_removeUninstalledExtensionsInNumSecondsLabel       = getI18nMsg("options_fsbDevRemoveUninstalledExtensionsInNumSecondsLabel" );
-    this.i18n_label_dev_removeUninstalledExtensionsInSecondsLabel          = getI18nMsg("options_fsbDevRemoveUninstalledExtensionsInSecondsLabel" );
+    this.i18n_button_dev_removeUninstalledExtensions                         = getI18nMsg("options_fsbDevRemoveUninstalledExtensionsButton.label");
+    this.i18n_label_dev_removeExtensionsUninstalledMoreThanNumDaysAgoLabel   = getI18nMsg("options_fsbDevRemoveExtensionsUninstalledMoreThanNumDaysAgoLabel" );
+    this.i18n_label_dev_removeExtensionsUninstalledMoreThanDaysAgoLabel      = getI18nMsg("options_fsbDevRemoveExtensionsUninstalledMoreThanDaysAgoLabel" );
+    this.i18n_label_dev_removeUninstalledExtensionsInNumMinutesLabel         = getI18nMsg("options_fsbDevRemoveUninstalledExtensionsInNumMinutesLabel" );
+    this.i18n_label_dev_removeUninstalledExtensionsInMinutesLabel            = getI18nMsg("options_fsbDevRemoveUninstalledExtensionsInMinutesLabel" );
+    this.i18n_label_dev_removeUninstalledExtensionsInNumSecondsLabel         = getI18nMsg("options_fsbDevRemoveUninstalledExtensionsInNumSecondsLabel" );
+    this.i18n_label_dev_removeUninstalledExtensionsInSecondsLabel            = getI18nMsg("options_fsbDevRemoveUninstalledExtensionsInSecondsLabel" );
   }
 
 
@@ -168,41 +199,6 @@ class OptionsUI {
       }
     }
 
-    if (false) {
-      var parameters;
-
-      parameters = { 'includeChildInfo': true };
-      const stats1 = await this.fsBrokerApi.stats(parameters); // get statitics for our own extension directory
-      this.debugAlways("\n\n========== EXTENSION STATS1 ==========\n", stats1, "\n\n========== EXTENSION STATS1 ==========\n\n");
-
-      parameters = { 'includeChildInfo': true, 'types': ['regular'] };
-      const stats2 = await this.fsBrokerApi.stats(parameters); // get statitics for our own extension directory
-      this.debugAlways("\n\n========== EXTENSION STATS2 ==========\n", stats2, "\n\n========== EXTENSION STATS2 ==========\n\n");
-
-      parameters = { 'matchGLOB': '*', 'types': ['directory','regular'] };
-      const info1 = await this.fsBrokerApi.fsbListInfo(parameters); // using messaging
-      this.debugAlways("\n\n========== FSB INFO1 ==========\n", info1, "\n\n========== FSB INFO1 ==========\n\n");
-      const info2 = await this.fsbCommandsApi.fsbListInfo(parameters); // direct call, no messaging
-      this.debugAlways("\n\n========== FSB INFO2 ==========\n", info2, "\n\n========== FSB INFO2 ==========\n\n");
-
-      parameters = { 'matchGLOB': '*', 'types': ['directory','regular'] };
-      const list1 = await this.fsBrokerApi.fsbList(parameters); // using messaging
-      this.debugAlways("\n\n========== FSB LIST1 ==========\n", list1, "\n\n========== FSB LIST1 ==========\n\n");
-      const list2 = await this.fsbCommandsApi.fsbList(parameters); // direct call, no messaging
-      this.debugAlways("\n\n========== FSB LIST2 ==========\n", list2, "\n\n========== FSB LIST2 ==========\n\n");
-
-      parameters = { 'matchGLOB': '*', 'types': ['directory'] };
-      const list3 = await this.fsBrokerApi.fsbList(parameters); // using messaging
-      this.debugAlways("\n\n========== FSB LIST3 ==========\n", list3, "\n\n========== FSB LIST3 ==========\n\n");
-      const list4 = await this.fsbCommandsApi.fsbList(parameters); // direct call, no messaging
-      this.debugAlways("\n\n========== FSB LIST4 ==========\n", list4, "\n\n========== FSB LIST4 ==========\n\n");
-
-      const fsbStats1 = await this.fsBrokerApi.fsbStats(); // using messaging
-      this.debugAlways("\n\n========== FSB STATS1 ==========\n", fsbStats1, "\n\n========== FSB STATS1 ==========\n\n");
-      const fsbStats2 = await this.fsbCommandsApi.fsbStats(); // direct call, no messaging
-      this.debugAlways("\n\n========== FSB STATS2 ==========\n", fsbStats2, "\n\n========== FSB STATS2 ==========\n\n");
-    }
-
     await this.localizePage();
     await this.applyTooltips(document);
     await this.buildUI();
@@ -214,12 +210,12 @@ class OptionsUI {
 
 
   async windowUnloading(e) {
-    if (this.DEBUG) this.debugAlways( "--- WINDOW UNLOADING ---"
-                                      + `\n- this.windowMode=${this.windowMode}`
-                                      + `\n- window.screenTop=${window.screenTop}`
-                                      + `\n- window.screenLeft=${window.screenLeft}`
-                                      + `\n- window.outerWidth=${window.outerWidth}`
-                                      + `\n- window.outerHeight=${window.outerHeight}`
+    if (this.DEBUG) this.debugAlways( "--- WINDOW UNLOADING ---",
+                                      `\n- this.windowMode=${this.windowMode}`,
+                                      `\n- window.screenTop=${window.screenTop}`,
+                                      `\n- window.screenLeft=${window.screenLeft}`,
+                                      `\n- window.outerWidth=${window.outerWidth}`,
+                                      `\n- window.outerHeight=${window.outerHeight}`,
                                     );
 
     // We should NOT even have been called unless windowMode=true,
@@ -236,11 +232,11 @@ class OptionsUI {
         } else if (typeof bounds !== 'object') {
           this.debugAlways(`--- WINDOW UNLOADING --- Retrieve Stored Window Bounds - bounds IS NOT AN OBJECT: typeof='${typeof bounds}' ---`);
         } else {
-          this.debugAlways( "--- Retrieve Stored Window Bounds ---"
-                            + `\n- bounds.top:    ${bounds.top}`
-                            + `\n- bounds.left:   ${bounds.left}`
-                            + `\n- bounds.width:  ${bounds.width}`
-                            + `\n- bounds.height: ${bounds.height}`
+          this.debugAlways( "--- Retrieve Stored Window Bounds ---",
+                            `\n- bounds.top:    ${bounds.top}`,
+                            `\n- bounds.left:   ${bounds.left}`,
+                            `\n- bounds.width:  ${bounds.width}`,
+                            `\n- bounds.height: ${bounds.height}`,
                           );
         }
       }
@@ -314,15 +310,7 @@ class OptionsUI {
     this.resetErrors();
 
     const accessControlEnabled = await this.fsbOptionsApi.isEnabledExtensionAccessControl();
-    const checkPanel           = document.getElementById("fsbShowGrantExtensionAccessDialogCheckPanel");
-    const chooserOptionsPanel  = document.getElementById("fsbExtensionChooserOptionsWrapper");
-    if (accessControlEnabled) {
-      checkPanel.style.setProperty('display', 'block');
-      chooserOptionsPanel.style.setProperty('display', 'block');
-    } else {
-      checkPanel.style.setProperty('display', 'none');
-      chooserOptionsPanel.style.setProperty('display', 'none');
-    }
+    this.showHideExtensionAccessControls(accessControlEnabled);
 
     const showLoggingOptions = await this.fsbOptionsApi.isEnabledShowLoggingOptions();
     this.showHideLoggingOptions(showLoggingOptions);
@@ -343,7 +331,7 @@ class OptionsUI {
     this.populateSelectUIs();
     await this.updateOptionsUI();
     await this.buildExtensionsListUI();
-    this.enableExtensionAccessControls(true);
+    await this.enableExtensionAccessControls(true);
 
     this.debug("-- end");
   }
@@ -489,18 +477,18 @@ class OptionsUI {
 
 
 
-  async refreshUI(e) { // the event is not used - is it even useful?
+  async refreshExtensionListUI(e) { // the event is not used - is it even useful?
     this.debug("-- start");
 
     await this.buildExtensionsListUI(e);
-    this.enableExtensionAccessControls(true);
+    await this.enableExtensionAccessControls(true);
 
     this.debug("-- end");
   }
 
 
 
-  enableExtensionAccessControls(enable) {
+  async enableExtensionAccessControls(enable) {
     this.debug(`-- start -- enable=${enable}`);
 
     const extensionSelected = this.getSelectedExtensionCount() > 0;
@@ -775,25 +763,27 @@ class OptionsUI {
           const addButton = document.createElement("button");
             addButton.classList.add("extension-head-button");      // extension-head-item > extension-head-controls-right > extension-edit-controls > extension-head-button
             addButton.classList.add("extension-icon-button");      // extension-head-item > extension-head-controls-right > extension-edit-controls > extension-icon-button
+            addButton.classList.add("extension-list-icon-button"); // extension-head-item > extension-head-controls-right > extension-edit-controls > extension-list-icon-button
             addButton.classList.add("icon-only");                  // extension-head-item > extension-head-controls-right > extension-edit-controls > icon-only
             addButton.classList.add("add-extension");              // extension-head-item > extension-head-controls-right > extension-edit-controls > add-extension
             if (this.tooltip_button_add) addButton.setAttribute("title", this.tooltip_button_add);
             addButton.addEventListener("click", (e) => this.extensionControlButtonClicked(e));
           editControlsDiv.appendChild(addButton);
 
-//        const deleteButton = document.createElement("button");
-//          deleteButton.classList.add("extension-head-button");    // extension-head-item > extension-head-controls-right > extension-edit-controls > extension-head-button
-//          deleteButton.classList.add("extension-icon-button");    // extension-head-item > extension-head-controls-right > extension-edit-controls > extension-icon-button
-//          deleteButton.classList.add("icon-only");                // extension-head-item > extension-head-controls-right > extension-edit-controls > icon-only
-//          deleteButton.classList.add("remove-extension");         // extension-head-item > extension-head-controls-right > extension-edit-controls > remove-extension
-//          deleteButton.setAttribute("extensionId", extensionId);
-//          if (this.tooltip_button_delete) deleteButton.setAttribute("title", this.tooltip_button_delete);
+//        const removeButton = document.createElement("button");
+//          removeButton.classList.add("extension-head-button");      // extension-head-item > extension-head-controls-right > extension-edit-controls > extension-head-button
+//          removeButton.classList.add("extension-icon-button");      // extension-head-item > extension-head-controls-right > extension-edit-controls > extension-icon-button
+//          removeButton.classList.add("extension-list-icon-button"); // extension-head-item > extension-head-controls-right > extension-edit-controls > extension-list-icon-button
+//          removeButton.classList.add("icon-only");                  // extension-head-item > extension-head-controls-right > extension-edit-controls > icon-only
+//          removeButton.classList.add("remove-extension");           // extension-head-item > extension-head-controls-right > extension-edit-controls > remove-extension
+//          removeButton.setAttribute("extensionId", extensionId);
+//          if (this.tooltip_button_remove) removeButton.setAttribute("title", this.tooltip_button_remove);
 //          if (locked) {
-//            deleteButton.disabled = true;
+//            removeButton.disabled = true;
 //          } else {
-//            deleteButton.addEventListener("click", (e) => this.extensionControlButtonClicked(e));
+//            removeButton.addEventListener("click", (e) => this.extensionControlButtonClicked(e));
 //          }
-//        editControlsDiv.appendChild(deleteButton);
+//        editControlsDiv.appendChild(removeButton);
         controlsRightTH.appendChild(editControlsDiv);
       thead.appendChild(controlsRightTH);
 
@@ -808,7 +798,12 @@ class OptionsUI {
       extensionEditTitleTR.classList.add("extension-edit-title-item");              // extension-edit-title_item
       extensionEditTitleTR.classList.add('display-none');                           // HIDE the Row - turn ON display: none
 
-      var span = 5;
+      // Create empty controls-left element and add it to the row
+      const emptyLeftTD = document.createElement("td");
+        emptyLeftTD.classList.add("extension-edit-title-empty");                   // extension-edit-title-item > extension-edit-title-empty
+      extensionEditTitleTR.appendChild(emptyLeftTD);
+
+      var span = 4;
       if (this.showExtensionStats) span += this.EXTENSIONS_STATS_COL_SPAN;
 
       // Create Extension Title Text element and add it to the row
@@ -820,7 +815,7 @@ class OptionsUI {
         extensionTitleTextTD.appendChild(extensionTitleTextLabel);
       extensionEditTitleTR.appendChild(extensionTitleTextTD);
 
-      // Create controls-right element and add it to the row
+      // Create empty controls-right element and add it to the row
       const emptyRightTD = document.createElement("td");
         emptyRightTD.classList.add("extension-edit-title-empty");                   // extension-edit-title-item > extension-edit-title-empty
       extensionEditTitleTR.appendChild(emptyRightTD);
@@ -839,12 +834,13 @@ class OptionsUI {
       // Create allow access checkbox inside a TD and add it to the row
       const controlsLeftTD = document.createElement("td");
         controlsLeftTD.classList.add("extension-edit-controls-left");         // extension-edit-item > extension-edit-controls-left
-        const allowAccessCheck = document.createElement("input");
-          allowAccessCheck.setAttribute("type", "checkbox");
+        const allowAccessCheck = document.createElement("input");  // MABXXX JUST A REGULAR CHECKBOX FOR NOW
+          allowAccessCheck.setAttribute( "type", "checkbox"                        );
+          allowAccessCheck.setAttribute( "id", "extension_edit_check_allow_access" );
+          allowAccessCheck.classList.add("extension-check");                  // extension-edit-item > extension-edit-controls-left > extension-check
           allowAccessCheck.classList.add("extension-edit-check");             // extension-edit-item > extension-edit-controls-left > extension-edit-check
-          allowAccessCheck.setAttribute("id", "extension_edit_allow_access_check");
           allowAccessCheck.checked = false;
-          if (this.tooltip_check_allowAccess) allowAccessCheck.setAttribute("title", this.tooltip_check_allowAccess);
+          allowAccessCheck.setAttribute("title", this.tooltip_checkbox_allowAccess_enabled);
           allowAccessCheck.addEventListener("change", (e) => this.extensionOptionCheckClicked(e), true); // <====== NOTE: event "capturing" phase
         controlsLeftTD.appendChild(allowAccessCheck);
       extensionEditTR.appendChild(controlsLeftTD);
@@ -884,6 +880,8 @@ class OptionsUI {
         extensionEditTR.appendChild(extensionStatsTD);
       }
 
+      // MABXXX Lock & Protect Checkboxes???
+
       // Create controls-right element and add it to the row
       const controlsRightTD = document.createElement("td");
         controlsRightTD.classList.add("extension-edit-controls-right");       // extension-edit-item > extension-edit-controls-right
@@ -891,23 +889,64 @@ class OptionsUI {
         const editControlsDiv = document.createElement("div");
           editControlsDiv.classList.add("extension-controls-panel");          // extension-edit-item > extension-edit-controls-right > extension-controls-panel
           editControlsDiv.classList.add("edit-controls");                     // extension-edit-item > extension-edit-controls-right > edit-controls
+          editControlsDiv.classList.add("extension-edit-controls");           // extension-edit-item > extension-list-controls-right > extension-edit-controls
 
           const cancelButton = document.createElement("button");
             cancelButton.classList.add("extension-edit-button");              // extension-edit-item > extension-edit-controls-right > edit-controls > extension-edit-button
             cancelButton.classList.add("extension-icon-button");              // extension-edit-item > extension-edit-controls-right > edit-controls > extension-icon-button
+            cancelButton.classList.add("extension-list-icon-button");         // extension-edit-item > extension-edit-controls-right > edit-controls > extension-list-icon-button
             cancelButton.classList.add("icon-only");                          // extension-edit-item > extension-edit-controls-right > edit-controls > icon-only
             cancelButton.setAttribute("id", "extensionEditCancelButton");
             cancelButton.addEventListener("click", (e) => this.extensionControlButtonClicked(e));
-            if (this.tooltip_button_delete) cancelButton.setAttribute("title", this.tooltip_button_edit_cancel);
+            cancelButton.setAttribute("title", this.tooltip_button_edit_cancel);
           editControlsDiv.appendChild(cancelButton);
+
+          const lockCheckSPAN = document.createElement("span");
+            lockCheckSPAN.classList.add("extension-check-span"); // extension-edit-item > extension-edit-controls-right > edit-controls > extension-check-span
+            const lockCheck = document.createElement("input");
+              lockCheck.setAttribute( "type",  "checkbox"                         );
+              lockCheck.setAttribute( "id",    "extension_edit_check_lock"        );
+              lockCheck.setAttribute( "title", this.tooltip_checkbox_lock_enabled );
+              lockCheck.classList.add( "extension-check" );                      // ... > edit-controls > extension-check-span > extension-check
+              lockCheck.classList.add( "extension-edit-check" );                 // ... > edit-controls > extension-check-span > extension-edit-check
+              lockCheck.classList.add( "lock-check"           );                 // ... > edit-controls > extension-check-span > lock-check
+              lockCheck.addEventListener("change", (e) => this.extensionOptionCheckClicked(e), true); // <====== NOTE: event "capturing" phase
+            lockCheckSPAN.appendChild(lockCheck);
+            const lockCheckLabel = document.createElement("label");
+              lockCheckLabel.setAttribute( "for",   "extension_edit_check_lock"        );
+              lockCheckLabel.setAttribute( "title", this.tooltip_checkbox_lock_enabled );
+              lockCheckLabel.classList.add( "extension-check-label" );      // ... > edit-controls > extension-check-span > extension-check-label
+              lockCheckLabel.classList.add( "lock-check"            );      // ... > edit-controls > extension-check-span > lock-check
+            lockCheckSPAN.appendChild(lockCheckLabel);
+          editControlsDiv.appendChild(lockCheckSPAN);
+
+          const protectDirCheckSPAN = document.createElement("span");
+            protectDirCheckSPAN.classList.add("extension-check-span"); // extension-edit-item > extension-edit-controls-right > edit-controls > extension-check-span
+            const protectDirCheck = document.createElement("input");
+              protectDirCheck.setAttribute( "type",  "checkbox"                            );
+              protectDirCheck.setAttribute( "id",    "extension_edit_check_dir_protect"    );
+              protectDirCheck.setAttribute( "title", this.tooltip_checkbox_protect_enabled );
+              protectDirCheck.classList.add( "extension-check" );            // ... > edit-controls > extension-check-span > extension-check
+              protectDirCheck.classList.add( "extension-edit-check" );            // ... > edit-controls > extension-check-span > extension-edit-check
+              protectDirCheck.classList.add( "dir-protect-check"    );            // ... > edit-controls > extension-check-span > dir-protect-check
+              protectDirCheck.addEventListener("change", (e) => this.extensionOptionCheckClicked(e), true); // <====== NOTE: event "capturing" phase
+            protectDirCheckSPAN.appendChild(protectDirCheck);
+            const protectDirCheckLabel = document.createElement("label");
+              protectDirCheckLabel.setAttribute( "for",   "extension_edit_check_dir_protect"    );
+              protectDirCheckLabel.setAttribute( "title", this.tooltip_checkbox_protect_enabled );
+              protectDirCheckLabel.classList.add( "extension-check-label" ); // ... > edit-controls > extension-check-span > extension-check-label
+              protectDirCheckLabel.classList.add( "dir-protect-check"          ); // ... > edit-controls > extension-check-span > dir-protect-check
+            protectDirCheckSPAN.appendChild(protectDirCheckLabel);
+          editControlsDiv.appendChild(protectDirCheckSPAN);
 
           const saveButton = document.createElement("button");
             saveButton.classList.add("extension-edit-button");                // extension-edit-item > extension-edit-controls-right > edit-controls > extension-edit-button
             saveButton.classList.add("extension-icon-button");                // extension-edit-item > extension-edit-controls-right > edit-controls > extension-icon-button
+            saveButton.classList.add("extension-list-icon-button");           // extension-edit-item > extension-edit-controls-right > edit-controls > extension-list-icon-button
             saveButton.classList.add("icon-only");                            // extension-edit-item > extension-edit-controls-right > edit-controls > icon-only
             saveButton.setAttribute("id", "extensionEditSaveButton");
             saveButton.addEventListener("click", (e) => this.extensionControlButtonClicked(e));
-            if (this.tooltip_button_edit) saveButton.setAttribute("title", this.tooltip_button_edit_save);
+            saveButton.setAttribute("title", this.tooltip_button_edit_save);
             // this.tooltip_button_edit_add ???
           editControlsDiv.appendChild(saveButton);
         controlsRightTD.appendChild(editControlsDiv);
@@ -921,25 +960,29 @@ class OptionsUI {
   buildExtensionEditErrorItemUI() {
     const extensionEditErrorTR = document.createElement("tr");
       extensionEditErrorTR.setAttribute("id", "extension_edit_error");
-      extensionEditErrorTR.classList.add("extension-edit-error-item");              // extension-edit-error_item
-      extensionEditErrorTR.classList.add('display-none');                           // HIDE the Row - turn ON display: none
+      extensionEditErrorTR.classList.add("extension-edit-error-item");                 // extension-edit-error_item
+      extensionEditErrorTR.classList.add('display-none');                              // HIDE the Row - turn ON display: none
 
       // Create space for the allow-access-check checkbox column TD and add it to the row
-      const extensionEditErrorLeftIconsTD = document.createElement("td");
-        extensionEditErrorLeftIconsTD.classList.add("extension-edit-error-left-icons");  // extension-edit-error-item > extension-edit-error-left-icons
-        const extensionErrorIconSpan = document.createElement("span");
-          extensionErrorIconSpan.classList.add("extension-edit-error-icon");
-          const extensionErrorIcon = document.createElement("img");
-            extensionErrorIcon.setAttribute("src", "../images/icons/forbidden_16x16.png");
-          extensionErrorIconSpan.appendChild(extensionErrorIcon);
-        extensionEditErrorLeftIconsTD.appendChild(extensionErrorIconSpan);
-      extensionEditErrorTR.appendChild(extensionEditErrorLeftIconsTD);
+      const extensionEditErrorLeftLeftTD = document.createElement("td");
+        extensionEditErrorLeftLeftTD.classList.add("extension-edit-error-left");       // extension-edit-error-item > extension-edit-error-left
+      extensionEditErrorTR.appendChild(extensionEditErrorLeftLeftTD);
 
-      // Create space element for Installed & Enabled elements and add it to the row
-      const extensionInstalledEnabledTD = document.createElement("td");
-        extensionInstalledEnabledTD.classList.add("extension-edit-error-data");     // extension-edit-error-item > extension-edit-error-data
-        extensionInstalledEnabledTD.setAttribute("colspan", "2");
-      extensionEditErrorTR.appendChild(extensionInstalledEnabledTD);
+      // 
+      const extensionEditErrorControlsLeftTD = document.createElement("td");
+        extensionEditErrorControlsLeftTD.setAttribute("colspan", "2");
+        extensionEditErrorControlsLeftTD.classList.add("extension-edit-error-controls-left");
+        const editErrorDismissButton = document.createElement("button");
+          editErrorDismissButton.setAttribute("id", "extensionEditErrorDismissButton");
+          editErrorDismissButton.classList.add("extension-edit-error-button");// extension-edit-error-item > extension-edit-error-controls-left > extension-edit-error-button
+          editErrorDismissButton.classList.add("extension-icon-button");      // extension-edit-error-item > extension-edit-error-controls-left > extension-icon-button
+          editErrorDismissButton.classList.add("icon-only");                  // extension-edit-error-item > extension-edit-error-controls-left > icon-only
+          editErrorDismissButton.classList.add("no-css");                     // extension-edit-error-item > extension-edit-error-controls-left > no-css
+          editErrorDismissButton.classList.add("edit-error-dismiss");         // extension-edit-error-item > extension-edit-error-controls-left > edit-error-dismiss
+          editErrorDismissButton.addEventListener("click", (e) => this.extensionControlButtonClicked(e));
+          editErrorDismissButton.setAttribute("title", this.tooltip_button_edit_error_dismiss);
+        extensionEditErrorControlsLeftTD.appendChild(editErrorDismissButton);
+      extensionEditErrorTR.appendChild(extensionEditErrorControlsLeftTD);
 
       // Create Extension Name Error element and add it to the row
       const extensionNameTD = document.createElement("td");
@@ -979,24 +1022,31 @@ class OptionsUI {
   // async just because of formatFileSize()
   async buildExtensionListItemUI(extensionId, props, extDirStats, extInfo) {
     const installed      = extInfo ? true                : false;
-    const extensionName  = extInfo ? extInfo.name        : ( ! props || typeof props.name        !== 'string'  ) ? ''    : props.name;
-    const description    = extInfo ? extInfo.description : ( ! props || typeof props.description !== 'string'  ) ? ''    : props.description;
-    const disabled       = extInfo ? ! extInfo.enabled   : ( ! props || typeof props.disabled    !== 'boolean' ) ? false : props.disabled;
-    const extIdFromProps =                                 ( ! props || typeof props.id          !== 'string'  ) ? ''    : props.id;
-    const allowAccess    =                                 ( ! props || typeof props.allowAccess !== 'boolean' ) ? true  : props.allowAccess;
-    const locked         =                                 ( ! props || typeof props.locked      !== 'boolean' ) ? false : props.locked;
+    const extensionName  = extInfo ? extInfo.name        :            ( ( ! props || (typeof props.name        ) !== 'string'  ) ? ''    : props.name         );
+    const description    = extInfo ? extInfo.description :            ( ( ! props || (typeof props.description ) !== 'string'  ) ? ''    : props.description  );
+    const disabled       = extInfo ? ! extInfo.enabled   :            ( ( ! props || (typeof props.disabled    ) !== 'boolean' ) ? false : props.disabled     );
+    const extIdFromProps =                                            ( ( ! props || (typeof props.id          ) !== 'string'  ) ? ''    : props.id           );
+    const special        =                                            ( ( ! props || (typeof props.special     ) !== 'boolean' ) ? false : props.special      );
+    const locked         = /* special forces this */       special || ( ( ! props || (typeof props.locked      ) !== 'boolean' ) ? false : props.locked       );
+    const dirProtected   = /* special forces this */       special || ( ( ! props || (typeof props.dirProtected) !== 'boolean' ) ? false : props.dirProtected );
+    const allowAccess    = /* special forces this */       special || ( ( ! props || (typeof props.allowAccess ) !== 'boolean' ) ? true  : props.allowAccess  );
 
-    this.debug( "\n--- BUILD LIST ITEM UI:",
-                `\n- extensionId ......... "${extensionId}"`,
-                `\n- props.id ............ "${props.id}"`,
-                `\n- props.name .......... "${props.name}"`,
-                `\n- props.description ... "${props.description}"`,
-                `\n- allowAccess ......... ${allowAccess}`,
-                `\n- locked .............. ${locked}`,
-                `\n- installed ........... ${installed}`,
-                `\n- disabled ............ ${disabled}`,
-                `\n- allowAccess ......... ${allowAccess}`,
-              );
+    if (this.DEBUG) {
+      this.debugAlways("\n--- PROPS:\n", props, "\n\n");
+
+      this.debugAlways( "\n--- BUILD LIST ITEM UI:",
+                        `\n- extensionId ......... "${extensionId}"`,
+                        `\n- props.id ............ "${props.id}"`,
+                        `\n- props.name .......... "${props.name}"`,
+                        `\n- props.description ... "${props.description}"`,
+                        `\n- installed ........... ${installed}`,
+                        `\n- disabled ............ ${disabled}`,
+                        `\n- special ............. ${special}`,
+                        `\n- locked .............. ${locked}`,
+                        `\n- dirProtected ........ ${dirProtected}`,
+                        `\n- allowAccess ......... ${allowAccess}`,
+                      );
+    }
 
     if (extIdFromProps !== extensionId) {
       this.error(`-- EXTENSION ID MISMATCH -- extensionId="${extensionId}" extIdFromProps="${extIdFromProps}"`);
@@ -1007,38 +1057,46 @@ class OptionsUI {
     }
 
     const extensionTR = document.createElement("tr");
-                                     extensionTR.classList.add( "extension-list-item" );               // extension-list-item
-      if (installed)                 extensionTR.classList.add( "extension-installed" );
-      if (locked)                    extensionTR.classList.add( "extension-locked"    );
-      if (disabled)                  extensionTR.classList.add( "extension-disabled"  );
-      if (! allowAccess && ! locked) extensionTR.classList.add( "access-disallowed"   );
+                                      extensionTR.classList.add( "extension-list-item"     );  // extension-list-item
+      if (installed)                  extensionTR.classList.add( "extension-installed"     );
+      if (special)                    extensionTR.classList.add( "extension-special"       );
+      if (locked)                     extensionTR.classList.add( "extension-locked"        );
+      if (dirProtected)               extensionTR.classList.add( "extension-dir-protected" );
+      if (disabled)                   extensionTR.classList.add( "extension-disabled"      );
+      if (! allowAccess && ! special) extensionTR.classList.add( "access-disallowed"       );
 
                        extensionTR.setAttribute( "extensionId",   extensionId   );
                        extensionTR.setAttribute( "extensionName", extensionName );
-      if (description) extensionTR.setAttribute( "title",         description   );
 
 
-      if (! locked) {
-        extensionTR.addEventListener("click",    (e) => this.extensionClicked(e),       true); // <====== NOTE: true: event "capturing" phase
-        extensionTR.addEventListener("dblclick", (e) => this.extensionDoubleClicked(e), true); // <====== NOTE: true: event "capturing" phase
-      }
+      // locked extensions need event listeners in case they become unlocked
+      extensionTR.addEventListener("click",    (e) => this.extensionClicked(e),       true); // <====== NOTE: true: event "capturing" phase
+      extensionTR.addEventListener("dblclick", (e) => this.extensionDoubleClicked(e), true); // <====== NOTE: true: event "capturing" phase
 
       // Create allow-access-check checkbox inside a TD and add it to the row
       const controlsLeftTD = document.createElement("td");
         controlsLeftTD.classList.add("extension-list-controls-left");   // extension-list-item > extension-list-controls-left
 
         const allowAccessCheck = document.createElement("input");
-          allowAccessCheck.setAttribute("type", "checkbox");
-          allowAccessCheck.classList.add("extension-list-check");       // extension-list-item > extension-list-controls-left > extension-list-check
-          allowAccessCheck.classList.add("allow-access-check");         // extension-list-item > extension-list-controls-left > allow-access-check
-          allowAccessCheck.setAttribute("extensionId", extensionId);
-          if (this.tooltip_check_allowAccess) allowAccessCheck.setAttribute("title", this.tooltip_check_allowAccess);
-          if (locked) {
+          const allowAccessCheckId = "allowAccessCheck_" + extensionId;
+          allowAccessCheck.setAttribute( "type",        "checkbox"         );
+          allowAccessCheck.setAttribute( "id",          allowAccessCheckId );
+          allowAccessCheck.setAttribute( "extensionId", extensionId        );
+          allowAccessCheck.classList.add("extension-check");       // extension-list-item > extension-list-controls-left > extension-check
+          allowAccessCheck.classList.add("allow-access-check");    // extension-list-item > extension-list-controls-left > allow-access-check
+          allowAccessCheck.addEventListener("change", (e) => this.extensionOptionCheckClicked(e), true); // <====== NOTE: event "capturing" phase
+          if (special) {
             allowAccessCheck.checked = true;
             allowAccessCheck.disabled = true;
+            if (this.tooltip_checkbox_allowAccess_disabled_special) allowAccessCheck.setAttribute("title", this.tooltip_checkbox_allowAccess_disabled_special);
+          } else if (locked) {
+            allowAccessCheck.checked = allowAccess;
+            allowAccessCheck.disabled = true;
+            if (this.tooltip_checkbox_allowAccess_disabled_locked) allowAccessCheck.setAttribute("title", this.tooltip_checkbox_allowAccess_disabled_locked);
           } else {
             allowAccessCheck.checked = allowAccess;
-            allowAccessCheck.addEventListener("change", (e) => this.extensionOptionCheckClicked(e), true); // <====== NOTE: event "capturing" phase
+            allowAccessCheck.disabled = false;
+            if (this.tooltip_checkbox_allowAccess_enabled) allowAccessCheck.setAttribute("title", this.tooltip_checkbox_allowAccess_enabled);
           }
           //
         controlsLeftTD.appendChild(allowAccessCheck);
@@ -1053,8 +1111,10 @@ class OptionsUI {
           extensionInstalledDotSpan.classList.add("data-boolean-dot");         // extension-list-item > extension-list-data > data-boolean-dot
           if (installed) {
             extensionInstalledDotSpan.classList.add("dot-ext-installed");      // extension-list-item > extension-list-data > dot-ext-installed
+            if (this.tooltip_dot_extension_installed) extensionInstalledDotSpan.setAttribute("title", this.tooltip_dot_extension_installed);
           } else {
             extensionInstalledDotSpan.classList.add("dot-ext-not-installed");  // extension-list-item > extension-list-data > dot-ext-not-installed
+            if (this.tooltip_dot_extension_not_installed) extensionInstalledDotSpan.setAttribute("title", this.tooltip_dot_extension_not_installed);
           }
         extensionInstalledTD.appendChild(extensionInstalledDotSpan);
       extensionTR.appendChild(extensionInstalledTD);
@@ -1069,30 +1129,60 @@ class OptionsUI {
           if (installed) {
             if (disabled) {
               extensionEnabledDotSpan.classList.add("dot-ext-disabled");                 // extension-list-item > extension-list-data > dot-ext-disabled
+              if (this.tooltip_dot_extension_disabled) extensionEnabledDotSpan.setAttribute("title", this.tooltip_dot_extension_disabled);
             } else {
               extensionEnabledDotSpan.classList.add("dot-ext-enabled");                  // extension-list-item > extension-list-data > dot-ext-enabled
+              if (this.tooltip_dot_extension_enabled) extensionEnabledDotSpan.setAttribute("title", this.tooltip_dot_extension_enabled);
             }
           } else {
             extensionEnabledDotSpan.classList.add("dot-ext-not-enabled-not-installed");  // extension-list-item > extension-list-data > dot-ext-not-enabled-not-installed
+            if (this.tooltip_dot_extension_not_installed) extensionEnabledDotSpan.setAttribute("title", this.tooltip_dot_extension_not_installed);
           }
         extensionEnabledTD.appendChild(extensionEnabledDotSpan);
       extensionTR.appendChild(extensionEnabledTD);
 
       // Create Extension Name element and add it to the row
       const extensionNameTD = document.createElement("td");
-        extensionNameTD.classList.add("extension-list-data");           // extension-list-item > extension-list-data
-        extensionNameTD.classList.add("extension-list-name");           // extension-list-item > extension-list-name
-        extensionNameTD.appendChild( document.createTextNode(extensionName) );
+        extensionNameTD.classList.add("extension-list-data");                       // extension-list-item > extension-list-data
+        extensionNameTD.classList.add("extension-list-name");                       // extension-list-item > extension-list-name
+        if (description) extensionNameTD.setAttribute("title", description);
+        const extensionNameTextSpan = document.createElement("span");
+          extensionNameTextSpan.classList.add("extension-list-name-text");          // extension-list-item > extension-list-data> extension-list-name-text
+          extensionNameTextSpan.appendChild( document.createTextNode(extensionName) );
+        extensionNameTD.appendChild(extensionNameTextSpan);
+
+        const extensionMarkersSpan = document.createElement("span");
+          extensionMarkersSpan.classList.add("extension-markers");                  // extension-list-item > extension-list-data > extension-markers
+          const extensionMarkerSpecialSpan = document.createElement("span");
+            extensionMarkerSpecialSpan.classList.add("extension-marker");           // extension-list-item > extension-list-data > extension-markers > extension-marker
+            extensionMarkerSpecialSpan.classList.add("marker-special");             // extension-list-item > extension-list-data > extension-markers > marker-special
+            extensionMarkerSpecialSpan.setAttribute("title", this.extensionList_marker_tooltip_special);
+          extensionMarkersSpan.appendChild(extensionMarkerSpecialSpan);
+          const extensionMarkerLockedSpan = document.createElement("span");
+            extensionMarkerLockedSpan.classList.add("extension-marker");            // extension-list-item > extension-list-data > extension-markers > extension-marker
+            extensionMarkerLockedSpan.classList.add("marker-locked");               // extension-list-item > extension-list-data > extension-markers > marker-locked
+            extensionMarkerLockedSpan.setAttribute("title", this.extensionList_marker_tooltip_locked);
+          extensionMarkersSpan.appendChild(extensionMarkerLockedSpan);
+          const extensionMarkerDirProtectedSpan = document.createElement("span");
+            extensionMarkerDirProtectedSpan.classList.add("extension-marker");      // extension-list-item > extension-list-data > extension-markers > extension-marker
+            extensionMarkerDirProtectedSpan.classList.add("marker-dir-protected");  // extension-list-item > extension-list-data > extension-markers > marker-dir-protected
+            extensionMarkerDirProtectedSpan.setAttribute("title", this.extensionList_marker_tooltip_dirProtected);
+          extensionMarkersSpan.appendChild(extensionMarkerDirProtectedSpan);
+        extensionNameTD.appendChild(extensionMarkersSpan);
+
       extensionTR.appendChild(extensionNameTD);
 
       // Create Extension Id element and add it to the row
       const extensionIdTD = document.createElement("td");
         extensionIdTD.classList.add("extension-list-data");             // extension-list-item > extension-list-data
         extensionIdTD.classList.add("extension-list-id");               // extension-list-item > extension-list-id
+        if (description) extensionIdTD.setAttribute("title", description);
         extensionIdTD.appendChild( document.createTextNode(extensionId) );
       extensionTR.appendChild(extensionIdTD);
 
       if (this.showExtensionStats) {
+//      const size_total = extDirStats.size_total ? extDirStats.size_total : 0; // FileSystemBroker API should return 0, not undefined -- fixed it
+
         // Create Extension DirectoryExists element and add it to the row
         const extensionDirExistsTD = document.createElement("td");
           extensionDirExistsTD.classList.add("extension-list-data");                 // extension-list-item > extension-list-data
@@ -1103,8 +1193,10 @@ class OptionsUI {
             extensionDirExistsDotSpan.classList.add("data-boolean-dot");             // extension-list-item > extension-list-data > data-boolean-dot
             if (extDirStats) {
               extensionDirExistsDotSpan.classList.add("dot-stats-dir-exists");       // extension-list-item > extension-list-data > dot-stats-dir-exists
+              if (this.tooltip_stats_dot_directory_found) extensionDirExistsDotSpan.setAttribute("title", this.tooltip_stats_dot_directory_found);
             } else {
               extensionDirExistsDotSpan.classList.add("dot-stats-not-dir-exists");   // extension-list-item > extension-list-data > dot-stats-not-dir-exists
+              if (this.tooltip_stats_dot_directory_not_found) extensionDirExistsDotSpan.setAttribute("title", this.tooltip_stats_dot_directory_not_found);
             }
           extensionDirExistsTD.appendChild(extensionDirExistsDotSpan);
         extensionTR.appendChild(extensionDirExistsTD);
@@ -1116,8 +1208,10 @@ class OptionsUI {
           extensionItemCountTD.classList.add("extension-list-stats-item-count"); // extension-list-item > extension-list-stats-item-count
           if (extDirStats) {
             extensionItemCountTD.appendChild( document.createTextNode( extDirStats.count_children.toString() ) );
+            if (this.tooltip_stats_item_count) extensionItemCountTD.setAttribute("title", this.tooltip_stats_item_count);
           } else {
             extensionItemCountTD.appendChild( document.createTextNode("-") );
+            if (this.tooltip_stats_directory_not_found) extensionItemCountTD.setAttribute("title", this.tooltip_stats_directory_not_found);
           }
         extensionTR.appendChild(extensionItemCountTD);
 
@@ -1128,8 +1222,10 @@ class OptionsUI {
           extensionTotalSizeFmtTD.classList.add("extension-list-stats-total-size-fmt"); // extension-list-item > extension-list-stats-total-size-fmt
           if (extDirStats) {
             extensionTotalSizeFmtTD.appendChild( document.createTextNode( await messenger.messengerUtilities.formatFileSize( extDirStats.size_total ) ) );
+            if (this.tooltip_stats_total_size_formatted) extensionTotalSizeFmtTD.setAttribute("title", this.tooltip_stats_total_size_formatted);
           } else {
             extensionTotalSizeFmtTD.appendChild( document.createTextNode("-") );
+            if (this.tooltip_stats_directory_not_found) extensionTotalSizeFmtTD.setAttribute("title", this.tooltip_stats_directory_not_found);
           }
         extensionTR.appendChild(extensionTotalSizeFmtTD);
 
@@ -1140,8 +1236,10 @@ class OptionsUI {
           extensionTotalSizeBytesTD.classList.add("extension-list-stats-total-size-bytes"); // extension-list-item > extension-list-stats-total-size-bytes
           if (extDirStats) {
             extensionTotalSizeBytesTD.appendChild( document.createTextNode( extDirStats.size_total.toString() ) );
+            if (this.tooltip_stats_total_size_bytes) extensionTotalSizeBytesTD.setAttribute("title", this.tooltip_stats_total_size_bytes);
           } else {
             extensionTotalSizeBytesTD.appendChild( document.createTextNode("-") );
+            if (this.tooltip_stats_directory_not_found) extensionTotalSizeBytesTD.setAttribute("title", this.tooltip_stats_directory_not_found);
           }
         extensionTR.appendChild(extensionTotalSizeBytesTD);
       }
@@ -1158,30 +1256,109 @@ class OptionsUI {
           const editButton = document.createElement("button");
             editButton.classList.add("extension-list-button");      // extension-list-item > extension-list-controls-right > extension-edit-controls > extension-list-button
             editButton.classList.add("extension-icon-button");      // extension-list-item > extension-list-controls-right > extension-edit-controls > extension-icon-button
+            editButton.classList.add("extension-list-icon-button"); // extension-list-item > extension-list-controls-right > extension-edit-controls > extension-list-icon-button
             editButton.classList.add("icon-only");                  // extension-list-item > extension-list-controls-right > extension-edit-controls > icon-only
             editButton.classList.add("edit-extension");             // extension-list-item > extension-list-controls-right > extension-edit-controls > edit-extension
             editButton.setAttribute("extensionId", extensionId);
-            if (this.tooltip_button_edit) editButton.setAttribute("title", this.tooltip_button_edit);
-            if (locked) {
+            editButton.addEventListener("click", (e) => this.extensionControlButtonClicked(e));
+            if (special) {
               editButton.disabled = true;
+              editButton.setAttribute("title", this.tooltip_button_edit_disabled_special);
+            } else if (locked) {
+              editButton.disabled = true;
+              editButton.setAttribute("title", this.tooltip_button_edit_disabled_locked);
             } else {
-              editButton.addEventListener("click", (e) => this.extensionControlButtonClicked(e));
+              editButton.disabled = false;
+              editButton.setAttribute("title", this.tooltip_button_edit_enabled);
             }
           editControlsDiv.appendChild(editButton);
 
-          const deleteButton = document.createElement("button");
-            deleteButton.classList.add("extension-list-button");    // extension-list-item > extension-list-controls-right > extension-edit-controls > extension-list-button
-            deleteButton.classList.add("extension-icon-button");    // extension-list-item > extension-list-controls-right > extension-edit-controls > extension-icon-button
-            deleteButton.classList.add("icon-only");                // extension-list-item > extension-list-controls-right > extension-edit-controls > icon-only
-            deleteButton.classList.add("remove-extension");         // extension-list-item > extension-list-controls-right > extension-edit-controls > remove-extension
-            deleteButton.setAttribute("extensionId", extensionId);
-            if (this.tooltip_button_delete) deleteButton.setAttribute("title", this.tooltip_button_delete);
-            if (locked) {
-              deleteButton.disabled = true;
+          const lockCheckSPAN = document.createElement("span");
+            lockCheckSPAN.classList.add("extension-check-span"); // ... > extension-list-controls-right > extension-edit-controls > extension-check-span
+            const lockCheck = document.createElement("input");
+              const lockCheckId = "lockCheck_" + extensionId;
+              lockCheck.setAttribute( "type",        "checkbox"  );
+              lockCheck.setAttribute( "id",          lockCheckId );
+              lockCheck.setAttribute( "extensionId", extensionId );
+              lockCheck.classList.add("extension-check");                  // ... > extension-edit-controls > extension-check-span > extension-check
+              lockCheck.classList.add("lock-check");                            // ... > extension-edit-controls > extension-check-span > lock-check
+              lockCheck.addEventListener("change", (e) => this.extensionOptionCheckClicked(e), true); // <====== NOTE: event "capturing" phase
+            lockCheckSPAN.appendChild(lockCheck);
+            const lockCheckLabel = document.createElement("label");
+              lockCheckLabel.setAttribute( "for",         lockCheckId );
+              lockCheckLabel.setAttribute( "extensionId", extensionId );
+              lockCheckLabel.classList.add("extension-check-label");       // ... > extension-edit-controls > extension-check-span > extension-check-label
+              lockCheckLabel.classList.add("lock-check");                       // ... > extension-edit-controls > extension-check-span > lock-check
+            lockCheckSPAN.appendChild(lockCheckLabel);
+            if (special) {
+              lockCheck.checked  = true;
+              lockCheck.disabled = true;
+              lockCheck.setAttribute(      "title", this.tooltip_checkbox_lock_disabled_special );
+              lockCheckLabel.setAttribute( "title", this.tooltip_checkbox_lock_disabled_special );
             } else {
-              deleteButton.addEventListener("click", (e) => this.extensionControlButtonClicked(e));
+              lockCheck.checked  = locked;
+              lockCheck.disabled = false;
+              lockCheck.setAttribute(      "title", this.tooltip_checkbox_lock_enabled );
+              lockCheckLabel.setAttribute( "title", this.tooltip_checkbox_lock_enabled );
             }
-          editControlsDiv.appendChild(deleteButton);
+          editControlsDiv.appendChild(lockCheckSPAN);
+
+          const protectDirCheckSPAN = document.createElement("span");
+            protectDirCheckSPAN.classList.add("extension-check-span");     // ... > extension-list-controls-right > extension-edit-controls > extension-check-span
+            const protectDirCheck = document.createElement("input");
+              const protecDirCheckId = "protectDirCheck_" + extensionId;
+              protectDirCheck.setAttribute( "type",        "checkbox"       );
+              protectDirCheck.setAttribute( "id",          protecDirCheckId );
+              protectDirCheck.setAttribute( "extensionId", extensionId      );
+              protectDirCheck.classList.add("extension-check");            // ... > extension-edit-controls > extension-check-span > extension-check
+              protectDirCheck.classList.add("dir-protect-check");               // ... > extension-edit-controls > extension-check-span > dir-protect-check
+              protectDirCheck.addEventListener("change", (e) => this.extensionOptionCheckClicked(e), true); // <====== NOTE: event "capturing" phase
+            protectDirCheckSPAN.appendChild(protectDirCheck);
+            const protectDirCheckLabel = document.createElement("label");
+              protectDirCheckLabel.setAttribute( "for",         protecDirCheckId );
+              protectDirCheckLabel.setAttribute( "extensionId", extensionId      );
+              protectDirCheckLabel.classList.add("extension-check-label"); // ... > extension-edit-controls > extension-check-span > extension-check-label
+              protectDirCheckLabel.classList.add("dir-protect-check");          // ... > extension-edit-controls > extension-check-span > dir-protect-check
+            protectDirCheckSPAN.appendChild(protectDirCheckLabel);
+            if (special) {
+              protectDirCheck.checked  = true;
+              protectDirCheck.disabled = true;
+              protectDirCheck.setAttribute(      "title", this.tooltip_checkbox_protect_disabled_special );
+              protectDirCheckLabel.setAttribute( "title", this.tooltip_checkbox_protect_disabled_special );
+            } else {
+              protectDirCheck.checked = dirProtected;
+              if (locked) {
+                protectDirCheck.disabled = true;
+                protectDirCheck.setAttribute(      "title", this.tooltip_checkbox_protect_disabled_locked );
+                protectDirCheckLabel.setAttribute( "title", this.tooltip_checkbox_protect_disabled_locked );
+              } else {
+                protectDirCheck.disabled = false;
+                protectDirCheck.setAttribute(      "title", this.tooltip_checkbox_protect_enabled );
+                protectDirCheckLabel.setAttribute( "title", this.tooltip_checkbox_protect_enabled );
+              }
+            }
+          editControlsDiv.appendChild(protectDirCheckSPAN);
+
+          const removeButton = document.createElement("button");
+            removeButton.classList.add("extension-list-button");      // extension-list-item > extension-list-controls-right > extension-edit-controls > extension-list-button
+            removeButton.classList.add("extension-icon-button");      // extension-list-item > extension-list-controls-right > extension-edit-controls > extension-icon-button
+            removeButton.classList.add("extension-list-icon-button"); // extension-list-item > extension-list-controls-right > extension-edit-controls > extension-list-icon-button
+            removeButton.classList.add("icon-only");                  // extension-list-item > extension-list-controls-right > extension-edit-controls > icon-only
+            removeButton.classList.add("remove-extension");           // extension-list-item > extension-list-controls-right > extension-edit-controls > remove-extension
+            removeButton.setAttribute("extensionId", extensionId);
+            removeButton.addEventListener("click", (e) => this.extensionControlButtonClicked(e));
+            if (special) {
+              removeButton.disabled = true;
+              removeButton.setAttribute("title", this.tooltip_button_remove_disabled_special);
+            } else if (locked) {
+              removeButton.disabled = true;
+              removeButton.setAttribute("title", this.tooltip_button_remove_disabled_locked);
+            } else {
+              removeButton.disabled = false;
+              removeButton.setAttribute("title", this.tooltip_button_remove_enabled);
+            }
+          editControlsDiv.appendChild(removeButton);
+
         controlsRightTD.appendChild(editControlsDiv);
       extensionTR.appendChild(controlsRightTD);
 
@@ -1191,30 +1368,32 @@ class OptionsUI {
 
 
   async insertExtensionsListItemUI(extensionId, extensionProps) {
-    this.debug( "--"
-                + `\n- extensionId="${extensionId}"`
-                + `\n- extensionProps.id="${extensionProps.id}"`
-                + `\n- extensionProps.name="${extensionProps.name}"`
-                + `\n- extensionProps.allowAccess"${extensionProps.allowAccess}`
+    this.debug( "\n--- INSERTING NEW EXTENSION ITEM INTO THE UI:",
+                `\n- extensionId ................... "${extensionId}"`,
+                `\n- extensionProps.id ............. "${extensionProps.id}"`,
+                `\n- extensionProps.name ........... "${extensionProps.name}"`,
+                `\n- extensionProps.allowAcces ..... ${extensionProps.allowAccess}`,
+                `\n- extensionProps.locked ......... ${extensionProps.locked}`,
+                `\n- extensionProps.dirProtected ... ${extensionProps.dirProtected}`,
               );
 
     const extensionName = extensionProps.name;
 
     const domFsbExtensionList = document.getElementById("fsbExtensionList");
 
-    const extensionTR = await this.buildExtensionListItemUI(extensionId, extensionProps);
+    const newExtensionTR = await this.buildExtensionListItemUI(extensionId, extensionProps);
 
     var inserted = false;
     const domExtensionListItems = domFsbExtensionList.children;
     for (const domExtensionListItemTR of domExtensionListItems) {
       if (domExtensionListItemTR.classList.contains("extension-list-item")) {
         const domExtensionName = domExtensionListItemTR.getAttribute("extensionName");
-        const compared = domExtensionName.localeCompare(extensionName, { 'sensitity': 'base' } );
+        const compared         = domExtensionName.localeCompare(extensionName, { 'sensitity': 'base' } ); // COMPARE BY NAME
         this.debug(`-- extensionName="${extensionName}" domExtensionName="${domExtensionName}" compared=${compared}`);
 
         if (compared >= 0) {
           this.debug(`-- INSERTING extensionName="${extensionName}" BEFORE domExtensionName="${domExtensionName}"`);
-          domFsbExtensionList.insertBefore(extensionTR, domExtensionListItemTR);
+          domFsbExtensionList.insertBefore(newExtensionTR, domExtensionListItemTR);
           inserted = true;
           break;
         }
@@ -1223,27 +1402,32 @@ class OptionsUI {
 
     if (! inserted) {
       this.debug(`-- Insertion point not found -- Appending to end of list --  extensionId="${extensionId}"`);
-      domFsbExtensionList.appendChild(extensionTR);
+      domFsbExtensionList.appendChild(newExtensionTR);
     }
   }
 
 
 
   async updateExtensionsListItemUI(oldExtensionId, newExtensionId, extensionProps) {
-    this.debug( "--"
-                + `\n- oldExtensionId="${oldExtensionId}"`
-                + `\n- newExtensionId="${newExtensionId}"`
-                + `\n- extensionProps.id="${extensionProps.id}"`
-                + `\n- extensionProps.name="${extensionProps.name}"`
-                + `\n- extensionProps.allowAccess="${extensionProps.allowAccess}`
+    this.debug( "\n--- updateExtensionsListItemUI:",
+                `\n- oldExtensionId ................ "${oldExtensionId}"`,
+                `\n- newExtensionId ................ "${newExtensionId}"`,
+                `\n- extensionProps.id ............. "${extensionProps.id}"`,
+                `\n- extensionProps.name ........... "${extensionProps.name}"`,
+                `\n- extensionProps.special ........ ${extensionProps.special}`,
+                `\n- extensionProps.allowAccess .... ${extensionProps.allowAccess}`,
+                `\n- extensionProps.locked ......... ${extensionProps.locked}`,
+                `\n- extensionProps.dirProtected ... ${extensionProps.dirProtected}`,
               );
 
     const domFsbExtensionList = document.getElementById("fsbExtensionList");
     const selectorTR          = `tr.extension-list-item[extensionId='${oldExtensionId}']`
     const extensionTR         = domFsbExtensionList.querySelector(selectorTR);
 
+    var uiErrors = 0;
     if (! extensionTR) {
       this.debug(`-- QUERY FAILED TO GET EXTENSION ITEM TR -- selector="${selectorTR}"`);
+      uiErrors++;
 
     } else {
       if (newExtensionId !== oldExtensionId) {
@@ -1253,40 +1437,155 @@ class OptionsUI {
         await this.insertExtensionsListItemUI(newExtensionId, extensionProps);
 
       } else {
-        // if IDs ARE the same, a simple update
-        const selectorAllowAccessCheck = `input.allow-access-check[type='checkbox'][extensionId='${oldExtensionId}']`
-        const selectorNameTD           = ".extension-list-name";
+        // else the IDs ARE the same, a "simple" update
+        const selectorNameTextSPAN     = ".extension-list-name-text";
         const selectorIdTD             = ".extension-list-id";
+        const selectorLockCheck        = `input.lock-check[type='checkbox'][extensionId='${oldExtensionId}']`
+        const selectorDirProtectCheck  = `input.dir-protect-check[type='checkbox'][extensionId='${oldExtensionId}']`
+        const selectorAllowAccessCheck = `input.allow-access-check[type='checkbox'][extensionId='${oldExtensionId}']`
+        const selectorEditButton       = `button.edit-extension[extensionId='${oldExtensionId}']`;
+        const selectorRemoveButton     = `button.remove-extension[extensionId='${oldExtensionId}']`;
 
-        const allowAccessCheck         = extensionTR.querySelector(selectorAllowAccessCheck);
-        const nameTD                   = extensionTR.querySelector(selectorNameTD);
+        const nameTextSPAN             = extensionTR.querySelector(selectorNameTextSPAN);
         const idTD                     = extensionTR.querySelector(selectorIdTD);
+        const lockCheck                = extensionTR.querySelector(selectorLockCheck);
+        const dirProtectCheck          = extensionTR.querySelector(selectorDirProtectCheck);
+        const allowAccessCheck         = extensionTR.querySelector(selectorAllowAccessCheck);
+        const editButton               = extensionTR.querySelector(selectorEditButton);
+        const removeButton             = extensionTR.querySelector(selectorRemoveButton);
 
-        if (extensionProps.allowAccess) {
-          extensionTR.classList.remove('access-disallowed');
-        } else {
-          extensionTR.classList.add('access-disallowed');
-        }
 
-        if (! allowAccessCheck) {
-          this.debug(`-- QUERY FAILED TO GET EXTENSION ITEM allowAccess Check -- selector="${selectorAllowAccessCheck}"`);
-        } else {
-          allowAccessCheck.checked = extensionProps.allowAccess;
-        }
 
-        if (! nameTD) {
-          this.debug(`-- QUERY FAILED TO GET EXTENSION ITEM Name TD -- selector="${selectorNameTD}"`);
-        } else {
-          nameTD.textContent = extensionProps.name;
+        if (! nameTextSPAN) {
+          this.error(`-- QUERY FAILED TO GET EXTENSION ITEM Name Text SPAN -- selector="${selectorNameTextSPAN}"`);
+          uiErrors++;
         }
 
         if (! idTD) {
-          this.debug(`-- QUERY FAILED TO GET EXTENSION ITEM ID TD -- selector="${selectorIdTD}"`);
-        } else {
-          idTD.textContent = extensionProps.id;
+          this.error(`-- QUERY FAILED TO GET EXTENSION ITEM lock Check -- selector="${selectorIdTD}"`);
+          uiErrors++;
+        }
+
+        if (! lockCheck) {
+          this.error(`-- QUERY FAILED TO GET EXTENSION ITEM Lock Check -- selector="${selectorLockCheck}"`);
+          uiErrors++;
+        }
+
+        if (! dirProtectCheck) {
+          this.error(`-- QUERY FAILED TO GET EXTENSION ITEM dirProtect Check -- selector="${selectorDirProtectCheck}"`);
+          uiErrors++;
+        }
+
+        if (! allowAccessCheck) {
+          this.error(`-- QUERY FAILED TO GET EXTENSION ITEM allowAccess Check -- selector="${selectorAllowAccessCheck}"`);
+          uiErrors++;
+        }
+
+        if (! editButton) {
+          this.error(`-- QUERY FAILED TO GET EXTENSION ITEM Edit Button -- selector="${selectorEditButton}"`);
+          uiErrors++;
+        }
+
+        if (! removeButton) {
+          this.error(`-- QUERY FAILED TO GET EXTENSION ITEM Remove Button -- selector="${selectorRemoveButton}"`);
+          uiErrors++;
+        }
+
+
+
+        if (! uiErrors) {
+          // deal with the classes on the extension-item
+          if (extensionProps.special) {
+            extensionTR.classList.add('extension-locked');
+            extensionTR.classList.add('extension-dir-protected');
+            extensionTR.classList.remove('access-disallowed');
+
+          } else if (extensionProps.locked) {
+            extensionTR.classList.add('extension-locked');
+
+            if (extensionProps.dirProtected) {
+              extensionTR.classList.add('extension-dir-protected');
+            } else {
+              extensionTR.classList.remove('extension-dir-protected');
+            }
+
+            if (extensionProps.allowAccess) {
+              extensionTR.classList.remove('access-disallowed');
+            } else {
+              extensionTR.classList.add('access-disallowed');
+            }
+
+          } else {
+            extensionTR.classList.remove('extension-locked');
+
+            if (extensionProps.dirProtected) {
+              extensionTR.classList.add('extension-dir-protected');
+            } else {
+              extensionTR.classList.remove('extension-dir-protected');
+            }
+
+            if (extensionProps.allowAccess) {
+              extensionTR.classList.remove('access-disallowed');
+            } else {
+              extensionTR.classList.add('access-disallowed');
+            }
+          }
+
+
+
+          // deal with the checkboxes
+          if (extensionProps.special) {
+            lockCheck.checked         = true;
+            lockCheck.disabled        = true;
+
+            dirProtectCheck.checked   = true;
+            dirProtectCheck.disabled  = true;
+
+            allowAccessCheck.checked  = true;
+            allowAccessCheck.disabled = true;
+
+          } else if (extensionProps.locked) {
+            lockCheck.checked         = true;
+            lockCheck.disabled        = false;
+
+            dirProtectCheck.checked   = extensionProps.dirProtected;
+            dirProtectCheck.disabled  = true;
+           
+            allowAccessCheck.checked  = extensionProps.allowAccess;
+            allowAccessCheck.disabled = true;
+
+          } else {
+            lockCheck.checked         = false;
+            lockCheck.disabled        = false;
+
+            dirProtectCheck.checked   = extensionProps.dirProtected;
+            dirProtectCheck.disabled  = false;
+
+            allowAccessCheck.checked  = extensionProps.allowAccess;
+            allowAccessCheck.disabled = false;
+          }
+
+
+
+          // deal with the buttons
+          if (extensionProps.special || extensionProps.locked) {
+            editButton.disabled   = true;
+            removeButton.disabled = true;
+          } else {
+            editButton.disabled   = false;
+            removeButton.disabled = false;
+          }
+
+
+
+          // deal with the text
+          nameTextSPAN.textContent = extensionProps.name;
+          idTD.textContent         = extensionProps.id;
         }
       }
     }
+
+    return uiErrors;
   }
 
 
@@ -1359,7 +1658,7 @@ class OptionsUI {
                 // special processing for these checkboxes
                 switch (optionName) {
                   case "fsbExtensionAccessControlEnabled":
-                    this.extensionAccessControlCheckClicked(e, optionValue);
+                    this.showHideExtensionAccessControls(optionValue);
                     break;
                   case "fsbShowLoggingOptions":
                     this.showHideLoggingOptions(optionValue);
@@ -1437,19 +1736,37 @@ class OptionsUI {
 
 
 
-  extensionAccessControlCheckClicked(e, checked) {
-    const checkPanel          = document.getElementById("fsbShowGrantExtensionAccessDialogCheckPanel");
-    const chooserOptionsPanel = document.getElementById("fsbExtensionChooserOptionsWrapper");
-    if (checked) {
-      checkPanel.style.setProperty('display', 'block');
-      chooserOptionsPanel.style.setProperty('display', 'block');
+  async openCloseWidgetSpanClicked(e, span) {
+    const forId = span.getAttribute('for');
+
+    if (! forId) {
+      this.error("SPAN has no 'for' attribute:\n", span);
     } else {
-      checkPanel.style.setProperty('display', 'none');
-      chooserOptionsPanel.style.setProperty('display', 'none');
+      const selector = `input[type='checkbox'][id='${forId}']`;
+      const checkbox = span.querySelector(selector);
+
+      if (! checkbox) {
+        this.error(`FAILED TO FIND Span Checkbox, selector="${selector}"`);
+      } else {
+        const newChecked = ! checkbox.checked;
+        checkbox.checked = newChecked;
+
+        switch (forId) {
+          case 'fsbShowOptionsHints':
+            this.showHideHints(newChecked);
+            break;
+          case 'fsbShowOptionsActions':
+            this.showHideActions(newChecked);
+            break;
+          case 'fsbShowLoggingOptions':
+            this.showHideLoggingOptions(newChecked);
+            break;
+          default:
+            this.error(`Unexpected "forId": "${forId}"`);
+        }
+      }
     }
   }
-
-
 
   showHideHints(show) {
     const hintsPanel = document.getElementById("fsbHintsPanel");
@@ -1461,8 +1778,6 @@ class OptionsUI {
       }
     }
   }
-
-
 
   showHideActions(show) {
     const optionActionTRs = document.querySelectorAll("tr.option-action");
@@ -1477,8 +1792,6 @@ class OptionsUI {
     }
   }
 
-
-
   showHideLoggingOptions(show) {
     const loggingOptionsPanel = document.getElementById("fsbLoggingOptions");
     if (loggingOptionsPanel) {
@@ -1487,6 +1800,18 @@ class OptionsUI {
       } else {
         loggingOptionsPanel.style.setProperty('display', 'none');
       }
+    }
+  }
+
+  showHideExtensionAccessControls(show) {
+    const checkPanel          = document.getElementById("fsbShowGrantExtensionAccessDialogCheckPanel");
+    const chooserOptionsPanel = document.getElementById("fsbExtensionChooserOptionsWrapper");
+    if (show) {
+      checkPanel.style.setProperty('display', 'block');
+      chooserOptionsPanel.style.setProperty('display', 'block');
+    } else {
+      checkPanel.style.setProperty('display', 'none');
+      chooserOptionsPanel.style.setProperty('display', 'none');
     }
   }
 
@@ -1502,15 +1827,18 @@ class OptionsUI {
 
     this.debug("-- begin");
 
-    if (this.DEBUG) this.debugAlways( "--" // don't build all this just to be denied by this.DEBUG inside this.debug()
-                                      + `\n- tagName="${e.target.tagName}"`
-                                      + `\n- extension-head-button?=${e.target.classList.contains("extension-head-button")}`
-                                      + `\n- extension-list-button?=${e.target.classList.contains("extension-list-button")}`
-                                      + `\n- extension-edit-button?=${e.target.classList.contains("extension-edit-button")}`
-                                      + `\n- add-extension?=${e.target.classList.contains("add-extension")}`
-                                      + `\n- edit-extension?=${e.target.classList.contains("edit-extension")}`
-                                      + `\n- remove-extension?=${e.target.classList.contains("remove-extension")}`
-                                      + `\n- extensionId="${e.target.getAttribute('extensionId')}"`
+    if (this.DEBUG) this.debugAlways( "--", // don't build all this just to be denied by this.DEBUG inside this.debug()
+                                      `\n- tagName ........................ "${e.target.tagName}"`,
+                                      `\n- id ............................. "${e.target.getAttribute('id')}"`,
+                                      `\n- for ............................ "${e.target.getAttribute('for')}"`,
+                                      `\n- extension-head-button? ......... ${e.target.classList.contains("extension-head-button")}`,
+                                      `\n- extension-edit-button? ......... ${e.target.classList.contains("extension-edit-button")}`,
+                                      `\n- extension-edit-error-button? ... ${e.target.classList.contains("extension-edit-error-button")}`,
+                                      `\n- extension-list-button? ......... ${e.target.classList.contains("extension-list-button")}`,
+                                      `\n- add-extension? ................. ${e.target.classList.contains("add-extension")}`,
+                                      `\n- edit-extension? ................ ${e.target.classList.contains("edit-extension")}`,
+                                      `\n- remove-extension? .............. ${e.target.classList.contains("remove-extension")}`,
+                                      `\n- extensionId .................... "${e.target.getAttribute('extensionId')}"`,
                                     );
 
     var button;
@@ -1521,8 +1849,9 @@ class OptionsUI {
     }
 
     if (button) {
+      const buttonId = button.getAttribute("id");
+
       if (button.classList.contains("extension-edit-button")) {
-        const buttonId = button.getAttribute("id");
         this.debug(`-- got edit button class "extension-edit-button", buttonId="${buttonId}"`);
 
         switch (buttonId) {
@@ -1536,6 +1865,15 @@ class OptionsUI {
             this.debug(`-- UNKNOWN extension-edit-button BUTTON --  buttonId="${buttonId}"`);
         }
 
+      } else if (button.classList.contains("extension-edit-error-button")) {
+        this.debug(`-- got edit error button class "extension-edit-error-button", buttonId="${buttonId}"`);
+        if (buttonId === "extensionEditErrorDismissButton") {
+            await this.extensionEditErrorDismissButtonClicked(e);
+
+        } else {
+          this.debug(`-- UNKNOWN extension-edit-error-button BUTTON --  buttonId="${buttonId}"`);
+        }
+
       } else if (button.classList.contains("extension-head-button")) {
         if (button.classList.contains("add-extension")) {
           await this.addNewExtension(e);
@@ -1547,28 +1885,31 @@ class OptionsUI {
            )
         {
           if (! button.hasAttribute("extensionId")) {
-            this.error("-- Cannot Edit or Remove - Button has no \"extensionId\" Atttribute!!!");
+            this.error("-- Cannot Edit or Remove Extension - Button has no \"extensionId\" Atttribute!!!");
 
           } else {
             const extensionId = button.getAttribute("extensionId");
             const selectorTR  = `tr.extension-list-item[extensionId='${extensionId}']`;
             const extensionTR = e.target.closest(selectorTR);
 
-            if (extensionTR.classList.contains("extension-locked"))  {
+            if (extensionTR.classList.contains("extension-special"))  {
               // Should never happen - We should not have added an event listener to this TR
-              this.error(`-- Cannot Edit or Delete - Extension is LOCKED: extensionId="${extensionId}"`);
+              this.error(`-- Cannot Edit or Remove - Extension is SPECIAL: extensionId="${extensionId}"`);
+
+            } else if (extensionTR.classList.contains("extension-locked"))  {
+              // Should never happen - We should not have added an event listener to this TR
+              this.error(`-- Cannot Edit or Remove - Extension is LOCKED: extensionId="${extensionId}"`);
 
             } else {
               if (button.classList.contains("edit-extension")) {
                 await this.editExtension(e, extensionId);
-
               } else if (button.classList.contains("remove-extension")) {
                 await this.removeExtension(e, extensionId);
               }
             }
           }
         } else {
-          this.debug("-- NOT OUR BUTTON -- got expected class \"extension-list-button\", but noot expected button-specific class --");
+          this.debug("-- NOT OUR BUTTON -- got expected class \"extension-list-button\", but not expected button-specific class --");
         }
       } else {
         this.debug("-- NOT OUR BUTTON -- expected class \"extension-edit-button\" or \"extension-list-button\" not found --");
@@ -1585,10 +1926,10 @@ class OptionsUI {
   async extensionEditSaveButtonClicked(e) {
     e.preventDefault();
 
-    this.debug( "--"
-                + `\n- this.editorModeAdd         = ${this.editorModeAdd}`
-                + `\n- this.editorModeEdit        = ${this.editorModeEdit}`
-                + `\n- this.editorEditExtensionId = "${this.editorEditExtensionId}"`
+    this.debug( "--",
+                `\n- this.editorModeAdd         = ${this.editorModeAdd}`,
+                `\n- this.editorModeEdit        = ${this.editorModeEdit}`,
+                `\n- this.editorEditExtensionId = "${this.editorEditExtensionId}"`
               );
 
     this.resetErrors();
@@ -1598,16 +1939,21 @@ class OptionsUI {
       this.setErrorFor("fsbExtensionOptionsTitle", "options_message_error_editorModeNotSet");
 
     } else {
-      const allowAccessCheck      = document.getElementById("extension_edit_allow_access_check");
+      const allowAccessCheck      = document.getElementById("extension_edit_check_allow_access");
       const extensionIdText       = document.getElementById("extension_edit_text_id");
       const extensionNameText     = document.getElementById("extension_edit_text_name");
+      const lockCheck             = document.getElementById("extension_edit_check_lock");
+      const protectDirCheck       = document.getElementById("extension_edit_check_dir_protect");
+
       const extensionEditErrorTR  = document.getElementById("extension_edit_error");
       const nameErrorLabel        = document.getElementById("extension_edit_error_name");
       const idErrorLabel          = document.getElementById("extension_edit_error_id");
 
-      const newExtensionId   = extensionIdText.value;
-      const newExtensionName = extensionNameText.value;
-      const newAllowAccess   = allowAccessCheck.checked;
+      const newExtensionId        = extensionIdText   ? extensionIdText.value    : "";
+      const newExtensionName      = extensionNameText ? extensionNameText.value  : "";
+      const newAllowAccess        = allowAccessCheck  ? allowAccessCheck.checked : false;
+      const newLock               = lockCheck         ? lockCheck.checked        : false;
+      const newProtectDir         = protectDirCheck   ? protectDirCheck.checked  : false;
 
       nameErrorLabel.textContent = '';
       idErrorLabel.textContent   = '';
@@ -1624,7 +1970,7 @@ class OptionsUI {
         idErrorLabel.textContent = this.extensionListEditErrorExtensionIdEmpty;
         errors++;
       } else if ( ! isValidExtensionId(newExtensionId, true) ) { // allowUpperCase=true // && (newExtensionId !== this.editorEditExtensionId) ???
-        this.debugAlways(`-- Invalid Extension ID: "${newExtensionId}"`);
+        this.debug(`-- Invalid Extension ID: "${newExtensionId}"`);
         idErrorLabel.textContent = this.extensionListEditErrorExtensionIdInvalid;
         errors++;
       }
@@ -1639,7 +1985,14 @@ class OptionsUI {
             errors++;
 
           } else {
-            const newProps = await this.fsbOptionsApi.addOrUpdateExtension(undefined, newExtensionId, newExtensionName, newAllowAccess);
+            this.debug( "\n--- Adding Extension:",
+                        `\n- newExtensionId ..... "${newExtensionId}"`,
+                        `\n- newExtensionName ... "${newExtensionName}"`,
+                        `\n- newAllowAccess ..... ${newAllowAccess}`,
+                        `\n- newLock ............ ${newLock}`,
+                        `\n- newProtectDir ...... ${newProtectDir}`,
+                      )
+            const newProps = await this.fsbOptionsApi.addOrUpdateExtension(undefined, newExtensionId, newExtensionName, newAllowAccess, newLock, newProtectDir);
 
             if (! newProps) {
               this.error("-- editorModeAdd -- Options.addOrUpdateExtension FAILED TO RETURN NEW EXTENSION PROPERTIES");
@@ -1648,14 +2001,15 @@ class OptionsUI {
               errors++;
 
             } else {
-              // this will place the new one in the correct location in the sort order
+              // this will place the new one in the correct location in the sort order????
               await this.insertExtensionsListItemUI(newExtensionId, newProps);
             }
           }
 
         } else if (this.editorModeEdit) {
           // did they change the Extension ID???
-          if (newExtensionId !== this.editorEditExtensionId) {
+          const extensionIdChanged = (newExtensionId !== this.editorEditExtensionId);
+          if (extensionIdChanged) {
             // What if NEW Extension ID already exists???
             const props = await this.fsbOptionsApi.getExtensionPropsById(newExtensionId);
             if (props) {
@@ -1666,18 +2020,31 @@ class OptionsUI {
           }
 
           if (! errors) {
-            const newProps = await this.fsbOptionsApi.addOrUpdateExtension(this.editorEditExtensionId, newExtensionId, newExtensionName, newAllowAccess);
+            this.debug( "\n--- Updating Extension:",
+                        `\n- oldExtensionId ....... "${this.editorEditExtensionId}"`,
+                        `\n- newExtensionId ....... "${newExtensionId}"`,
+                        `\n- extensionIdChanged ... ${extensionIdChanged}`,
+                        `\n- newExtensionName ..... "${newExtensionName}"`,
+                        `\n- newAllowAccess ....... ${newAllowAccess}`,
+                        `\n- newLock .............. ${newLock}`,
+                        `\n- newProtectDir ........ ${newProtectDir}`,
+                      )
+            const newProps = await this.fsbOptionsApi.addOrUpdateExtension(this.editorEditExtensionId, newExtensionId, newExtensionName, newAllowAccess, newLock, newProtectDir);
 
             if (! newProps) {
               this.error("-- editorModeEdit -- Options.addOrUpdateExtension FAILED TO RETURN NEW EXTENSION PROPERTIES");
-              nameErrorLabel1.textContent = this.extensionListEditErrorUpdateFailed;
-//////////////idErrorLabel2.textContent   = this.extensionListEditErrorUpdateFailed;
+              nameErrorLabel.textContent = this.extensionListEditErrorUpdateFailed;
+//////////////idErrorLabel.textContent   = this.extensionListEditErrorUpdateFailed;
               errors++;
 
             } else {
               // this will delete the old one if the extension ID changed
-              // and place the new one in the correct location in the sort order
-              await this.updateExtensionsListItemUI(this.editorEditExtensionId, newExtensionId, newProps);
+              // and place the new one in the correct location in the sort order???
+              const updateErrors = await this.updateExtensionsListItemUI(this.editorEditExtensionId, newExtensionId, newProps);
+              if (updateErrors) {
+                nameErrorLabel.textContent = this.extensionListEditErrorUIUpdateFailed;
+                errors += updateErrors;
+              }
             }
           }
         }
@@ -1687,7 +2054,7 @@ class OptionsUI {
         extensionEditErrorTR.classList.remove('display-none');
 
       } else {
-        this.exitEditMode();
+        await this.exitEditMode();
       }
     }
   }
@@ -1697,37 +2064,69 @@ class OptionsUI {
 
     this.resetErrors();
 
-    this.debug("--");
-    this.exitEditMode();
+    await this.exitEditMode();
   }
 
-  exitEditMode() {
+  async extensionEditErrorDismissButtonClicked(e) {
+    e.preventDefault();
+
+    const extensionEditErrorTR    = document.getElementById("extension_edit_error");
+    const nameErrorLabel          = document.getElementById("extension_edit_error_name");
+    const idErrorLabel            = document.getElementById("extension_edit_error_id");
+
+    extensionEditErrorTR.classList.add('display-none'); // HIDE the Editor Fields Error Row - turn ON display: none
+    nameErrorLabel.textContent = '';
+    idErrorLabel.textContent   = '';
+  }
+
+
+
+  async exitEditMode() {
     this.debug("-- begin");
 
     const extensionListTable      = document.getElementById("fsbExtensionList");
     const extensionEditTitleTR    = document.getElementById("extension_edit_title");
     const extensionEditTitleLabel = document.getElementById("extension_edit_title_text");
     const extensionEditTR         = document.getElementById("extension_edit");
-    const allowAccessCheck        = document.getElementById("extension_edit_allow_access_check");
+
+    const allowAccessCheck        = document.getElementById("extension_edit_check_allow_access");
     const extensionIdText         = document.getElementById("extension_edit_text_id");
     const extensionNameText       = document.getElementById("extension_edit_text_name");
+    const lockCheck               = document.getElementById("extension_edit_check_lock");
+    const dirProtectCheck         = document.getElementById("extension_edit_check_dir_protect");
+
     const extensionEditErrorTR    = document.getElementById("extension_edit_error");
     const nameErrorLabel          = document.getElementById("extension_edit_error_name");
     const idErrorLabel            = document.getElementById("extension_edit_error_id");
 
     extensionListTable.classList.remove("edit-mode");
 
-    extensionEditTitleTR.classList.add('display-none'); // HIDE the Editor Title Row - turn ON display: none
+
+
+    // HIDE the Editor Title Row - turn ON display: none
+    extensionEditTitleTR.classList.add('display-none');
     extensionEditTitleLabel.textContent = '';
 
-    extensionEditTR.classList.add('display-none'); // HIDE the Editor Fields Row - turn ON display: none
+
+
+    // HIDE the Editor Fields Row - turn ON display: none
+    extensionEditTR.classList.add('display-none');
     allowAccessCheck.checked   = false;
     extensionIdText.value      = '';
     extensionNameText.value    = '';
+    lockCheck.checked          = false;
+    dirProtectCheck.checked    = false;
 
-    extensionEditErrorTR.classList.add('display-none'); // HIDE the Editor Fields Error Row - turn ON display: none
+
+
+    // HIDE the Editor Fields Error Row - turn ON display: none
+    extensionEditErrorTR.classList.add('display-none');
     nameErrorLabel.textContent = '';
     idErrorLabel.textContent   = '';
+
+
+
+    // RE-ENABLE EVERYTHING IN THE EXTENSION ACCESS CONTROLS UI
 
     var selector;
     var element;
@@ -1735,52 +2134,87 @@ class OptionsUI {
     selector = "button.add-extension"; // extension-head-item > extension-head-controls-right > extension-edit-controls > add-extension
     element = extensionListTable.querySelector(selector);
     if (! element) {
-      this.debug(`-- Failed to select ADD Extension Button, selector="${selector}"`);
+      this.error(`-- Failed to select ADD Extension Button, selector="${selector}"`);
     } else {
       element.disabled = false;
     }
 
-    // ENABLE ALL THE EDIT & DELETE BUTTONS (skip any Extension that is LOCKED)
+    // RE-ENABLE ALL THE BUTTONS & CHECKBOXES FOR THE EXTENSIONS, Taking heed of Extensions that are SPECIAL or LOCKED
     const domExtensionTRs = document.querySelectorAll("tr.extension-list-item");
     this.debug(`-- domExtensionTRs.length=${domExtensionTRs.length}`);
     for (const domExtensionTR of domExtensionTRs) {
 
-      const extensionId = domExtensionTR.getAttribute("extensionId");
-      const locked      = domExtensionTR.classList.contains("extension-locked");
+      const extensionId  = domExtensionTR.getAttribute("extensionId");
+      const special      = domExtensionTR.classList.contains("extension-special");
+      const locked       = domExtensionTR.classList.contains("extension-locked");
+      const dirProtected = domExtensionTR.classList.contains("extension-dir-protected");
 
+      if (special) {
+        this.debug(`-- Extension is SPECIAL: extensionId="${extensionId}"`);
+      }
       if (locked) {
         this.debug(`-- Extension is LOCKED: extensionId="${extensionId}"`);
+      }
+      if (dirProtected) {
+        this.debug(`-- Extension is DIR PROTECTED: extensionId="${extensionId}"`);
+      }
 
+      this.debug(`-- Adjusting Enabled State of controls for Extension: extensionId="${extensionId}"`);
+
+      selector = `input[type='checkbox'].allow-access-check[extensionId='${extensionId}']`;
+      element = domExtensionTR.querySelector(selector);
+      if (! element) {
+        this.error(`-- Failed to select ALLOW ACCESS Checkbox for Extension: extensionId="${extensionId}" selector="${selector}"`);
+      } else if (special || locked) {
+        element.disabled = true;
       } else {
-        this.debug(`-- Enabling controls for Extension: extensionId="${extensionId}"`);
+        element.disabled = false;
+      }
 
-        selector = `input[type='checkbox'].allow-access-check[extensionId='${extensionId}']`;
-        element = domExtensionTR.querySelector(selector);
-        if (! element) {
-          this.debug(`-- Failed to select ALLOW ACCESS Checkbox for Extension: extensionId="${extensionId}" selector="${selector}"`);
-        } else {
-          element.disabled = false;
-        }
+      selector = `button.edit-extension[extensionId='${extensionId}']`;
+      element = domExtensionTR.querySelector(selector);
+      if (! element) {
+        this.error(`-- Failed to select EDIT Button for Extension: extensionId="${extensionId}" selector="${selector}"`);
+      } else if (special || locked) {
+        element.disabled = true;
+      } else {
+        element.disabled = false;
+      }
 
-        selector = `button.edit-extension[extensionId='${extensionId}']`;
-        element = domExtensionTR.querySelector(selector);
-        if (! element) {
-          this.debug(`-- Failed to select EDIT Button for Extension: extensionId="${extensionId}" selector="${selector}"`);
-        } else {
-          element.disabled = false;
-        }
+      selector = `input[type='checkbox'].lock-check[extensionId='${extensionId}']`;
+      element = domExtensionTR.querySelector(selector);
+      if (! element) {
+        this.error(`-- Failed to select LOCK Checkbox for Extension: extensionId="${extensionId}" selector="${selector}"`);
+      } else if (special) {
+        element.disabled = true;
+      } else {
+        element.disabled = false;
+      }
 
-        selector = `button.remove-extension[extensionId='${extensionId}']`;
-        element = domExtensionTR.querySelector(selector);
-        if (! element) {
-          this.debug(`-- Failed to select DELETE Button for Extension: extensionId="${extensionId}" selector="${selector}"`);
-        } else {
-          element.disabled = false;
-        }
+      selector = `input[type='checkbox'].dir-protect-check[extensionId='${extensionId}']`;
+      element = domExtensionTR.querySelector(selector);
+      if (! element) {
+        this.error(`-- Failed to select DIR PROTECT Checkbox for Extension: extensionId="${extensionId}" selector="${selector}"`);
+      } else if (special || locked) {
+        element.disabled = true;
+      } else {
+        element.disabled = false;
+      }
+
+      selector = `button.remove-extension[extensionId='${extensionId}']`;
+      element = domExtensionTR.querySelector(selector);
+      if (! element) {
+        this.error(`-- Failed to select DELETE Button for Extension: extensionId="${extensionId}" selector="${selector}"`);
+      } else if (special || locked) {
+        element.disabled = true;
+      } else {
+        element.disabled = false;
       }
     }
 
-    this.enableExtensionAccessControls(true);
+
+
+    await this.enableExtensionAccessControls(true);
 
     this.editorModeAdd         = false;
     this.editorModeEdit        = false;
@@ -1791,21 +2225,25 @@ class OptionsUI {
 
 
 
-  // the user clicked a allowAccess checkbox for an Extension, etc
+  // the user clicked a allowAccess/lock/dirProtect checkbox for an Extension, etc
   async extensionOptionCheckClicked(e) {
     if (e === null) return;
 
     this.resetErrors();
 
     this.debug("-- begin");
-    if (this.DEBUG) this.debugAlways( "--" // don't build all this just to be denied by this.DEBUG in this.debug()
-                                      + `\n- tagName ................. "${e.target.tagName}"`
-                                      + `\n- type .................... "${e.target.type}"`
-                                      + `\n- id ...................... "${e.target.getAttribute('id')}"`
-                                      + `\n- extension-edit-check? ... ${e.target.classList.contains('extension-edit-check')}`
-                                      + `\n- extension-list-check? ... ${e.target.classList.contains('extension-list-check')}`
-                                      + `\n- allow-access-check? ..... ${e.target.classList.contains('allow-access-check')}`
-                                      + `\n- extensionId ............. "${e.target.getAttribute('extensionId')}"`
+    if (this.DEBUG) this.debugAlways( "--", // don't build all this just to be denied by this.DEBUG in this.debug()
+                                      `\n- tagName ................. "${e.target.tagName}"`,
+                                      `\n- type .................... "${e.target.type}"`,
+                                      `\n- id ...................... "${e.target.getAttribute('id')}"`,
+                                      `\n- for ..................... "${e.target.getAttribute('for')}"`,
+                                      `\n- extension-edit-check? ... ${e.target.classList.contains('extension-edit-check')}`,
+                                      `\n- extension-check? ........ ${e.target.classList.contains('extension-check')}`,
+                                      `\n- allow-access-check? ..... ${e.target.classList.contains('allow-access-check')}`,
+                                      `\n- lock-check? ............. ${e.target.classList.contains('lock-check')}`,
+                                      `\n- dir-protect-check? ...... ${e.target.classList.contains('dir-protect-check')}`,
+                                      `\n- extensionId ............. "${e.target.getAttribute('extensionId')}"`,
+                                      `\n- checked? ................ ${e.target.checked}`,
                                     );
 
     // MABXXX I thought the browser was supposed to take care of this <label> with a "for" attribute stuff...
@@ -1817,8 +2255,8 @@ class OptionsUI {
       if (forId) {
         const forElement = document.getElementById(forId);
         if (forElement) {
-          target = forElement
-          this.debugs(`-- LABEL CLICKED, FOR ELEMENT FOUND -- id="${target.getAttribute('id')}"`);
+          target = forElement;
+          this.debug(`-- LABEL CLICKED, "FOR" ELEMENT FOUND -- id="${target.getAttribute('id')}"`);
         }
       }
     }
@@ -1826,12 +2264,13 @@ class OptionsUI {
     if ( target
          && target.tagName === 'INPUT'
          && target.type === 'checkbox'
-         && ( ( target.classList.contains("extension-list-check")
-                && ( target.classList.contains("allow-access-check")
-                     || target.classList.contains("XXX-check") // Just a place-holder for future expansion
-                   )
-              )
-              || target.classList.contains("extension-edit-check")
+         && ( target.classList.contains("extension-edit-check")
+              || ( target.classList.contains("extension-check")
+                   && ( target.classList.contains("allow-access-check")
+                        || target.classList.contains("lock-check")
+                        || target.classList.contains("dir-protect-check")
+                      )
+                 )
             )
        )
     {
@@ -1842,9 +2281,20 @@ class OptionsUI {
         const checked    = e.target.checked;
         const checkboxId = e.target.getAttribute("id");
         switch (checkboxId) {
-          case "extension_edit_allow_access_check":
+          case "extension_edit_check_allow_access":
             // The "Allow Access" checkbox on the Extension Editor was clicked - nothing to do... change the background color???
+            this.debug(`EDITOR ALLOW ACCESS CHECKBOX CLICKED: checked=${checked}`);
             break;
+          case "extension_edit_check_lock":
+            // The "Lock" checkbox on the Extension Editor was clicked - nothing to do... change the background color???
+            this.debug(`EDITOR LOCK CHECKBOX CLICKED: checked=${checked}`);
+            break;
+          case "extension_edit_check_dir_protect":
+            // The "Dir Protect" checkbox on the Extension Editor was clicked - nothing to do... change the background color???
+            this.debug(`EDITOR DIR PROTECT CHECKBOX CLICKED: checked=${checked}`);
+            break;
+          default:
+            this.debug(`EDITOR CHECKBOX WITH UNKNOWN ID CLICKED id="${checkboxId}" checked=${checked}`);
         }
 
       } else if (! e.target.hasAttribute("extensionId")) { // if it doesn't have an extensionId then we can't store
@@ -1860,11 +2310,14 @@ class OptionsUI {
 
         } else {
           // is it an allowAccess checkbox?
-          if (e.target.classList.contains("allow-access-check")) { // extension-list-item > extension-list-controls-left > allow-access-check
+          if (e.target.classList.contains("allow-access-check")) { // extension-list-item > extension-list-controls-right > allow-access-check
             await this.allowAccessCheckboxClicked(e, extensionId, props, checked);
 
-          } else if (e.target.classList.contains("XXX-check")) { // extension-list-item > extension-list-controls-left > XXX-check
-            // Just a place-holder for future expansion
+          } else if (e.target.classList.contains("lock-check")) { // extension-list-item > extension-list-controls-right > edit-controls > lock-check
+            await this.lockCheckboxClicked(e, extensionId, props, checked);
+
+          } else if (e.target.classList.contains("dir-protect-check")) { // extension-list-item > extension-list-controls-right > edit-controls > dir-protect-check
+            await this.dirProtectCheckboxClicked(e, extensionId, props, checked);
 
           } else {
             // We don't know exactly which checkbox it is!!!  The outer "if" test should have prevented this
@@ -1891,10 +2344,13 @@ class OptionsUI {
     const extensionSelector     = `tr.extension-list-item[extensionId='${extensionId}']`
     const domSelectedExtension  = document.querySelector(extensionSelector);
     if (! domSelectedExtension) {
-      this.debug(`(allowAccess) -- DID NOT FIND OUR extension-list-item: "${extensionSelector}"`);
+      this.error(`(allowAccess) -- DID NOT FIND OUR extension-list-item: "${extensionSelector}"`);
 
-    } else if (domSelectedExtension.classList.contains("extension-locked")) {
-      this.debug(`-- extension is LOCKED`);
+    } else if (domSelectedExtension.classList.contains("extension-special")) { // MABXXX verify with props
+      this.error(`-- Cannot change allowAccess State - extension is SPECIAL`);
+
+    } else if (domSelectedExtension.classList.contains("extension-locked")) { // MABXXX verify with props
+      this.error(`-- Cannot change allowAccess State - extension is LOCKED`);
 
     } else {
       this.debug(`(allowAccess) -- Found our extension-list-item: "${extensionSelector}"`);
@@ -1918,12 +2374,179 @@ class OptionsUI {
 
 
 
+  async lockCheckboxClicked(e, extensionId, props, locked) {
+    this.debug(`-- OLD PROPS: props.id="${props.id}" props.name="${props.name}" locked=${props.locked}`);
+    this.debug(`-- NEW locked=${locked}`);
+
+    this.resetErrors();
+
+    // find the TR.extension-list-item and set the classes and/or attributes
+    const extensionSelector     = `tr.extension-list-item[extensionId='${extensionId}']`
+    const domSelectedExtension  = document.querySelector(extensionSelector);
+    if (! domSelectedExtension) {
+      this.error(`(lock) -- DID NOT FIND OUR extension-list-item: "${extensionSelector}"`);
+
+    } else if (domSelectedExtension.classList.contains("extension-special")) { // MABXXX verify with props
+      this.error(`-- Cannot change Lock State - extension is SPECIAL`);
+
+    } else {
+      this.debug(`(lock) -- Found our extension-list-item: "${extensionSelector}"`);
+
+      props['locked'] = locked;
+      this.debug("-- new locked checkbox status: ", props);
+
+      await this.fsbOptionsApi.storeExtensionPropsById(extensionId, props);
+
+      const allowAccessCheckSelector      = `input[type='checkbox'][extensionId='${extensionId}'].allow-access-check`
+//////const allowAccessCheckLabelSelector = `label[extensionId='${extensionId}'].allow-access-check` // MABXXX JUST A REGULAR CHECKBOX FOR NOW
+      const editButtonSelector            = `button[extensionId='${extensionId}'].edit-extension`
+//////const lockCheckSelector             = `input[type='checkbox'][extensionId='${extensionId}'].lock-check`
+//////const lockCheckLabelSelector        = `label[extensionId='${extensionId}'].lock-check`
+      const protectDirCheckSelector       = `input[type='checkbox'][extensionId='${extensionId}'].dir-protect-check`
+      const protectDirCheckLabelSelector  = `label[extensionId='${extensionId}'].dir-protect-check`
+      const removeButtonSelector          = `button[extensionId='${extensionId}'].remove-extension`
+
+      const allowAccessCheck      = domSelectedExtension.querySelector( allowAccessCheckSelector      );
+//////const allowAccessCheckLabel = domSelectedExtension.querySelector( allowAccessCheckLabelSelector ); // MABXXX JUST A REGULAR CHECKBOX FOR NOW
+      const editButton            = domSelectedExtension.querySelector( editButtonSelector            );
+//////const lockCheck             = domSelectedExtension.querySelector( lockCheckSelector             );
+//////const lockCheckLabel        = domSelectedExtension.querySelector( lockCheckLabelSelector        );
+      const protectDirCheck       = domSelectedExtension.querySelector( protectDirCheckSelector       );
+      const protectDirCheckLabel  = domSelectedExtension.querySelector( protectDirCheckLabelSelector  );
+      const removeButton          = domSelectedExtension.querySelector( removeButtonSelector          );
+
+      if (! allowAccessCheck) {
+        this.error(`FAILED TO GET allowAccessCheck: selector="${allowAccessCheckSelector}"`);
+        return;
+      }
+//////if (! allowAccessCheckLabel) {
+////////this.error(`FAILED TO GET allowAccessCheckLabel: selector="${allowAccessCheckLabelSelector}"`);
+////////return;
+//////}
+      if (! editButton) {
+        this.error(`FAILED TO GET editButton: selector="${editButtonSelector}"`);
+        return;
+      }
+//////if (! lockCheck) {
+////////this.error(`FAILED TO GET lockCheck: selector="${lockCheckSelector}"`);
+////////return;
+//////}
+//////if (! lockCheckLabel) {
+////////this.error(`FAILED TO GET lockCheckLabel: selector="${lockCheckLabelSelector}"`);
+////////return;
+//////}
+      if (! protectDirCheck) {
+        this.error(`FAILED TO GET protectDirCheck: selector="${protectDirCheckSelector}"`);
+        return;
+      }
+      if (! protectDirCheckLabel) {
+        this.error(`FAILED TO GET protectDirCheckLabel: selector="${protectDirCheckLabelSelector}"`);
+        return;
+      }
+      if (! removeButton) {
+        this.error(`FAILED TO GET removeButton: selector="${removeButtonSelector}"`);
+        return;
+      }
+
+      // Don't need to worry about SPECIAL because this checkbox SHOULD have been DISABLED - AND we guard against this ABOVE!!!
+
+      if (locked) {
+        this.debug("(lock) -- adding class \"extension-locked\"");
+        domSelectedExtension.classList.add("extension-locked");
+
+        // Disable Buttons and Checkboxes
+        allowAccessCheck.disabled = true;
+        editButton.disabled       = true;
+////////lockCheck.disabled        = true; // don't want to disable ourself...
+        protectDirCheck.disabled  = true;
+        removeButton.disabled     = true;
+
+        // Change Tooltips to match Disabled State
+        allowAccessCheck.setAttribute(      "title", this.tooltip_checkbox_allowAccess_disabled_locked );
+////////allowAccessCheckLabel.setAttribute( "title", this.tooltip_checkbox_allowAccess_disabled_locked );
+        editButton.setAttribute(            "title", this.tooltip_button_edit_disabled_locked          );
+////////lockCheck.setAttribute(             "title", this.tooltip_checkbox_lock_disabled_XXX           );
+////////lockCheckLabel.setAttribute(        "title", this.tooltip_checkbox_lock_disabled_XXX           );
+        protectDirCheck.setAttribute(       "title", this.tooltip_checkbox_protect_disabled_locked     );
+        protectDirCheckLabel.setAttribute(  "title", this.tooltip_checkbox_protect_disabled_locked     );
+        removeButton.setAttribute(          "title", this.tooltip_button_remove_disabled_locked        );
+
+      } else {
+        this.debug("(lock) -- removing class \"extension-locked\"");
+        domSelectedExtension.classList.remove("extension-locked");
+
+        // Enable Buttons and Checkboxes
+        allowAccessCheck.disabled = false;
+        editButton.disabled       = false;
+////////lockCheck.disabled        = false;
+        protectDirCheck.disabled  = false;
+        removeButton.disabled     = false;
+
+        // Change Tooltips to match Enabled State
+        allowAccessCheck.setAttribute(      "title", this.tooltip_checkbox_allowAccess_enabled );
+////////allowAccessCheckLabel.setAttribute( "title", this.tooltip_checkbox_allowAccess_enabled );
+        editButton.setAttribute(            "title", this.tooltip_button_edit_enabled          );
+////////lockCheck.setAttribute(             "title", this.tooltip_checkbox_lock_enabled        );
+////////lockCheckLabel.setAttribute(        "title", this.tooltip_checkbox_lock_enabled        );
+        protectDirCheck.setAttribute(       "title", this.tooltip_checkbox_protect_enabled     );
+        protectDirCheckLabel.setAttribute(  "title", this.tooltip_checkbox_protect_enabled     );
+        removeButton.setAttribute(          "title", this.tooltip_button_remove_enabled        );
+      }
+    }
+
+    this.debug("-- end");
+  }
+
+
+
+  async dirProtectCheckboxClicked(e, extensionId, props, dirProtected) {
+    this.debug(`-- OLD PROPS: props.id="${props.id}" props.name="${props.name}" dirProtected=${props.dirProtected}`);
+    this.debug(`-- NEW dirProtected=${dirProtected}`);
+
+    this.resetErrors();
+
+    // find the TR.extension-list-item and set the classes and/or attributes
+    const extensionSelector     = `tr.extension-list-item[extensionId='${extensionId}']`
+    const domSelectedExtension  = document.querySelector(extensionSelector);
+    if (! domSelectedExtension) {
+      this.error(`(dirProtect) -- DID NOT FIND OUR extension-list-item: "${extensionSelector}"`);
+
+    } else if (domSelectedExtension.classList.contains("extension-special")) { // MABXXX verify with props
+      this.error(`-- Cannot change dirProtect State - extension is SPECIAL`);
+
+    } else if (domSelectedExtension.classList.contains("extension-locked")) { // MABXXX verify with props
+      this.error(`-- Cannot change dirProtect State - extension is LOCKED`);
+
+    } else {
+      this.debug(`(dirProtect) -- Found our extension-list-item: "${extensionSelector}"`);
+
+      props['dirProtected'] = dirProtected;
+      this.debug("-- new dirProtected checkbox status: ", props);
+
+      await this.fsbOptionsApi.storeExtensionPropsById(extensionId, props);
+
+      if (dirProtected) {
+        this.debug("(dirProtect) -- adding class \"extension-dir-protected\"");
+        domSelectedExtension.classList.add("extension-dir-protected");
+      } else {
+        this.debug("(dirProtect) -- removing class \"extension-dir-protected\"");
+        domSelectedExtension.classList.remove("extension-dir-protected");
+      }
+    }
+
+    this.debug("-- end");
+  }
+
+
+
 
   // Something on the Page was clicked.
   //
   // Check to see if an Action button was clicked - refesh, allow/disallow all, allow/disallow selected, add, remove selected, etc
   // or a label was clicked, so check it has a for="" attribute,
-  // or the extension settings title was clicked
+  // or an open-close-widget <SPAN> was clicked
+  // or the extension settings title <DIV> was clicked
+  //
   //
   // NOTE: This listener is set on the DOCUMENT!!!
   async actionClicked(e) {
@@ -1940,7 +2563,8 @@ class OptionsUI {
       // I thought the browser was supposed to take care of this <label> with a "for" attribute stuff...
       if (e.target.tagName === 'LABEL' && (! e.target.parentElement || e.target.parentElement.tagName !== 'BUTTON')) {
         // ignore it - let optionChanged() handle it
-        this.debug(`-- LABEL CLICKED, but it has no parentElement or its parentElement is not a BUTTON `);
+        this.debug(`-- LABEL CLICKED, but it has no parentElement or its parentElement is not a BUTTON`);
+
       } else {
         e.preventDefault();
 
@@ -1950,53 +2574,76 @@ class OptionsUI {
         } else {
           button = e.target;
         }
-        this.debug(`-- BUTTON CLICKED tagName="${button.tagName}" id="${button.id}"`);
 
         const buttonId = button.id;
-        if (buttonId) switch (buttonId) {
-          case "fsbRefreshListButton":
-            await this.refreshUI(e);
-            break;
-          case "fsbAllowAllButton":
-            await this.allowAccessAllExtensions(e);
-            break;
-          case "fsbDisallowAllButton":
-            await this.disallowAccessAllExtensions(e);
-            break;
-          case "fsbAllowSelectedButton":
-            await this.allowAccessSelectedExtensions(e);
-            break;
-          case "fsbDisallowSelectedButton":
-            await this.disallowAccessSelectedExtensions(e);
-            break;
-          case "fsbAddNewExtensionButton":
-            await this.addNewExtension(e);
-            break;
-          case "fsbAddInstalledExtensionsButton":
-            await this.selectAndAddInstalledExtensions(e);
-            break;
-          case "fsbShowBackupManagerButton":
-            await this.showBackupManager(e);
-            break;
-          case "fsbShowEventLogManagerButton":
-            await this.showEventLogManager(e);
-            break;
-          case "fsbShowStatsManagerButton":
-            await this.showStatsManager(e);
-            break;
-          case "fsbDeleteSelectedButton":
-            await this.removeSelectedExtensions(e);
-            break;
-          default:
-            this.debug(`-- NOT OUR BUTTON -- tagName="${e.target.tagName}" id="${e.target.id}"`);
+        this.debug(`-- BUTTON CLICKED id="${buttonId}"`);
+
+        if (! buttonId) {
+          this.debug("-- BUTTON has no ID");
+
+        } else {
+          switch (buttonId) {
+            case "fsbRefreshListButton":
+              await this.refreshExtensionListUI(e);
+              break;
+            case "fsbAllowAllButton":
+              await this.allowAccessAllExtensions(e);
+              break;
+            case "fsbDisallowAllButton":
+              await this.disallowAccessAllExtensions(e);
+              break;
+            case "fsbAllowSelectedButton":
+              await this.allowAccessSelectedExtensions(e);
+              break;
+            case "fsbDisallowSelectedButton":
+              await this.disallowAccessSelectedExtensions(e);
+              break;
+            case "fsbAddNewExtensionButton":
+              await this.addNewExtension(e);
+              break;
+            case "fsbAddInstalledExtensionsButton":
+              await this.selectAndAddInstalledExtensions(e);
+              break;
+            case "fsbShowBackupManagerButton":
+              await this.showBackupManager(e);
+              break;
+            case "fsbShowEventLogManagerButton":
+              await this.showEventLogManager(e);
+              break;
+            case "fsbShowStatsManagerButton":
+              await this.showStatsManager(e);
+              break;
+            case "fsbDeleteSelectedButton":
+              await this.removeSelectedExtensions(e);
+              break;
+            default:
+              this.debug(`-- NOT A BUTTON WE CARE ABOUT -- id="${buttonId}"`);
+          }
         }
       }
-    } else if (e.target.tagName === "DIV") {
-      this.debug(`-- DIV CLICKED id="${e.target.id}"`);
 
-      const divId = e.target.id;
+    } else if (e.target.tagName === "SPAN") {
+      const span   = e.target;
+      const spanId = span.id;
+
+      this.debug(`-- SPAN Clicked id="${spanId}", classList:`, span.classList);
+
+      if (span.classList.contains("open-close-widget")) {
+        await this.openCloseWidgetSpanClicked(e, span);
+      } else {
+        this.debug(`-- NOT A SPAN WE CARE ABOUT -- id="${spanId}", classList:`, span.classList);
+      }
+      
+    } else if (e.target.tagName === "DIV") {
+      const div   = e.target;
+      const divId = div.id;
+
+      this.debug(`-- DIV Clicked id="${divId}", classList:`, div.classList);
+
       if (divId === "fsbExtensionOptionsTitle") {
-        await this.extensionOptionsTitleDivClicked(e);
+        await this.extensionOptionsTitleDivClicked(e, div);
+      } else {
+        this.debug(`-- NOT A DIV WE CARE ABOUT -- id="${divId}", classList:`, div.classList);
       }
     } else {
       // otherwise we don't care about this click
@@ -2005,14 +2652,14 @@ class OptionsUI {
 
 
 
-  async extensionOptionsTitleDivClicked(e) {
+  async extensionOptionsTitleDivClicked(e, div) {
     this.resetErrors();
 
-    this.extensionOptionsTitleClickTimeout = setTimeout(() => this.extensionOptionsTitleDivSingleClicked(e), this.EXTENSION_OPTIONS_TITLE_CLICK_DELAY);
+    this.extensionOptionsTitleClickTimeout = setTimeout(() => this.extensionOptionsTitleDivSingleClicked(e, div), this.EXTENSION_OPTIONS_TITLE_CLICK_DELAY);
   }
 
   // Should be called ONLY when the this.extensionOptionsTitleClickTimeout has timed out
-  async extensionOptionsTitleDivSingleClicked(e) {
+  async extensionOptionsTitleDivSingleClicked(e, div) {
     if (this.extensionOptionsTitleClickTimeout) {
       const timeout = this.extensionOptionsTitleClickTimeout;
       this.extensionsOptionTitleClickTimeout = null;
@@ -2457,11 +3104,14 @@ class OptionsUI {
               td =  document.createElement("td");
                 td.style.setProperty("padding", "0");
                 const deleteOldEventLogsNumDaysInput = document.createElement("input");
-                  deleteOldEventLogsNumDaysInput.setAttribute( "type", "number"                       );
-                  deleteOldEventLogsNumDaysInput.setAttribute( "id",   "fsbDeleteOldEventLogsNumDays" );
-                  deleteOldEventLogsNumDaysInput.setAttribute( "min",  1                              );
-                  deleteOldEventLogsNumDaysInput.setAttribute( "max",  30                             );
-                  deleteOldEventLogsNumDaysInput.classList.add("no-css");                  // Tell userContent.css NOT to change me!!!
+                  deleteOldEventLogsNumDaysInput.setAttribute( "type",     "number"                       );
+//                deleteOldEventLogsNumDaysInput.setAttribute( "readonly", true                           );
+                  deleteOldEventLogsNumDaysInput.setAttribute( "id",       "fsbDeleteOldEventLogsNumDays" );
+                  deleteOldEventLogsNumDaysInput.setAttribute( "min",      1                              );
+                  deleteOldEventLogsNumDaysInput.setAttribute( "max",      30                             );
+                  deleteOldEventLogsNumDaysInput.classList.add( "no-css"         );                  // Tell userContent.css NOT to change me!!!
+                  deleteOldEventLogsNumDaysInput.classList.add( "arrow-up-down-only" );
+                  deleteOldEventLogsNumDaysInput.addEventListener( 'keydown', (e) => this.numberInputKeyPressed(e) );
                   deleteOldEventLogsNumDaysInput.value = 7;
                 td.appendChild(deleteOldEventLogsNumDaysInput);
               deleteOldEventLogsTR.appendChild(td);
@@ -2486,11 +3136,14 @@ class OptionsUI {
               td =  document.createElement("td");
                 td.style.setProperty("padding", "0");
                 const deleteOldEventLogsNumMinutesInput = document.createElement("input");
-                  deleteOldEventLogsNumMinutesInput.setAttribute( "type", "number"                          );
-                  deleteOldEventLogsNumMinutesInput.setAttribute( "id",   "fsbDeleteOldEventLogsNumMinutes" );
-                  deleteOldEventLogsNumMinutesInput.setAttribute( "min",  0                                 );
-                  deleteOldEventLogsNumMinutesInput.setAttribute( "max",  5                                 );
-                  deleteOldEventLogsNumMinutesInput.classList.add("no-css");               // Tell userContent.css NOT to change me!!!
+                  deleteOldEventLogsNumMinutesInput.setAttribute( "type",     "number"                          );
+//                deleteOldEventLogsNumMinutesInput.setAttribute( "readonly", true                              );
+                  deleteOldEventLogsNumMinutesInput.setAttribute( "id",       "fsbDeleteOldEventLogsNumMinutes" );
+                  deleteOldEventLogsNumMinutesInput.setAttribute( "min",      0                                 );
+                  deleteOldEventLogsNumMinutesInput.setAttribute( "max",      5                                 );
+                  deleteOldEventLogsNumMinutesInput.classList.add( "no-css"         );               // Tell userContent.css NOT to change me!!!
+                  deleteOldEventLogsNumMinutesInput.classList.add( "arrow-up-down-only" );
+                  deleteOldEventLogsNumMinutesInput.addEventListener( 'keydown', (e) => this.numberInputKeyPressed(e) );
                   deleteOldEventLogsNumMinutesInput.value = 1;
                 td.appendChild(deleteOldEventLogsNumMinutesInput);
               deleteOldEventLogsTR.appendChild(td);
@@ -2515,11 +3168,14 @@ class OptionsUI {
               td =  document.createElement("td");
                 td.style.setProperty("padding", "0");
                 const deleteOldEventLogsNumSecondsInput = document.createElement("input");
-                  deleteOldEventLogsNumSecondsInput.setAttribute( "type", "number"                          );
-                  deleteOldEventLogsNumSecondsInput.setAttribute( "id",   "fsbDeleteOldEventLogsNumSeconds" );
-                  deleteOldEventLogsNumSecondsInput.setAttribute( "min",  0                                 );
-                  deleteOldEventLogsNumSecondsInput.setAttribute( "max",  59                                );
-                  deleteOldEventLogsNumSecondsInput.classList.add("no-css");               // Tell userContent.css NOT to change me!!!
+                  deleteOldEventLogsNumSecondsInput.setAttribute( "type",     "number"                          );
+//                deleteOldEventLogsNumSecondsInput.setAttribute( "readonly", true                              );
+                  deleteOldEventLogsNumSecondsInput.setAttribute( "id",       "fsbDeleteOldEventLogsNumSeconds" );
+                  deleteOldEventLogsNumSecondsInput.setAttribute( "min",      0                                 );
+                  deleteOldEventLogsNumSecondsInput.setAttribute( "max",      59                                );
+                  deleteOldEventLogsNumSecondsInput.classList.add( "no-css"         );               // Tell userContent.css NOT to change me!!!
+                  deleteOldEventLogsNumSecondsInput.classList.add( "arrow-up-down-only" );
+                  deleteOldEventLogsNumSecondsInput.addEventListener( 'keydown', (e) => this.numberInputKeyPressed(e) );
                   deleteOldEventLogsNumSecondsInput.value = 0;
                 td.appendChild(deleteOldEventLogsNumSecondsInput);
               deleteOldEventLogsTR.appendChild(td);
@@ -2566,11 +3222,14 @@ class OptionsUI {
               td =  document.createElement("td");
                 td.style.setProperty("padding", "0");
                 const removeUninstalledExtensionsNumDaysInput = document.createElement("input");
-                  removeUninstalledExtensionsNumDaysInput.setAttribute( "type", "number"                                );
-                  removeUninstalledExtensionsNumDaysInput.setAttribute( "id",   "fsbRemoveUninstalledExtensionsNumDays" );
-                  removeUninstalledExtensionsNumDaysInput.setAttribute( "min",  0                                       );
-                  removeUninstalledExtensionsNumDaysInput.setAttribute( "max",  30                                      );
-                  removeUninstalledExtensionsNumDaysInput.classList.add("no-css");                  // Tell userContent.css NOT to change me!!!
+                  removeUninstalledExtensionsNumDaysInput.setAttribute( "type",     "number"                                );
+//                removeUninstalledExtensionsNumDaysInput.setAttribute( "readonly", true                                    );
+                  removeUninstalledExtensionsNumDaysInput.setAttribute( "id",       "fsbRemoveUninstalledExtensionsNumDays" );
+                  removeUninstalledExtensionsNumDaysInput.setAttribute( "min",      0                                       );
+                  removeUninstalledExtensionsNumDaysInput.setAttribute( "max",      30                                      );
+                  removeUninstalledExtensionsNumDaysInput.classList.add( "no-css"         );                  // Tell userContent.css NOT to change me!!!
+                  removeUninstalledExtensionsNumDaysInput.classList.add( "arrow-up-down-only" );
+                  removeUninstalledExtensionsNumDaysInput.addEventListener( 'keydown', (e) => this.numberInputKeyPressed(e) );
                   removeUninstalledExtensionsNumDaysInput.value = 2;
                 td.appendChild(removeUninstalledExtensionsNumDaysInput);
               removeUninstalledExtensionsTR.appendChild(td);
@@ -2597,11 +3256,14 @@ class OptionsUI {
               td =  document.createElement("td");
                 td.style.setProperty("padding", "0");
                 const removeUninstalledExtensionsNumMinutesInput = document.createElement("input");
-                  removeUninstalledExtensionsNumMinutesInput.setAttribute( "type", "number"                                   );
-                  removeUninstalledExtensionsNumMinutesInput.setAttribute( "id",   "fsbRemoveUninstalledExtensionsNumMinutes" );
-                  removeUninstalledExtensionsNumMinutesInput.setAttribute( "min",  0                                          );
-                  removeUninstalledExtensionsNumMinutesInput.setAttribute( "max",  5                                          );
-                  removeUninstalledExtensionsNumMinutesInput.classList.add("no-css");               // Tell userContent.css NOT to change me!!!
+                  removeUninstalledExtensionsNumMinutesInput.setAttribute( "type",     "number"                                   );
+//                removeUninstalledExtensionsNumMinutesInput.setAttribute( "readonly", true                                       );
+                  removeUninstalledExtensionsNumMinutesInput.setAttribute( "id",       "fsbRemoveUninstalledExtensionsNumMinutes" );
+                  removeUninstalledExtensionsNumMinutesInput.setAttribute( "min",      0                                          );
+                  removeUninstalledExtensionsNumMinutesInput.setAttribute( "max",      5                                          );
+                  removeUninstalledExtensionsNumMinutesInput.classList.add( "no-css"         );               // Tell userContent.css NOT to change me!!!
+                  removeUninstalledExtensionsNumMinutesInput.classList.add( "arrow-up-down-only" );
+                  removeUninstalledExtensionsNumMinutesInput.addEventListener( 'keydown', (e) => this.numberInputKeyPressed(e) );
                   removeUninstalledExtensionsNumMinutesInput.value = 1;
                 td.appendChild(removeUninstalledExtensionsNumMinutesInput);
               removeUninstalledExtensionsTR.appendChild(td);
@@ -2626,11 +3288,14 @@ class OptionsUI {
               td =  document.createElement("td");
                 td.style.setProperty("padding", "0");
                 const removeUninstalledExtensionsNumSecondsInput = document.createElement("input");
-                  removeUninstalledExtensionsNumSecondsInput.setAttribute( "type", "number"                                   );
-                  removeUninstalledExtensionsNumSecondsInput.setAttribute( "id",   "fsbRemoveUninstalledExtensionsNumSeconds" );
-                  removeUninstalledExtensionsNumSecondsInput.setAttribute( "min",  0                                          );
-                  removeUninstalledExtensionsNumSecondsInput.setAttribute( "max",  59                                         );
-                  removeUninstalledExtensionsNumSecondsInput.classList.add("no-css");               // Tell userContent.css NOT to change me!!!
+                  removeUninstalledExtensionsNumSecondsInput.setAttribute( "type",     "number"                                   );
+//                removeUninstalledExtensionsNumSecondsInput.setAttribute( "readonly", true                                       );
+                  removeUninstalledExtensionsNumSecondsInput.setAttribute( "id",       "fsbRemoveUninstalledExtensionsNumSeconds" );
+                  removeUninstalledExtensionsNumSecondsInput.setAttribute( "min",      0                                          );
+                  removeUninstalledExtensionsNumSecondsInput.setAttribute( "max",      59                                         );
+                  removeUninstalledExtensionsNumSecondsInput.classList.add( "no-css"         );               // Tell userContent.css NOT to change me!!!
+                  removeUninstalledExtensionsNumSecondsInput.classList.add( "arrow-up-down-only" );
+                  removeUninstalledExtensionsNumSecondsInput.addEventListener( 'keydown', (e) => this.numberInputKeyPressed(e) );
                   removeUninstalledExtensionsNumSecondsInput.value = 0;
                 td.appendChild(removeUninstalledExtensionsNumSecondsInput);
               removeUninstalledExtensionsTR.appendChild(td);
@@ -2653,6 +3318,28 @@ class OptionsUI {
     }
 
     this.debug("-- end");
+  }
+
+
+
+  async numberInputKeyPressed(e) {
+    if (! e) return;
+
+    if (e.target.tagName === "INPUT") {
+      const input = e.target;
+
+      if (input.type === "number") {
+        if (input.classList.contains('arrow-up-down-only')) {
+          switch (e.key) {
+            case 'ArrowUp':
+            case 'ArrowDown':
+              break;
+            default:
+              e.preventDefault();
+          }
+        }
+      }
+    }
   }
 
 
@@ -2693,8 +3380,9 @@ class OptionsUI {
         }
 
         this.debug("-- Got TR");
-        if (trElement.classList.contains("extension-locked")) {
-          // Should not happen.  Event listener should not have been added.
+        if (trElement.classList.contains("extension-special")) {
+          this.debug("-- Extension is SPECIAL");
+        } else if (trElement.classList.contains("extension-locked")) {
           this.debug("-- Extension is LOCKED");
 
         } else {
@@ -2719,8 +3407,11 @@ class OptionsUI {
 
     if (! e) return;
 
+    if (extensionElement.classList.contains("extension-special")) {
+      this.debug("-- Extension is SPECIAL -- Selection is Disabled");
+      return;
+    }
     if (extensionElement.classList.contains("extension-locked")) {
-      // Should not happen.  Event listener should not have been added.
       this.debug("-- Extension is LOCKED -- Selection is Disabled");
       return;
     }
@@ -2765,7 +3456,7 @@ class OptionsUI {
     }
   }
 
-  // and extension-list-item (TR or TD) was double-clicked
+  // and extension-list-item (TR or TD) was double-clicked -> edit the extension
   async extensionDoubleClicked(e) {
     if (this.extensionIdItemClickTimeout) {
       const timeout = this.extensionIdItemClickTimeout;
@@ -2797,9 +3488,12 @@ class OptionsUI {
           return;
         }
 
+        if (trElement.classList.contains("extension-special")) {
+          this.debug("-- Extension is SPECIAL -- Editing is Disabled");
+          return;
+        }
         if (trElement.classList.contains("extension-locked")) {
-          // Should not happen.  Event listener should not have been added.
-          this.debug("-- Extension is LOCKED -- Selection is Disabled");
+          this.debug("-- Extension is LOCKED -- Editing is Disabled");
           return;
         }
 
@@ -2827,23 +3521,28 @@ class OptionsUI {
 
     if (! props) {
       this.error(`-- DID NOT GET EXTENSION PROPERTIES -- extensionId="${extensionId}"`);
+    } else if (props.special) {
+      this.error(`-- CANNOT EDIT EXTENSION because it is SPECIAL -- extensionId="${extensionId}"`);
+    } else if (props.locked) {
+      this.error(`-- CANNOT EDIT EXTENSION because it is LOCKED -- extensionId="${extensionId}"`);
     } else {
-      this.enterEditMode(false, true, props.id, props.id, props.name, props.allowAccess);
+      await this.enterEditMode(false, true, props.id, props.id, props.name, props.allowAccess, props.dirProtected);
     }
   }
 
   async addNewExtension(e) {
     this.debug("--");
-    this.enterEditMode(true, false, undefined, '', '', false);
+    await this.enterEditMode(true, false, undefined, '', '', false, false);
   }
 
-  enterEditMode(addMode, editMode, editExtensionId, extensionId, extensionName, allowAccess) {
-    this.debug( "-- begin --"
-                + `\n- addMode       = ${addMode}`
-                + `\n- editMode      = ${editMode}`
-                + `\n- extensionId   = "${extensionId}"`
-                + `\n- extensionName = "${extensionName}"`
-                + `\n- allowAccess   = ${allowAccess}`
+  async enterEditMode(addMode, editMode, editExtensionId, extensionId, extensionName, allowAccess, dirProtected) {
+    this.debug( "-- begin --",
+                `\n- addMode       = ${addMode}`,
+                `\n- editMode      = ${editMode}`,
+                `\n- extensionId   = "${extensionId}"`,
+                `\n- extensionName = "${extensionName}"`,
+                `\n- allowAccess   = ${allowAccess}`,
+                `\n- dirProtected  = ${dirProtected}`,
               );
 
     if (! (addMode || editMode)) {
@@ -2854,22 +3553,39 @@ class OptionsUI {
       this.error("-- BOTH addMode AND editMode WERE SPECIFIED");
       return;
     }
+    if (this.editorModeEdit) {
+      this.error("-- enterEditMode called when already in editModeEdit");
+      return;
+    }
+    if (this.editorModeAdd) {
+      this.error("-- enterEditMode called when already in editModeAdd");
+      return;
+    }
 
     const extensionListTable      = document.getElementById("fsbExtensionList");
     const extensionEditTitleTR    = document.getElementById("extension_edit_title");
     const extensionEditTitleLabel = document.getElementById("extension_edit_title_text");
     const extensionEditTR         = document.getElementById("extension_edit");
-    const allowAccessCheck        = document.getElementById("extension_edit_allow_access_check");
+
+    const allowAccessCheck        = document.getElementById("extension_edit_check_allow_access");
     const extensionIdText         = document.getElementById("extension_edit_text_id");
     const extensionNameText       = document.getElementById("extension_edit_text_name");
+    const lockCheck               = document.getElementById("extension_edit_check_lock");
+    const dirProtectedCheck       = document.getElementById("extension_edit_check_dir_protect");
+
     const extensionEditErrorTR    = document.getElementById("extension_edit_error");
     const nameErrorLabel          = document.getElementById("extension_edit_error_name");
     const idErrorLabel            = document.getElementById("extension_edit_error_id");
 
     extensionListTable.classList.add("edit-mode");
 
-    extensionEditTitleTR.classList.remove('display-none'); // SHOW the Editor Title Row - turn OFF display: none
+    this.editorModeAdd         = addMode;
+    this.editorModeEdit        = editMode;
+    this.editorEditExtensionId = editExtensionId;
 
+
+
+    // SHOW the Editor Title Row - turn OFF display: none
     if (addMode) {
       extensionEditTitleLabel.textContent = this.extensionListEditorTitleAddMode;
     } else if (editMode) {
@@ -2877,19 +3593,28 @@ class OptionsUI {
     } else {
       extensionEditTitleLabel.textContent = '';
     }
+    extensionEditTitleTR.classList.remove('display-none'); // SHOW the Editor Title Row - turn OFF display: none
 
-    extensionEditTR.classList.remove('display-none');  // SHOW the Editor Fields Row - turn OFF display: none
+
+
+    // SHOW the Editor Fields Row - turn OFF display: none
     allowAccessCheck.checked   = allowAccess;
     extensionIdText.value      = extensionId;
     extensionNameText.value    = extensionName;
+    lockCheck.checked          = false; // we can't edit if it's already locked
+    dirProtectedCheck.checked  = dirProtected;
+    extensionEditTR.classList.remove('display-none');
 
-    this.editorModeAdd         = addMode;
-    this.editorModeEdit        = editMode;
-    this.editorEditExtensionId = editExtensionId;
 
-    extensionEditErrorTR.classList.add('display-none');  // HIDE the Editor Fields Error Row - turn ON display: none
+
+    // HIDE the Editor Fields ERROR Row - turn ON display: none
+    extensionEditErrorTR.classList.add('display-none');
     nameErrorLabel.textContent = '';
     idErrorLabel.textContent   = '';
+
+
+
+    // DISABLE EVERYTHING ELSE IN THE EXTENSION ACCESS CONTROLS UI
 
     var selector;
     var element;
@@ -2913,7 +3638,7 @@ class OptionsUI {
       selector = `input[type='checkbox'].allow-access-check[extensionId='${extensionId}']`;
       element = domExtensionTR.querySelector(selector);
       if (! element) {
-        this.debug(`-- Failed to select ALLOW ACCESS Checkbox  for Extension: extensionId="${extensionId}" selector="${selector}"`);
+        this.debug(`-- Failed to select ALLOW ACCESS Checkbox for Extension: extensionId="${extensionId}" selector="${selector}"`);
       } else {
         element.disabled = true;
       }
@@ -2933,9 +3658,25 @@ class OptionsUI {
       } else {
         element.disabled = true;
       }
+
+      selector = `input[type='checkbox'].lock-check[extensionId='${extensionId}']`;
+      element = domExtensionTR.querySelector(selector);
+      if (! element) {
+        this.debug(`-- Failed to select LOCK Checkbox for Extension: extensionId="${extensionId}" selector="${selector}"`);
+      } else {
+        element.disabled = true;
+      }
+
+      selector = `input[type='checkbox'].dir-protect-check[extensionId='${extensionId}']`;
+      element = domExtensionTR.querySelector(selector);
+      if (! element) {
+        this.debug(`-- Failed to select DIR PROTECT Checkbox for Extension: extensionId="${extensionId}" selector="${selector}"`);
+      } else {
+        element.disabled = true;
+      }
     }
 
-    this.enableExtensionAccessControls(false);
+    await this.enableExtensionAccessControls(false);
 
     this.debug("-- end");
   }
@@ -2952,15 +3693,19 @@ class OptionsUI {
     if (! extensionTR) {
       this.error(`-- Failed to get Extension container for remove: selector="${selectorTR}"`);
 
-    } else if (extensionTR.classList.contains("extension-locked")) {
-      this.error(`-- Extension is LOCKED`);
+    } else if (extensionTR.classList.contains("extension-special")) { // MABXXX Should probably use the extensionProps to verify, but IdmOoptions.removeExtension() does check
+      this.error(`-- CANNOT REMOVE Extension because it is SPECIAL`);
+
+    } else if (extensionTR.classList.contains("extension-locked")) { // MABXXX Should probably use the extensionProps to verify, but IdmOoptions.removeExtension() does check
+      this.error(`-- CANNOT REMOVE Extension because it is LOCKED`);
 
     } else {
       const extensionName = extensionTR.getAttribute("extensionName");
 
+      const dirProtected  = extensionTR.classList.contains("extension-dir-protected"); // MABXXX Should probably use the extensionProps to verify
       const deleteExtDirs = await this.fsbOptionsApi.isEnabledOnRemoveExtensionDeleteDirectory();
 
-      this.debug(`Removing Extension id="${extensionId}" name="${extensionName}" deleteExtDirs=${deleteExtDirs}`);
+      this.debug(`Removing Extension id="${extensionId}" name="${extensionName}" deleteExtDirs=${deleteExtDirs} dirProtected=${dirProtected}`);
 
       var   extensionStats;
       const statsResponse = await this.fsbCommandsApi.extensionStats(extensionId);
@@ -2981,7 +3726,7 @@ class OptionsUI {
         this.error(`UNEXPECTED RESPONSE GETTING STATS for Extension "${extensionId}":\n`, statsResponse);
       }
 
-      const confirmed = await this.#showRemoveExtensionConfirmDialog(extensionId, extensionName, extensionStats, deleteExtDirs);
+      const confirmed = await this.#showRemoveExtensionConfirmDialog(extensionId, extensionName, extensionStats, dirProtected, deleteExtDirs);
 
       if (! confirmed) {
         this.debug(`The user has chosen NOT to continue with the removal of Extension id="${extensionId}" name="${extensionName}`);
@@ -2996,9 +3741,9 @@ class OptionsUI {
           this.setErrorFor("fsbExtensionOptionsTitle", "options_message_error_extensionDeleteFailed");
 
         } else {
-          this.debug(`-- Extension Deleted extensionId="${extensionId}" removedExtensionProps:\n`, removedExtensionProps);
+          this.debug(`-- Extension Removed: extensionId="${extensionId}" removedExtensionProps:\n`, removedExtensionProps);
 
-          if (deleteExtDirs) {
+          if (deleteExtDirs) { // delete whether dirProtected or not - we asked in the confirmation dialog
             // this method is a shortcut to just calling fsbCommandsApi.processInternalCommand()
             // responds with { 'exists': false } if the directory does not exist
             const deleteResponse = this.fsbCommandsApi.deleteExtensionDirectory(extensionId);
@@ -3013,10 +3758,10 @@ class OptionsUI {
 
 
 
-  async #showRemoveExtensionConfirmDialog(extId, extName, extStats, willDeleteDir) {
+  async #showRemoveExtensionConfirmDialog(extId, extName, extStats, dirProtected, willDeleteDir) {
     const dirStats = extStats? extStats[extId] : undefined;
 
-    this.debugAlways( "\n--- parameters:",
+    this.debug( "\n--- parameters:",
                 `\n- extId ........... "${extId}"`,
                 `\n- extName ......... "${extName}"`,
                 `\n- dirName ......... "${extStats ? extStats.dirName : '(no directory)'}"`,
@@ -3137,6 +3882,14 @@ class OptionsUI {
         confirmDialogUrl += `&ua${ulNum}=${encodeURIComponent('left')}`
         confirmDialogUrl += `&uw${ulNum}=${encodeURIComponent('bold')}`
         confirmDialogUrl += `&uc${ulNum}=${encodeURIComponent('red')}`
+        if (dirProtected) {
+          message = getI18nMsg("fsbOptions_dialog_confirmRemoveExtension_message_dirProtected");
+          confirmDialogUrl += `&u${++ulNum}=${encodeURIComponent(message)}`
+          confirmDialogUrl += `&ua${ulNum}=${encodeURIComponent('left')}`
+          confirmDialogUrl += `&uw${ulNum}=${encodeURIComponent('bold')}`
+          confirmDialogUrl += `&uc${ulNum}=${encodeURIComponent('red')}`
+        } else {
+        }
       } else {
         message = getI18nMsg("fsbOptions_dialog_confirmRemoveExtension_message_willNotDeleteDirectory");
         confirmDialogUrl += `&u${++ulNum}=${encodeURIComponent(message)}`
@@ -3249,7 +4002,7 @@ class OptionsUI {
           response = request.ConfirmDialogResponse;
         }
 
-        return false; // we're not sending any response 
+        return false; // we're not sending any response
       }
 
       messenger.runtime.onMessage.addListener(messageListener);
@@ -3270,11 +4023,11 @@ class OptionsUI {
       this.debug("-- DID NOT GET THE CURRENT (MAIN, mail:3pane) WINDOW!!! ---");
 
     } else {
-      this.debug( "-- Got the Current (Main, mail:3pane) Window:"
-                  + `\n- mainWindow.top=${mainWindow.top}`
-                  + `\n- mainWindow.left=${mainWindow.left}`
-                  + `\n- mainWindow.height=${mainWindow.height}`
-                  + `\n- mainWindow.width=${mainWindow.width}`
+      this.debug( "-- Got the Current (Main, mail:3pane) Window:",
+                  `\n- mainWindow.top=${mainWindow.top}`,
+                  `\n- mainWindow.left=${mainWindow.left}`,
+                  `\n- mainWindow.height=${mainWindow.height}`,
+                  `\n- mainWindow.width=${mainWindow.width}`,
                 );
       popupTop  = mainWindow.top  + 100;
       popupLeft = mainWindow.left + 100;
@@ -3289,11 +4042,11 @@ class OptionsUI {
     } else if (typeof bounds !== 'object') {
       this.error(`-- PREVIOUS WINDOW BOUNDS IS NOT AN OBJECT: typeof='${typeof bounds}' #####`);
     } else {
-      this.debug( "-- restoring previous window bounds:"
-                  + `\n- bounds.top=${bounds.top}`
-                  + `\n- bounds.left=${bounds.left}`
-                  + `\n- bounds.width=${bounds.width}`
-                  + `\n- bounds.height=${bounds.height}`
+      this.debug( "-- restoring previous window bounds:",
+                  `\n- bounds.top=${bounds.top}`,
+                  `\n- bounds.left=${bounds.left}`,
+                  `\n- bounds.width=${bounds.width}`,
+                  `\n- bounds.height=${bounds.height}`,
                 );
       popupTop    = bounds.top;
       popupLeft   = bounds.left;
@@ -3331,11 +4084,11 @@ class OptionsUI {
       }
     );
 
-    this.debug( "-- Installed Extensions Chooser Popup Window Created --"
-                + `\n-from ourTabId="${ourTabId}"`
-                + `\n-from ourWindowId="${ourWindowId}"`
-                + `\n-extensionChooserWindow.id="${extensionChooserWindow.id}"`
-////////////////+ `\n-URL="${extensionChooserUrl}"`
+    this.debug( "-- Installed Extensions Chooser Popup Window Created --",
+                `\n-from ourTabId="${ourTabId}"`,
+                `\n-from ourWindowId="${ourWindowId}"`,
+                `\n-extensionChooserWindow.id="${extensionChooserWindow.id}"`,
+////////////////`\n-URL="${extensionChooserUrl}"`,
               );
 
     // Re-focus on the extensionChooser window when our window gets focus
@@ -3377,7 +4130,7 @@ class OptionsUI {
 
             } else {
               this.debug(`-- ${added}  Extensions were added`);
-              await this.refreshUI(e);
+              await this.refreshExtensionListUI(e);
             }
           }
         }
@@ -3444,11 +4197,11 @@ class OptionsUI {
       this.debug("-- DID NOT GET THE CURRENT (MAIN, mail:3pane) WINDOW!!! ---");
 
     } else {
-      this.debug( "-- Got the Current (Main, mail:3pane) Window:"
-                  + `\n- mainWindow.top=${mainWindow.top}`
-                  + `\n- mainWindow.left=${mainWindow.left}`
-                  + `\n- mainWindow.height=${mainWindow.height}`
-                  + `\n- mainWindow.width=${mainWindow.width}`
+      this.debug( "-- Got the Current (Main, mail:3pane) Window:",
+                  `\n- mainWindow.top=${mainWindow.top}`,
+                  `\n- mainWindow.left=${mainWindow.left}`,
+                  `\n- mainWindow.height=${mainWindow.height}`,
+                  `\n- mainWindow.width=${mainWindow.width}`,
                 );
       popupTop  = mainWindow.top  + 100;
       popupLeft = mainWindow.left + 100;
@@ -3463,11 +4216,11 @@ class OptionsUI {
     } else if (typeof bounds !== 'object') {
       this.error(`-- PREVIOUS WINDOW BOUNDS IS NOT AN OBJECT: typeof='${typeof bounds}' #####`);
     } else {
-      this.debug( "-- restoring previous window bounds:"
-                  + `\n- bounds.top=${bounds.top}`
-                  + `\n- bounds.left=${bounds.left}`
-                  + `\n- bounds.width=${bounds.width}`
-                  + `\n- bounds.height=${bounds.height}`
+      this.debug( "-- restoring previous window bounds:",
+                  `\n- bounds.top=${bounds.top}`,
+                  `\n- bounds.left=${bounds.left}`,
+                  `\n- bounds.width=${bounds.width}`,
+                  `\n- bounds.height=${bounds.height}`,
                 );
       popupTop    = bounds.top;
       popupLeft   = bounds.left;
@@ -3505,11 +4258,11 @@ class OptionsUI {
       }
     );
 
-    this.debug( "-- Installed Backup Manager Popup Window Created --"
-                + `\n-from ourTabId="${ourTabId}"`
-                + `\n-from ourWindowId="${ourWindowId}"`
-                + `\n-backupManagerWindow.id="${backupManagerWindow.id}"`
-////////////////+ `\n-URL="${backupManagerUrl}"`
+    this.debug( "-- Installed Backup Manager Popup Window Created --",
+                `\n-from ourTabId="${ourTabId}"`,
+                `\n-from ourWindowId="${ourWindowId}"`,
+                `\n-backupManagerWindow.id="${backupManagerWindow.id}"`,
+////////////////`\n-URL="${backupManagerUrl}"`,
               );
 
     // Re-focus on the backupManager window when our window gets focus
@@ -3618,11 +4371,11 @@ class OptionsUI {
       this.debug("-- DID NOT GET THE CURRENT (MAIN, mail:3pane) WINDOW!!! ---");
 
     } else {
-      this.debug( "-- Got the Current (Main, mail:3pane) Window:"
-                  + `\n- mainWindow.top=${mainWindow.top}`
-                  + `\n- mainWindow.left=${mainWindow.left}`
-                  + `\n- mainWindow.height=${mainWindow.height}`
-                  + `\n- mainWindow.width=${mainWindow.width}`
+      this.debug( "-- Got the Current (Main, mail:3pane) Window:",
+                  `\n- mainWindow.top=${mainWindow.top}`,
+                  `\n- mainWindow.left=${mainWindow.left}`,
+                  `\n- mainWindow.height=${mainWindow.height}`,
+                  `\n- mainWindow.width=${mainWindow.width}`,
                 );
       popupTop  = mainWindow.top  + 100;
       popupLeft = mainWindow.left + 100;
@@ -3637,11 +4390,11 @@ class OptionsUI {
     } else if (typeof bounds !== 'object') {
       this.error(`-- PREVIOUS WINDOW BOUNDS IS NOT AN OBJECT: typeof='${typeof bounds}' #####`);
     } else {
-      this.debug( "-- restoring previous window bounds:"
-                  + `\n- bounds.top=${bounds.top}`
-                  + `\n- bounds.left=${bounds.left}`
-                  + `\n- bounds.width=${bounds.width}`
-                  + `\n- bounds.height=${bounds.height}`
+      this.debug( "-- restoring previous window bounds:",
+                  `\n- bounds.top=${bounds.top}`,
+                  `\n- bounds.left=${bounds.left}`,
+                  `\n- bounds.width=${bounds.width}`,
+                  `\n- bounds.height=${bounds.height}`,
                 );
       popupTop    = bounds.top;
       popupLeft   = bounds.left;
@@ -3679,11 +4432,11 @@ class OptionsUI {
       }
     );
 
-    this.debug( "-- Installed Backup Manager Popup Window Created --"
-                + `\n-from ourTabId="${ourTabId}"`
-                + `\n-from ourWindowId="${ourWindowId}"`
-                + `\n-eventLogManagerWindow.id="${eventLogManagerWindow.id}"`
-////////////////+ `\n-URL="${eventLogManagerUrl}"`
+    this.debug( "-- Installed Backup Manager Popup Window Created --",
+                `\n-from ourTabId="${ourTabId}"`,
+                `\n-from ourWindowId="${ourWindowId}"`,
+                `\n-eventLogManagerWindow.id="${eventLogManagerWindow.id}"`,
+////////////////`\n-URL="${eventLogManagerUrl}"`,
               );
 
     // Re-focus on the eventLogManager window when our window gets focus
@@ -3768,11 +4521,11 @@ class OptionsUI {
       this.debug("-- DID NOT GET THE CURRENT (MAIN, mail:3pane) WINDOW!!! ---");
 
     } else {
-      this.debug( "-- Got the Current (Main, mail:3pane) Window:"
-                  + `\n- mainWindow.top=${mainWindow.top}`
-                  + `\n- mainWindow.left=${mainWindow.left}`
-                  + `\n- mainWindow.height=${mainWindow.height}`
-                  + `\n- mainWindow.width=${mainWindow.width}`
+      this.debug( "-- Got the Current (Main, mail:3pane) Window:",
+                  `\n- mainWindow.top=${mainWindow.top}`,
+                  `\n- mainWindow.left=${mainWindow.left}`,
+                  `\n- mainWindow.height=${mainWindow.height}`,
+                  `\n- mainWindow.width=${mainWindow.width}`,
                 );
       popupTop  = mainWindow.top  + 100;
       popupLeft = mainWindow.left + 100;
@@ -3787,11 +4540,11 @@ class OptionsUI {
     } else if (typeof bounds !== 'object') {
       this.error(`-- PREVIOUS WINDOW BOUNDS IS NOT AN OBJECT: typeof='${typeof bounds}' #####`);
     } else {
-      this.debug( "-- restoring previous window bounds:"
-                  + `\n- bounds.top=${bounds.top}`
-                  + `\n- bounds.left=${bounds.left}`
-                  + `\n- bounds.width=${bounds.width}`
-                  + `\n- bounds.height=${bounds.height}`
+      this.debug( "-- restoring previous window bounds:",
+                  `\n- bounds.top=${bounds.top}`,
+                  `\n- bounds.left=${bounds.left}`,
+                  `\n- bounds.width=${bounds.width}`,
+                  `\n- bounds.height=${bounds.height}`,
                 );
       popupTop    = bounds.top;
       popupLeft   = bounds.left;
@@ -3829,11 +4582,11 @@ class OptionsUI {
       }
     );
 
-    this.debug( "-- Stats Manager Popup Window Created --"
-                + `\n-from ourTabId="${ourTabId}"`
-                + `\n-from ourWindowId="${ourWindowId}"`
-                + `\n-statsManagerWindow.id="${statsManagerWindow.id}"`
-////////////////+ `\n-URL="${statsManagerUrl}"`
+    this.debug( "-- Stats Manager Popup Window Created --",
+                `\n-from ourTabId="${ourTabId}"`,
+                `\n-from ourWindowId="${ourWindowId}"`,
+                `\n-statsManagerWindow.id="${statsManagerWindow.id}"`,
+////////////////`\n-URL="${statsManagerUrl}"`,
               );
 
     // Re-focus on the statsManager window when our window gets focus
@@ -3910,13 +4663,13 @@ class OptionsUI {
     var   lastFocusedWindowId;
     if (lastFocusedWindow) lastFocusedWindowId = lastFocusedWindow.id;
 
-    this.debug( "--"
-                + "\n- windowId="                 + windowId
-                + "\n- this.prevFocusedWindowId=" + this.prevFocusedWindowId
-                + "\n- lastFocusedWindowId="      + lastFocusedWindowId
-                + "\n- creatorTabId="             + creatorTabId
-                + "\n- creatorWindowId="          + creatorWindowId
-                + "\n- extensionChooserWindowId=" + extensionChooserWindowId
+    this.debug( "--",
+                "\n- windowId="                 + windowId,
+                "\n- this.prevFocusedWindowId=" + this.prevFocusedWindowId,
+                "\n- lastFocusedWindowId="      + lastFocusedWindowId,
+                "\n- creatorTabId="             + creatorTabId,
+                "\n- creatorWindowId="          + creatorWindowId,
+                "\n- extensionChooserWindowId=" + extensionChooserWindowId,
               );
 
     if ( windowId
@@ -3929,10 +4682,10 @@ class OptionsUI {
          && extensionChooserWindowId !== this.prevFocusedWindowId
        )
     {
-      this.debug( "-- Creator Window got focus, bring Extension Chooser Window into focus above it --"
-                  + "\n- creatorTabId="             + creatorTabId
-                  + "\n- creatorWindowId="          + creatorWindowId
-                  + "\n- extensionChooserWindowId=" + extensionChooserWindowId
+      this.debug( "-- Creator Window got focus, bring Extension Chooser Window into focus above it --",
+                  "\n- creatorTabId="             + creatorTabId,
+                  "\n- creatorWindowId="          + creatorWindowId,
+                  "\n- extensionChooserWindowId=" + extensionChooserWindowId,
                 );
       try {
         messenger.windows.update(extensionChooserWindowId, { focused: true });
@@ -3958,13 +4711,13 @@ class OptionsUI {
     var   count           = 0;
     if (installedExtensions) {
       for (const ext of installedExtensions) {
-        this.debug( "-- INSTALLED EXTENSION:"
-                    + `\n- ext.id          = "${ext.id}"`
-                    + `\n -ext.shortName   = "${ext.shortName}"`
-                    + `\n -ext.name        = "${ext.name}"`
-                    + `\n -ext.enabled     = ${ext.enabled}`
-                    + `\n -ext.type        = "${ext.type}"`
-                    + `\n -ext.description = "${ext.description}"`
+        this.debug( "-- INSTALLED EXTENSION:",
+                    `\n- ext.id          = "${ext.id}"`,
+                    `\n -ext.shortName   = "${ext.shortName}"`,
+                    `\n -ext.name        = "${ext.name}"`
+                    `\n -ext.enabled     = ${ext.enabled}`,
+                    `\n -ext.type        = "${ext.type}"`,
+                    `\n -ext.description = "${ext.description}"`,
                   );
         if (ext.type !== 'extension') {
           this.debug(`-- SKIPPING: Installed Extension is not Type 'extension' -- ext.type="${ext.type}"`);
@@ -3993,8 +4746,8 @@ class OptionsUI {
     const addedExtensionsPropsLength = Object.keys(addedExtensionsProps).length;
 
     if (addedExtensionsPropsLength > 0) {
-      this.debug(`-- addedExtensionsPropsLength ${addedExtensionsPropsLength} > 0 -- calling refreshUI()`);
-      await this.refreshUI(e);
+      this.debug(`-- addedExtensionsPropsLength ${addedExtensionsPropsLength} > 0 -- calling refreshExtensionListUI()`);
+      await this.refreshExtensionListUI(e);
     }
 
     this.debug(`-- end -- Added Extensions: addedExtensionsPropsLength=${addedExtensionsPropsLength} - count=${count}`);
@@ -4150,14 +4903,16 @@ class OptionsUI {
 
 
 
-  async deleteSelectedExtensions(e) {
+  // MABXXX IS THIS EVEN USED???
+  async removeSelectedExtensions(e) {
     this.debug("-- begin");
 
     const selectedExtensionIds = this.getSelectedExtensionIds();
 
     this.debug(`-- selectedExtensionIds.length=${selectedExtensionIds.length}`);
 
-    const extensionIdsToRemove = [];
+    const extensionIdsToRemove  = [];
+    const extensionDirsToDelete = [];
     for (const selectedExtId of selectedExtensionIds) {
       this.debug(`-- extensionId="${selectedExtId}"`);
       const selectorTR      = `tr.extension-list-item[extensionId='${selectedExtId}']`;
@@ -4165,9 +4920,16 @@ class OptionsUI {
 
       if (! extensionItemTR) {
         this.debug(`-- FAILED TO SELECT TR "${selectorTR}"`);
+      } else if (extensionItemTR.classList.contains("extension-special")) {
+        this.debug(`-- Extension is SPECIAL`);
       } else if (extensionItemTR.classList.contains("extension-locked")) {
         this.debug(`-- Extension is LOCKED`);
       } else {
+        if (extensionItemTR.classList.contains("extension-dir-protected")) {
+          this.debug(`-- Extension's Directory is PROTECTED`);
+        } else {
+          extensionDirsToDelete.push(selectedExtId);
+        }
         extensionIdsToRemove.push(selectedExtId);
         extensionItemTR.remove();
       }
@@ -4181,7 +4943,7 @@ class OptionsUI {
 
     const deleteExtensionDirectories = await this.fsbOptionsApi.isEnabledOnRemoveExtensionDeleteDirectory();
     if (deleteExtensionDirectories) {
-      for (const extId of extensionIdsToRemove) {
+      for (const extId of extensionDirsToDelete) {
         this.debug(`-- deleting extension directory, extensionId="${extId}"`);
         const result = await this.fsbCommandsApi.deleteExtensionDirectory(extId) // this method is a shortcut to just calling fsbCommandsApi.processInternalCommand();
         // do we care about the result?
@@ -4267,11 +5029,11 @@ class OptionsUI {
     if (! mainWindow) {
       this.debug("-- DID NOT GET THE CURRENT (MAIN, mail:3pane) WINDOW!!! ---");
     } else {
-      this.debug( "-- Got the Current (Main, mail:3pane) Window:"
-                  + `\n- mainWindow.top=${mainWindow.top}`
-                  + `\n- mainWindow.left=${mainWindow.left}`
-                  + `\n- mainWindow.height=${mainWindow.height}`
-                  + `\n- mainWindow.width=${mainWindow.width}`
+      this.debug( "-- Got the Current (Main, mail:3pane) Window:",
+                  `\n- mainWindow.top=${mainWindow.top}`,
+                  `\n- mainWindow.left=${mainWindow.left}`,
+                  `\n- mainWindow.height=${mainWindow.height}`,
+                  `\n- mainWindow.width=${mainWindow.width}`,
                 );
       popupTop  = mainWindow.top  + 100;
       popupLeft = mainWindow.left + 100;
@@ -4286,11 +5048,11 @@ class OptionsUI {
     } else if (typeof bounds !== 'object') {
       this.error(`-- PREVIOUS WINDOW BOUNDS IS NOT AN OBJECT: typeof='${typeof bounds}' #####`);
     } else {
-      this.debug( "-- restoring previous window bounds:"
-                  + `\n- bounds.top=${bounds.top}`
-                  + `\n- bounds.left=${bounds.left}`
-                  + `\n- bounds.width=${bounds.width}`
-                  + `\n- bounds.height=${bounds.height}`
+      this.debug( "-- restoring previous window bounds:",
+                  `\n- bounds.top=${bounds.top}`,
+                  `\n- bounds.left=${bounds.left}`,
+                  `\n- bounds.width=${bounds.width}`,
+                  `\n- bounds.height=${bounds.height}`,
                 );
       popupTop    = bounds.top;
       popupLeft   = bounds.left;

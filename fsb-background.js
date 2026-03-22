@@ -2,7 +2,18 @@ import { FsbOptions               } from '../modules/options.js';
 import { Logger                   } from '../modules/logger.js';
 import { FsbEventLogger           } from '../modules/event_logger.js';
 import { FileSystemBrokerCommands } from '../modules/commands.js';
-import { logProps, getExtensionId, getExtensionName, getI18nMsg, formatMsToDateForFilename, formatMsToDateTime24HR, getMidnightDelayMS, getNextMidnightDelayMS, getMidnightMS, formatNowToDateTime24HR } from './modules/utilities.js';
+import { logProps,
+         getExtensionId,
+         getExtensionName,
+         getExtensionVersion,
+         getI18nMsg,
+         formatMsToDateForFilename,
+         formatMsToDateTime24HR,
+         getMidnightDelayMS,
+         getNextMidnightDelayMS,
+         getMidnightMS,
+         formatNowToDateTime24HR
+       } from './modules/utilities.js';
 
 
 /********
@@ -11,8 +22,8 @@ import { logProps, getExtensionId, getExtensionName, getI18nMsg, formatMsToDateF
  */
 class FileSystemBroker {
   #CLASS_NAME                        = this.constructor.name;
-  #extId                             = getExtensionId();
-  #extName                           = getExtensionName();
+  #EXT_ID                            = getExtensionId();
+  #EXT_NAME                          = getExtensionName();
 
   #INFO                              = false;
   #LOG                               = false;
@@ -78,7 +89,7 @@ class FileSystemBroker {
 
 
   async run() {
-    this.logAlways(`=== EXTENSION ${this.#extName} STARTED ===`);
+    this.logAlways(`=== EXTENSION ${this.#EXT_NAME} STARTED ===`);
     await this.#fsbEventLogger.logInternalEvent("startup", "success", null, "");
 
 
@@ -242,6 +253,8 @@ class FileSystemBroker {
     const removedExtensionIds = await this.#fsbOptionsApi.autoRemoveUninstalledExtensions(numDays); // this event is already logged inside call
     this.debug(`-- Extensions removed: ${removedExtensionIds ? removedExtensionIds.length : 0}`);
 
+    // MABXXX perhaps delete the directories inside the call to #fsbOptionsApi.autoRemoveUninstalledExtensions() ???
+    // MABXXX In fact, EVERYTHING could be done in there...
     if (! deleteExtensionDirectories) {
       this.debug("-- NOT Deleting Extension Directories");
     } else {
@@ -310,7 +323,7 @@ class FileSystemBroker {
 
     const optionsUrl = messenger.runtime.getURL( "optionsUI/optionsUI.html")
                                                  + "?windowMode=true"
-                                                 + `&requestedBy=${encodeURIComponent(this.#extName)}`;
+                                                 + `&requestedBy=${encodeURIComponent(this.#EXT_NAME)}`;
     const optionsWindow = await messenger.windows.create({
       url:                 optionsUrl,
       type:                "popup",
@@ -343,7 +356,7 @@ class FileSystemBroker {
       return false;
     }
 
-    return await this.#fsbCommandsApi.processInternalCommand(nowMS, message.Command, this.#extId);
+    return await this.#fsbCommandsApi.processInternalCommand(nowMS, message.Command, this.#EXT_ID);
   }
 
   async XXXprocessInternalCommand(timeMS, Command, extensionId) {
@@ -480,7 +493,7 @@ class FileSystemBroker {
             this.debug(`-- command='access' -- ACCESS DENIED FOR MESSAGE SENDER ID: "${sender.id}"`);
             return { "access": "denied" };
           } else {
-            return { "error": `Access to ${this.#extName} has not been granted`, "code":  "403" };
+            return { "error": `Access to ${this.#EXT_NAME} has not been granted`, "code":  "403" };
           }
         }
 
@@ -838,36 +851,54 @@ class FileSystemBroker {
 
 
 
-messenger.runtime.onInstalled.addListener( async ( { reason, previousVersion } ) => onInstalled(reason, previousVersion));
-
-async function onInstalled(reason, previousVersion) {
-  const extId   = getExtensionId("");
-  const extName = getExtensionName("File System Broker");
-
-  if (reason === "update") {
-    console.log(`${extId} === EXTENSION ${extName} UPDATED ===`); 
-  } else if (reason === "install") {
-    console.log(`${extId} === EXTENSION ${extName} INSTALLED ===`); 
-  } else { // last option is "browser_update"
-    console.log(`${extId} === EXTENSION ${extName} INSTALLED (browser update) ===`); 
+messenger.management.onEnabled.addListener( async (extensionInfo) => onExtensionEnabled(extensionInfo) );
+async function onExtensionEnabled(extensionInfo) { // management.ExtensionInfo
+  if (extensionInfo.id === getExtensionId("file-system-broker@localmotive.com")) {
+    console.log(`===== Extension Enabled: id="${extensionInfo.id}" name="${extensionInfo.name}" version="${extensionInfo.version}"`);
   }
 }
 
+messenger.runtime.onInstalled.addListener( async ( { reason, previousVersion } ) => onInstalled(reason, previousVersion) );
+messenger.runtime.onStartup.addListener(   async ()                              => onStartup()                          );
+messenger.runtime.onSuspend.addListener(   async ()                              => onSuspend()                          );
 
+async function onInstalled(reason, previousVersion) {
+  const EXT_ID      = getExtensionId("file-system-broker@localmotive.com");
+  const EXT_NAME    = getExtensionName("FileSystemBroker");
+  const EXT_VERSION = getExtensionVersion();
 
-messenger.runtime.onStartup.addListener( async () => {
-  const extId   = getExtensionId("");
-  const extName = getExtensionName("File System Broker");
-  console.log(`${extId} === EXTENSION ${extName} STARTED === `); 
-} );
+//const options = new FsbOptions();
+//const isSkipOnboarding = await options.isEnabledSkipOnboarding(); // this call just goes to the local storage to get this option, no logging needed
 
+  if (reason === "update") {
+    console.log(`${EXT_ID} === EXTENSION ${EXT_NAME} UPDATED: "${previousVersion}" --> "${EXT_VERSION}" ===`); 
+  } else if (reason === "install") {
+    console.log(`${EXT_ID} === EXTENSION ${EXT_NAME} ${EXT_VERSION} INSTALLED ===`); 
+  } else { // last option is "browser_update"
+    console.log(`${EXT_ID} === EXTENSION ${EXT_NAME} ${EXT_VERSION} INSTALLED (browser update) ===`); 
+  }
 
+//if (! isSkipOnboarding) {
+//  if (reason === "update" /* && previousVersion?.startsWith("3.") */) {
+//    messenger.tabs.create({ url: "/onboarding/onboarding.html" });
+//    messenger.tabs.create({ url: "/onboarding/changes.html" });
+//  } else if (reason === "install") {
+//    messenger.tabs.create({ url: "/onboarding/onboarding.html" });
+//  }
+//}
+}
 
-messenger.runtime.onSuspend.addListener( async () => {
-  const extId   = getExtensionId("");
-  const extName = getExtensionName("File System Broker");
-  console.log(`${extId} === EXTENSION ${extName} SUSPENDED === `); 
-} );
+async function onStartup() {
+  const EXT_ID   = getExtensionId("file-system-broker@localmotive.com");
+  const EXT_NAME = getExtensionName("FileSystemBroker");
+  console.log(`${EXT_ID} === EXTENSION ${EXT_NAME} STARTED ===`); 
+}
+
+async function onSuspend() {
+  const EXT_ID   = getExtensionId("file-system-broker@localmotive.com");
+  const EXT_NAME = getExtensionName("FileSystemBroker");
+  console.log(`${EXT_ID} === EXTENSION ${EXT_NAME} SUSPENDED ===`); 
+}
 
 
 

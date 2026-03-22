@@ -18,7 +18,7 @@
         </div>
 
         <div class="option-error" error-for="fsbExtensionOptionsTitle" error="false">
-          <span class="option-error-icon-large"><img src="../images/icons/forbidden_16x16.png"/></span>
+          <span class="option-error-icon-large"><img src="../images/icons/stop/forbidden_16x16.png"/></span>
           <label class="option-error-text" error-for="fsbExtensionOptionsTitle"></label>
         </div>
       <div>
@@ -79,9 +79,11 @@
 
           <div id="fsbLoggingOptionsPanel">
             <div>
-              <input id="fsbShowLoggingOptions" type="checkbox" class="fsbGeneralOption open-close-check"/>
-              <label for="fsbShowLoggingOptions"></label>
-              <label for="fsbShowLoggingOptions" data-l10n-id="options_fsbLoggingOptionsTitle.label"></label>
+              <span class="open-close-widget" for="fsbShowLoggingOptions">
+                <input id="fsbShowLoggingOptions" type="checkbox" class="fsbGeneralOption open-close-check" for="fsbLoggingOptions"/>
+                <label for="fsbShowLoggingOptions"></label>
+                <label for="fsbShowLoggingOptions" data-l10n-id="options_fsbLoggingOptionsTitle.label"></label>
+              </span>
             </div>
 
             <div class="options-open-close-panel" id="fsbLoggingOptions">
@@ -146,9 +148,11 @@
 
             <div id="fsbExtensionChooserHintsPanel">
               <div>
-                <input id="fsbShowOptionsHints" type="checkbox" class="fsbGeneralOption open-close-check"/>
-                <label for="fsbShowOptionsHints"></label>
-                <label for="fsbShowOptionsHints" data-l10n-id="options_fsbHints.label"></label>
+                <span class="open-close-widget" for="fsbShowOptionsHints">
+                  <input id="fsbShowOptionsHints" type="checkbox" class="fsbGeneralOption open-close-check" for="fsbHintsPanel"/>
+                  <label for="fsbShowOptionsHints"></label>
+                  <label for="fsbShowOptionsHints" data-l10n-id="options_fsbHints.label"></label>
+                </span>
               </div>
 
               <div class="options-open-close-panel" id="fsbHintsPanel">
@@ -169,9 +173,11 @@
                 <tr class="grid-button-panel-row" id="fsbExtensionListControlsTitlePanel">
                   <td colspan="2">
                     <div class="subpanel-title">
-                      <input id="fsbShowOptionsActions" type="checkbox" class="fsbGeneralOption open-close-check"/>
-                      <label for="fsbShowOptionsActions"></label>
-                      <label for="fsbShowOptionsActions" data-l10n-id="options_fsbExtensionListButtonsTitle">options_fsbExtensionListButtonsTitle</label>
+                      <span class="open-close-widget" for="fsbShowOptionsActions">
+                        <input id="fsbShowOptionsActions" type="checkbox" class="fsbGeneralOption open-close-check"/>
+                        <label for="fsbShowOptionsActions"></label>
+                        <label for="fsbShowOptionsActions" data-l10n-id="options_fsbExtensionListButtonsTitle">options_fsbExtensionListButtonsTitle</label>
+                      </span>
                     </div>
                   </td>
                   <td>

@@ -170,6 +170,16 @@
     "message": "The total of all the sizes of all the Regular Files in the Directory for the Extension (bytes)"
   },
 
+  "options_fsbExtensionList_marker_tooltip_special": {
+    "message": "This Extension is marked as 'Special' and cannot be Edited, Removed, Auto-Removed, Unlocked, or Changed in any way"
+  },
+  "options_fsbExtensionList_marker_tooltip_locked": {
+    "message": "This Extension is 'Locked' and cannot be Edited, Removed, Auto-Removed, or Changed in any way unless it is Unlocked"
+  },
+  "options_fsbExtensionList_marker_tooltip_dirProtected": {
+    "message": "The Directory for this Extension is 'Protected' and it will not be Automatically Deleted if the Extension is Removed or Auto-Removed"
+  },
+
   "options_fsbRefreshListButton.tooltip": {
     "message": "Refresh the Extension List"
   },
@@ -194,18 +204,89 @@
   "options_fsbAddInstalledExtensionsButton.tooltip": {
     "message": "Display a window that lists ALL Currently Installed Extensions that can be Selected to be Added to the list"
   },
-  "options_check_allowAccess.tooltip": {
-    "message": "Check here to Grant the Extension with this ID access to FileSystemBroker, Un-Check to Deny it"
-  },
   "options_button_addExtension.tooltip": {
     "message": "Add a NEW Extension to the list"
   },
-  "options_button_editExtension.tooltip": {
+
+  "options_checkbox_allowAccess_enabled.tooltip": {
+    "message": "Check here to Grant the Extension with this ID access to FileSystemBroker, Un-Check to Deny it"
+  },
+  "options_checkbox_allowAccess_disabled_special.tooltip": {
+    "message": "Access cannot be denied because this Extentions is marked as SPECIAL"
+  },
+  "options_checkbox_allowAccess_disabled_locked.tooltip": {
+    "message": "Access cannot be changed for this Extension because it is LOCKED"
+  },
+
+  "options_dot_extension_installed.tooltip": {
+    "message": "There is an Installed Extension with this ID"
+  },
+  "options_dot_extension_not_installed.tooltip": {
+    "message": "There is NO Installed Extension with this ID"
+  },
+  "options_dot_extension_disabled.tooltip": {
+    "message": "This Extension is Disabled"
+  },
+  "options_dot_extension_enabled.tooltip": {
+    "message": "This Extension is Enabled"
+  },
+
+  "options_stats_dot_directory_found.tooltip": {
+    "message": "There IS a Directory for this Extension"
+  },
+  "options_stats_dot_directory_not_found.tooltip": {
+    "message": "There is NO Directory for this Extension"
+  },
+  "options_stats_item_count.tooltip": {
+    "message": "The number of items (regular file, sub-directory, other) in the Directory for this Extension"
+  },
+  "options_stats_total_size_formatted.tooltip": {
+    "message": "The total of the sizes of all Regular Files in the Directory for this Extension"
+  },
+  "options_stats_total_size_bytes.tooltip": {
+    "message": "The total of the sizes (in bytes) of all Regular Files in the Directory for this Extension"
+  },
+  "options_stats_directory_not_found.tooltip": {
+    "message": "There is NO Directory for this Extension"
+  },
+
+  "options_button_editExtension_disabled_special.tooltip": {
+    "message": "The information for this Extension cannot be Edited because the Extension is marked as SPECIAL"
+  },
+  "options_button_editExtension_disabled_locked.tooltip": {
+    "message": "The information for this Extension cannot be Edited because the Extension LOCKED"
+  },
+  "options_button_editExtension_enabled.tooltip": {
     "message": "Edit the information for this Extension"
   },
-  "options_button_deleteExtension.tooltip": {
+
+  "options_checkbox_lockExtension_disabled_special.tooltip": {
+    "message": "This Extension cannot be Unlocked because it is marked as SPECIAL"
+  },
+  "options_checkbox_lockExtension_enabled.tooltip": {
+    "message": "Click to Lock or Unlock this Extension"
+  },
+
+  "options_checkbox_protectExtension_disabled_special.tooltip": {
+    "message": "The Directory for this Extension cannot be Un-Protected because the Extension is marked as SPECIAL"
+  },
+  "options_checkbox_protectExtension_disabled_locked.tooltip": {
+    "message": "The Protected State for the Directory for this Extension cannot be changed because the Extension is LOCKED"
+  },
+  "options_checkbox_protectExtension_enabled.tooltip": {
+    "message": "Click to Protect or Un-Protect the Directory for this Extension"
+  },
+
+  "options_button_removeExtension_disabled_special.tooltip": {
+    "message": "This Extension cannot be removed because it is marked as SPECIAL"
+  },
+  "options_button_removeExtension_disabled_locked.tooltip": {
+    "message": "This Extension cannot be removed because it is LOCKED"
+  },
+  "options_button_removeExtension_enabled.tooltip": {
     "message": "Remove this Extension from the list"
   },
+
   "options_fsbExtensionEditTitleAddMode": {
     "message": "Add New Extension Information"
   },
@@ -248,8 +329,14 @@
   "options_fsbExtensionEditErrorUpdateFailed": {
     "message": "Extension Update Failed"
   },
+  "options_fsbExtensionEditErrorUIUpdateFailed": {
+    "message": "Failed to Update the List Item - Try Refreshing the list"
+  },
   "options_fsbExtensionEditCancelButton.tooltip": {
     "message": "Cancel the changes and Clear the Extension Information"
+  },
+  "options_fsbExtensionEditErrorDismissButton.tooltip": {
+    "message": "Dismiss the Extension Edit Error"
   },
   "options_fsbLoggingOptionsTitle.label": {
     "message": "Event Logging Options"
@@ -394,10 +481,13 @@
     }
   },
   "fsbOptions_dialog_confirmRemoveExtension_message_willNotDeleteDirectory": {
-    "message": "The Directory will NOT be deleted."
+    "message": "The Directory for the Extension will NOT be deleted."
   },
   "fsbOptions_dialog_confirmRemoveExtension_message_willDeleteDirectory": {
-    "message": "The Directory will be deleted as well."
+    "message": "The Directory for the Extension will be DELETED as well."
+  },
+  "fsbOptions_dialog_confirmRemoveExtension_message_dirProtected": {
+    "message": "CAUTION: The Directory is PROTECTED."
   },
   "fsbOptions_dialog_confirmRemoveExtension_message_continue": {
     "message": "Do you wish to continue?"

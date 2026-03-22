@@ -88,26 +88,177 @@ body {
 .compact-list > li {
 }
 
-input[type="checkbox"].open-close-check {
-  display: none;
+
+
+input:is([type="checkbox"], [type="radio"]) { /* any checkbox or radio button */
+  & + label[for] {
+    border:                 1px 1px solid transparent;
+    & + label[for] {
+      border:               1px 1px solid transparent;
+    }
+  }
+
+  &:not(:disabled) {
+    cursor:                 pointer;
+    & + label[for] {
+      cursor:               pointer;
+      & + label[for] {
+        cursor:             pointer;
+      }
+    }
+
+    &:hover {
+      color:                var(--button-hover-color);
+      & + label[for] {
+        background-image:   var(--button-hover-background-image);
+        border-color:       var(--button-hover-border-color);
+        color:              var(--button-hover-color);
+        & + label[for] {
+          background-image: var(--button-hover-background-image);
+          border-color:     var(--button-hover-border-color);
+          color:            var(--button-hover-color);
+        }
+      }
+    }
+  }
+
+  &:[disabled] {
+    cursor:                 var(--cursor-disabled);
+    & + label[for] {
+      cursor:               var(--cursor-disabled);
+      & + label[for] {
+        cursor:             var(--cursor-disabled);
+      }
+    }
+  }
 }
 
-input[type="checkbox"].open-close-check + label {
-  background-repeat: no-repeat;
-  border:            NONE;                    
-  cursor:            pointer !important;
-  height:            10px;
-  width:             10px;
-  display:           inline-block;
-  padding:           0px;;
+
+td:has(input:is([type="text"], [type="number"])) { /* any text or number field inside a <td> */
+  padding-right:        1.0em;
 }
 
-input[type="checkbox"].open-close-check:checked + label {
-  background-image:  url("../images/icons/light-gray-triangle-outline-down_10x10.png") !important;
+input:is([type="text"], [type="number"]) { /* any text or number field */
+/*border:               var(--input-border-size) var(--input-border-style) transparent; /* MABXXX */
+  border-radius:        var(--input-border-radius);
+  outline:              2px solid transparent;
+  text-shadow:          none;
+
+  &:not(:disabled) {
+    &[type="text"] {
+      cursor:           text;
+    }
+    &[type="number"] {
+      &:not(.arrow-up-down-only) {
+        cursor:         text;
+      }
+      &.arrow-up-down-only {
+        cursor:         default;
+      }
+    }
+
+    &:not(:hover) {
+      background-color: var(--input-background-color);
+      border:           var(--input-border);
+      color:            var(--input-color);
+    }
+
+    &:hover {
+      background-color: var(--input-hover-background-color);
+      background-image: var(--input-hover-background-image);
+      border:           var(--input-hover-border);
+      color:            var(--input-hover-color);
+    }
+
+    &:not(:focus) {
+      outline:          2px solid var(--input-outline-color);
+    }
+
+    &:focus {
+      outline:          2px solid var(--input-focus-outline-color);
+    }
+  }
+
+  &:disabled {
+    background-color:   var(--input-disabled-background-color);
+    border:             var(--input-disabled-border);
+    color:              var(--input-disabled-color);
+    cursor:             var(--cursor-disabled);
+  }
 }
 
-input[type="checkbox"].open-close-check:not(checked) + label {
-  background-image:  url("../images/icons/light-gray-triangle-outline-right_10x10.png") !important;
+
+
+.open-close-widget {
+  background-repeat:       no-repeat;
+  border:                  1px solid transparent;
+  border-radius:           5px; /* MABXXX <----------------------------------------<<<<< */
+  cursor:                  pointer !important;
+  padding:                 0px 4px;
+
+  & > input[type="checkbox"].open-close-check {
+    display:               NONE;
+
+    & + label {
+      background-position: center;
+      background-repeat:   no-repeat;
+      background-size:     auto;
+      border:              NONE;
+      height:              10px;
+      width:               10px;
+      display:             inline-block;
+      margin:              0px;
+    
+      & + label {
+        border:            NONE;
+        margin:            0px;
+      }
+    }
+  }
+
+  &:not(:hover) {
+    & > input[type="checkbox"].open-close-check {
+      &:checked {
+        & + label {
+          background-image:  url("../images/icons/triangle/light-gray-triangle-outline-down_10x10.png") !important;
+          & + label {
+          }
+        }
+      }
+
+      &:not(:checked) {
+        & + label {
+          background-image:  url("../images/icons/triangle/light-gray-triangle-outline-right_10x10.png") !important;
+          & + label {
+          }
+        }
+      }
+    }
+  }
+
+  &:hover {
+    background-image: var(--extension-hover-background-image);
+    border-color:     #90A0B0; /* MABXXX <----------------------------------------<<<<< */
+    font-weight:      BOLD;
+
+    & > input[type="checkbox"].open-close-check {
+      &:checked {
+        & + label {
+          background-image:  url("../images/icons/triangle/triangle-down-light-aqua-outline-white_10x10.png") !important;
+          & + label {
+          }
+        }
+      }
+
+      &:not(:checked) {
+        & + label {
+          background-image:  url("../images/icons/triangle/triangle-right-light-aqua-outline-white_10x10.png") !important;
+          & + label {
+          }
+        }
+      }
+    }
+  }
 }
 
 .options-open-close-panel {
@@ -117,6 +268,8 @@ input[type="checkbox"].open-close-check:not(checked) + label {
   margin-left:       12px;
 /*padding:           4px;*/
 }
+
+
 
 .option-error {
   display: NONE;
@@ -151,7 +304,7 @@ input[type="checkbox"].open-close-check:not(checked) + label {
 
 
 /* FULL PAGE */
-#fsbOptionsWrapper :is(button, input, th, tr, td, table, select, input[type="checkbox"] ~ label):-moz-window-inactive {
+#fsbOptionsWrapper :is(button, table, tr, th, td, table, select, input, input[type="checkbox"] ~ label):-moz-window-inactive {
   opacity: var(--window-inactive-opacity);
 }
 
@@ -232,7 +385,7 @@ input[type="checkbox"].open-close-check:not(checked) + label {
 
 
 #fsbExtensionChooserOptionsWrapper {
-  margin-top: 2.0em;    
+  margin-top: 2.0em;
 
   /* grid layout */
   display:               grid;
@@ -387,11 +540,11 @@ input[type="checkbox"].open-close-check:not(checked) + label {
 /*padding-right: 0.15em; */
 }
 
-.extension-list-check:not([disabled]) {
+.extension-check:not(:disabled) {
   cursor: pointer;
 }
 
-/* those items that show actual Extension data: ID, Name */
+/* those items that show actual Extension data: e.g. ID, Name, etc */
 .extension-list-data { /* <TD> */
   background-color: var(--extension-background-color);
 
@@ -403,6 +556,33 @@ input[type="checkbox"].open-close-check:not(checked) + label {
   padding:          0.1em 0.5em;
   white-space:      nowrap;
   -moz-appearance:  none;
+
+  & > .extension-markers {
+    height:              16px;
+    margin-left:         0.10em;
+    vertical-align:      middle;
+
+    & > .extension-marker {
+      background-color:    transparent !important;
+      background-position: center;
+      background-repeat:   no-repeat;
+      background-size:     cover;
+      cursor:              default;
+      display:             none;
+      height:              16px;
+      min-height:          16px;
+      min-width:           16px;
+      width:               16px;
+
+      &.marker-special {
+      }
+      &.marker-locked {
+      }
+      &.marker-dir-protected {
+      }
+    }
+  }
+
 }
 
 .extension-list-item > :nth-child(2) { /* .extension-list-item:nth-child(2) hopefully the first extension-list-data */
@@ -421,6 +601,22 @@ input[type="checkbox"].open-close-check:not(checked) + label {
   border-top-right-radius:    5px;
 }
 
+/* colors  and text-decoration for dirProtected extensions */
+.extension-list-item.extension-dir-protected > .extension-list-data {
+/*background-color: var(--extension-dir-protected-background-color); */
+/*border-color:     var(--extension-dir-protected-border-color);     */
+/*color:            var(--extension-dir-protected-color);            */
+/*text-decoration:  var(--extension-dir-protected-text-decoration);  */
+/*text-shadow:      var(--extension-dir-protected-text-shadow);      */
+
+  & > .extension-markers { /* <SPAN> */
+    & > .marker-dir-protected { /* <SPAN> */
+      background-image:    url("../images/icons/marker/sun_yellow_outline_dark_16x16.png");
+      display:             inline-block;
+    }
+  }
+}
+
 /* colors  and text-decoration for locked extensions */
 .extension-list-item.extension-locked > .extension-list-data {
   background-color: var(--extension-locked-background-color);
@@ -428,6 +624,29 @@ input[type="checkbox"].open-close-check:not(checked) + label {
   color:            var(--extension-locked-color);
   text-decoration:  var(--extension-locked-text-decoration);
   text-shadow:      var(--extension-locked-text-shadow);
+
+  & > .extension-markers { /* <SPAN> */
+    & > .marker-locked { /* <SPAN> */
+      background-image:    url("../images/icons/marker/padlock-yellow_16x16.png");
+      display:             inline-block;
+    }
+  }
+}
+
+/* colors  and text-decoration for locked extensions */
+.extension-list-item.extension-special > .extension-list-data {
+/*background-color: var(--extension-special-background-color); */
+/*border-color:     var(--extension-special-border-color);     */
+/*color:            var(--extension-special-color);            */
+/*text-decoration:  var(--extension-special-text-decoration);  */
+/*text-shadow:      var(--extension-special-text-shadow);      */
+
+  & > .extension-markers { /* <SPAN> */
+    & > .marker-special { /* <SPAN> */
+      background-image:    url("../images/icons/marker/crown_gold_outline_dark_16x16.png");
+      display:             inline-block;
+    }
+  }
 }
 
 /* colors for disabled extensions */
@@ -501,17 +720,21 @@ input[type="checkbox"].open-close-check:not(checked) + label {
   }
 }
 
+.data-text {
+  text-align: left;
+}
+
 .data-numeric {
   text-align: right;
 }
 
-.extension-list-id { /* .extension-list-item > .extension-list-id */
-  width:      auto;
+.extension-list-name { /* .extension-list-item > .extension-list-name */
+  width:      50%;
   text-align: left;
 }
 
-.extension-list-name { /* .extension-list-item > .extension-list-name */
-  width:      100%;
+.extension-list-id { /* .extension-list-item > .extension-list-id */
+  width:      50%;
   text-align: left;
 }
 
@@ -607,8 +830,9 @@ input[type="checkbox"].open-close-check:not(checked) + label {
   text-shadow:      1px 1px var(--extension-hover-text-shadow-color);
 }
 
-.extension-head-controls-right, /* .extension-head-item > .extension-head-controls-left */
-.extension-list-controls-right  /* .extension-list-item > .extension-list-controls-left */
+.extension-head-controls-right, /* .extension-head-item > .extension-head-controls-right */
+.extension-list-controls-right, /* .extension-list-item > .extension-list-controls-right */
+.extension-edit-controls-right  /* .extension-edit-item > .extension-edit-controls-right */
 {
   height:       100%;
   padding:      0;
@@ -620,8 +844,124 @@ input[type="checkbox"].open-close-check:not(checked) + label {
   grid-column-gap:       4px;
   grid-template-areas:   "edit";
   grid-template-columns: min-content;
-  .edit-controls {
+
+  & > .edit-controls {
     grid-area: edit;
+  }
+
+  & > .extension-edit-controls {
+    & > .edit-extension { /* <BUTTON> */
+      /* this is all handled elsewhere */
+    }
+
+    & > .remove-extension { /* <BUTTON> */
+      /* this is all handled elsewhere */
+    }
+
+    & > .extension-check-span { /* <SPAN> */
+      & > .extension-check { /* <INPUT TYPE="CHECKBOX"> */
+        display: none;
+
+        &:not(:disabled) {
+          cursor: pointer;
+          & + .extension-check-label {
+            cursor: pointer;
+          }
+        }
+
+        &:disabled {
+          cursor: var(--cursor-disabled);
+          & + .extension-check-label {
+            cursor: var(--cursor-disabled);
+          }
+        }
+
+        & + .extension-check-label {
+          background-position: center;
+          background-repeat:   no-repeat;
+          height:              24px;
+          width:               24px;
+          display:             inline-block;
+/*        margin-top:          0.5em;        */
+          padding:             0px;
+/*        vertical-align:      middle;       */
+        }
+
+        &.lock-check {
+          &:not(:disabled) {
+            &:not(:checked,:hover) {
+              & + .extension-check-label {
+                background-image: url("../images/icons/padlock/padlock-green-open-more_24x24.png");
+              }
+            }
+            &:not(:checked):hover {
+              & + .extension-check-label {
+                background-image: url("../images/icons/padlock/padlock-light-green-open_24x24.png");
+              }
+            }
+            &:checked:not(:hover) {
+              & + .extension-check-label {
+                background-image: url("../images/icons/padlock/padlock-yellow_24x24.png");
+              }
+            }
+            &:checked:hover {
+              & + .extension-check-label {
+                background-image: url("../images/icons/padlock/padlock-light_yellow-open-more_24x24.png");
+              }
+            }
+          }
+          &:disabled {
+            &:not(:checked) {
+              & + .extension-check-label {
+                background-image: url("../images/icons/padlock/padlock-light_gray_24x24.png"); /* MABXXX MUST REPLACE THIS */
+              }
+            }
+            &:checked {
+              & + .extension-check-label {
+                background-image: url("../images/icons/padlock/padlock-gray_24x24.png");
+              }
+            }
+          }
+        }
+
+        &.dir-protect-check {
+          &:not(:disabled) {
+            &:not(:checked,:hover) {
+              & + .extension-check-label {
+                background-image: url("../images/icons/folder-shield/folder-yellow-shield-gray-outline-black_24x24.png");
+              }
+            }
+            &:not(:checked):hover {
+              & + .extension-check-label {
+                background-image: url("../images/icons/folder-shield/folder-shield-med-gray-outline-black_24x24.png");
+              }
+            }
+            &:checked:not(:hover) {
+              & + .extension-check-label {
+                background-image: url("../images/icons/folder-shield/folder-yellow-shield-blue-check-black-outline-black_24x24.png");
+              }
+            }
+            &:checked:hover {
+              & + .extension-check-label {
+                background-image: url("../images/icons/folder-shield/folder-lighter-yellow-shield-blue-check-black-outline-black_24x24.png");
+              }
+            }
+          }
+          &:disabled {
+            &:not(:checked) {
+              & + .extension-check-label {
+                background-image: url("../images/icons/folder-shield/folder-shield-dark-gray-outline-black_24x24.png");
+              }
+            }
+            &:checked {
+              & + .extension-check-label {
+                background-image: url("../images/icons/folder-shield/folder-dark-gray-shield-blue-check-black-outline-black_24x24.png");
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }
 
@@ -654,19 +994,19 @@ input[type="checkbox"].open-close-check:not(checked) + label {
 .extension-edit-item,       /* <TR>  Extension List Editor Edit  Row */
 .extension-edit-error-item  /* <TR>  Extension List Editor Error Row */
 {
-  background-color: rgb( 130, 130, 180 );                       /* MABXXX MOVE TO theming.css */
 }
 
 .extension-edit-title-item { /* <TR>  Extension List Editor Title Row */
-  color:            var(--extension-color);                     /* MABXXX MOVE TO theming.css */
+  background-color: var(--extension-edit-title-item-background-color);
+  color:            var(--extension-edit-title-item-color);
   cursor:           default;
-  font:             var(--extension-font);                      /* MABXXX MOVE TO theming.css */
-  font-size:        var(--extension-font-size);                 /* MABXXX MOVE TO theming.css */
-  font-weight:      bold;
+  font:             var(--extension-edit-title-item-font);
+  font-size:        var(--extension-edit-title-item-font-size);
+  font-weight:      var(--extension-edit-title-item-font-weight);
   padding:          0.5rem 1.1rem;
   text-align:       left;
-  text-decoration:  none;
-  text-shadow:      1px 1px black;                              /* MABXXX MOVE TO theming.css */
+  text-decoration:  var(--extension-edit-title-item-text-decoration);
+  text-shadow:      var(--extension-edit-title-item-text-shadow);
   white-space:      nowrap;
   width:            100%;
   -moz-appearance:  none;
@@ -677,15 +1017,16 @@ input[type="checkbox"].open-close-check:not(checked) + label {
 }
 
 .extension-edit-item { /* <TR>  Extension List Editor Row */
-/*border:           none;*/
-  color:            var(--extension-color);                     /* MABXXX MOVE TO theming.css */
+  background-color: var(--extension-edit-item-background-color);
+  color:            var(--extension-edit-item-color);
   cursor:           default;
-  font:             var(--extension-font);                      /* MABXXX MOVE TO theming.css */
-  font-size:        var(--extension-font-size);                 /* MABXXX MOVE TO theming.css */
+  font:             var(--extension-edit-item-font);
+  font-size:        var(--extension-edit-item-font-size);
+  font-weight:      var(--extension-edit-item-font-weight);
   padding:          0.5rem 1.1rem;
   text-align:       left;
-  text-decoration:  none;
-  text-shadow:      none;
+  text-decoration:  var(--extension-edit-item-text-decoration);
+  text-shadow:      var(--extension-edit-item-text-shadow);
   white-space:      nowrap;
   width:            100%;
   -moz-appearance:  none;
@@ -711,8 +1052,6 @@ input.extension-edit-text { /* any input type="text" */
 
 /* those items that show actual Extension data: ID, Name */
 .extension-edit-data {
-/*background-color: var(--extension-background-color); */
-
   border-bottom:    1px solid;
   border-top:       1px solid;
   border-color:     var(--extension-border-color); /* MUST BE AFTER border-bottom and border-top as they revert color */
@@ -757,10 +1096,12 @@ input.extension-edit-text { /* any input type="text" */
 }
 
 .extension-edit-item:hover > .extension-edit-data {
-  background-color: var(--extension-hover-background-color);          /* MABXXX MOVE TO theming.css */
-  border-color:     var(--extension-hover-border-color);              /* MABXXX MOVE TO theming.css */
-  color:            var(--extension-hover-color);                     /* MABXXX MOVE TO theming.css */
-  text-shadow:      1px 1px var(--extension-hover-text-shadow-color); /* MABXXX MOVE TO theming.css */
+  background-color:  var(--extension-edit-hover-background-color);
+  background-image:  var(--extension-edit-hover-background-image);
+  background-repeat: no-repeat;
+  border-color:      var(--extension-edit-hover-border-color);
+  color:             var(--extension-edit-hover-color);
+  text-shadow:       var(--extension-edit-hover-text-shadow);
 }
 
 .extension-edit-controls-right {
@@ -780,26 +1121,24 @@ input.extension-edit-text { /* any input type="text" */
 }
 
 .extension-edit-error-item { /* <TR>  Extension List Editor Error Row */
-  color:            rgb(175, 0, 0);                             /* MABXXX MOVE TO theming.css */
+  background-color: var(--extension-edit-error-item-background-color);
+  color:            var(--extension-edit-error-item-color);
   cursor:           default;
-  font:             var(--extension-font);                      /* MABXXX MOVE TO theming.css */
-  font-size:        var(--extension-font-size);                 /* MABXXX MOVE TO theming.css */
-  font-weight:      bold;
+  font:             var(--extension-edit-error-item-font);
+  font-size:        var(--extension-edit-error-item-font-size);
+  font-weight:      var(--extension-edit-error-item-font-weight);
   padding:          0.5rem 1.1rem;
   text-align:       left;
-  text-decoration:  none;
-/*text-shadow:      1px 1px black; */                           /* MABXXX MOVE TO theming.css */
+  text-decoration:  var(--extension-edit-error-item-text-decoration);
+  text-shadow:      var(--extension-edit-error-item-text-shadow);
   white-space:      nowrap;
   width:            100%;
   -moz-appearance:  none;
 }
 
-.extension-edit-error-left-icons {
+.extension-edit-error-left {
   padding:          0.1em 0.5em;
   text-align:       center;
-}
-
-.extension-edit-error-icon {
 }
 
 .extension-edit-error-data {
@@ -831,7 +1170,7 @@ input.extension-edit-text { /* any input type="text" */
 
 /* BUTTONS IN GENERAL */
 
-#fsbOptionsWrapper button.extension-icon-button {
+#fsbOptionsWrapper button.extension-icon-button.icon-only {
   background-color:    transparent !important;
   background-position: center;
   background-repeat:   no-repeat;
@@ -839,19 +1178,20 @@ input.extension-edit-text { /* any input type="text" */
   border:              1px solid transparent;
   cursor:              pointer;
   display:             block;
-  height:              10px;
-  min-height:          10px;
+/*height:              10px;*/
+/*min-height:          10px;*/
   margin:              2px 0px 0px 0px;
   padding:             0;
-  width:               10px;
-  min-width:           10px;
+  vertical-align:      middle;
+/*width:               10px;*/
+/*min-width:           10px;*/
   -moz-appearance:     none;
 }
 
 
 
-/* ICON BUTTONS IN GENERAL */
-#fsbOptionsWrapper button.extension-icon-button {
+/* ICON BUTTONS IN THE EXTENSIONS LIST IN GENERAL */
+#fsbOptionsWrapper button.extension-list-icon-button.icon-only {
   height:     24px;
   min-height: 24px;
   min-width:  24px;
@@ -859,92 +1199,84 @@ input.extension-edit-text { /* any input type="text" */
 }
 
 /* ICON BUTTONS WHEN DISABLED */
-#fsbOptionsWrapper button.add-extension[disabled] {
-  background-image: url("../images/icons/create_medium_gray_32x32.png") !important;
+#fsbOptionsWrapper button.add-extension:disabled {
+  background-image: url("../images/icons/edit/create_medium_gray_32x32.png") !important;
   cursor:           var(--cursor-disabled);
 }
-#fsbOptionsWrapper button.edit-extension[disabled] {
-  background-image: url("../images/icons/edit_medium_gray_32x32.png") !important;
+#fsbOptionsWrapper button.edit-extension:disabled {
+  background-image: url("../images/icons/edit/edit_medium_gray_32x32.png") !important;
   cursor:           var(--cursor-disabled);
 }
-#fsbOptionsWrapper button.remove-extension[disabled] {
-  background-image: url("../images/icons/trashcan-gray-24x24.png") !important;
+#fsbOptionsWrapper button.remove-extension:disabled {
+  background-image: url("../images/icons/trashcan/trashcan-gray-24x24.png") !important;
   cursor:           var(--cursor-disabled);
 }
-#fsbOptionsWrapper button#extensionEditCancelButton[disabled] {
-  background-image: url("../images/icons/cancel-icon-medium-gray-24x24.png") !important;
+#fsbOptionsWrapper button#extensionEditCancelButton:disabled {
+  background-image: url("../images/icons/cancel/cancel-icon-medium-gray-24x24.png") !important;
   cursor:           var(--cursor-disabled);
 }
-#fsbOptionsWrapper button#extensionEditSaveButton[disabled] {
-  background-image: url("../images/icons/save-medium-gray-24px.png") !important;
+#fsbOptionsWrapper button#extensionEditSaveButton:disabled {
+  background-image: url("../images/icons/edit/save-medium-gray-24px.png") !important;
   cursor:           var(--cursor-disabled);
+}
+#fsbOptionsWrapper button#extensionEditErrorDismissButton:disabled {
+  background-image:    url("../images/icons/stop/stop-sign_darker_16x16.png") !important;
 }
 
 /* ICON BUTTONS WHEN NOT DISABLED */
-#fsbOptionsWrapper button.add-extension:not([disabled]) {
-  background-image: url("../images/icons/create_light_gray_32x32.png") !important;
+#fsbOptionsWrapper button.add-extension:not(:disabled) {
+  background-image: url("../images/icons/edit/create_aqua_32x32b.png") !important;
 }
-#fsbOptionsWrapper button.edit-extension:not([disabled]) {
-  background-image: url("../images/icons/edit_light_gray_32x32.png") !important;
+#fsbOptionsWrapper button.edit-extension:not(:disabled) {
+  background-image: url("../images/icons/edit/edit_aqua_32x32.png") !important;
 }
-#fsbOptionsWrapper button.remove-extension:not([disabled]) {
-  background-image: url("../images/icons/trashcan-red-24x24.png") !important;
+#fsbOptionsWrapper button.remove-extension:not(:disabled) {
+  background-image: url("../images/icons/trashcan/trashcan-deep-red-outline-dark-24x24.png") !important;
 }
-#fsbOptionsWrapper button#extensionEditCancelButton:not([disabled]) {
-  background-image: url("../images/icons/cancel-icon-red-24x24.png") !important;
+#fsbOptionsWrapper button#extensionEditCancelButton:not(:disabled) {
+  background-image: url("../images/icons/cancel/cancel-deep-red-24x24.png") !important;
 }
-#fsbOptionsWrapper button#extensionEditSaveButton:not([disabled]) {
-  background-image: url("../images/icons/save-light-gray-24px.png") !important;
+#fsbOptionsWrapper button#extensionEditSaveButton:not(:disabled) {
+  background-image: url("../images/icons/edit/save-aqua-outline-black-24px.png") !important;
+}
+
+#fsbOptionsWrapper button#extensionEditErrorDismissButton:not(:disabled) {
+  background-image:    url("../images/icons/stop/stop-sign_16x16.png") !important;
+  height:              16px;
+  max-height:          16px;
+  max-width:           16px;
+  min-height:          16px;
+  min-width:           16px;
+  width:               16px;
 }
 
 /* ICON BUTTONS WHEN HOVERING */
 /*
-#fsbOptionsWrapper button.extension-icon-button:not([disabled]):hover {
+#fsbOptionsWrapper button.extension-icon-button:not(:disabled):hover {
   border-color:        var(--button-hover-border-color);
 }
 */
-#fsbOptionsWrapper button.add-extension:not([disabled]):hover {
-  background-image: url("../images/icons/create_white_32x32.png") !important;
+#fsbOptionsWrapper button.add-extension:not(:disabled):hover {
+  background-image: url("../images/icons/edit/create_white_32x32.png") !important;
 }
-#fsbOptionsWrapper button.edit-extension:not([disabled]):hover {
-  background-image: url("../images/icons/edit_white_32x32.png") !important;
+#fsbOptionsWrapper button.edit-extension:not(:disabled):hover {
+  background-image: url("../images/icons/edit/edit_white_32x32.png") !important;
 }
-#fsbOptionsWrapper button.remove-extension:not([disabled]):hover {
-  background-image: url("../images/icons/trashcan-red-lighter-24x24.png") !important;
+#fsbOptionsWrapper button.remove-extension:not(:disabled):hover {
+  background-image: url("../images/icons/trashcan/trashcan-red-lighter-24x24.png") !important;
 }
-#fsbOptionsWrapper button#extensionEditCancelButton:not([disabled]):hover {
-  background-image: url("../images/icons/cancel-icon-light-red-24x24.png") !important;
+#fsbOptionsWrapper button#extensionEditCancelButton:not(:disabled):hover {
+  background-image: url("../images/icons/cancel/cancel-light-red-outline-gray24x24.png") !important;
 }
-#fsbOptionsWrapper button#extensionEditSaveButton:not([disabled]):hover {
-  background-image: url("../images/icons/save-white-24px.png") !important;
+#fsbOptionsWrapper button#extensionEditSaveButton:not(:disabled):hover {
+  background-image: url("../images/icons/edit/save-white-24px.png") !important;
 }
-
-#fsbOptionsWrapper button:is(.extension-list-button, .extension-edit-button)[disabled]:not(.extension-icon-button) { /* not for buttons that use their own icons */
-  opacity: 0.7; /* MABXXX SHOULD USE A DIFFERENT backgrond-image INSTEAD */
-}
-
-
-#fsbOptionsWrapper input:is([type="checkbox"], [type="radio"]):not([disabled]) { /* any checkbox or radio button */
-  cursor: pointer;
-  & ~ label[for] {
-    cursor: pointer;
-  }
-}
-#fsbOptionsWrapper input:is([type="checkbox"], [type="radio"])[disabled] { /* any checkbox or radio button */
-  cursor: var(--cursor-disabled);
+#fsbOptionsWrapper button#extensionEditErrorDismissButton:not(:disabled):hover {
+  background-image:    url("../images/icons/stop/stop-sign_lighter_16x16.png") !important;
 }
 
-#fsbOptionsWrapper td:has(input:is([type="text"], [type="number"])) { /* any text or number field inside a <td> */
-  padding-right:    1.0em;
-}
-#fsbOptionsWrapper input:is([type="text"], [type="number"]):not([disabled]) { /* any text or number field */
-  color:            black;       /* MABXXX MOVE TO theming.css */
-  text-shadow:      none;
-}
-#fsbOptionsWrapper input:is[type="number"]:not([disabled]) { /* any number field */
-  cursor:           pointer;
-}
-#fsbOptionsWrapper input:is([type="text"], [type="number"])[disabled] { /* any disabled text or number field */
+#fsbOptionsWrapper button:is(.extension-list-button, .extension-edit-button):disabled:not(.extension-icon-button) { /* not for buttons that use their own icons */
+  opacity: 0.8; /* MABXXX SHOULD USE A DIFFERENT backgrond-image INSTEAD */
 }
 
 
@@ -962,9 +1294,10 @@ input.extension-edit-text { /* any input type="text" */
   cursor:           pointer;
   font:             var(--button-font);
   font-size:        var(--button-font-size);
-  height:           1.5rem;
+  height:           1.5em;
   margin:           0 ;
-  padding:          0.8rem 1.1rem;
+/*padding:          0.8rem 1.1rem; */
+  padding:          0 0.5em;
   text-align:       left;
   text-decoration:  none;
   text-shadow:      none;
@@ -976,14 +1309,14 @@ input.extension-edit-text { /* any input type="text" */
   }
 }
 
-#fsbOptionsWrapper button:not(.extension-icon-button, [disabled]) {
+#fsbOptionsWrapper button:not(.extension-icon-button, :disabled) {
   background-color: rgb(110, 110, 114);
   border-color:     rgb(200, 200, 200);
   color:            rgb(250, 250, 250);
   color:            BLACK; /* yeah, this does NOT work */
 }
 
-#fsbOptionsWrapper button:not(.extension-icon-button)[disabled] {
+#fsbOptionsWrapper button:not(.extension-icon-button):disabled {
 /*background-color: rgb(75, 75, 75);*/
 /*border-color:     rgb(90, 90, 90);*/
 /*color:            rgb(120, 120, 120); /* does even THIS work? NO. */
@@ -991,7 +1324,7 @@ input.extension-edit-text { /* any input type="text" */
   opacity:          var(--window-inactive-opacity);
 }
 
-#fsbOptionsWrapper button:not(.extension-icon-button, [disabled]):hover {
+#fsbOptionsWrapper button:not(.extension-icon-button, :disabled):hover {
   background-color: rgb(60, 160, 165);
   background-image: NONE !important;
   border-color:     rgb(240, 240, 240);
