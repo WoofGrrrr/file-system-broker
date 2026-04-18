@@ -50,7 +50,7 @@ command message to this extension by calling the Web Extension function:
 
 ## These functions are available in the API:
 
-  + access - does the caller have permission to access FileSystemBroker?
+  + access - does the caller have permission to access FileSystemBroker?  And if so, it is read-only access?
   + exists - does a file exist?
   + isRegularFile - does a file exist and is it a Regular file, i.e. NOT a Directory or "other"?
   + isDirectory - does a file exist and is it a Directory, i.e. NOT a Regular file or a a ""other"?
@@ -179,7 +179,7 @@ A command is a message which is an object of the form:
 
         { "command": command_name           [, parameters                                  ] } - response { return_values                                                           }
           ========== ====================== ================================================               =======================================================================
-        { "command": "access"                                                                } - response { "access":        string                                                 }
+        { "command": "access"                                                                } - response { "access":        string, "readOnly":      boolean                       }
         { "command": "exits"                [, "fileName":      string ]                     } - response { "fileName":      string, "exists":        boolean                       }
         { "command": "isRegularFile",          "fileName":      string                       } - response { "fileName":      string, "isRegularFile": boolean                       }
         { "command": "isDirectory"          [, "directoryName": string ]                     } - response { "directoryName": string, "isDirectory":   boolean                       }
@@ -225,6 +225,11 @@ In addition to the responses listed with each command above, a command may retur
     + code "404" means that the request to FileSystemBroker is unknown.
     + code "500" means that there was some error that the system does not know how to handle.
     + code "503" means that communcation with FileSystemBroker failed, probably because FileSystemBroker is not installed or is not running.
+
+    + Depending on the command, an "error" response with a "code" of "403" may
+    have a "subCode" of "read-only" if the requesting extension has been granted
+    Read-Only access and may have a "subCode" of "over-quota" if the requesting
+    extension is currently over one or more of its quotas.
 
 <br>
 
@@ -300,14 +305,16 @@ in mind.
 ## These Are The Commands And Their Responses:
 
 
-#### access - Determine if the caller has been granted permission to access the FileSystemBroker
+#### access - Determine if the caller has been granted permission to access the FileSystemBroker, and, if so, if it is Read-Only access
 
     command message: { "Command": { "command": "access" } }
 
-    response:        { "access": string }
+    response:        { "access": string, "readOnly": boolean }
 
                      Returns "granted" if the caller has been granted
                      permission to use FileSystemBroker, "denied" if not.
+                     "readOnly" is true if access is Read-Only, otherwise
+                     it is false.
 
 <br>
 <br>
@@ -471,6 +478,10 @@ in mind.
     Returns an "error" response if the directory's full pathName is > 255 characters.
 <br>
 <br>
+    An "error" response with a "code" of "403" will have a "subCode" of "read-only"
+    if the requesting extension has been granted Read-Only access.
+<br>
+<br>
     Throws if there is an operating system error.
 <br>
 <br>
@@ -508,6 +519,12 @@ in mind.
     Throws if there is an operating system error.
 <br>
 <br>
+    An "error" response with a "code" of "403" will have a "subCode" of "read-only"
+    if the requesting extension has been granted Read-Only access and will have
+    a "subCode" of "over-quota" if the requesting extension is currently over
+    one or more of its quotas.
+<br>
+<br>
 <br>
 
 #### replaceFile - Write the given data to the file with the given fileName in the caller-specific directory (named like the caller's Extension ID), like writeFile using "writeMode": "overwrite"
@@ -523,6 +540,12 @@ in mind.
 <br>
 <br>
     Returns an "error" response if the file's full pathName is > 255 characters.
+<br>
+<br>
+    An "error" response with a "code" of "403" will have a "subCode" of "read-only"
+    if the requesting extension has been granted Read-Only access and will have
+    a "subCode" of "over-quota" if the requesting extension is currently over
+    one or more of its quotas.
 <br>
 <br>
     Throws if there is an operating system error.
@@ -544,6 +567,12 @@ in mind.
 <br>
 <br>
     Returns an "error" response if the file's full pathName is > 255 characters.
+<br>
+<br>
+    An "error" response with a "code" of "403" will have a "subCode" of "read-only"
+    if the requesting extension has been granted Read-Only access and will have
+    a "subCode" of "over-quota" if the requesting extension is currently over
+    one or more of its quotas.
 <br>
 <br>
     Throws if there is an operating system error.
@@ -575,6 +604,12 @@ in mind.
     Returns an "error" response if the file's full pathName is > 255 characters.
 <br>
 <br>
+    An "error" response with a "code" of "403" will have a "subCode" of "read-only"
+    if the requesting extension has been granted Read-Only access and will have
+    a "subCode" of "over-quota" if the requesting extension is currently over
+    one or more of its quotas.
+<br>
+<br>
     Throws if there is an operating system error.
 <br>
 <br>
@@ -602,6 +637,12 @@ in mind.
 <br>
 <br>
     Returns an "error" response if the file's full pathName is > 255 characters.
+<br>
+<br>
+    An "error" response with a "code" of "403" will have a "subCode" of "read-only"
+    if the requesting extension has been granted Read-Only access and will have
+    a "subCode" of "over-quota" if the requesting extension is currently over
+    one or more of its quotas.
 <br>
 <br>
     Throws if there is an operating system error.
@@ -687,7 +728,7 @@ in mind.
                      - fileName:     the fileName
                      - path:         the full pathname
                      - type:         "regular", "directory", or "other"
-                     - size:         for a Regular File, the size in bytes, otherwise -1
+                     - size:         for a Regular File, the size in bytes (BigInt,) otherwise -1n
                      - creationTime  (Windows and MacOS only): milliseconds since 1970-01-01T00:00:00.000Z
                      - lastAccessed: milliseconds since 1970-01-01T00:00:00.000Z
                      - lastModified: milliseconds since 1970-01-01T00:00:00.000Z
@@ -728,6 +769,10 @@ in mind.
     Returns an "error" response if either file's full pathName is > 255 characters.
 <br>
 <br>
+    An "error" response with a "code" of "403" will have a "subCode" of "read-only"
+    if the requesting extension has been granted Read-Only access.
+<br>
+<br>
     Throws if there is an operating system error.
 <br>
 <br>
@@ -746,6 +791,10 @@ in mind.
 <br>
 <br>
     Returns an "error" response if the file's full pathName is > 255 characters.
+<br>
+<br>
+    An "error" response with a "code" of "403" will have a "subCode" of "read-only"
+    if the requesting extension has been granted Read-Only access.
 <br>
 <br>
     Throws if there is an operating system error.
@@ -785,6 +834,10 @@ in mind.
 <br>
 <br>
     Returns an "error" response if the directory's full pathName is > 255 characters.
+<br>
+<br>
+    An "error" response with a "code" of "403" will have a "subCode" of "read-only"
+    if the requesting extension has been granted Read-Only access.
 <br>
 <br>
     Throws if there is an operating system error.
@@ -831,7 +884,7 @@ in mind.
                      - fileName:     the fileName
                      - path:         the full pathname
                      - type:         "regular", "directory", or "other"
-                     - size:         for a Regular File, the size in bytes, otherwise -1
+                     - size:         for a Regular File, the size in bytes (BigInt,) otherwise -1n
                      - creationTime  (Windows and MacOS only): milliseconds since 1970-01-01T00:00:00.000Z
                      - lastAccessed: milliseconds since 1970-01-01T00:00:00.000Z
                      - lastModified: milliseconds since 1970-01-01T00:00:00.000Z
@@ -891,7 +944,7 @@ in mind.
                      - fileName:     the fileName
                      - path:         the full pathname
                      - type:         "regular", "directory", or "other"
-                     - size:         for a Regular File, the size in bytes, otherwise -1
+                     - size:         for a Regular File, the size in bytes (BigInt,) otherwise -1n
                      - creationTime  (Windows and MacOS only): milliseconds since 1970-01-01T00:00:00.000Z
                      - lastAccessed: milliseconds since 1970-01-01T00:00:00.000Z
                      - lastModified: milliseconds since 1970-01-01T00:00:00.000Z
@@ -1047,15 +1100,15 @@ in mind.
                 'count_other':                      integer:          number of child items with type 'other'
                 'count_unknown':                    integer:          number of child items whose type is none of the three above
                 'count_error':                      integer:          number of child items whose type could not be determined
-                'time_childCreation_earliest':      integer:          earliest Creation Time      in MS of all child items (OS-dependent) (undefined if no children)
-                'time_childCreation_latest':        integer:          latest   Creation Time      in MS of all child items (OS-dependent) (undefined if no children)
-                'time_childLastAccessed_earliest':  integer:          earliest Last Accessed Time in MS of all child items (OS-dependent) (undefined if no children)
-                'time_childLastAccessed_latest':    integer:          latest   Last Accessed Time in MS of all child items (OS-dependent) (undefined if no children)
-                'time_childLastModified_earliest':  integer:          earliest Last Modified Time in MS of all child items (OS-dependent) (undefined if no children)
-                'time_childLastModified_latest':    integer:          latest   Last Modified Time in MS of all child items (OS-dependent) (undefined if no children)
-                'size_smallest':                    integer:          smallest size (bytes)  of all child items with type 'regular' (undefined if no items with this type)
-                'size_largest':                     integer:          largest  size (bytes)  of all child items with type 'regular' (undefined if no items with this type)
-                'size_total':                       integer:          total of sizes (bytes) of all child items with type 'regular  (undefined if no items with this type)
+                'time_fileCreation_earliest':       integer:          earliest Creation Time      in MS (OS-dependent) of all child Regular Files (undefined if none)
+                'time_fileCreation_latest':         integer:          latest   Creation Time      in MS (OS-dependent) of all child Regular Files (undefined if none)
+                'time_fileLastAccessed_earliest':   integer:          earliest Last Accessed Time in MS (OS-dependent) of all child Regular Files (undefined if none)
+                'time_fileLastAccessed_latest':     integer:          latest   Last Accessed Time in MS (OS-dependent) of all child Regular Files (undefined if none)
+                'time_fileLastModified_earliest':   integer:          earliest Last Modified Time in MS (OS-dependent) of all child Regular Files (undefined if none)
+                'time_fileLastModified_latest':     integer:          latest   Last Modified Time in MS (OS-dependent) of all child Regular Files (undefined if none)
+                'size_smallest':                    BigInt:           smallest size (bytes)  of all child items with type 'regular' (undefined if no items with this type)
+                'size_largest':                     BigInt:           largest  size (bytes)  of all child items with type 'regular' (undefined if no items with this type)
+                'size_total':                       BigInt:           total of sizes (bytes) of all child items with type 'regular  (undefined if no items with this type)
                 [ 'childInfo': ]                    array of object:          (OPTIONAL: only if includeChildInfo is true)
                                                       {
                                                         'name'                string:   item fileName
@@ -1064,7 +1117,7 @@ in mind.
                                                         'creationTime':       integer:  Creation Time      in MS (OS-dependent)
                                                         'lastAccessedTime':   integer:  Last Accessed Time in MS (OS-dependent)
                                                         'lastModifiedTime':   integer:  Last Modified Time in MS (OS-dependent)
-                                                        [ 'size': ]           integer:  file size (bytes)        (OPTIONAL: only for items with type 'regular')
+                                                        [ 'size': ]           BigInt:   file size (bytes)        (OPTIONAL: only for items with type 'regular')
                                                       }
               }
           }
@@ -1124,7 +1177,7 @@ in mind.
                            'fileName:      string:   the fileName
                            'path:          string:   the full pathname
                            'type:          string:   "regular", "directory", or "other"
-                           'size:          integer:  for a Regular File, the size in bytes, otherwise -1
+                           'size:          BigInt:   for a Regular File, the size in bytes, otherwise -1n
                            'creationTime   integer:  (Windows and MacOS only): milliseconds since 1970-01-01T00:00:00.000Z
                            'lastAccessed:  integer:  milliseconds since 1970-01-01T00:00:00.000Z
                            'lastModified:  integer:  milliseconds since 1970-01-01T00:00:00.000Z
@@ -1240,20 +1293,21 @@ in mind.
                      'count_type_other':                  integer:  number of descendent items with type 'other'
                      'count_type_unknown':                integer:  number of descendent items whose type is none of the three above
                      'count_type_error':                  integer:  number of descendent items whose type could not be determined
-                     'time_childCreation_earliest':       integer:  earliest Creation Time      in MS of all descendent items (OS-dependent) (undefined if no children)
-                     'time_childCreation_latest':         integer:  latest   Creation Time      in MS of all descendent items (OS-dependent) (undefined if no children)
-                     'time_childLastAccessed_earliest':   integer:  earliest Last Accessed Time in MS of all descendent items (OS-dependent) (undefined if no children)
-                     'time_childLastAccessed_latest':     integer:  latest   Last Accessed Time in MS of all descendent items (OS-dependent) (undefined if no children)
-                     'time_childLastModified_earliest':   integer:  earliest Last Modified Time in MS of all descendent items (OS-dependent) (undefined if no children)
-                     'time_childLastModified_latest':     integer:  latest   Last Modified Time in MS of all descendent items (OS-dependent) (undefined if no children)
-                     'size_smallest':                     integer:  smallest size  (bytes) of all descendent items with type 'regular' (undefined if no items with type 'regular')
-                     'size_largest':                      integer:  largest  size  (bytes) of all descendent items with type 'regular' (undefined if no items with type 'regular')
-                     'size_total':                        integer:  total of sizes (bytes) of all descendent items with type 'regular' (undefined if no items with type 'regular')
+                     'time_fileCreation_earliest':        integer:  earliest Creation Time      in MS (OS-dependent) of all descendent Regular Files (undefined if none)
+                     'time_fileCreation_latest':          integer:  latest   Creation Time      in MS (OS-dependent) of all descendent Regular Files (undefined if none)
+                     'time_fileLastAccessed_earliest':    integer:  earliest Last Accessed Time in MS (OS-dependent) of all descendent Regular Files (undefined if none)
+                     'time_fileLastAccessed_latest':      integer:  latest   Last Accessed Time in MS (OS-dependent) of all descendent Regular Files (undefined if none)
+                     'time_fileLastModified_earliest':    integer:  earliest Last Modified Time in MS (OS-dependent) of all descendent Regular Files (undefined if none)
+                     'time_fileLastModified_latest':      integer:  latest   Last Modified Time in MS (OS-dependent) of all descendent Regular Files (undefined if none)
+                     'size_smallest':                     BigInt:   smallest size  (bytes) of all descendent items with type 'regular' (undefined if no items with type 'regular')
+                     'size_largest':                      BigInt:   largest  size  (bytes) of all descendent items with type 'regular' (undefined if no items with type 'regular')
+                     'size_total':                        BigInt:   total of sizes (bytes) of all descendent items with type 'regular' (undefined if no items with type 'regular')
         },
         'dirStats': (OPTIONAL, not included if includeDirStats is false) an array of object, indexed by Directory Name
                        {
                          'dirName':                           string:   directory fileName
                          'dirPath':                           string:   directory full pathName
+                         'isFileSystemRoot':                  boolean:  true if this is the FileSystemBroker Root Directory
                          'error':                             string:   a description if there was an error getting information. None of the data below will be present.
                          'count_children':                    integer:  total number of child items
                          'count_type_regular':                integer:  number of child items with type 'regular'
@@ -1261,15 +1315,15 @@ in mind.
                          'count_type_other':                  integer:  number of child items with type 'other'
                          'count_type_unknown':                integer:  number of child items whose type is none of the three above
                          'count_type_error':                  integer:  number of child items whose type could not be determined
-                         'time_childCreation_earliest':       integer:  earliest Creation Time      in MS of all child items (OS-dependent) (undefined if no children)
-                         'time_childCreation_latest':         integer:  latest   Creation Time      in MS of all child items (OS-dependent) (undefined if no children)
-                         'time_childLastAccessed_earliest':   integer:  earliest Last Accessed Time in MS of all child items (OS-dependent) (undefined if no children)
-                         'time_childLastAccessed_latest':     integer:  latest   Last Accessed Time in MS of all child items (OS-dependent) (undefined if no children)
-                         'time_childLastModified_earliest':   integer:  earliest Last Modified Time in MS of all child items (OS-dependent) (undefined if no children)
-                         'time_childLastModified_latest':     integer:  latest   Last Modified Time in MS of all child items (OS-dependent) (undefined if no children)
-                         'size_smallest':                     integer:  smallest size  (bytes) of all child items with type 'regular' (undefined if no items with type 'regular')
-                         'size_largest':                      integer:  largest  size  (bytes) of all child items with type 'regular' (undefined if no items with type 'regular')
-                         'size_total':                        integer:  total of sizes (bytes) of all child items with type 'regular' (undefined if no items with type 'regular')
+                         'time_fileCreation_earliest':        integer:  earliest Creation Time      in MS (OS-dependent) of all child Regular Files (undefined if none)
+                         'time_fileCreation_latest':          integer:  latest   Creation Time      in MS (OS-dependent) of all child Regular Files (undefined if none)
+                         'time_fileLastAccessed_earliest':    integer:  earliest Last Accessed Time in MS (OS-dependent) of all child Regular Files (undefined if none)
+                         'time_fileLastAccessed_latest':      integer:  latest   Last Accessed Time in MS (OS-dependent) of all child Regular Files (undefined if none)
+                         'time_fileLastModified_earliest':    integer:  earliest Last Modified Time in MS (OS-dependent) of all child Regular Files (undefined if none)
+                         'time_fileLastModified_latest':      integer:  latest   Last Modified Time in MS (OS-dependent) of all child Regular Files (undefined if none)
+                         'size_smallest':                     BigInt:   smallest size  (bytes) of all child items with type 'regular' (undefined if no items with type 'regular')
+                         'size_largest':                      BigInt:   largest  size  (bytes) of all child items with type 'regular' (undefined if no items with type 'regular')
+                         'size_total':                        BigInt:   total of sizes (bytes) of all child items with type 'regular' (undefined if no items with type 'regular')
                        }
         }
       }

@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html language="en">
+
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <title data-l10n-id="fsbStorageManager_pageTitle">Storage Manager</title>
+    <link rel="stylesheet" href="./storageManager.css" type="text/css" >
+    <script type="module" src="./storageManager.js" defer></script>
+  </head>
+
+  <body>
+    <div id="fsbStorageManager">
+      <div id="fsbStorageManagerTitlePanel" data-l10n-id="fsbStorageManager_title">
+        Storage Manager <!-- don't put anyting inside this <div> because localization will replace it -->
+      </div>
+
+      <div id="fsbStorageManagerTitleMessagesPanel" class="messages-panel" messages-for="fsbStorageManagerTitlePanel" msg="false"></div>
+
+      <div id="fsbStorageManagerInstructionsPanel">
+        <div>
+          <span class="open-close-widget" for="fsbShowStorageManagerInstructions">
+            <input id="fsbShowStorageManagerInstructions" type="checkbox" class="fsbGeneralOption open-close-check" for="fsbStorageManagerInstructions">
+            <label for="fsbShowStorageManagerInstructions"></label>
+            <label for="fsbShowStorageManagerInstructions" data-l10n-id="fsbStorageManagerInstructions.label"></label>
+          </span>
+        </div>
+
+        <div id="fsbStorageManagerInstructions" class="open-close-panel">
+          <ul class="compact-list">
+            <li><label data-l10n-id="fsbStorageManager_instructions_1">Click on a Directory to Select it - it will be highlighted</label></li>
+            <li><label data-l10n-id="fsbStorageManager_instructions_2">Click again to De-select it</label></li>
+            <li><label data-l10n-id="fsbStorageManager_instructions_3">Click a Delete button to the left of Directory to delete it</label></li>
+          <ul>
+        </div>
+
+        <div class="messages-panel" messages-for="fsbStorageManagerInstructions" msg="false"></div>
+      </div> <!-- END OF <div id="fsbStorageManagerInstructionsPanel"> -->
+
+      <div id="fsbStorageManagerActionsPanelWrapper">
+        <div id="fsbStorageManagerActionsPanel">
+          <div>
+            <span class="open-close-widget" for="fsbShowStorageManagerActionsPanel">
+              <input id="fsbShowStorageManagerActionsPanel" type="checkbox" class="fsbGeneralOption open-close-check" for="fsbStorageManagerActionsContentPanel">
+              <label id="fsbShowStorageManagerActionsPanelLabel"for="fsbShowStorageManagerActionsPanel"></label>
+              <label id="fsbStorageManagerActionsPanelTitle" for="fsbShowStorageManagerActionsPanel" data-l10n-id="fsbStorageManager_actionsPanelTitle.label"></label>
+            </span>
+          </div>
+
+          <div id="fsbStorageManagerActionsContentPanel" class="open-close-panel">
+
+            <div id="fsbStorageManagerQuotaSettingsPanel">
+              <div id="fsbStorageManagerQuotaSettingsTitle">
+                <label id="fsbStorageManagerQuotaSettingsTitleLabel" data-l10n-id="fsbStorageManager_quotaSettingsPanelTitle.label"></label>
+                <label id="fsbStorageManagerQuotaSettingsHintLabel" data-l10n-id="fsbStorageManager_quotaSettingsPanelHint.label"></label>
+              </div>
+
+              <table id="fsbStorageManagerQuotaSettings">
+
+                <tr id="fsbStorageQuotaPanel">
+                  <td class="quota-control">
+                    <input type="checkbox" id="fsbStorageQuotaEnabled" class="fsbGeneralOption quota-check no-css"/>
+                    <label id="fsbStorageQuotaLabel" for="fsbStorageQuotaEnabled" class="quota-label" data-l10n-id="fsbStorageManager_storageQuotaInput.label">
+                    </label>
+                  </td>
+                  <td class="quota-value">
+                    <input type="number" value="1" min="1" max="9999" step="1" id="fsbStorageQuota" maxDigits="4" class="fsbGeneralOption quota-setting no-css"/>
+                  </td>
+                  <td class="quota-unit">
+                    <select id="fsbStorageQuotaUnit" class="fsbGeneralOption">
+                      <option value="Bytes">Bytes</option>
+                      <option value="KB">KB</option>
+                      <option value="MB" selected>MB</option>
+                      <option value="GB">GB</option>
+                    </select>
+                  </td>
+                </tr>
+
+                <tr id="fsbFileSizeQuotaPanel">
+                  <td class="quota-control">
+                    <input type="checkbox" id="fsbFileSizeQuotaEnabled" class="fsbGeneralOption quota-check no-css"/>
+                    <label id="fsbFileSizeQuotaLabel" for="fsbFileSizeQuotaEnabled" class="quota-label" data-l10n-id="fsbStorageManager_fileSizeQuotaInput.label">
+                    </label>
+                  </td>
+                  <td class="quota-value">
+                    <input type="number" value="1" min="1" max="9999" step="1" id="fsbFileSizeQuota" maxDigits="4" class="fsbGeneralOption quota-setting no-css"/>
+                  </td>
+                  <td class="quota-unit">
+                    <select id="fsbFileSizeQuotaUnit" class="fsbGeneralOption">
+                      <option value="Bytes">Bytes</option>
+                      <option value="KB" selected>KB</option>
+                      <option value="MB">GB</option>
+                    </select>
+                  </td>
+                </tr>
+
+                <tr id="fsbFileCountQuotaPanel">
+                  <td class="quota-control">
+                    <input type="checkbox" id="fsbFileCountQuotaEnabled" class="fsbGeneralOption quota-check no-css"/>
+                    <label id="fsbFileCountQuotaLabel" for="fsbFileCountQuotaEnabled" class="quota-label" data-l10n-id="fsbStorageManager_fileCountQuotaInput.label">
+                    </label>
+                  </td>
+                  <td class="quota-value">
+                    <input type="number" value="1" min="1" max="9999" step="1" id="fsbFileCountQuota" maxDigits="4" class="fsbGeneralOption quota-setting no-css"/>
+                  </td>
+                  <td>
+                    <!-- no units for file count -- yet -->
+                  </td>
+                </tr>
+
+              </table>
+            </div> <!-- END OF <div id="fsbStorageManagerQuotaSettingsPanel"> -->
+
+            <div id="fsbStorageManagerQuotaCheckSettingsPanel">
+              <div id="fsbStorageManagerQuotaCheckSettingsTitle">
+                <label id="fsbStorageManagerQuotaCheckSettingsTitleLabel" data-l10n-id="fsbStorageManager_quotaCheckSettingsPanelTitle.label"></label>
+                <label id="fsbStorageManagerQuotaCheckSettingsHintLabel" data-l10n-id="fsbStorageManager_quotaCheckSettingsPanelHint.label" ></label>
+              </div>
+
+              <div>
+                <input type="checkbox" id="fsbQuotaCheckSchedulingBlocked" class="fsbGeneralOption no-css"/>
+                <label for="fsbQuotaCheckSchedulingBlocked" data-l10n-id="fsbStorageManager_quotaCheckSchedulingBlockedCheckbox.label"></label>
+              </div>
+              <div id="fsbQuotaCheckSchedulingBlockedHintsPanel" class="messages-panel">
+                <label class="msg msg-icon-large"></label>
+                <label class="msg msg-text" data-l10n-id="fsbStorageManager_quotaCheckSchedulingBlocked.hint">
+                </label>
+              </div>
+              <div id="fsbQuotaCheckSchedulingUnblockedReminderPanel" class="messages-panel">
+                <label class="msg msg-icon-large"></label>
+                <label class="msg msg-text" data-l10n-id="fsbStorageManager_quotaCheckSchedulingUnblocked.hint">
+                </label>
+              </div>
+
+              <div id="fsbStorageManagerQuotaCheckSettings">
+                <div id="fsbStorageManagerQuotaCheckControls">
+                  <div>
+                    <input type="checkbox" id="fsbQuotaCheckEnabled" class="fsbGeneralOption no-css"/>
+                    <label for="fsbQuotaCheckEnabled" data-l10n-id="fsbStorageManager_quotaCheckEnableCheckbox.label"></label>
+                  </div>
+                </div>
+
+                <div id="fsbStorageManagerQuotaCheckSchedulePanel">
+                  <label for="fsbQuotaCheckUnit" data-l10n-id="fsbStorageManager_quotaCheckUnitSelect.label"></label>
+                  <select id="fsbQuotaCheckUnit" class="fsbGeneralOption no-css"></select>
+
+                  <div id="fsbStorageManagerQuotaCheckDays">
+                    <label for="fsbQuotaCheckDays" data-l10n-id="fsbStorageManager_quotaCheckDaysSelect.label-before"></label>
+                    <select id="fsbQuotaCheckDays" class="fsbGeneralOption no-css"></select>
+                    <label for="fsbQuotaCheckDays" data-l10n-id="fsbStorageManager_quotaCheckDaysSelect.label-after"></label>
+                    <label for="fsbQuotaCheckDaysTimeOffset" data-l10n-id="fsbStorageManager_quotaCheckDaysTimeOffsetInput.label-before"></label>
+                    <input type="time" step="1" id="fsbQuotaCheckDaysTimeOffset" class="fsbGeneralOption no-css"/>
+                    <label for="fsbQuotaCheckDaysTimeOffset" data-l10n-id="fsbStorageManager_quotaCheckDaysTimeOffsetInput.label-after"></label>
+                  </div>
+
+                  <div id="fsbStorageManagerQuotaCheckHours">
+                    <label for="fsbQuotaCheckHours" data-l10n-id="fsbStorageManager_quotaCheckHoursSelect.label-before"></label>
+                    <select id="fsbQuotaCheckHours" class="fsbGeneralOption no-css"></select>
+                    <label for="fsbQuotaCheckHours" data-l10n-id="fsbStorageManager_quotaCheckHoursSelect.label-after"></label>
+                    <label for="fsbQuotaCheckHoursMinuteOffset" data-l10n-id="fsbStorageManager_quotaCheckHoursMinuteOffsetInput.label-before"></label>
+                    <input type="number" min="0" max="59" id="fsbQuotaCheckHoursMinuteOffset" maxDigits="2" class="fsbGeneralOption quota-setting no-css"/>
+                    <label for="fsbQuotaCheckHoursMinuteOffset" data-l10n-id="fsbStorageManager_quotaCheckHoursMinuteOffsetInput.label-after"></label>
+                  </div>
+
+                  <div id="fsbStorageManagerQuotaCheckMinutes">
+                    <label for="fsbQuotaCheckMinutes" data-l10n-id="fsbStorageManager_quotaCheckMinutesInput.label-before"></label>
+                    <!--input type="number" min="5" max="30" id="fsbQuotaCheckMinutes" maxDigits="2" class="fsbGeneralOption quota-setting no-css"/ -->
+                    <select id="fsbQuotaCheckMinutes" class="fsbGeneralOption no-css"></select>
+                    <label for="fsbQuotaCheckMinutes" data-l10n-id="fsbStorageManager_quotaCheckMinutesInput.label-after"></label>
+                    <label for="fsbStorageManagerQuotaCheckMinutesMinuteOffset" data-l10n-id="fsbStorageManager_quotaCheckMinutesMinuteOffsetInput.label-before"></label>
+                    <input type="number" min="0" max="29" id="fsbStorageManagerQuotaCheckMinutesMinuteOffset" maxDigits="2" class="fsbGeneralOption quota-setting no-css"/>
+                    <label for="fsbStorageManagerQuotaCheckMinutesMinuteOffset" data-l10n-id="fsbStorageManager_quotaCheckMinutesMinuteOffsetInput.label-after"></label>
+                  </div>
+                </div>
+              </div>
+
+              
+            </div> <!-- END OF <div id="fsbStorageManagerQuotaCheckSettingsPanel"> -->
+
+            <div id="fsbStorageManagerActionsControlsPanel">
+              <div id="fsbStorageManagerActionsButtonPanel" class="button-panel">
+                <button id="fsbStorageManagerQuotasTrialRunButton" data-l10n-id="fsbStorageManager_quotasTrialRunButton.label">
+                  Trial Run
+                </button>
+                <button id="fsbStorageManagerRunQuotasCheckButton" data-l10n-id="fsbStorageManager_runQuotasCheckButton.label">
+                  Run Quotas Check
+                </button>
+                <button id="fsbStorageManagerResetAllExtensionQuotasButton" data-l10n-id="fsbStorageManager_resetAllExtensionQuotasButton.label">
+                  Reset AllExtension Quotas
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="messages-panel" messages-for="fsbStorageManagerActionsPanel" msg="false"></div>
+
+        </div> <!-- END OF <div id="fsbStorageManagerActionsPanel"> -->
+
+        <div id="fsbStorageManagerActionsPanelSpacer"></div>
+
+      </div> <!-- END OF <div id="fsbStorageManagerActionsPanelWrapper"> -->
+
+      <div id="fsbStorageManagerStatsPanelWrapper">
+        <div id="fsbStorageManagerStatsPanel">
+          <div>
+            <span class="open-close-widget" for="fsbShowStorageManagerStatsPanel">
+              <input id="fsbShowStorageManagerStatsPanel" type="checkbox" class="fsbGeneralOption open-close-check" for="fsbStorageManagerStatsContentPanel">
+              <label id="fsbShowStorageManagerStatsPanelLabel"for="fsbShowStorageManagerStatsPanel"></label>
+              <label id="fsbStorageManagerStatsPanelTitle" for="fsbShowStorageManagerStatsPanel" data-l10n-id="fsbStorageManager_statsPanelTitle"></label>
+            </span>
+          </div>
+
+          <div id="fsbStorageManagerStatsContentPanel" class="open-close-panel">
+            <div id="fsbStorageManagerNamesPanel" class="stats-sub-panel">
+              <table id="fsbStorageManagerNames" class="stats-table">
+                <tr class="stats-header">
+                  <th class="stats-header-item" data-l10n-id="fsbStorageManager_statsHeader_dir_name"></th>
+                  <th class="stats-header-item" data-l10n-id="fsbStorageManager_statsHeader_dir_path"></th>
+                </tr>
+                <tr id="stats_data_names" class="stats-data">
+                  <td id="stats_data_dir_name" class="stats-data-item stats-data-name"></td>
+                  <td id="stats_data_dir_path" class="stats-data-item stats-data-name"></td>
+                </tr>
+              </table>
+            </div>
+
+            <div id="fsbStorageManagerCountsPanel" class="stats-sub-panel">
+              <div class="stats-title" data-l10n-id="fsbStorageManager_statsTitle_counts"></div>
+              <table id="fsbStorageManagerCounts" class="stats-table">
+                <tr class="stats-header">
+                  <th class="stats-header-item" data-l10n-id="fsbStorageManager_statsHeader_count_total"></th>
+                  <th class="stats-header-item" data-l10n-id="fsbStorageManager_statsHeader_count_type_regular"></th>
+                  <th class="stats-header-item" data-l10n-id="fsbStorageManager_statsHeader_count_type_directory"></th>
+                  <th class="stats-header-item" data-l10n-id="fsbStorageManager_statsHeader_count_type_other"></th>
+                  <th class="stats-header-item" data-l10n-id="fsbStorageManager_statsHeader_count_type_uknown"></th>
+                  <th class="stats-header-item" data-l10n-id="fsbStorageManager_statsHeader_count_type_error"></th>
+                </tr>
+                <tr id="stats_data_counts" class="stats-data">
+                  <td id="stats_data_count_total"          class="stats-data-item stats-data-count"></td>
+                  <td id="stats_data_count_type_regular"   class="stats-data-item stats-data-count"></td>
+                  <td id="stats_data_count_type_directory" class="stats-data-item stats-data-count"></td>
+                  <td id="stats_data_count_type_other"     class="stats-data-item stats-data-count"></td>
+                  <td id="stats_data_count_type_unknown"   class="stats-data-item stats-data-count"></td>
+                  <td id="stats_data_count_type_error"     class="stats-data-item stats-data-count"></td>
+                </tr>
+              </table>
+            </div>
+
+            <div id="fsbStorageManagerSizesPanel" class="stats-sub-panel">
+              <div class="stats-title" data-l10n-id="fsbStorageManager_statsTitle_sizes"></div>
+              <table id="fsbStorageManagerSizes" class="stats-table">
+                <tr class="stats-header">
+                  <th class="stats-header-item" data-l10n-id="fsbStorageManager_statsHeader_size_smallest"></th>
+                  <th class="stats-header-item" data-l10n-id="fsbStorageManager_statsHeader_size_largest"></th>
+                  <th class="stats-header-item" data-l10n-id="fsbStorageManager_statsHeader_size_total"></th>
+                </tr>
+                <tr id="stats_data_sizes" class="stats-data">
+                  <td id="stats_data_size_smallest" class="stats-data-item stats-data-size"></td>
+                  <td id="stats_data_size_largest"  class="stats-data-item stats-data-size"></td>
+                  <td id="stats_data_size_total"    class="stats-data-item stats-data-size"></td>
+                </tr>
+              </table>
+            </div>
+
+            <div id="fsbStorageManagerTimesPanel" class="stats-sub-panel">
+              <div class="stats-title" data-l10n-id="fsbStorageManager_statsTitle_times"></div>
+              <table id="fsbStorageManagerTimes" class="stats-table">
+                <tr class="stats-header">
+                  <th class="stats-header-item" data-l10n-id="fsbStorageManager_statsHeader_time_creation_earliest"></th>
+                  <th class="stats-header-item" data-l10n-id="fsbStorageManager_statsHeader_time_creation_latest"></th>
+                  <th class="stats-header-item" data-l10n-id="fsbStorageManager_statsHeader_time_last_accessed_earliest"></th>
+                  <th class="stats-header-item" data-l10n-id="fsbStorageManager_statsHeader_time_last_accessed_latest"></th>
+                  <th class="stats-header-item" data-l10n-id="fsbStorageManager_statsHeader_time_last_modified_earliest"></th>
+                  <th class="stats-header-item" data-l10n-id="fsbStorageManager_statsHeader_time_last_modified_latest"></th>
+                </tr>
+                <tr id="stats_data_times" class="stats-data">
+                  <td id="stats_data_time_creation_earliest"      class="stats-data-item stats-data-time"></td>
+                  <td id="stats_data_time_creation_latest"        class="stats-data-item stats-data-time"></td>
+                  <td id="stats_data_time_last_accessed_earliest" class="stats-data-item stats-data-time"></td>
+                  <td id="stats_data_time_last_accessed_latest"   class="stats-data-item stats-data-time"></td>
+                  <td id="stats_data_time_last_modified_earliest" class="stats-data-item stats-data-time"></td>
+                  <td id="stats_data_time_last_modified_latest"   class="stats-data-item stats-data-time"></td>
+                </tr>
+              </table>
+            </div>
+
+            <div id="fsbStorageManagerExtensionQuotasPanel" class="stats-sub-panel">
+              <div class="stats-title" data-l10n-id="fsbStorageManager_statsTitle_quotas"></div>
+              <table id="fsbStorageExtensionManagerQuotas" class="stats-table">
+                <tr class="stats-header">
+                  <th class="stats-header-item" data-l10n-id="fsbStorageManager_statsHeader_quota_any"></th>
+                  <th class="stats-header-item" data-l10n-id="fsbStorageManager_statsHeader_quota_storage"></th>
+                  <th class="stats-header-item" data-l10n-id="fsbStorageManager_statsHeader_quota_fileSize"></th>
+                  <th class="stats-header-item" data-l10n-id="fsbStorageManager_statsHeader_quota_fileCount"></th>
+                </tr>
+                <tr id="stats_data_times" class="stats-data">
+                  <td id="stats_data_quota_any"       class="stats-data-item stats-data-count"></td>
+                  <td id="stats_data_quota_storage"   class="stats-data-item stats-data-count"></td>
+                  <td id="stats_data_quota_fileSize"  class="stats-data-item stats-data-count"></td>
+                  <td id="stats_data_quota_fileCount" class="stats-data-item stats-data-count"></td>
+                </tr>
+              </table>
+            </div>
+          </div> <!-- END OF <div id="fsbStorageManagerStatsContentPanel"> -->
+        </div> <!-- END OF <div id="fsbStorageManagerStatsPanel"> -->
+
+        <div id="fsbStorageManagerStatsSpacer"></div>
+      </div> <!-- END OF <div id="fsbStorageManagerStatsPanelWrapper"> -->
+
+      <div id="fsbStorageManagerDirectoryListWrapper">
+        <table id="fsbStorageManagerDirectoryList">
+        </table>
+      </div>
+
+      <div id="fsbStorageManagerControlsPanel">
+        <div id="fsbStorageManagerControlsButtonPanel">
+          <button id="fsbStorageManagerRefreshButton" data-l10n-id="fsbStorageManager_refreshButton">Refresh List</button>
+          <button id="fsbStorageManagerDoneButton" data-l10n-id="fsbStorageManager_doneButton">Done</button>
+        </div>
+        <div id="fsbStorageManagerControlsPanelSpacerRight"></div>
+      </div>
+
+      <div id="fsbStorageManagerLeftSpacer"></div>
+      <div id="fsbStorageManagerRightSpacer"></div>
+      <div id="fsbStorageManagerBottomSpacer"></div>
+    </div> <!-- END OF <div id="fsbStorageManager"> -->
+  </body>
+
+</html>

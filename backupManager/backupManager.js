@@ -330,7 +330,7 @@ class BackupManager {
 
     const i18nMessage = getI18nMsg("fsbBackupManager_message_fileNamesLoading", "...");
     const loadingTR = document.createElement("tr");
-    loadingTR.classList.add("identities-loading");
+    loadingTR.classList.add("data-loading-message");
     loadingTR.appendChild( document.createTextNode(i18nMessage) ); // you can put a text node in a TR ???
     domFileList.appendChild(loadingTR);
 
@@ -847,7 +847,7 @@ class BackupManager {
 
 
   async doneButtonClicked(e) {
-    this.debug(`-- e.target.tagName="${e.target.tagName}"`);
+    this.debug(`--begin"`);
 
     e.preventDefault();
 
@@ -868,7 +868,7 @@ class BackupManager {
                  );
     }
 
-    this.debug("-- Closing window");
+    this.debug("-- Closing Our Window");
     window.close();
   }
 }

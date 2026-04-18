@@ -17,11 +17,11 @@
           options_fsbOptionsTitle
         </div>
 
-        <div class="option-error" error-for="fsbExtensionOptionsTitle" error="false">
-          <span class="option-error-icon-large"><img src="../images/icons/stop/forbidden_16x16.png"/></span>
-          <label class="option-error-text" error-for="fsbExtensionOptionsTitle"></label>
+        <div class="errors-panel" errors-for="fsbExtensionOptionsTitle">
         </div>
-      <div>
+        <div class="messages-panel" messages-for="fsbExtensionOptionsTitle">
+        </div>
+      </div>
 
       <div id="fsbExtensionOptionsPanel">
 
@@ -68,10 +68,10 @@
                 Event Log Manager
               </label>
             </button>
-            <button id="fsbShowStatsManagerButton">
-              <label for="fsbShowStatsManagerButton"
-                     data-l10n-id="options_fsbExtensionOptionsButtonStatsManager.label"
-                     tooltip-l10n-id="options_fsbExtensionOptionsButtonStatsManager.tooltip">
+            <button id="fsbShowStorageManagerButton">
+              <label for="fsbShowStorageManagerButton"
+                     data-l10n-id="options_fsbExtensionOptionsButtonStorageManager.label"
+                     tooltip-l10n-id="options_fsbExtensionOptionsButtonStorageManager.tooltip">
                 Status Manager
               </label>
             </button>
@@ -86,7 +86,7 @@
               </span>
             </div>
 
-            <div class="options-open-close-panel" id="fsbLoggingOptions">
+            <div class="open-close-panel" id="fsbLoggingOptions">
               <div class="option-panel">
                 <input type="checkbox" id="fsbEnableAccessLogging" class="fsbGeneralOption"/>
                 <label for="fsbEnableAccessLogging" data-l10n-id="options_fsbEnableAccessLoggingCheck.label"></label>
@@ -155,7 +155,7 @@
                 </span>
               </div>
 
-              <div class="options-open-close-panel" id="fsbHintsPanel">
+              <div class="open-close-panel" id="fsbHintsPanel">
                 <ul class="compact-list">
                   <li><label class="hint" data-l10n-id="options_fsbExtensionList.hint1">options_fsbExtensionList.hint1</label></li>
                   <li><label class="hint" data-l10n-id="options_fsbExtensionList.hint2">options_fsbExtensionList.hint2</label></li>
@@ -174,7 +174,7 @@
                   <td colspan="2">
                     <div class="subpanel-title">
                       <span class="open-close-widget" for="fsbShowOptionsActions">
-                        <input id="fsbShowOptionsActions" type="checkbox" class="fsbGeneralOption open-close-check"/>
+                        <input id="fsbShowOptionsActions" type="checkbox" class="fsbGeneralOption open-close-check"/> <!-- NOTE: no "for" attribute - requires special code -->
                         <label for="fsbShowOptionsActions"></label>
                         <label for="fsbShowOptionsActions" data-l10n-id="options_fsbExtensionListButtonsTitle">options_fsbExtensionListButtonsTitle</label>
                       </span>
@@ -301,30 +301,6 @@
           <div id="fsbExtensionListWrapper">
 
             <table id="fsbExtensionList" class="">
-
-<!-- EXAMPLE extension-list-item <TR> classes 'access-disallowed', 'selected', and 'extension-locked' are optional:
-              <tr class="extension-list-item access-disallowed selected locked" extensionId="extension-name@yyy.com" extensionName="Extension Name">
-                <td class="extension-list-controls-left">
-                  <input type="checkbox" class="extension-list-check allow-access-check" extensionId="extension-name@yyy.com"/>
-                </td>
-
-                <td class="extension-list-data extension-list-name">
-                  Extension Name
-                </td>
-
-                <td class="extension-list-data extension-list-id">
-                  extension-name@yyy.com
-                </td>
-
-                <td class="extension-list-controls-right">
-                  <div class="extension-controls-panel edit-controls">
-                    <button class="extension-list-button edit-extension-id" extensionId="extension-name@yyy.com"></button>
-                    <button class="extension-list-button delete-extension-id" extensionId="extension-name@yyy.com"></button>
-                  </div>
-                </td>
-              </tr>
--- END OF EXAMPLE extension-list-item <TR> -->
-
             </table>
 
             <div id="fsbExtensionListWrapperSpacer"></div>
@@ -333,9 +309,19 @@
 
         </div> <!-- END OF <div id="fsbExtensionChooserOptions"> -->
 
-        </div id="fsbChooserOptionsWrapperSpacer"></div>
+        <div id="fsbChooserOptionsWrapperSpacer"></div>
 
       </div> <!-- END OF <div id="fsbExtenionsIdChooserOptionsWrapper"> -->
+
+      <div id="fsbOptionsControlsPanel" class="panel button-panel">
+        <button id="fsbOptionsDoneButton">
+          <label for="fsbOptionsDoneButton"
+                 data-l10n-id="options_fsbOptionsDoneButton.label"
+                 tooltip-l10n-id="options_fsbOptionsDoneButton.tooltip">
+            Done
+          </label>
+        </button>
+      </div>
 
     </div> <!-- END OF <div id="fsbOptionsWrapper"> -->
 

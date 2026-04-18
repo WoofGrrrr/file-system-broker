@@ -1,60 +1,77 @@
 ///import { Logger  } from '../modules/logger.js';
 ///import { FsbOptions     } from '../modules/options.js';
 ///import { FsbEventLogger } from '../modules/event_logger.js';
-import { getExtensionId, formatMsToDateTime12HR, formatMsToDateTime24HR } from './utilities.js';
+//import { getExtensionId, formatMsToDateTime12HR, formatMsToDateTime24HR } from './utilities.js';
+import * as utils from './utilities.js';
 
 export class FileSystemBrokerCommands {
   /* one day I hope to use options to set the logging levels */
 
-  #CLASS_NAME   = this.constructor.name;
-  #EXTENSION_ID = getExtensionId();
+  #CLASS_NAME     = this.constructor.name;
+  #EXTENSION_ID   = utils.getExtensionId();
+  #EXTENSION_NAME = utils.getExtensionName();
 
-  #LOG          = false;
-  #DEBUG        = false;
+  #INFO           = false;
+  #LOG            = false;
+  #DEBUG          = false;
+  #WARN           = false;
 
   #LOG_INTERNAL_COMMANDS = false;
+  #LOG_EXTERNAL_COMMANDS = false;
 
   #logger;
   #fsbOptionsApi;
   #fsbEventLogger;
 
+  
 
-  static #commands = [
-    "access",
-    "exists",
-    "isRegularFile",
-    "isDirectory",
-    "hasFiles",
-    "getFileCount",
-    "writeFile",
-    "replaceFile",
-    "appendToFile",
-    "writeJSONFile",
-    "writeObjectToJSONFile",
-    "readFile",
-    "readJSONFile",
-    "readObjectFromJSONFile",
-    "makeDirectory",
-    "getFileInfo",
-    "renameFile",
-    "deleteFile",
-    "deleteDirectory",
-    "listFiles",
-    "listFileInfo",
-    "list",
-    "listInfo",
-    "getFullPathName",
-    "isValidFileName",
-    "isValidDirectoryName",
-    "getFileSystemPathName",
-    "stats",
-    "fsbListInfo",          // This is an INTERNAL-ONLY Command!!!
-    "fsbList",              // This is an INTERNAL-ONLY Command!!!
-    "fsbStats",             // This is an INTERNAL-ONLY Command!!!
-    "fsbDeleteDirectory",   // This is an INTERNAL-ONLY Command!!!
-  ];
+  static #COMMAND_TYPE = {
+    'ACCESS':     'access',
+    'READ_META':  'read-meta',
+    'ALTER_META': 'alter-meta',
+    'READ_DATA':  'read-data',
+    'ALTER_DATA': 'alter-data',
+    'INFO':       'info',
+    'INTERNAL':   'internal',
+  }
 
-  static x = Object.freeze(FileSystemBrokerCommands.#commands);
+  static #COMMANDS = {
+    'access':                 { 'type': this.#COMMAND_TYPE.ACCESS,     },
+    'exists':                 { 'type': this.#COMMAND_TYPE.READ_META,  },
+    'isRegularFile':          { 'type': this.#COMMAND_TYPE.READ_META,  },
+    'isDirectory':            { 'type': this.#COMMAND_TYPE.READ_META,  },
+    'hasFiles':               { 'type': this.#COMMAND_TYPE.READ_META,  },
+    'getFileCount':           { 'type': this.#COMMAND_TYPE.READ_META,  },
+    'writeFile':              { 'type': this.#COMMAND_TYPE.ALTER_DATA, },
+    'replaceFile':            { 'type': this.#COMMAND_TYPE.ALTER_DATA, },
+    'appendToFile':           { 'type': this.#COMMAND_TYPE.ALTER_DATA, },
+    'writeJSONFile':          { 'type': this.#COMMAND_TYPE.ALTER_DATA, },
+    'writeObjectToJSONFile':  { 'type': this.#COMMAND_TYPE.ALTER_DATA, },
+    'readFile':               { 'type': this.#COMMAND_TYPE.READ_DATA,  },
+    'readJSONFile':           { 'type': this.#COMMAND_TYPE.READ_DATA,  },
+    'readObjectFromJSONFile': { 'type': this.#COMMAND_TYPE.READ_DATA,  },
+    'makeDirectory':          { 'type': this.#COMMAND_TYPE.ALTER_META, },
+    'getFileInfo':            { 'type': this.#COMMAND_TYPE.READ_META,  },
+    'renameFile':             { 'type': this.#COMMAND_TYPE.ALTER_META, },
+    'deleteFile':             { 'type': this.#COMMAND_TYPE.ALTER_META, },
+    'deleteDirectory':        { 'type': this.#COMMAND_TYPE.ALTER_META, },
+    'listFiles':              { 'type': this.#COMMAND_TYPE.READ_META,  },
+    'listFileInfo':           { 'type': this.#COMMAND_TYPE.READ_META,  },
+    'list':                   { 'type': this.#COMMAND_TYPE.READ_META,  },
+    'listInfo':               { 'type': this.#COMMAND_TYPE.READ_META,  },
+    'getFullPathName':        { 'type': this.#COMMAND_TYPE.INFO,       },
+    'isValidFileName':        { 'type': this.#COMMAND_TYPE.INFO,       },
+    'isValidDirectoryName':   { 'type': this.#COMMAND_TYPE.INFO,       },
+    'getFileSystemPathName':  { 'type': this.#COMMAND_TYPE.INFO,       },
+    'stats':                  { 'type': this.#COMMAND_TYPE.READ_META,  },
+    'fsbListInfo':            { 'type': this.#COMMAND_TYPE.INTERNAL,   },
+    'fsbList':                { 'type': this.#COMMAND_TYPE.INTERNAL,   },
+    'fsbStats':               { 'type': this.#COMMAND_TYPE.INTERNAL,   },
+    'fsbDeleteDirectory':     { 'type': this.#COMMAND_TYPE.INTERNAL,   },
+  };
+
+  static #x = Object.freeze(this.#COMMAND_TYPE);
+  static #y = Object.freeze(this.#COMMANDS);
 
 
 
@@ -69,6 +86,15 @@ export class FileSystemBrokerCommands {
 
 
 
+  info(...info) {
+    if (! this.#INFO) return;
+    this.#logger.info(this.#CLASS_NAME, ...info);
+  }
+
+  infoAlways(...info) {
+    this.#logger.infoAlways(this.#CLASS_NAME, ...info);
+  }
+
   log(...info) {
     if (! this.#LOG) return;
     this.#logger.log(this.#CLASS_NAME, ...info);
@@ -76,6 +102,15 @@ export class FileSystemBrokerCommands {
 
   logAlways(...info) {
     this.#logger.logAlways(this.#CLASS_NAME, ...info);
+  }
+
+  warn(...info) {
+    if (! this.#WARN) return;
+    this.#logger.warn(this.#CLASS_NAME, ...info);
+  }
+
+  warnAlways(...info) {
+    this.#logger.warnAlways(this.#CLASS_NAME, ...info);
   }
 
   debug(...info) {
@@ -106,7 +141,55 @@ export class FileSystemBrokerCommands {
 
 
   static getCommandList() {
-    return this.#commands;
+    return Object.keys(FileSystemBrokerCommands.#COMMANDS);
+  }
+
+
+
+  async processExternalCommand(timeMS, Command, extensionId) {
+////const logCommand = await this.#fsbOptionsApi.isEnabledExternalMessageLogging();
+    const logResult  = await this.#fsbOptionsApi.isEnabledExternalMessageResultLogging();
+    
+    try {
+//    if (logCommand) { // already done by caller
+//      this.#fsbEventLogger.logCommand(timeMS, extensionId, Command);
+//    }
+
+      const result = await this.#processCommand(timeMS, Command, extensionId, { 'internalCommand': false } );
+
+      if (! result) {
+        const description =  "NO COMMAND RESULT FROM #processCommand()";
+        this.error(description);
+        if (this.#fsbEventLogger) {
+          this.#fsbEventLogger.logInternalError(Command.command.command, Command.command, description);
+        }
+        return { "error": "Failed to get a Command Result",
+                 "code":  "500"
+               };
+      } else {
+        if (this.#LOG_EXTERNAL_COMMANDS) {
+          const formattedResult = this.formatCommandResult(Command, result);
+          this.logAlways( "-- RESULT"
+                          + `\n- From="${extensionId}"`
+                          + `\n- Command="${Command.command}"`
+//////////////////////////+ `\n- FileName="${Command.fileName}"`
+                          + `\n- parameters: ${formattedParameters}`
+                          + `\n- result: ${formattedResult}`
+                        );
+        }
+
+        if (logResult) {
+          this.#fsbEventLogger.logCommandResult(timeMS, extensionId, Command, result);
+        }
+      }
+
+      return result;
+
+    } catch (error) {
+      this.caught(error, "Error processing External Message - Code 500");
+      this.#fsbEventLogger.logCaughtError(Command.command.command, Command.command, error); // Does NOT log Syntax Errors
+      return { "error": "Internal Error", "code":  "500" };
+    }
   }
 
 
@@ -132,14 +215,14 @@ export class FileSystemBrokerCommands {
     }
 
     try {
-      const result = await this.processCommand(Command, extensionId);
+      const result = await this.#processCommand(timeMS, Command, extensionId, { 'internalCommand': true } );
 
       if (! result) {
-        if (this.#fsbEventLogger) { // MABXXX this is logged regardless of whether the Command or Result Logging Options are enabled
-          this.#fsbEventLogger.logCommandResult(timeMS, "INTERNAL", Command, `INTERNAL ERROR: NO RESULT FROM processCommand`);
+        const description =  "NO COMMAND RESULT FROM #processCommand()";
+        this.error(description);
+        if (this.#fsbEventLogger) {
+          this.#fsbEventLogger.logInternalError(Command.command.command, Command.command, description);
         }
-
-        this.error("-- NO COMMAND RESULT", message);
         return { "error": "Failed to get a Command Result",
                  "code":  "500",
                };
@@ -164,8 +247,8 @@ export class FileSystemBrokerCommands {
       return result;
 
     } catch (error) {
-      if (this.#fsbEventLogger) { // MABXXX this is logged regardless of whether the Command or Result Logging Options are enabled
-        this.#fsbEventLogger.logCommandResult(timeMS, "INTERNAL", Command, `INTERNAL ERROR: ${error.name} - ${error.message}`);
+      if (this.#fsbEventLogger) {
+        this.#fsbEventLogger.logCaughtError(Command.command.command, Command.command, error); // Does NOT log Syntax Errors
       }
 
       this.caught(error, "Error Processing Internal Command - Code 500");
@@ -183,7 +266,7 @@ export class FileSystemBrokerCommands {
   // and it DOES NOT use messaging.
   //
   // Since extensionId === this.#extensionID, it will delete a file only
-  // in the top-most File System directory.
+  // in the top-most File System directory. ????????????????????????
   //
   // You can use this when you cannot use messaging to run the command
   // like it would do if you were to use the the FileSystemBrokerAPI class
@@ -394,100 +477,180 @@ export class FileSystemBrokerCommands {
 
 
 
-  async processCommand(command, extensionId) {    
-    if (! command) {
+  async #processCommand(timeMS, Command, extensionId, parameters) {    
+    if (! Command) {
       this.error("processCommand -- No Command parameter");
       return ( { "error": "Invalid Request: No Command.command parameter", "code": "400" } );
-    } else if ((typeof command) !== 'object') {
-      this.error("processCommand -- Command parameter is not an object");
+    } else if ((typeof Command) !== 'object') {
+      this.error(`processCommand -- Command parameter is not an object -  type='${typeof Command}': `, Command);
       return ( { "error": "Invalid Request: Command.command parameter is not an object", "code": "400" } );
-    } else if (! command.command) {
-      this.error("processCommand -- Command has no command parameter");
+    } else if (! Command.hasOwnProperty('command')) {
+      this.error("processCommand -- Command has no command parameter: ", Command);
       return ( { "error": "Invalid Request: Command has no command parameter", "code": "400" } );
-    } else if ((typeof command.command) !== 'string') {
-      this.error(`processCommand -- Command.command parameter is NOT A STRING`);
+    } else if ((typeof Command.command) !== 'string') {
+      this.error(`processCommand -- Command.command parameter is NOT A STRING - type='${typeof Command.command}': `, Command.command);
       return ( { "error": "Invalid Request: Invalid Command - Command.command parameter is not a String", "code": "400" } );
     }
 
     if (! extensionId) {
-      this.error("processCommand -- No extensionId");
+      this.error(`processCommand -- No extensionId - Command: "${Command.command}"`);
       return ( { "error": "Invalid Request: Invalid Command - no extensionId parameter", "code": "400" } );
     } else if ((typeof extensionId) !== 'string') {
-      this.error("processCommand -- extensionId parameter is NOT A STRING");
+      this.error(`processCommand -- extensionId parameter is NOT A STRING - type='${typeof extensionId}' Command: "${Command.command}"`);
       return ( { "error": "Invalid Request: Invalid Command", "code": "400" } );
     } else if (! this.checkValidExtensionId(extensionId)) {
-      this.error(`processCommand -- extensionId parameter is invalid: "${extensionId}"`);
+      this.error(`processCommand -- extensionId parameter is NOT VALID: "${extensionId}" - Command: "${Command.command}"`);
       return ( { "error": "Invalid Request: Invalid Command", "code": "400" } );
     }
 
-    switch(command.command) {
-      case "access": // this command must be handled where access control is handled, which is in background.js for now
-        return { "access": "unknown" };
-      case "exists":
-        return this.existsCommand(command, extensionId);
-      case "isRegularFile":
-        return this.isRegularFileCommand(command, extensionId);
-      case "isDirectory":
-        return this.isDirectoryCommand(command, extensionId);
-      case "hasFiles":
-        return this.hasFilesCommand(command, extensionId);
-      case "getFileCount":
-        return this.getFileCountCommand(command, extensionId);
-      case "writeFile":
-        return this.writeFileCommand(command, extensionId);
-      case "replaceFile":
-        return this.replaceFileCommand(command, extensionId);
-      case "appendToFile":
-        return this.appendToFileCommand(command, extensionId);
-      case "writeJSONFile":
-        return this.writeJSONFileCommand(command, extensionId);
-      case "writeObjectToJSONFile":
-        return this.writeObjectToJSONFileCommand(command, extensionId);
-      case "readFile":
-        return this.readFileCommand(command, extensionId);
-      case "readJSONFile":
-        return this.readJSONFileCommand(command, extensionId);
-      case "readObjectFromJSONFile":
-        return this.readObjectFromJSONFileCommand(command, extensionId);
-      case "getFileInfo":
-        return this.getFileInfoCommand(command, extensionId);
-      case "renameFile":
-        return this.renameFileCommand(command, extensionId);
-      case "deleteFile":
-        return this.deleteFileCommand(command, extensionId);
-      case "deleteDirectory":
-        return this.deleteDirectoryCommand(command, extensionId);
-      case "makeDirectory":
-        return this.makeDirectoryCommand(command, extensionId);
-      case "listFiles":
-        return this.listFilesCommand(command, extensionId);
-      case "listFileInfo":
-        return this.listFileInfoCommand(command, extensionId);
-      case "list":
-        return this.listCommand(command, extensionId);
-      case "listInfo":
-        return this.listInfoCommand(command, extensionId);
-      case "getFullPathName":
-        return this.getFullPathNameCommand(command, extensionId);
-      case "isValidFileName":
-        return this.isValidFileNameCommand(command, extensionId);
-      case "isValidDirectoryName":
-        return this.isValidDirectoryNameCommand(command, extensionId);
-      case "getFileSystemPathName":
-        return this.getFileSystemPathNameCommand(command, extensionId);
-      case "stats":
-        return this.statsCommand(command, extensionId);
-      case "fsbListInfo":
-        return this.fsbListInfoCommand(command, extensionId);
-      case "fsbList":
-        return this.fsbListCommand(command, extensionId);
-      case "fsbStats":
-        return this.fsbStatsCommand(command, extensionId);
-      case "fsbDeleteDirectory":
-        return this.fsbDeleteDirectoryCommand(command, extensionId);
+    const  processingInternalCommand= parameters?.internalCommand;
+    if (! parameters) {
+      this.error(`"processCommand -- No parameters - Command: "${Command.command}"`);
+      return ( { "error": "Invalid Request: Invalid Command - no 'parameters' parameter", "code": "400" } );
+    } else if ((typeof parameters) !== 'object') {
+      this.error(`"processCommand -- 'parameters' parameter is NOT AN OBJECT - Command: "${Command.command}"`);
+      return ( { "error": "Invalid Request: Invalid Command", "code": "400" } );
+    } else if (! parameters.hasOwnProperty('internalCommand')) {
+      this.error(`"processCommand -- 'parameters' parameter has no property 'internalCommand' - Command: "${Command.command}"`);
+      return ( { "error": "Invalid Request: Invalid Command", "code": "400" } );
+    } else if ((typeof parameters.internalCommand) !== 'boolean') {
+      this.error(`"processCommand -- 'parameters' parameter property 'internalCommand' is not BOOLEAN - Command: "${Command.command}"`);
+      return ( { "error": "Invalid Request: Invalid Command", "code": "400" } );
     }
 
-    return this.unknownCommand(command, extensionId);
+
+
+    // It is perfectly valid to have no extProps if Access Control is turned off
+    const extProps = await this.#fsbOptionsApi.getExtensionPropsById(extensionId);
+    if (! extProps) {
+      this.debug(`processCommand -- Extension is NOT CONFIGURED: "${extensionId}"`);
+    }
+
+    const extOverQuota = extProps && ! extProps.special && ! extProps.noQuota && (extProps.overStorageQuota || extProps.overFileSizeQuota || extProps.overFileCountQuota);
+
+
+
+    if (! Object.hasOwn(FileSystemBrokerCommands.#COMMANDS, Command.command)) {
+      return this.#unknownCommand(timeMS, Command, extensionId);
+    }
+
+    const commandType = FileSystemBrokerCommands.#COMMANDS[Command.command].type;
+
+    this.debug( `\n\nCommand ......... "${Command.command}"`,
+                `\n- commandType ..... ${commandType}`,
+                `\n- extId= .......... ${extProps && extProps.id}"`,
+                `\n- special ......... ${extProps && extProps.special}`,
+                `\n- readOnly ........ ${extProps && extProps.readOnly}`,
+                `\n- noQuota ......... ${extProps && extProps.noQuota}`,
+                `\n- overQuota ....... ${extOverQuota}`,
+                `\n- overStorage ..... ${extProps && extProps.overStorageQuota}`,
+                `\n- overFileSize .... ${extProps && extProps.overFileSizeQuota}`,
+                `\n- overFileCount ... ${extProps && extProps.overFileCountQuota} `,
+              );
+
+
+    switch (commandType) {
+      case FileSystemBrokerCommands.#COMMAND_TYPE.ACCESS:
+        break;
+      case FileSystemBrokerCommands.#COMMAND_TYPE.READ_DATA:
+        break;
+      case FileSystemBrokerCommands.#COMMAND_TYPE.READ_META:
+        break;
+      case FileSystemBrokerCommands.#COMMAND_TYPE.INFO:
+        break;
+      case FileSystemBrokerCommands.#COMMAND_TYPE.ALTER_META:
+        if (extProps && extProps.readOnly) {
+          return this.#readOnlyAccess(timeMS, Command, extProps);
+        }
+        break;
+      case FileSystemBrokerCommands.#COMMAND_TYPE.ALTER_DATA:
+        if (extProps && extProps.readOnly) {
+          return this.#readOnlyAccess(timeMS, Command, extProps);
+        }
+        if (extOverQuota) {
+          return this.#overQuota(timeMS, Command, extProps);
+        }
+        break;
+      case FileSystemBrokerCommands.#COMMAND_TYPE.INTERNAL:
+        if (! processingInternalCommand) {
+          return this.#internalOnlyCommand(timeMS, Command, extensionId);
+        }
+        break;
+      default:
+        this.error(`UNKNOWN COMMAND TYPE: ${commandType}`);
+    }
+
+
+
+    // MABXXX REPLACE THIS SWITCH WITH A FUNCTION JUMP TABLE???
+    switch(Command.command) {
+      case "access": // this command must be handled where access control is handled, which is in fsb-background.js for now
+      return this.#unknownCommand(timeMS, Command, extensionId);
+      case "exists":
+        return this.existsCommand(Command, extensionId);
+      case "isRegularFile":
+        return this.isRegularFileCommand(Command, extensionId);
+      case "isDirectory":
+        return this.isDirectoryCommand(Command, extensionId);
+      case "hasFiles":
+        return this.hasFilesCommand(Command, extensionId);
+      case "getFileCount":
+        return this.getFileCountCommand(Command, extensionId);
+      case "writeFile":
+        return this.writeFileCommand(Command, extensionId);
+      case "replaceFile":
+        return this.replaceFileCommand(Command, extensionId);
+      case "appendToFile":
+        return this.appendToFileCommand(Command, extensionId);
+      case "writeJSONFile":
+        return this.writeJSONFileCommand(Command, extensionId);
+      case "writeObjectToJSONFile":
+        return this.writeObjectToJSONFileCommand(Command, extensionId);
+      case "readFile":
+        return this.readFileCommand(Command, extensionId);
+      case "readJSONFile":
+        return this.readJSONFileCommand(Command, extensionId);
+      case "readObjectFromJSONFile":
+        return this.readObjectFromJSONFileCommand(Command, extensionId);
+      case "getFileInfo":
+        return this.getFileInfoCommand(Command, extensionId);
+      case "renameFile":
+        return this.renameFileCommand(Command, extensionId);
+      case "deleteFile":
+        return this.deleteFileCommand(Command, extensionId);
+      case "deleteDirectory":
+        return this.deleteDirectoryCommand(Command, extensionId);
+      case "makeDirectory":
+        return this.makeDirectoryCommand(Command, extensionId);
+      case "listFiles":
+        return this.listFilesCommand(Command, extensionId);
+      case "listFileInfo":
+        return this.listFileInfoCommand(Command, extensionId);
+      case "list":
+        return this.listCommand(Command, extensionId);
+      case "listInfo":
+        return this.listInfoCommand(Command, extensionId);
+      case "getFullPathName":
+        return this.getFullPathNameCommand(Command, extensionId);
+      case "isValidFileName":
+        return this.isValidFileNameCommand(Command, extensionId);
+      case "isValidDirectoryName":
+        return this.isValidDirectoryNameCommand(Command, extensionId);
+      case "getFileSystemPathName":
+        return this.getFileSystemPathNameCommand(Command, extensionId);
+      case "stats":
+        return this.statsCommand(Command, extensionId);
+      case "fsbListInfo":
+        return this.fsbListInfoCommand(Command, extensionId);
+      case "fsbList":
+        return this.fsbListCommand(Command, extensionId);
+      case "fsbStats":
+        return this.fsbStatsCommand(Command, extensionId);
+      case "fsbDeleteDirectory":
+        return this.fsbDeleteDirectoryCommand(Command, extensionId);
+    }
+
+    return this.#unknownCommand(timeMS, Command, extensionId);
   }
 
 
@@ -524,6 +687,7 @@ export class FileSystemBrokerCommands {
       } else {
         this.caught(error, `existsCommand -- Caught error while checking if file "${extensionId}" exists:`);
       }
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing exists Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
@@ -556,6 +720,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `isRegularFileCommand -- Caught error while checking if Item "${command.fileName}" exists and is a Regular File:`);
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing isRegularFile Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
@@ -596,6 +761,7 @@ export class FileSystemBrokerCommands {
       } else {
         this.caught(error, `isDirectoryCommand -- Caught error while checking if Item "${extensionId}" exists and is a Directory:`);
       }
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing isDirectory Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
@@ -645,6 +811,7 @@ export class FileSystemBrokerCommands {
       } else {
         this.caught(error, `hasFilesCommand -- Caught error while checking if Item "${extensionId}" exists and is a Directory:`);
       }
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing hasFiles Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
@@ -665,6 +832,7 @@ export class FileSystemBrokerCommands {
       } else {
         this.caught(error, `hasFilesCommand -- Caught error while checking if file "${extensionId}" contains files:`);
       }
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing hasFiles Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
@@ -714,6 +882,7 @@ export class FileSystemBrokerCommands {
       } else {
         this.caught(error, `getFileCountCommand -- Caught error while checking if Item "${extensionId}" exists and is a Directory:`);
       }
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing getFileCount Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
@@ -734,6 +903,7 @@ export class FileSystemBrokerCommands {
       } else {
         this.caught(error, `getFileCountCommand -- Caught error while getting the file count for Directory "${extensionId}":`);
       }
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing getFileCount Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
@@ -800,6 +970,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `writeFileCommand -- Caught error while writing file "${command.fileName}":`);
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing writeFile Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
@@ -840,6 +1011,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `replaceFileCommand -- Caught error while writing file "${command.fileName}":`);
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing replaceFile Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
@@ -880,6 +1052,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `appendToFileCommand -- Caught error while writing file "${command.fileName}":`);
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing appendToFile Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
@@ -943,6 +1116,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `writeJSONFileCommand -- Caught error while writing file "${command.fileName}":`);
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing writeJSONFile Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
@@ -1007,6 +1181,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `writeObjectToJSONFileCommand -- Caught error while writing file "${command.fileName}":`);
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing writeObjectToJSONFile Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
@@ -1051,6 +1226,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `readFileCommand -- Caught error while reading file "${command.fileName}":`);
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing readFile Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
@@ -1096,6 +1272,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `readJSONFileCommand -- Caught error while reading file "${command.fileName}":`);
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing readJSONFile Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
@@ -1140,6 +1317,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `readObjectFromJSONFileCommand -- Caught error while reading file "${command.fileName}":`);
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing readObjectFromJSONFile Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
@@ -1202,6 +1380,7 @@ export class FileSystemBrokerCommands {
       } else {
         this.caught(error, `getFileInfoCommand -- Caught error while getting File Info for file "${extensionId}":`);
       }
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing getFileInfo Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
@@ -1254,6 +1433,7 @@ export class FileSystemBrokerCommands {
       }
     } catch (error) {
       this.caught(error, `renameFileCommand -- Caught error getting info for From file "${command.fromFileName}":`);
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing renameFile Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
@@ -1273,6 +1453,7 @@ export class FileSystemBrokerCommands {
         }
       } catch (error) {
         this.caught(error, `renameFileCommand -- Caught error getting info for To file "${command.toFileName}":`);
+        this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
         return ( { "error": `Error Processing renameFile Command: ${error.name} - ${error.message}`, "code": "500" } );
       }
     }
@@ -1282,6 +1463,7 @@ export class FileSystemBrokerCommands {
       return ( { "fromFileName": command.fromFileName, "toFileName": command.toFileName, 'renamed': renamed } );
     } catch (error) {
       this.caught(error, `renameFileCommand -- Caught error renaming file "${command.fromFileName}" to "${command.toFileName}":`);
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing renameFile Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
@@ -1338,6 +1520,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `deleteFileCommand -- Caught error while deleting file "${command.fileName}":`);
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing deleteFile Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
@@ -1443,6 +1626,7 @@ export class FileSystemBrokerCommands {
       } else {
         this.caught(error, `deleteDirectoryCommand -- Caught error while deleting directory "${extensionId}":`);
       }
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing deleteDirectory Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
@@ -1462,6 +1646,7 @@ export class FileSystemBrokerCommands {
       }
     } catch (error) {
       this.caught(error, `makeDirectoryCommand -- Caught error while checking for existing file or directory "${extensionId}":`);
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing makeDirectory Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
@@ -1472,6 +1657,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `makeDirectoryCommand -- Caught error while creating directory "${extensionId}":`);
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing makeDirectory Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
@@ -1504,6 +1690,7 @@ export class FileSystemBrokerCommands {
       }
     } catch (error) {
       this.caught(error, `hasFilesCommand -- Caught error while checking if Item "${extensionId}" exists and is a Directory:`);
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing listFiles Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
@@ -1515,6 +1702,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `listFilesCommand -- Caught error while listing files for extension "${extensionId}":`);
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing listFiles Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
   }
@@ -1545,6 +1733,7 @@ export class FileSystemBrokerCommands {
       }
     } catch (error) {
       this.caught(error, `hasFilesCommand -- Caught error while checking if Item "${extensionId}" exists and is a Directory:`);
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing listFileInfo Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
@@ -1556,6 +1745,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `listFileInfoCommand -- Caught error while listing files for extension "${extensionId}":`);
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing listFileInfo Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
   }
@@ -1586,6 +1776,7 @@ export class FileSystemBrokerCommands {
       }
     } catch (error) {
       this.caught(error, `hasFilesCommand -- Caught error while checking if Item "${extensionId}" exists and is a Directory:`);
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing list Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
@@ -1597,6 +1788,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `list -- Caught error while listing items for extension "${extensionId}":`);
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing list Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
   }
@@ -1627,6 +1819,7 @@ export class FileSystemBrokerCommands {
       }
     } catch (error) {
       this.caught(error, `hasFilesCommand -- Caught error while checking if Item "${extensionId}" exists and is a Directory:`);
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing listInfo Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
@@ -1638,6 +1831,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `listInfo -- Caught error while listing items for extension "${extensionId}":`);
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing listInfo Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
   }
@@ -1676,6 +1870,7 @@ export class FileSystemBrokerCommands {
       } else {
         this.caught(error, `getFullPathNameCommand -- Caught error while getting full pathname for file "${extensionId}":`);
       }
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing getFullPathName Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
@@ -1703,6 +1898,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `isValidFileNameCommand -- Caught error while checking for valid fileName for file "${command.fileName}":`);
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing isValidFileName Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
@@ -1730,6 +1926,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `isValidDirectoryNameCommand -- Caught error while checking for valid directoryName for directory "${command.directoryName}":`);
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing isValidDirectoryName Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
@@ -1749,6 +1946,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, "getFileSystemPathNameCommand -- Caught error while getting full pathName for FileSystem:");
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing getFileSystemPathName Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
@@ -1836,6 +2034,7 @@ export class FileSystemBrokerCommands {
       }
     } catch (error) {
       this.caught(error, `statsCommand -- Caught error while checking if Item "${extensionId}" exists and is a Directory:`);
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing stats Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
 
@@ -1850,6 +2049,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `statsCommand -- Caught error getting stats for extension "${extensionId}":`);
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing stats Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
   }
@@ -1930,6 +2130,7 @@ export class FileSystemBrokerCommands {
 //    }
 //  } catch (error) {
 //    this.caught(error, `fsbListInfoCommand -- Caught error while checking if Item "${extensionId}" exists and is a Directory:`);
+//    this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
 //    return ( { "error": `Error Processing fsbListInfo Command: ${error.name} - ${error.message}`, "code": "500" } );
 //  }
 
@@ -1944,6 +2145,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `fsbListInfoCommand -- Caught error while listing items for the Extension FileSystem`);
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing fsbListInfo Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
   }
@@ -2024,6 +2226,7 @@ export class FileSystemBrokerCommands {
 //    }
 //  } catch (error) {
 //    this.caught(error, `fsbListCommand -- Caught error while checking if Item "${extensionId}" exists and is a Directory:`);
+//    this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
 //    return ( { "error": `Error Processing fsbList Command: ${error.name} - ${error.message}`, "code": "500" } );
 //  }
 
@@ -2038,6 +2241,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `fsbListCommand -- Caught error while listing items for the Extension FileSystem`);
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing fsbList Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
   }
@@ -2083,6 +2287,7 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `fsbStatsCommand -- Caught error while listing items for the Extension FileSystem`);
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing fsbStats Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
   }
@@ -2140,22 +2345,71 @@ export class FileSystemBrokerCommands {
 
     } catch (error) {
       this.caught(error, `fsbDeleteDirectoryCommand -- Caught error while deleting a directory in the Extension FileSystem: "${command.directoryName}"`);
+      this.#fsbEventLogger.logCaughtError(command.command, command, error); // Does NOT log Syntax Errors
       return ( { "error": `Error Processing fsbDeleteDirectory Command: ${error.name} - ${error.message}`, "code": "500" } );
     }
   }
 
 
 
-  async unknownCommand(command, extensionId) {
-    this.debug(`unknownCommand ~~~~~~~~~~~~~~~~~~~~ command.command="${command.command}"`);
+  #unknownCommand(timeMS, Command, extId) {
+    this.debug(`#unknownCommand ~~~~~~~~~~~~~~~~~~~~ Command.command="${Command.command}"`);
 
-    if (! command.command) {
+    if (! Command.command) {
       this.error("unknownCommand -- Message has no 'command' parameter");
       return ( { "error": "unknownCommand: Missing 'command' parameter", "code":  "400" });
     }
 
-    this.error(`unknownCommand -- Message has an Invalid Command parameter: "${command.command}"`);
-    return ( { "error": `unknownCommand: Invalid 'command' Parameter: "${command.command}"`, "code":  "404" } );
+    this.error(`unknownCommand -- Message has an Invalid Command.command parameter: "${Command.command}"`);
+    return ( { "error": `unknownCommand: Invalid 'command' Parameter: "${Command.command}"`, "code":  "404" } );
+  }
+
+
+
+  async #readOnlyAccess(timeMS, Command, extProps) {
+    this.debug(`readOnlyAccess ~~~~~~~~~~~~~~~~~~~~ Command.command="${Command.command}"`);
+
+    const logAccessDenied  = await this.#fsbOptionsApi.isEnabledAccessDeniedLogging();
+    if (logAccessDenied) {
+      const accessDeniedMsg = "Extension has Read-Only Access - Write Access is Denied";
+      this.#fsbEventLogger.logCommandResult(timeMS, extProps.id, Command, accessDeniedMsg, "Read-Only Access");
+    }
+
+    const msg = `readOnlyAccess -- Extension "${extProps.id}" has Read-Only Access and is Denied Access to command "${Command.command}"`;
+    this.error(msg);
+    return { "error": msg, "code":  "403", "subCode": "read-only" };
+  }
+
+
+
+  async #overQuota(timeMS, Command, extProps) {
+    this.debug(`overQuota ~~~~~~~~~~~~~~~~~~~~ Command.command="${Command.command}"`);
+
+    const logAccessDenied  = await this.#fsbOptionsApi.isEnabledAccessDeniedLogging();
+    if (logAccessDenied) {
+      const accessDeniedMsg = "Extension is Over Quota - Write Access is Denied";
+      this.#fsbEventLogger.logCommandResult(timeMS, extProps.id, Command, accessDeniedMsg, "Over Quota");
+    }
+
+    const msg = `overQuota -- Extension "${extProps.id}" is Over Quota and is Denied Access to command "${Command.command}"`;
+    this.error(msg);
+    return { "error": msg, "code":  "403", "subCode": "over-quota" };
+  }
+
+
+
+  async #internalOnlyCommand(timeMS, Command, extId) {
+    this.debug(`internalOnlyCommand ~~~~~~~~~~~~~~~~~~~~ Command.command="${Command.command}"`);
+
+    const logAccessDenied  = await this.#fsbOptionsApi.isEnabledAccessDeniedLogging();
+    if (logAccessDenied) {
+      const accessDeniedMsg = "This is an Internal-Only Command";
+      this.#fsbEventLogger.logCommandResult(timeMS, extId, Command, accessDeniedMsg, "Internal Command");
+    }
+
+    const msg = `internalOnlyCommand -- Access is Denied, command "${Command.command}" is Internal-Use Only`;
+    this.error(msg);
+    return { "error": msg, "code":  "403" };
   }
 
 
@@ -2167,8 +2421,8 @@ export class FileSystemBrokerCommands {
   //   otherwise use (key + ":array.length") as the key and the array length as the value
   // - if value is an Object, use (key + ":object.entries") as the key and format the entries, but limit to 5,
   //   otherwise use (key + ":object.entries.length") as the key and object.entries.length as the value
+  //
   addCommandToObject(command, toObject) {
-    // why for the love of puppies is (typeof null) === 'object'???
     if (command === null || toObject === null || (typeof command) !== 'object' || (typeof toObject) !== 'object') {
       // MABXXX
     } else {
@@ -2180,7 +2434,7 @@ export class FileSystemBrokerCommands {
           } else {
             toObject[`${key}:string.length`] = value.length; // length because data could be huge!
           }
-        } else if (value && (typeof value) === 'object') {
+        } else if (value && (typeof value) === 'object') { // test for extistence of value - why for the love of puppies is (typeof null) === 'object'???
           if (Array.isArray(value)) { // no commands currently take arrays as parameters, but wth?
             // if array is "short" (<=5) we put elements, otherwise we put length
             if (value.length <= 5) {
@@ -2354,20 +2608,20 @@ export class FileSystemBrokerCommands {
 
 
   formatCommandResult(command, result) {
-    if ((typeof command) !== 'object' || (typeof result) !== 'object') {
+    if (command === null || (typeof command) !== 'object' || result === null || (typeof result) !== 'object') {
       this.error(`formatCommandResult -- Invalid Parameter Types: (typeof command)='${typeof command}' (typeof result)='${typeof result}'`);
       return "(result unavailable)";
 
     } else {
-      if (result.error) {
+      if (result.hasOwnProperty("error")) {
         return "error: " + result.error;
       }
-      if (result.invalid) {
+      if (result.hasOwnProperty("invalid")) {
         return "invalid: " + result.invalid;
       }
 
       switch(command.command) {
-        case "access": // this command must be handled where access control is handled, which is in background.js for now
+        case "access": // this command must be handled where access control is handled, which is in fsb-background.js for now
           return "access=" + result.access;
         case "exists":
           return "exists=" + result.exists;
@@ -2423,12 +2677,12 @@ export class FileSystemBrokerCommands {
                      + ` type="${info.type}"`
                      + ` size=${info.size}`
 //                   + ` permissions=${info.permissions}`
-//                   + ` creationTime="${formatMsToDateTime24HR(info.creationTime)}" (${info.creationTime})`
-                     + ` creationTime="${formatMsToDateTime24HR(info.creationTime)}"`
-//                   + ` lastAccessed="${formatMsToDateTime24HR(info.lastAccessed)}" (${info.lastAccessed})`
-                     + ` lastAccessed="${formatMsToDateTime24HR(info.lastAccessed)}"`
-//                   + ` lastModified="${formatMsToDateTime24HR(info.lastModified)}" (${info.lastModified})`;
-                     + ` lastModified="${formatMsToDateTime24HR(info.lastModified)}"`;
+//                   + ` creationTime="${utils.formatMsToDateTime24HR(info.creationTime)}" (${info.creationTime})`
+                     + ` creationTime="${utils.formatMsToDateTime24HR(info.creationTime)}"`
+//                   + ` lastAccessed="${utils.formatMsToDateTime24HR(info.lastAccessed)}" (${info.lastAccessed})`
+                     + ` lastAccessed="${utils.formatMsToDateTime24HR(info.lastAccessed)}"`
+//                   + ` lastModified="${utils.formatMsToDateTime24HR(info.lastModified)}" (${info.lastModified})`;
+                     + ` lastModified="${utils.formatMsToDateTime24HR(info.lastModified)}"`;
           }
         case "renameFile":
           return "renamed=" + result.renamed;

@@ -44,6 +44,11 @@
 
   --panel-background-color:                        rgb(  63,  63,  70 );
   --panel-border-color:                            rgb(  35,  35,  39 );
+  --panel-border-radius:                           5px;
+
+  --subpanel-background-color:                     rgba( 250, 250, 250, 0.2 );
+  --subpanel-border-color:                         rgb(  35,  35,  39 );
+  --subpanel-border-radius:                        5px;
 
   --message-panel-background-color:                rgba( 250, 250, 250, 0.2 );
   --message-panel-border-color:                    transparent;
@@ -81,18 +86,33 @@
   --list-header-item-shadow-color:                 rgb(   0,   0,   0 );
   --list-header-item-text-shadow:                  1px 1px var(--list-header-item-shadow-color);
 
-  --list-item-background-color:                    rgb( 110, 110, 114 );
+  --list-item-background-color:                    rgb( 110, 115, 115 );
   --list-item-border-color:                        rgb(  20,  50,  50 );
   --list-item-color:                               rgb( 250, 250, 250 );
   --list-item-font:                                message-box;
   --list-item-font-size:                           1rem;
+  --list-item-text-decoration:                     NONE;
+  --list-item-text-shadow:                         1px 1px black, -1px -1px black, 1px -1px black, -1px 1px black;
 
-  --list-item-caution-color:                       rgb( 240, 240,   0 );
+  --list-item-highlight-background-color:          var(--list-item-background-color);
+  --list-item-highlight-border-color:              rgb(  90, 220, 220 );
+  --list-item-highlight-color:                     rgb(  90, 220, 220 );
+  --list-item-highlight-font-weight:               BOLD;
+  --list-item-highlight-text-decoration:           NONE;
+  --list-item-highlight-text-shadow:               1px 1px black, -1px -1px black, 1px -1px black, -1px 1px black;
+
+  --list-item-caution-background-color:            rgb( 174, 140,  85 );
+  --list-item-caution-border-color:                rgb( 255, 200, 110 );
+  --list-item-caution-color:                       rgb( 255, 200, 110 );
   --list-item-caution-font-weight:                 BOLDER;
+  --list-item-caution-text-decoration:             NONE;
   --list-item-caution-text-shadow:                 1px 1px black, -1px -1px black, 1px -1px black, -1px 1px black;
 
+  --list-item-warning-background-color:            rgb( 140, 100, 100 );
+  --list-item-warning-border-color:                rgb( 220,   0,   0 );
   --list-item-warning-color:                       rgb( 220,   0,   0 );
   --list-item-warning-font-weight:                 BOLDER;
+  --list-item-warning-text-decoration:             NONE;
   --list-item-warning-text-shadow:                 1px 1px black, -1px -1px black, 1px -1px black, -1px 1px black;
 
   --list-item-selected-background-color:           rgb(  77, 116, 159 );

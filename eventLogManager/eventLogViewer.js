@@ -13,9 +13,9 @@ class EventLogViewer {
     this.LOG_FILENAME_EXTENSION  = ".log";
     this.LOG_FILENAME_MATCH_GLOB = "*.log";
 
-    this.INFO          = true;
-    this.LOG           = true;
-    this.DEBUG         = true;
+    this.INFO          = false;
+    this.LOG           = false;
+    this.DEBUG         = false;
     this.WARN          = true;
 
     this.logger        = new Logger();
@@ -257,6 +257,7 @@ class EventLogViewer {
   async buildFileDataUI(fileInfo) {
     this.debug(`--- fileName="${fileInfo.fileName}"`);
 
+    this.clearFilterSelects();
     this.clearFilterPanelMessages();
 
     const domFileDataList = document.getElementById("fsbEventLogViewerFileData");
@@ -266,35 +267,50 @@ class EventLogViewer {
       return;
     }
 
-    const i18nMessage = getI18nMsg("fsbEventLogViewer_message_fileDataLoading", "...");
-    this.appendLogLineMessageUI(domFileDataList, i18nMessage);
+    domFileDataList.innerHTML = '';
+    {
+      const msg = getI18nMsg("fsbEventLogViewer_message_fileDataLoading", "...");
+      this.appendLogLineMessageUI(domFileDataList, msg, 'data-loading-message');
+    }
 
     // returns { "fileName": string, "logEntries": array of object } Each logEntry object is a representation of the JSON data in the Log
     //         { "invalid":  string                                } If fileName is invalid or full pathName too long. The returned string gives the reason.
     //         { "error":    string                                } If there was some error reading the file. The returned string gives the reason.
     const logFileData = await this.readLogFile(fileInfo.fileName);
 
-    domFileDataList.innerHTML = '';
-    const senders  = new Set();
-    const types    = new Set();
-    const commands = new Set();
-    const statuses = new Set();
-
     if (! logFileData) {
-      this.appendLogLineMessageUI( domFileDataList, getI18nMsg( 'fsbEventLogViewer_error_noLogFileData_response',   "ERROR NO logFileData"            ) );
-    } else if (logFileData.invalid) {
-      this.appendLogLineMessageUI( domFileDataList, getI18nMsg( 'fsbEventLogViewer_error_noLogFileData_invalid',    "ERROR logFileData.invalid"       ) );
-    } else if (logFileData.error) {
-      this.appendLogLineMessageUI( domFileDataList, getI18nMsg( 'fsbEventLogViewer_error_noLogFileData_error',      "ERROR logFileData.error"         ) );
-    } else if (! logFileData.fileName) {
-      this.appendLogLineMessageUI( domFileDataList, getI18nMsg( 'fsbEventLogViewer_error_noLogFileData_noFileName', "ERROR NO logFileData.fileName"   ) );
-    } else if (! logFileData.logEntries || logFileData.logEntries.length < 1) {
-      this.appendLogLineMessageUI( domFileDataList, getI18nMsg( 'fsbEventLogViewer_error_noLogFileData_noData',     "ERROR NO logFileData.logEntries" ) );
-    } else if (logFileData.logEntries.length >= this.LOG_ENTRY_LIMIT) {
-      this.appendLogLineMessageUI( domFileDataList, getI18nMsg( 'fsbEventLogViewer_error_LogFileDataLimit',         "The Log Has Too Many Entries"    ) );
-    } else {
+      const msg = getI18nMsg('fsbEventLogViewer_error_noLogFileData_response', "ERROR NO logFileData");
+      this.appendLogLineMessageUI( domFileDataList, msg, "data-loading-error-message" );
 
-      this.debugAlways(`\n\n########## logFileData.logEntries.length=${logFileData.logEntries.length} ##########\n\n`);
+    } else if (logFileData.invalid) {
+      const msg = getI18nMsg('fsbEventLogViewer_error_noLogFileData_invalid', "ERROR logFileData.invalid");
+      this.appendLogLineMessageUI( domFileDataList, msg, "data-loading-error-message" );
+
+    } else if (logFileData.error) {
+      const msg = getI18nMsg('fsbEventLogViewer_error_noLogFileData_error', "ERROR logFileData.error");
+      this.appendLogLineMessageUI( domFileDataList, msg, "data-loading-error-message" );
+
+    } else if (! logFileData.fileName) {
+      const msg = getI18nMsg('fsbEventLogViewer_error_noLogFileData_noFileName', "ERROR NO logFileData.fileName");
+      this.appendLogLineMessageUI( domFileDataList, msg, "data-loading-error-message" );
+
+    } else if (! logFileData.logEntries || logFileData.logEntries.length < 1) {
+      const msg = getI18nMsg('fsbEventLogViewer_error_noLogFileData_noData', "ERROR NO logFileData.logEntries");
+      this.appendLogLineMessageUI( domFileDataList, msg, "data-loading-error-message" );
+
+    } else if (logFileData.logEntries.length >= this.LOG_ENTRY_LIMIT) {
+      const msg = getI18nMsg('fsbEventLogViewer_error_LogFileDataLimit', "The Log Has Too Many Entries");
+      this.appendLogLineMessageUI( domFileDataList, msg, "data-loading-error-message" );
+
+    } else {
+      this.debug(`\n\n########## logFileData.logEntries.length=${logFileData.logEntries.length} ##########\n\n`);
+
+      domFileDataList.innerHTML = '';
+
+      const senders  = new Set();
+      const types    = new Set();
+      const commands = new Set();
+      const statuses = new Set();
 
       const logHeaderUI = this.buildLogHeaderUI();
       domFileDataList.appendChild(logHeaderUI);
@@ -309,15 +325,15 @@ class EventLogViewer {
         domFileDataList.appendChild(logEntryItemUI);
       }
 
+      this.populateFilterSelects(senders, types, commands, statuses);
     }
-
-    this.populateFilterSelects(senders, types, commands, statuses);
   }
 
 
 
-  appendLogLineMessageUI(domFileDataList, msg) {
+  appendLogLineMessageUI(domFileDataList, msg, cssClass) {
     const logLineMessageTR = document.createElement('tr');
+      if (cssClass) logLineMessageTR.classList.add(cssClass);
       const logLineMessageTD = document.createElement('td');
         logLineMessageTD.style.setProperty('white-space', 'nowrap');
         logLineMessageTD.appendChild( document.createTextNode(msg) );
@@ -331,43 +347,43 @@ class EventLogViewer {
     const logHeaderTR = document.createElement('tr');
       logHeaderTR.classList.add('event-header-item');
 
-      const logLineTimestampTH =  document.createElement('th');
+      const logLineTimestampTH = document.createElement('th');
         logLineTimestampTH.classList.add('event-header-data');
         logLineTimestampTH.classList.add('event-header-time');
         logLineTimestampTH.appendChild( document.createTextNode( getI18nMsg('fsbEventLogViewer_listHeader_timstamp', 'TIME') ) );
       logHeaderTR.appendChild(logLineTimestampTH);
 
-      const logLineSenderTH =  document.createElement('th');
+      const logLineSenderTH = document.createElement('th');
         logLineSenderTH.classList.add('event-header-data');
         logLineSenderTH.classList.add('event-header-sender');
         logLineSenderTH.appendChild( document.createTextNode( getI18nMsg('fsbEventLogViewer_listHeader_sender', 'SENDER') ) );
       logHeaderTR.appendChild(logLineSenderTH);
 
-      const logLineTypeTH =  document.createElement('th');
+      const logLineTypeTH = document.createElement('th');
         logLineTypeTH.classList.add('event-header-data');
         logLineTypeTH.classList.add('event-header-type');
         logLineTypeTH.appendChild( document.createTextNode( getI18nMsg('fsbEventLogViewer_listHeader_type', 'TYPE') ) );
       logHeaderTR.appendChild(logLineTypeTH);
 
-      const logLineCommandTH =  document.createElement('th');
+      const logLineCommandTH = document.createElement('th');
         logLineCommandTH.classList.add('event-header-data');
         logLineCommandTH.classList.add('event-header-command');
         logLineCommandTH.appendChild( document.createTextNode( getI18nMsg('fsbEventLogViewer_listHeader_command', 'COMMAND') ) );
       logHeaderTR.appendChild(logLineCommandTH);
 
-      const logLineStatusTH =  document.createElement('th');
+      const logLineStatusTH = document.createElement('th');
         logLineStatusTH.classList.add('event-header-data');
         logLineStatusTH.classList.add('event-header-status');
         logLineStatusTH.appendChild( document.createTextNode( getI18nMsg('fsbEventLogViewer_listHeader_status', 'STATUUS') ) );
       logHeaderTR.appendChild(logLineStatusTH);
 
-      const logLineParametersTH =  document.createElement('th');
+      const logLineParametersTH = document.createElement('th');
         logLineParametersTH.classList.add('event-header-data');
         logLineParametersTH.classList.add('event-header-parameters');
         logLineParametersTH.appendChild( document.createTextNode( getI18nMsg('fsbEventLogViewer_listHeader_parameters', 'PARAMETERS') ) );
       logHeaderTR.appendChild(logLineParametersTH);
 
-      const logLineResultTH =  document.createElement('th');
+      const logLineResultTH = document.createElement('th');
         logLineResultTH.classList.add('event-header-data');
         logLineResultTH.classList.add('event-header-result');
         logLineResultTH.appendChild( document.createTextNode( getI18nMsg('fsbEventLogViewer_listHeader_result', 'RESULT') ) );
@@ -378,7 +394,7 @@ class EventLogViewer {
 
 
 
-  /* Basically, all key/value pairs from the FileSytemBroker command object are copied into the
+  /* MABXXX Basically, all key/value pairs from the FileSytemBroker command object are copied into the
    * log line data, which is stored as JSON stringified objects.
    *
    * This includes the command name and any parameters.  This maybe not have been the best of ideas
@@ -441,43 +457,43 @@ class EventLogViewer {
       logLineItemTR.setAttribute( 'command', logEntry.command );
       logLineItemTR.setAttribute( 'status',  logEntry.status  );
 
-      const logLineTimestampTD =  document.createElement('td');
+      const logLineTimestampTD = document.createElement('td');
         logLineTimestampTD.classList.add('event-line-data');
         logLineTimestampTD.classList.add('event-line-time');
         logLineTimestampTD.appendChild( document.createTextNode( formatMsToDateTime24HR(logEntry.timeMS) ) );
       logLineItemTR.appendChild(logLineTimestampTD);
 
-      const logLineSenderTD =  document.createElement('td');
+      const logLineSenderTD = document.createElement('td');
         logLineSenderTD.classList.add('event-line-data');
         logLineSenderTD.classList.add('event-line-sender');
         if (logEntry.sender) logLineSenderTD.appendChild( document.createTextNode(logEntry.sender) );
       logLineItemTR.appendChild(logLineSenderTD);
 
-      const logLineTypeTD =  document.createElement('td');
+      const logLineTypeTD = document.createElement('td');
         logLineTypeTD.classList.add('event-line-data');
         logLineTypeTD.classList.add('event-line-type');
         if (logEntry.type) logLineTypeTD.appendChild( document.createTextNode(logEntry.type) );
       logLineItemTR.appendChild(logLineTypeTD);
 
-      const logLineCommandTD =  document.createElement('td');
+      const logLineCommandTD = document.createElement('td');
         logLineCommandTD.classList.add('event-line-data');
         logLineCommandTD.classList.add('event-line-command');
         if (logEntry.command) logLineCommandTD.appendChild( document.createTextNode(logEntry.command) );
       logLineItemTR.appendChild(logLineCommandTD);
 
-      const logLineStatusTD =  document.createElement('td');
+      const logLineStatusTD = document.createElement('td');
         logLineStatusTD.classList.add('event-line-data');
         logLineStatusTD.classList.add('event-line-status');
         if (logEntry.status) logLineStatusTD.appendChild( document.createTextNode(logEntry.status) );
       logLineItemTR.appendChild(logLineStatusTD);
 
-      const logLineParametersTD =  document.createElement('td');
+      const logLineParametersTD = document.createElement('td');
         logLineParametersTD.classList.add('event-line-data');
         logLineParametersTD.classList.add('event-line-parameters');
         logLineParametersTD.appendChild( document.createTextNode( this.formatCommandParameters(logEntry) ) );
       logLineItemTR.appendChild(logLineParametersTD);
 
-      const logLineResultTD =  document.createElement('td');
+      const logLineResultTD = document.createElement('td');
         logLineResultTD.classList.add('event-line-data');
         logLineResultTD.classList.add('event-line-result');
         if (logEntry.result) logLineResultTD.appendChild( document.createTextNode(logEntry.result) );
@@ -487,6 +503,27 @@ class EventLogViewer {
   }
 
 
+
+  clearFilterSelects() {
+    const senderSelect      = document.getElementById( "fsbEventLogViewer_filterBySenderSelect"          );
+    const typeSelect        = document.getElementById( "fsbEventLogViewer_filterByTypeSelect"            );
+    const commandSelect     = document.getElementById( "fsbEventLogViewer_filterByCommandSelect"         );
+    const statusSelect      = document.getElementById( "fsbEventLogViewer_filterByStatusSelect"          );
+    const startHourSelect   = document.getElementById( "fsbEventLogViewer_filterByStartTimeHourSelect"   );
+    const startMinuteSelect = document.getElementById( "fsbEventLogViewer_filterByStartTimeMinuteSelect" );
+    const endHourSelect     = document.getElementById( "fsbEventLogViewer_filterByEndTimeHourSelect"     );
+    const endMinuteSelect   = document.getElementById( "fsbEventLogViewer_filterByEndTimeMinuteSelect"   );
+
+
+    senderSelect.textContent      = '';
+    typeSelect.textContent        = '';
+    commandSelect.textContent     = '';
+    statusSelect.textContent      = '';
+    startHourSelect.textContent   = '';
+    startMinuteSelect.textContent = '';
+    endHourSelect.textContent     = '';
+    endMinuteSelect.textContent   = '';
+  }
 
   populateFilterSelects(senders, types, commands, statuses) {
     this.populateTimeFilterSelects();
@@ -1215,6 +1252,7 @@ class EventLogViewer {
   async readLogFile(fileName) { // MABXXX MOVE THIS TO FsbEventLogger ??????????
     try {
       this.debug(`-- Reading log file "${fileName}"`);
+
       const response = await this.fsBrokerApi.readFile(fileName);
       //this.debug("-- response:", response);
       //this.debug(`-- response.data: "${response.data}"`);
@@ -1223,18 +1261,27 @@ class EventLogViewer {
       if (response.invalid) return response;
       if (! response.data)  return response;
 
-      const lines    = response.data.split('\n');
+      const logLines   = response.data.split('\n');
       const logEntries = [];
       delete response.data;
 
-      for (const line of lines) {
-        //this.debug(`-- line: "${line}"`);
-        if (line.length >= 1) {
+      for (const logLine of logLines) {
+        //this.debug(`-- logLine: "${logLine}"`);
+        if (logLine.length >= 1) {
           try {
-            const obj = JSON.parse(line);
+////////////const obj = JSON.parse(logLine);
+            const obj = JSON.parse( logLine, (key, value) => {
+                                                               if (value && ((typeof value) === 'object') && Object.hasOwn(value, '$bigint$')) {
+                                                                 if ((typeof value.$bigint$) === 'string' && /^-?\d+n$/.test(value.$bigint$)) {
+                                                                   return BigInt( value.$bigint$.slice(0, -1) );
+                                                                 }
+                                                               }
+                                                               return value;
+                                                             }
+                                  );
             logEntries.push(obj);
           } catch (error) {
-            this.caught(error, `-- Unexpected Error parsing JSON: "${line}"`);
+            this.caught(error, `-- Unexpected Error parsing JSON: "${logLine}"`);
           }
         }
       }

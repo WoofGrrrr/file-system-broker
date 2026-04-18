@@ -117,7 +117,7 @@ Use something like the following code in your JavaScript:
 
 ### The API provides these functions:
 
-  + access -                 has the caller been granted permission to access FileSystemBroker?
+  + access -                 has the caller been granted permission to access FileSystemBroker, and, if so, is it read-only access?
   + exists -                 does a file exist?
   + isRegularFile -          does a file exist and is it a Regular file, i.e. NOT a Directory or "other"?
   + isDirectory -            does a file exist and is it a Directory, i.e. NOT a Regular file or a a "other"?
@@ -163,6 +163,11 @@ Use something like the following code in your JavaScript:
     + code "404" means that the request to FileSystemBroker is unknown.
     + code "500" means that there was some error that the system does not know how to handle.
     + code "503" means that communcation with FileSystemBroker failed, probably because FileSystemBroker is not installed or is not running.
+
+    + Depending on the command, an "error" response with a "code" of "403" may
+    have a "sub-code" of "read-only" if the requesting extension has been granted
+    Read-Only access and may have "a "sub-code" of "over-quota" if the requesting
+    extension is currently over one or more of its quotas.
 
 
 
@@ -213,9 +218,10 @@ Use something like the following code in your JavaScript:
 
     Determine if the caller is granted permission to access FileSystemBroker.
 
-    Returns:        { "access": string }
+    Returns:        { "access": string, "readOnly": boolen }
 
     "accces" is "granted" if the caller has permission, "denied" if not.
+    "readOnly" is true if access is Read-Only, otherwise it is false.
 
 <br>
 <br>
@@ -437,6 +443,11 @@ Use something like the following code in your JavaScript:
     is > 255 characters or if the operating system had a problem
     processing the function.
 
+    An "error" response with a "code" of "403" will have a "sub-code" of "read-only"
+    if the requesting extension has been granted Read-Only access and will have
+    "a "sub-code" of "over-quota" if the requesting extension is currently over
+    one or more of its quotas.
+
 <br>
 <br>
 
@@ -457,6 +468,11 @@ Use something like the following code in your JavaScript:
     Returns an "error" response if the file's full pathName
     is > 255 characters or if the operating system had a problem
     processing the function.
+
+    An "error" response with a "code" of "403" will have a "sub-code" of "read-only"
+    if the requesting extension has been granted Read-Only access and will have
+    "a "sub-code" of "over-quota" if the requesting extension is currently over
+    one or more of its quotas.
 
 <br>
 <br>
@@ -479,6 +495,11 @@ Use something like the following code in your JavaScript:
     Returns an "error" response if the file's full pathName
     is > 255 characters or if the operating system had a problem
     processing the function.
+
+    An "error" response with a "code" of "403" will have a "sub-code" of "read-only"
+    if the requesting extension has been granted Read-Only access and will have
+    "a "sub-code" of "over-quota" if the requesting extension is currently over
+    one or more of its quotas.
 
 <br>
 <br>
@@ -506,6 +527,11 @@ Use something like the following code in your JavaScript:
     is > 255 characters or if the operating system had a problem
     processing the function.
 
+    An "error" response with a "code" of "403" will have a "sub-code" of "read-only"
+    if the requesting extension has been granted Read-Only access and will have
+    "a "sub-code" of "over-quota" if the requesting extension is currently over
+    one or more of its quotas.
+
 <br>
 <br>
 
@@ -532,6 +558,11 @@ Use something like the following code in your JavaScript:
     is > 255 characters or if the operating system had a problem
     processing the function.
 
+    An "error" response with a "code" of "403" will have a "sub-code" of "read-only"
+    if the requesting extension has been granted Read-Only access and will have
+    "a "sub-code" of "over-quota" if the requesting extension is currently over
+    one or more of its quotas.
+
 <br>
 <br>
 
@@ -549,6 +580,9 @@ Use something like the following code in your JavaScript:
     Returns an "error" response if the file's full pathName
     is > 255 characters or if the operating system had a problem
     processing the function.
+
+    An "error" response with a "code" of "403" will have a "sub-code" of "read-only"
+    if the requesting extension has been granted Read-Only access.
 
 <br>
 <br>
@@ -584,6 +618,9 @@ Use something like the following code in your JavaScript:
 
     sub-directories are not supported at this time.  There is no method to create one.
 
+    An "error" response with a "code" of "403" will have a "sub-code" of "read-only"
+    if the requesting extension has been granted Read-Only access.
+
 <br>
 <br>
 
@@ -602,6 +639,9 @@ Use something like the following code in your JavaScript:
 
     sub-directories are not supported at this time.  There is no method to create one.
 
+    An "error" response with a "code" of "403" will have a "sub-code" of "read-only"
+    if the requesting extension has been granted Read-Only access.
+
 <br>
 <br>
 
@@ -619,7 +659,7 @@ Use something like the following code in your JavaScript:
     - fileName:     the fileName
     - path:         the full pathname
     - type:         "regular", "directory", or "other"
-    - size:         for a Regular File, the size in bytes, otherwise -1
+    - size:         for a Regular File, the size in bytes (BigInt,) otherwise -1n
     - creationTime  (Windows and MacOS only): milliseconds since 1970-01-01T00:00:00.000Z
     - lastAccessed: milliseconds since 1970-01-01T00:00:00.000Z
     - lastModified: milliseconds since 1970-01-01T00:00:00.000Z
@@ -659,6 +699,9 @@ Use something like the following code in your JavaScript:
 
     Returns an "error" response if either file's full pathName is > 255 characters,
     or if the operating system had a problem processing the function.
+
+    An "error" response with a "code" of "403" will have a "sub-code" of "read-only"
+    if the requesting extension has been granted Read-Only access.
 
 <br>
 <br>
@@ -722,7 +765,7 @@ Use something like the following code in your JavaScript:
     - fileName:     the fileName
     - path:         the full pathname
     - type:         "regular", "directory", or "other"
-    - size:         for a Regular File, the size in bytes, otherwise -1
+    - size:         for a Regular File, the size in bytes (BigInt,) otherwise -1n
     - creationTime  (Windows and MacOS only): milliseconds since 1970-01-01T00:00:00.000Z
     - lastAccessed: milliseconds since 1970-01-01T00:00:00.000Z
     - lastModified: milliseconds since 1970-01-01T00:00:00.000Z
@@ -792,7 +835,7 @@ Use something like the following code in your JavaScript:
     - fileName:     the fileName
     - path:         the full pathname
     - type:         "regular", "directory", or "other"
-    - size:         for a Regular File, the size in bytes, otherwise -1
+    - size:         for a Regular File, the size in bytes (BigInt,) otherwise -1n
     - creationTime  (Windows and MacOS only): milliseconds since 1970-01-01T00:00:00.000Z
     - lastAccessed: milliseconds since 1970-01-01T00:00:00.000Z
     - lastModified: milliseconds since 1970-01-01T00:00:00.000Z
@@ -862,7 +905,7 @@ Use something like the following code in your JavaScript:
 <br>
 <br>
 
-### stats( [ 'parameters': { ['returnNotExist': boolean] [, 'includeChildInfo': boolean[, 'types': array of string] ] } ] )
+### stats( extensionId[, 'parameters': { ['returnNotExist': boolean] [, 'includeChildInfo': boolean[, 'types': array of string] ] } ] )
 
     Returns a JavaScript object that contains information
     about the directory and the items in the directory
@@ -921,24 +964,24 @@ Use something like the following code in your JavaScript:
                 'count_other':                      integer:          number of child items with type 'other'
                 'count_unknown':                    integer:          number of child items whose type is none of the three above
                 'count_error':                      integer:          number of child items whose type could not be determined
-                'time_childCreation_earliest':      integer:          earliest Creation Time      of all child items in MS (OS-dependent) in MS (undefined if no children)
-                'time_childCreation_latest':        integer:          latest   Creation Time      of all child items in MS (OS-dependent) in MS (undefined if no children)
-                'time_childLastAccessed_earliest':  integer:          earliest Last Accessed Time of all child items in MS (OS-dependent) in MS (undefined if no children)
-                'time_childLastAccessed_latest':    integer:          latest   Last Accessed Time of all child items in MS (OS-dependent) in MS (undefined if no children)
-                'time_childLastModified_earliest':  integer:          earliest Last Modified Time of all child items in MS (OS-dependent) in MS (undefined if no children)
-                'time_childLastModified_latest':    integer:          latest   Last Modified Time of all child items in MS (OS-dependent) in MS (undefined if no children)
-                'size_smallest':                    integer:          smallest size (bytes) of all child items with type 'regular' (-1 if none)
-                'size_largest':                     integer:          largest size (bytes) of all child items with type 'regular' (-1 if none)
-                'size_total':                       integer:          total of sizes (bytes) of all child items with type 'regular'
+                'time_fileCreation_earliest':       integer:          earliest Creation      Time in MS (OS-dependent) of all Regular File child items (undefined if none)
+                'time_fileCreation_latest':         integer:          latest   Creation      Time in MS (OS-dependent) of all Regular File child items (undefined if none)
+                'time_fileLastAccessed_earliest':   integer:          earliest Last Accessed Time in MS (OS-dependent) of all Regular File child items (undefined if none)
+                'time_fileLastAccessed_latest':     integer:          latest   Last Accessed Time in MS (OS-dependent) of all Regular File child items (undefined if none)
+                'time_fileLastModified_earliest':   integer:          earliest Last Modified Time in MS (OS-dependent) of all Regular File child items (undefined if none)
+                'time_fileLastModified_latest':     integer:          latest   Last Modified Time of all child items (undefined if no children)
+                'size_smallest':                    BigInt:           smallest size (bytes) of all child items with type 'regular' (-1n if none)
+                'size_largest':                     BigInt:           largest size (bytes) of all child items with type 'regular' (-1n if none)
+                'size_total':                       BigInt:           total of sizes (bytes) of all child items with type 'regular'
                 [ 'childInfo': ]                    array of object:          (OPTIONAL: only if includeChildInfo is true)
                                                       {
                                                         'name'                string:   item fileName
                                                         'path'                string:   item full pathName
                                                         'type'                string:   item type - 'regular', 'directory', 'other', 'unknown', 'error'
-                                                        'creationTime':       integer:  Creation Time in MS      (OS-dependent)
+                                                        'creationTime':       integer:  Creation      Time in MS (OS-dependent)
                                                         'lastAccessedTime':   integer:  Last Accessed Time in MS (OS-dependent)
                                                         'lastModifiedTime':   integer:  Last Modified Time in MS (OS-dependent)
-                                                        [ 'size': ]           integer:  file size (bytes)        (OPTIONAL: only for items with type 'regular')
+                                                        [ 'size': ]           BigInt:   file size (bytes)        (OPTIONAL: only for items with type 'regular')
                                                       }
               }
           }
@@ -993,7 +1036,7 @@ Use something like the following code in your JavaScript:
                            'fileName:      string:   the fileName
                            'path:          string:   the full pathname
                            'type:          string:   "regular", "directory", or "other"
-                           'size:          integer:  for a Regular File, the size in bytes, otherwise -1
+                           'size:          BigInt:   for a Regular File, the size in bytes (BigInt,) otherwise -1n
                            'creationTime   integer:  (Windows and MacOS only): milliseconds since 1970-01-01T00:00:00.000Z
                            'lastAccessed:  integer:  milliseconds since 1970-01-01T00:00:00.000Z
                            'lastModified:  integer:  milliseconds since 1970-01-01T00:00:00.000Z
@@ -1082,7 +1125,7 @@ Use something like the following code in your JavaScript:
 <br>
     If the optional parameters.includeDirStats parameter is given and is true, the optional
     'dirStats' array is included in the returned obejct, otherwise it is not.  The default
-    it true.
+    is true.
     <br>
 <br>
     The returned object contains an object with statistics for the FileSystemBroker as a whole
@@ -1099,20 +1142,21 @@ Use something like the following code in your JavaScript:
                      'count_type_other':                  integer:  number of descendent items with type 'other'
                      'count_type_unknown':                integer:  number of descendent items whose type is none of the three above
                      'count_type_error':                  integer:  number of descendent items whose type could not be determined
-                     'time_childCreation_earliest':       integer:  earliest Creation Time      in MS of all descendent items (OS-dependent) (undefined if no children)
-                     'time_childCreation_latest':         integer:  latest   Creation Time      in MS of all descendent items (OS-dependent) (undefined if no children)
-                     'time_childLastAccessed_earliest':   integer:  earliest Last Accessed Time in MS of all descendent items (OS-dependent) (undefined if no children)
-                     'time_childLastAccessed_latest':     integer:  latest   Last Accessed Time in MS of all descendent items (OS-dependent) (undefined if no children)
-                     'time_childLastModified_earliest':   integer:  earliest Last Modified Time in MS of all descendent items (OS-dependent) (undefined if no children)
-                     'time_childLastModified_latest':     integer:  latest   Last Modified Time in MS of all descendent items (OS-dependent) (undefined if no children)
-                     'size_smallest':                     integer:  smallest size  (bytes) of all descendent items with type 'regular' (undefined if no items with type 'regular')
-                     'size_largest':                      integer:  largest  size  (bytes) of all descendent items with type 'regular' (undefined if no items with type 'regular')
-                     'size_total':                        integer:  total of sizes (bytes) of all descendent items with type 'regular' (undefined if no items with type 'regular')
+                     'time_fileCreation_earliest':        integer:  earliest Creation      Time in MS (OS-dependent) of all Regular File descendent items (undefined if none)
+                     'time_fileCreation_latest':          integer:  latest   Creation      Time in MS (OS-dependent) of all Regular File descendent items (undefined if none)
+                     'time_fileLastAccessed_earliest':    integer:  earliest Last Accessed Time in MS (OS-dependent) of all Regular File descendent items (undefined if none)
+                     'time_fileLastAccessed_latest':      integer:  latest   Last Accessed Time in MS (OS-dependent) of all Regular File descendent items (undefined if none)
+                     'time_fileLastModified_earliest':    integer:  earliest Last Modified Time in MS (OS-dependent) of all Regular File descendent items (undefined if none)
+                     'time_fileLastModified_latest':      integer:  latest   Last Modified Time in MS (OS-dependent) of all Regular File descendent items (undefined if none)
+                     'size_smallest':                     BigInt:   smallest size  (bytes) of all descendent items with type 'regular' (undefined if no items with type 'regular')
+                     'size_largest':                      BigInt:   largest  size  (bytes) of all descendent items with type 'regular' (undefined if no items with type 'regular')
+                     'size_total':                        BigInt:   total of sizes (bytes) of all descendent items with type 'regular' (undefined if no items with type 'regular')
         },
         'dirStats':  (OPTIONAL, not included if includeDirStats is false) an array of object, indexed by Directory Name
                        {
                          'dirName':                           string:   directory fileName
                          'dirPath':                           string:   directory full pathName
+                         'isFileSystemRoot':                  boolean:  true if this is the FileSystemBroker Root Directory
                          'error':                             string:   a description if there was an error getting information. None of the data below will be present.
                          'count_children':                    integer:  total number of child items
                          'count_type_regular':                integer:  number of child items with type 'regular'
@@ -1120,15 +1164,15 @@ Use something like the following code in your JavaScript:
                          'count_type_other':                  integer:  number of child items with type 'other'
                          'count_type_unknown':                integer:  number of child items whose type is none of the three above
                          'count_type_error':                  integer:  number of child items whose type could not be determined
-                         'time_childCreation_earliest':       integer:  earliest Creation Time      in MS of all child items (OS-dependent) (undefined if no children)
-                         'time_childCreation_latest':         integer:  latest   Creation Time      in MS of all child items (OS-dependent) (undefined if no children)
-                         'time_childLastAccessed_earliest':   integer:  earliest Last Accessed Time in MS of all child items (OS-dependent) (undefined if no children)
-                         'time_childLastAccessed_latest':     integer:  latest   Last Accessed Time in MS of all child items (OS-dependent) (undefined if no children)
-                         'time_childLastModified_earliest':   integer:  earliest Last Modified Time in MS of all child items (OS-dependent) (undefined if no children)
-                         'time_childLastModified_latest':     integer:  latest   Last Modified Time in MS of all child items (OS-dependent) (undefined if no children)
-                         'size_smallest':                     integer:  smallest size  (bytes) of all child items with type 'regular' (undefined if no items with type 'regular')
-                         'size_largest':                      integer:  largest  size  (bytes) of all child items with type 'regular' (undefined if no items with type 'regular')
-                         'size_total':                        integer:  total of sizes (bytes) of all child items with type 'regular' (undefined if no items with type 'regular')
+                         'time_fileCreation_earliest':        integer:  earliest Creation      Time in MS (OS-dependent) of all Regular File child items (undefined if none)
+                         'time_fileCreation_latest':          integer:  latest   Creation      Time in MS (OS-dependent) of all Regular File child items (undefined if none)
+                         'time_fileLastAccessed_earliest':    integer:  earliest Last Accessed Time in MS (OS-dependent) of all Regular File child items (undefined if none)
+                         'time_fileLastAccessed_latest':      integer:  latest   Last Accessed Time in MS (OS-dependent) of all Regular File child items (undefined if none)
+                         'time_fileLastModified_earliest':    integer:  earliest Last Modified Time in MS (OS-dependent) of all Regular File child items (undefined if none)
+                         'time_fileLastModified_latest':      integer:  latest   Last Modified Time in MS (OS-dependent) of all Regular File child items (undefined if none)
+                         'size_smallest':                     BigInt:   smallest size  (bytes) of all child items with type 'regular' (undefined if no items with type 'regular')
+                         'size_largest':                      BigInt:   largest  size  (bytes) of all child items with type 'regular' (undefined if no items with type 'regular')
+                         'size_total':                        BigInt:   total of sizes (bytes) of all child items with type 'regular' (undefined if no items with type 'regular')
                        }
         }
       }

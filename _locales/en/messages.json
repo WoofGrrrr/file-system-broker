@@ -3,7 +3,7 @@
     "message": "FileSystemBroker"
   },
   "extensionDescription": {
-    "message": "FileSystemBroker provides other web extensions the ability to safely access the computer's file system.  It can read, write, rename, delete, check the existence of, or get the properties of files or it can get a list of files, etc.  Access to the file system is limited to only a specific directory in the user's Thunderbird Profile Directory.  Each extension that uses FileSystemBroker is limited to only its own specific directory.  FileSystemBroker uses the Extension Experiments API to provide access to the file system.  Using this extension, other Web Extensions can access the file system without having to use the Experiments API directly, which would give them unlimited acccess to the user's computer. Learn more by going to: https://github.com/WoofGrrrr/file-system-broker"
+    "message": "FileSystemBroker provides other web Extensions the ability to safely access the computer's file system.  It can read, write, rename, delete, check the existence of, or get the properties of files or it can get a list of files, etc.  Access to the file system is limited to only a specific directory in the user's Thunderbird Profile Directory.  Each Extension that uses FileSystemBroker is limited to only its own specific directory.  FileSystemBroker uses the Extension Experiments API to provide access to the file system.  Using this Extension, other Web Extensions can access the file system without having to use the Experiments API directly, which would give them unlimited acccess to the user's computer. Learn more by going to: https://github.com/WoofGrrrr/file-system-broker"
   },
   "fsbConfirmDialogPageTitle": {
     "message": "Confirmation"
@@ -51,16 +51,16 @@
     "message": "To Deny an Extension access to FileSystemBroker, un-check the checkbox to the left of it"
   },
   "options_fsbExtensionList.hint3": {
-    "message": "Click on an Extension to Select it - it will be Highlighted (more than one may be selected)"
+    "message": "Click on an Extension to Select it - it will be Highlighted. (More than one may be selected. Locked Extensions cannot be selected.)"
   },
   "options_fsbExtensionList.hint4": {
     "message": "Click on the Extension again to De-select it"
   },
   "options_fsbExtensionList.hint5": {
-    "message": "You can Double-Click on an Extension to Edit it"
+    "message": "You can Double-Click on an Extension to Edit it. (Locked Extensions cannot be edited.)"
   },
   "options_fsbExtensionList.hint6": {
-    "message": "Disabled Extensions have Red Text with Strike-Through"
+    "message": "Access-Denied Extensions have Red Text with a Strike-Through"
   },
   "options_fsbExtensionOptionsButtonBackupManager.label": {
     "message": "Manage Backups"
@@ -74,11 +74,11 @@
   "options_fsbExtensionOptionsButtonEventLogManager.tooltip": {
     "message": "Display the Event Log Manager to List, View, or Delete Event Logs"
   },
-  "options_fsbExtensionOptionsButtonStatsManager.label": {
-    "message": "Manage Statistics"
+  "options_fsbExtensionOptionsButtonStorageManager.label": {
+    "message": "Manage Storage"
   },
-  "options_fsbExtensionOptionsButtonStatsManager.tooltip": {
-    "message": "Display the Statistics Manager to List and View Statistics"
+  "options_fsbExtensionOptionsButtonStorageManager.tooltip": {
+    "message": "Display the Storage Manager to List and View Storage"
   },
   "options_fsbRefreshListButton.label": {
     "message": "Refresh List"
@@ -113,11 +113,18 @@
   "options_fsbAddNewExtensionButton.label": {
     "message": "Add New"
   },
+  "options_fsbAddInstalledExtensionsButton.label": {
+    "message": "Installed Extensions"
+  },
   "options_fsbAddInstalledExtensionsButtonsLabel": {
     "message": "Open a window to Select INSTALLED Extensions to add"
   },
-  "options_fsbAddInstalledExtensionsButton.label": {
-    "message": "Installed Extensions"
+  "options_fsbOptionsDoneButton.label": {
+    "message": "Done"
+  },
+
+  "options_fsbOptionsPageTitle": {
+    "message": "FileSystemBroker Settings"
   },
 
   "options_fsbExtensionListHeader_text_installed.label": {
@@ -176,8 +183,20 @@
   "options_fsbExtensionList_marker_tooltip_locked": {
     "message": "This Extension is 'Locked' and cannot be Edited, Removed, Auto-Removed, or Changed in any way unless it is Unlocked"
   },
-  "options_fsbExtensionList_marker_tooltip_dirProtected": {
+  "options_fsbExtensionList_marker_tooltip_dirProtect": {
     "message": "The Directory for this Extension is 'Protected' and it will not be Automatically Deleted if the Extension is Removed or Auto-Removed"
+  },
+  "options_fsbExtensionList_marker_tooltip_noQuotasSpecial": {
+    "message": "Special Extensions Always have file storage Quotas Disabled"
+  },
+  "options_fsbExtensionList_marker_tooltip_quotasDisabled": {
+    "message": "This Extension has file storage Quotas Disabled"
+  },
+  "options_fsbExtensionList_marker_tooltip_quotasEnabled": {
+    "message": "This Extension has file storage Quotas Enabled"
+  },
+  "options_fsbExtensionList_marker_tooltip_accessDisallowed": {
+    "message": "This Extension has NOT been Granted access to use FileSystemBroker"
   },
 
   "options_fsbRefreshListButton.tooltip": {
@@ -201,6 +220,10 @@
   "options_fsbAddNewExtensionButton.tooltip": {
     "message": "Add a NEW Extension to the list"
   },
+  "options_fsbOptionsDoneButton.tooltip": {
+    "message": "Close the Options Window"
+  },
+
   "options_fsbAddInstalledExtensionsButton.tooltip": {
     "message": "Display a window that lists ALL Currently Installed Extensions that can be Selected to be Added to the list"
   },
@@ -208,14 +231,33 @@
     "message": "Add a NEW Extension to the list"
   },
 
-  "options_checkbox_allowAccess_enabled.tooltip": {
-    "message": "Check here to Grant the Extension with this ID access to FileSystemBroker, Un-Check to Deny it"
+  "options_checkbox_allowAccess_enabled_unchecked.tooltip": {
+    "message": "Check here to Grant this Extension Access to FileSystemBroker"
+  },
+  "options_checkbox_allowAccess_enabled_checked.tooltip": {
+    "message": "Check here to Deny this Extension Access to FileSystemBroker"
   },
   "options_checkbox_allowAccess_disabled_special.tooltip": {
-    "message": "Access cannot be denied because this Extentions is marked as SPECIAL"
+    "message": "Access cannot be denied because this Extenion is marked as 'SPECIAL'"
   },
   "options_checkbox_allowAccess_disabled_locked.tooltip": {
     "message": "Access cannot be changed for this Extension because it is LOCKED"
+  },
+
+  "options_checkbox_readOnly_enabled_unchecked.tooltip": {
+    "message": "Check here to restrict this Extension to Read-Only Access"
+  },
+  "options_checkbox_readOnly_enabled_checked.tooltip": {
+    "message": "Check here to give this Extension Read/Write Access"
+  },
+  "options_checkbox_readOnly_disabled_special.tooltip": {
+    "message": "Read-Only Access cannot be selected for Extensions marked as 'SPECIAL'"
+  },
+  "options_checkbox_readOnly_disabled_locked.tooltip": {
+    "message": "Read-Only Access cannot be changed for LOCKED Extensions"
+  },
+  "options_checkbox_readOnly_disabled_accessDisallowed.tooltip": {
+    "message": "Read-Only Access cannot be selected for Extensions that are not Granted Access"
   },
 
   "options_dot_extension_installed.tooltip": {
@@ -251,7 +293,7 @@
   },
 
   "options_button_editExtension_disabled_special.tooltip": {
-    "message": "The information for this Extension cannot be Edited because the Extension is marked as SPECIAL"
+    "message": "The information for this Extension cannot be Edited because the Extension is marked as 'SPECIAL'"
   },
   "options_button_editExtension_disabled_locked.tooltip": {
     "message": "The information for this Extension cannot be Edited because the Extension LOCKED"
@@ -260,25 +302,44 @@
     "message": "Edit the information for this Extension"
   },
 
-  "options_checkbox_lockExtension_disabled_special.tooltip": {
-    "message": "This Extension cannot be Unlocked because it is marked as SPECIAL"
+  "options_checkbox_noQuotaExtension_disabled_special.tooltip": {
+    "message": "Quota Settings for this Extension cannot be Changed because the Extension is marked as 'SPECIAL'"
   },
-  "options_checkbox_lockExtension_enabled.tooltip": {
-    "message": "Click to Lock or Unlock this Extension"
+  "options_checkbox_noQuotaExtension_disabled_locked.tooltip": {
+    "message": "Quota Settings for this Extension cannot be Changed because the Extension is LOCKED"
+  },
+  "options_checkbox_noQuotaExtension_enabled_unchecked.tooltip": {
+    "message": "Click to Disable Quotas this Extension"
+  },
+  "options_checkbox_noQuotaExtension_enabled_checked.tooltip": {
+    "message": "Click to Enable Quotas this Extension"
   },
 
-  "options_checkbox_protectExtension_disabled_special.tooltip": {
-    "message": "The Directory for this Extension cannot be Un-Protected because the Extension is marked as SPECIAL"
+  "options_checkbox_dirProtectExtension_disabled_special.tooltip": {
+    "message": "The Directory for this Extension cannot be Un-Protected because the Extension is marked as 'SPECIAL'"
   },
-  "options_checkbox_protectExtension_disabled_locked.tooltip": {
+  "options_checkbox_dirProtectExtension_disabled_locked.tooltip": {
     "message": "The Protected State for the Directory for this Extension cannot be changed because the Extension is LOCKED"
   },
-  "options_checkbox_protectExtension_enabled.tooltip": {
-    "message": "Click to Protect or Un-Protect the Directory for this Extension"
+  "options_checkbox_dirProtectExtension_enabled_unchecked.tooltip": {
+    "message": "Click to Mark the Directory for this Extension as Protected"
+  },
+  "options_checkbox_dirProtectExtension_enabled_checked.tooltip": {
+    "message": "Click to Mark the Directory for this Extension as Un-Protected"
+  },
+
+  "options_checkbox_lockExtension_disabled_special.tooltip": {
+    "message": "This Extension cannot be Unlocked because it is marked as 'SPECIAL'"
+  },
+  "options_checkbox_lockExtension_enabled_unchecked.tooltip": {
+    "message": "Click to Lock this Extension"
+  },
+  "options_checkbox_lockExtension_enabled_checked.tooltip": {
+    "message": "Click to Unlock this Extension"
   },
 
   "options_button_removeExtension_disabled_special.tooltip": {
-    "message": "This Extension cannot be removed because it is marked as SPECIAL"
+    "message": "This Extension cannot be removed because it is marked as 'SPECIAL'"
   },
   "options_button_removeExtension_disabled_locked.tooltip": {
     "message": "This Extension cannot be removed because it is LOCKED"
@@ -302,8 +363,11 @@
   "options_fsbExtensionEditCancelButton.label": {
     "message": "Cancel"
   },
-  "options_fsbExtensionEditSaveButton.tooltip": {
-    "message": "Save the Extension information to the List"
+  "options_fsbExtensionEditSaveButton_addMode.tooltip": {
+    "message": "Add this Extension to the List"
+  },
+  "options_fsbExtensionEditSaveButton_editMode.tooltip": {
+    "message": "Save this Extension information to the Extension in the List"
   },
   "options_fsbExtensionEditAddButton.tooltip": {
     "message": "Add the Extension information to the List"
@@ -332,8 +396,11 @@
   "options_fsbExtensionEditErrorUIUpdateFailed": {
     "message": "Failed to Update the List Item - Try Refreshing the list"
   },
-  "options_fsbExtensionEditCancelButton.tooltip": {
-    "message": "Cancel the changes and Clear the Extension Information"
+  "options_fsbExtensionEditCancelButton_editMode.tooltip": {
+    "message": "Cancel without saving any changes"
+  },
+  "options_fsbExtensionEditCancelButton_addMode.tooltip": {
+    "message": "Cancel and do not add a new Extension"
   },
   "options_fsbExtensionEditErrorDismissButton.tooltip": {
     "message": "Dismiss the Extension Edit Error"
@@ -486,7 +553,7 @@
   "fsbOptions_dialog_confirmRemoveExtension_message_willDeleteDirectory": {
     "message": "The Directory for the Extension will be DELETED as well."
   },
-  "fsbOptions_dialog_confirmRemoveExtension_message_dirProtected": {
+  "fsbOptions_dialog_confirmRemoveExtension_message_dirProtect": {
     "message": "CAUTION: The Directory is PROTECTED."
   },
   "fsbOptions_dialog_confirmRemoveExtension_message_continue": {
@@ -561,6 +628,7 @@
   "options_fsbExtensionChooserTitle": {
     "message": "Add Installed Extensions"
   },
+
   "options_message_error_noExtensionList": {
     "message": "Internal Error - Failed to find Extension List"
   },
@@ -573,6 +641,11 @@
   "options_message_error_": {
     "message": ""
   },
+
+  "options_message_usingPopup": {
+    "message": "Options are currently displayed in the Popup Window"
+  },
+
   "fsbConfirmDialogTitle": {
     "message": "Please Confirm"
   },
@@ -613,7 +686,7 @@
     "message": "Extensions that have already been added (blue marker) cannot be selected"
   },
   "fsbExtensionChooserPopup_instructions_5": {
-    "message": "Disabled Extensions (red text with strike-through) can still be selected"
+    "message": "Disabled Extensions (red text with a strike-through) can still be selected"
   },
   "fsbExtensionChooserPopup_cancelButton": {
     "message": "Cancel"
@@ -975,253 +1048,508 @@
   "fsbEventLogViewer_message_error_responseMessageFailed": {
     "message": "Internal Error - Failed to send response message to Event Log Manager UI"
   },
-  "fsbStatsManager_pageTitle": {
-    "message": "Statstics Manager"
+  "fsbStorageManager_pageTitle": {
+    "message": "Storage Manager"
   },
-  "fsbStatsManager_title": {
-    "message": "Statstics Manager"
+  "fsbStorageManager_title": {
+    "message": "Storage Manager"
   },
-  "fsbStatsManagerInstructions.label": {
+  "fsbStorageManagerInstructions.label": {
     "message": "Hints"
   },
-  "fsbStatsManager_instructions_1": {
+  "fsbStorageManager_instructions_1": {
     "message": "Click on a Directory to Select it - it will be highlighted (one or more may be selected)"
   },
-  "fsbStatsManager_instructions_2": {
+  "fsbStorageManager_instructions_2": {
     "message": "Click on the Directory again to De-select it"
   },
-  "fsbStatsManager_instructions_3": {
+  "fsbStorageManager_instructions_3": {
     "message": "Click a Delete button to the left of a Directory to delete it"
   },
-  "fsbStatsManager_instructions_4": {
+  "fsbStorageManager_instructions_4": {
     "message": "-not used-"
   },
-  "fsbStatsManager_instructions_5": {
+  "fsbStorageManager_instructions_5": {
     "message": "-not used-"
   },
-  "fsbStatsManager_instructions_6": {
+  "fsbStorageManager_instructions_6": {
     "message": "-not used-"
   },
-  "fsbStatsManager_message_directoryListLoading": {
+  "fsbStorageManager_actionsPanelTitle.label": {
+    "message": "Settings & Actions"
+  },
+
+  "fsbStorageManager_quotaSettingsPanelTitle.label": {
+    "message": "Quotas"
+  },
+  "fsbStorageManager_quotaSettingsPanelHint.label": {
+    "message": " "
+  },
+  "fsbStorageManager_storageQuotaInput.label": {
+    "message": "Maximum Storage per Extension"
+  },
+  "fsbStorageManager_fileSizeQuotaInput.label": {
+    "message": "Maximum File Size"
+  },
+  "fsbStorageManager_fileCountQuotaInput.label": {
+    "message": "Maximum File Count per Extension"
+  },
+
+  "fsbStorageManager_quotaCheckSettingsPanelTitle.label": {
+    "message": "Quota Checks"
+  },
+  "fsbStorageManager_quotaCheckSettingsPanelHint.label": {
+    "message": " "
+  },
+  "fsbStorageManager_quotaCheckSchedulingBlockedCheckbox.label": {
+    "message": "Block Scheduled Quota Checks"
+  },
+  "fsbStorageManager_quotaCheckSchedulingBlocked.hint": {
+    "message": "To Un-Block Scheduled Quota Checks, Un-check the Checkbox, then Re-Start Thunderbird"
+  },
+  "fsbStorageManager_quotaCheckSchedulingUnblocked.hint": {
+    "message": "Scheduled Quota Checks Un-Blocked - To Schedule Quota Checks, Re-Start Thunderbird"
+  },
+  "fsbStorageManager_quotaCheckEnableCheckbox.label": {
+    "message": "Automatically run Quota Checks periodically"
+  },
+  "fsbStorageManager_quotaCheckUnitSelect.label": {
+    "message": "Run Quota Checks, scheduled by"
+  },
+  "fsbStorageManager_quotaCheckUnitSelect_option_none": {
+    "message": "---select---"
+  },
+  "fsbStorageManager_quotaCheckUnitSelect_option_daily": {
+    "message": "Day"
+  },
+  "fsbStorageManager_quotaCheckUnitSelect_option_hourly": {
+    "message": "Hour"
+  },
+  "fsbStorageManager_quotaCheckUnitSelect_option_minutely": {
+    "message": "Minute"
+  },
+  "fsbStorageManager_quotaCheckDaysSelect.label-before": {
+    "message": "every"
+  },
+  "fsbStorageManager_quotaCheckDaysSelect_option_none": {
+    "message": "---select---"
+  },
+  "fsbStorageManager_quotaCheckDaysSelect.label-after": {
+    "message": "days"
+  },
+  "fsbStorageManager_quotaCheckDaysTimeOffsetInput.label-before": {
+    "message": "at"
+  },
+  "fsbStorageManager_quotaCheckDaysTimeOffsetInput.label-after": {
+    "message": " "
+  },
+  "fsbStorageManager_quotaCheckHoursSelect.label-before": {
+    "message": "every"
+  },
+  "fsbStorageManager_quotaCheckHoursSelect_option_none": {
+    "message": "---select---"
+  },
+  "fsbStorageManager_quotaCheckHoursSelect.label-after": {
+    "message": "hours"
+  },
+  "fsbStorageManager_quotaCheckHoursMinuteOffsetInput.label-before": {
+    "message": "at"
+  },
+  "fsbStorageManager_quotaCheckHoursMinuteOffsetInput.label-after": {
+    "message": "minutes after the hour"
+  },
+  "fsbStorageManager_quotaCheckMinutesInput.label-before": {
+    "message": "every"
+  },
+  "fsbStorageManager_quotaCheckMinutesInput.label-after": {
+    "message": "minutes"
+  },
+  "fsbStorageManager_quotaCheckMinutesMinuteOffsetInput.label-before": {
+    "message": "with an offset of"
+  },
+  "fsbStorageManager_quotaCheckMinutesMinuteOffsetInput.label-after": {
+    "message": "minutes after the hour"
+  },
+
+  "fsbStorageManager_quotasTrialRunButton.label": {
+    "message": "Trial Run"
+  },
+  "fsbStorageManager_runQuotasCheckButton.label": {
+    "message": "Run Quotas Check"
+  },
+  "fsbStorageManager_resetAllExtensionQuotasButton.label": {
+    "message": "Reset Extension Quotas"
+  },
+  "fsbStorageManager_message_directoryListLoading": {
     "message": "...Loading Directory List..."
   },
-  "fsbStatsManager_statsHeader_dir_name": {
+  "fsbStorageManager_statsHeader_dir_name": {
     "message": "Directory Name"
   },
-  "fsbStatsManager_statsPanelTitle": {
-    "message": "Overall Statstics:"
+  "fsbStorageManager_statsPanelTitle": {
+    "message": "Storage Statistics"
   },
-  "fsbStatsManager_statsHeader_dir_path": {
+  "fsbStorageManager_statsHeader_dir_path": {
     "message": "Directory PathName"
   },
-  "fsbStatsManager_statsTitle_counts": {
+  "fsbStorageManager_statsTitle_counts": {
     "message": "Accumulative Item Counts by Type"
   },
-  "fsbStatsManager_statsHeader_count_total": {
+  "fsbStorageManager_statsHeader_count_total": {
     "message": "Total"
   },
-  "fsbStatsManager_statsHeader_count_type_regular": {
+  "fsbStorageManager_statsHeader_count_type_regular": {
     "message": "Regular File"
   },
-  "fsbStatsManager_statsHeader_count_type_directory": {
+  "fsbStorageManager_statsHeader_count_type_directory": {
     "message": "Directory"
   },
-  "fsbStatsManager_statsHeader_count_type_other": {
+  "fsbStorageManager_statsHeader_count_type_other": {
     "message": "Other"
   },
-  "fsbStatsManager_statsHeader_count_type_uknown": {
+  "fsbStorageManager_statsHeader_count_type_uknown": {
     "message": "Unknown"
   },
-  "fsbStatsManager_statsHeader_count_type_error": {
+  "fsbStorageManager_statsHeader_count_type_error": {
     "message": "Error"
   },
-  "fsbStatsManager_statsTitle_sizes": {
+  "fsbStorageManager_statsTitle_sizes": {
     "message": "Regular File Size"
   },
-  "fsbStatsManager_statsHeader_size_smallest": {
+  "fsbStorageManager_statsHeader_size_smallest": {
     "message": "Smallest File"
   },
-  "fsbStatsManager_statsHeader_size_largest": {
+  "fsbStorageManager_statsHeader_size_largest": {
     "message": "Largest File"
   },
-  "fsbStatsManager_statsHeader_size_total": {
+  "fsbStorageManager_statsHeader_size_total": {
     "message": "Total"
   },
-  "fsbStatsManager_statsTitle_times": {
+  "fsbStorageManager_statsTitle_times": {
     "message": "Times"
   },
-  "fsbStatsManager_statsHeader_time_creation_earliest": {
+  "fsbStorageManager_statsHeader_time_creation_earliest": {
     "message": "Earliest Created"
   },
-  "fsbStatsManager_statsHeader_time_creation_latest": {
+  "fsbStorageManager_statsHeader_time_creation_latest": {
     "message": "Latest Created"
   },
-  "fsbStatsManager_statsHeader_time_last_accessed_earliest": {
+  "fsbStorageManager_statsHeader_time_last_accessed_earliest": {
     "message": "Earliest Last Accessed"
   },
-  "fsbStatsManager_statsHeader_time_last_accessed_latest": {
+  "fsbStorageManager_statsHeader_time_last_accessed_latest": {
     "message": "Latest Last Accessed"
   },
-  "fsbStatsManager_statsHeader_time_last_modified_earliest": {
+  "fsbStorageManager_statsHeader_time_last_modified_earliest": {
     "message": "Earliest Last Modified"
   },
-  "fsbStatsManager_statsHeader_time_last_modified_latest": {
+  "fsbStorageManager_statsHeader_time_last_modified_latest": {
     "message": "Latest Last Modified"
   },
-  "fsbStatsManager_directoryListHeader_directoryName": {
+  "fsbStorageManager_statsTitle_quotas": {
+    "message": "Extensions Over Quotas"
+  },
+  "fsbStorageManager_statsHeader_quota_any": {
+    "message": "Any Quota"
+  },
+  "fsbStorageManager_statsHeader_quota_storage": {
+    "message": "Storage"
+  },
+  "fsbStorageManager_statsHeader_quota_fileSize": {
+    "message": "File Size"
+  },
+  "fsbStorageManager_statsHeader_quota_fileCount": {
+    "message": "File Count"
+  },
+
+  "fsbStorageManager_directoryListHeader_text_directoryName": {
     "message": "Directory Name"
   },
-  "fsbStatsManager_directoryListHeader_directoryPathName": {
+  "fsbStorageManager_directoryListHeader_text_directoryPathName": {
     "message": "Directory PathName"
   },
-  "fsbStatsManager_directoryListHeader_extensionId": {
+  "fsbStorageManager_directoryListHeader_text_extensionId": {
     "message": "Extension ID"
   },
-  "fsbStatsManager_directoryListHeader_extensionInstalled": {
+
+  "fsbStorageManager_directoryListHeader_text_extensionInstalled": {
     "message": "I?"
   },
-  "fsbStatsManager_directoryListHeader_extensionEnabled": {
+  "fsbStorageManager_directoryListHeader_text_extensionEnabled": {
     "message": "E?"
   },
-  "fsbStatsManager_directoryListHeader_extensionConfigured": {
+  "fsbStorageManager_directoryListHeader_text_extensionConfigured": {
     "message": "C?"
   },
-  "fsbStatsManager_directoryListHeader_extensionAccessAllowed": {
-    "message": "A?"
+  "fsbStorageManager_directoryListHeader_text_extensionSpecial": {
+    "message": "S?"
   },
-  "fsbStatsManager_directoryListHeader_count_children": {
+  "fsbStorageManager_directoryListHeader_text_extensionLocked": {
+    "message": "L?"
+  },
+  "fsbStorageManager_directoryListHeader_text_extensionReadOnly": {
+    "message": "R/O?"
+  },
+  "fsbStorageManager_directoryListHeader_text_extensionDirProtect": {
+    "message": "P?"
+  },
+  "fsbStorageManager_directoryListHeader_text_extensionAccessAllowed": {
+    "message": "G?"
+  },
+
+  "fsbStorageManager_directoryListHeader_text_count_items": {
     "message": "#"
   },
-  "fsbStatsManager_directoryListHeader_count_type_regular": {
+  "fsbStorageManager_directoryListHeader_text_count_type_regular": {
     "message": "#R"
   },
-  "fsbStatsManager_directoryListHeader_count_type_directory": {
+  "fsbStorageManager_directoryListHeader_text_count_type_directory": {
     "message": "#D"
   },
-  "fsbStatsManager_directoryListHeader_count_type_other": {
+  "fsbStorageManager_directoryListHeader_text_count_type_other": {
     "message": "#O"
   },
-  "fsbStatsManager_directoryListHeader_count_type_unknown": {
+  "fsbStorageManager_directoryListHeader_text_count_type_unknown": {
     "message": "#U"
   },
-  "fsbStatsManager_directoryListHeader_count_type_error": {
+  "fsbStorageManager_directoryListHeader_text_count_type_error": {
     "message": "#E"
   },
-  "fsbStatsManager_directoryListHeader_time_creation_earliest": {
+
+  "fsbStorageManager_directoryListHeader_text_time_creation_earliest": {
     "message": "Earliest Created"
   },
-  "fsbStatsManager_directoryListHeader_time_creation_latest": {
+  "fsbStorageManager_directoryListHeader_text_time_creation_latest": {
     "message": "Latest Created"
   },
-  "fsbStatsManager_directoryListHeader_time_lastAccessed_earliest": {
+  "fsbStorageManager_directoryListHeader_text_time_lastAccessed_earliest": {
     "message": "Earliest Last Accessed"
   },
-  "fsbStatsManager_directoryListHeader_time_lastAccessed_latest": {
+  "fsbStorageManager_directoryListHeader_text_time_lastAccessed_latest": {
     "message": "Latest Last Accessed"
   },
-  "fsbStatsManager_directoryListHeader_time_lastModified_earliest": {
+  "fsbStorageManager_directoryListHeader_text_time_lastModified_earliest": {
     "message": "Earliest Last Modified"
   },
-  "fsbStatsManager_directoryListHeader_time_lastModified_latest": {
+  "fsbStorageManager_directoryListHeader_text_time_lastModified_latest": {
     "message": "Latest Last Modified"
   },
-  "fsbStatsManager_directoryListHeader_size_smallest": {
+
+  "fsbStorageManager_directoryListHeader_text_size_smallest": {
     "message": "Smallest"
   },
-  "fsbStatsManager_directoryListHeader_size_largest": {
+  "fsbStorageManager_directoryListHeader_text_size_largest": {
     "message": "Largest"
   },
-  "fsbStatsManager_directoryListHeader_size_total": {
+  "fsbStorageManager_directoryListHeader_text_size_total": {
     "message": "Total "
   },
-  "fsbStatsManager_directoryListHeader_tooltip_directoryName": {
+
+  "fsbStorageManager_directoryListItem_tooltip_deleteDirButton_enabled": {
+    "message": "Delete this Directory"
+  },
+  "fsbStorageManager_directoryListItem_tooltip_deleteDirButton_fileSystemRoot": {
+    "message": "Cannot Delete the FileSystemRoot Directory"
+  },
+  "fsbStorageManager_directoryListItem_tooltip_deleteDirButton_extSpecial": {
+    "message": "Delete the Directory for this Extension marked as 'SPECIAL'"
+  },
+  "fsbStorageManager_directoryListItem_tooltip_deleteDirButton_extDirProtect": {
+    "message": "Delete the PROTECTED Directory for this Extension"
+  },
+
+  "fsbStorageManager_directoryListItem_tooltip_extQuotaButton_noQuotas": {
+    "message": "NO Quotas for this Directory"
+  },
+  "fsbStorageManager_directoryListItem_tooltip_extQuotaButton_fileSystemRoot": {
+    "message": "No Quotas because this is the FileSystemRoot Directory"
+  },
+  "fsbStorageManager_directoryListItem_tooltip_extQuotaButton_notConfigured": {
+    "message": "NO Quotas because NO Extension is configured for this Directory"
+  },
+  "fsbStorageManager_directoryListItem_tooltip_extQuotaButton_extSpecial": {
+    "message": "No Quotas because the Extension configured for this Directory is marked as 'SPECIAL'"
+  },
+  "fsbStorageManager_directoryListItem_tooltip_extQuotaButton_extNoQuotas": {
+    "message": "No Quotas because the Extension configured for this Directory has Quotas DISABLED"
+  },
+  "fsbStorageManager_directoryListItem_tooltip_extQuotaButton_XXX": {
+    "message": "XXX"
+  },
+  "fsbStorageManager_directoryListItem_tooltip_extQuotaButton_notOverQuotas": {
+    "message": "The Extension configured for this Directory is NOT Over any of its Quotas"
+  },
+  "fsbStorageManager_directoryListItem_tooltip_extQuotaButton_overQuotas": {
+    "message": "The Extension configured for this Directory is OVER at least one of its Quotas"
+  },
+
+  "fsbStorageManager_directoryListHeader_tooltip_directoryName": {
     "message": "Directory Name"
   },
-  "fsbStatsManager_directoryListHeader_tooltip_directoryPathName": {
+  "fsbStorageManager_directoryListHeader_tooltip_directoryPathName": {
     "message": "The full PathName for the directory"
   },
-  "fsbStatsManager_directoryListHeader_tooltip_extensionId": {
-    "message": "The Extension ID of the extenstion for which this is the directory, if any"
+
+  "fsbStorageManager_directoryListHeader_tooltip_extensionId": {
+    "message": "The Extension ID of the Extension for which this is the directory, if any"
   },
-  "fsbStatsManager_directoryListHeader_tooltip_extensionInstalled": {
-    "message": "Is the Extension installed?"
+  "fsbStorageManager_directoryListHeader_tooltip_extensionInstalled": {
+    "message": "Is the Extension INSTALLED?"
   },
-  "fsbStatsManager_directoryListHeader_tooltip_extensionEnabled": {
-    "message": "Is the Extension enabled?"
+  "fsbStorageManager_directoryListHeader_tooltip_extensionEnabled": {
+    "message": "Is the Extension ENABLED?"
   },
-  "fsbStatsManager_directoryListHeader_tooltip_extensionConfigured": {
-    "message": "Is the Extension configured to use FileSystemManager?"
+  "fsbStorageManager_directoryListHeader_tooltip_extensionConfigured": {
+    "message": "Is the Extension CONFIGURED to use FileSystemManager?"
   },
-  "fsbStatsManager_directoryListHeader_tooltip_extensionAccessAllowed": {
-    "message": "Is the Extension configured and allowed to FileSystemManager?"
+  "fsbStorageManager_directoryListHeader_tooltip_extensionSpecial": {
+    "message": "Is the Extension marked as SPECIAL?"
   },
-  "fsbStatsManager_directoryListHeader_tooltip_count_children": {
-    "message": "The number of items in the directory"
+  "fsbStorageManager_directoryListHeader_tooltip_extensionLocked": {
+    "message": "Is the Extension LOCKED?"
   },
-  "fsbStatsManager_directoryListHeader_tooltip_count_type_regular": {
+  "fsbStorageManager_directoryListHeader_tooltip_extensionDirProtect": {
+    "message": "Is the Extension's Directory PROTECTED?"
+  },
+  "fsbStorageManager_directoryListHeader_tooltip_extensionReadOnly": {
+    "message": "Does the Extension have Read-Only Access?"
+  },
+  "fsbStorageManager_directoryListHeader_tooltip_extensionAccessAllowed": {
+    "message": "Is the Extension configured and Granted Access to FileSystemManager?"
+  },
+
+  "fsbStorageManager_directoryListHeader_tooltip_count_items": {
+    "message": "The total number of items in the directory"
+  },
+  "fsbStorageManager_directoryListHeader_tooltip_count_type_regular": {
     "message": "The number of Regular Files in the directory"
   },
-  "fsbStatsManager_directoryListHeader_tooltip_count_type_directory": {
-    "message": "The number of Directories in the directory"
+  "fsbStorageManager_directoryListHeader_tooltip_count_type_directory": {
+    "message": "The number of Sub-Directories in the directory"
   },
-  "fsbStatsManager_directoryListHeader_tooltip_count_type_other": {
-    "message": "The number of type 'other' in the directory"
+  "fsbStorageManager_directoryListHeader_tooltip_count_type_other": {
+    "message": "The number of items with type 'other' in the directory"
   },
-  "fsbStatsManager_directoryListHeader_tooltip_count_type_unknown": {
+  "fsbStorageManager_directoryListHeader_tooltip_count_type_unknown": {
     "message": "The number of items in the directory whose types are known"
   },
-  "fsbStatsManager_directoryListHeader_tooltip_count_type_error": {
+  "fsbStorageManager_directoryListHeader_tooltip_count_type_error": {
     "message": "The number of items in the directory for which there was an error getting their type"
   },
-  "fsbStatsManager_directoryListHeader_tooltip_time_creation_earliest": {
+
+  "fsbStorageManager_directoryListHeader_tooltip_time_creation_earliest": {
     "message": "The least-recent Creation date & time of all items in the directory"
   },
-  "fsbStatsManager_directoryListHeader_tooltip_time_creation_latest": {
+  "fsbStorageManager_directoryListHeader_tooltip_time_creation_latest": {
     "message": "The most-recent Creation date & time of all items in the directory"
   },
-  "fsbStatsManager_directoryListHeader_tooltip_time_lastAccessed_earliest": {
+  "fsbStorageManager_directoryListHeader_tooltip_time_lastAccessed_earliest": {
     "message": "The least-recent Last Accessed date & time of all items in the directory"
   },
-  "fsbStatsManager_directoryListHeader_tooltip_time_lastAccessed_latest": {
+  "fsbStorageManager_directoryListHeader_tooltip_time_lastAccessed_latest": {
     "message": "The most-recent Last Accessed date & time of all items in the directory"
   },
-  "fsbStatsManager_directoryListHeader_tooltip_time_lastModified_earliest": {
+  "fsbStorageManager_directoryListHeader_tooltip_time_lastModified_earliest": {
     "message": "The least-recent Last Modified date & time of all items in the directory"
   },
-  "fsbStatsManager_directoryListHeader_tooltip_time_lastModified_latest": {
+  "fsbStorageManager_directoryListHeader_tooltip_time_lastModified_latest": {
     "message": "The most-recent Last Modified date & time of all items in the directory"
   },
-  "fsbStatsManager_directoryListHeader_tooltip_size_smallest": {
+
+  "fsbStorageManager_directoryListHeader_tooltip_size_smallest": {
     "message": "The size of the smallest Regular File in the directory"
   },
-  "fsbStatsManager_directoryListHeader_tooltip_size_largest": {
+  "fsbStorageManager_directoryListHeader_tooltip_size_largest": {
     "message": "The size of the largest Regular File in the directory"
   },
-  "fsbStatsManager_directoryListHeader_tooltip_size_total": {
+  "fsbStorageManager_directoryListHeader_tooltip_size_total": {
     "message": "The total of the sizes of all Regular Files in the directory "
   },
-  "fsbStatsManager_deleteButton": {
+
+  "fsbStorageManager_directoryListItem_tooltip_extensionInstalled": {
+    "message": "There is an Installed Extension whose ID is the same as this Directory"
+  },
+  "fsbStorageManager_directoryListItem_tooltip_extensionNotInstalled": {
+    "message": "There is NOT an Installed Extension whose ID is the same as this Directory"
+  },
+  "fsbStorageManager_directoryListItem_tooltip_extensionEnabled": {
+    "message": "This Extension is ENABLED"
+  },
+  "fsbStorageManager_directoryListItem_tooltip_extensionDisabled": {
+    "message": "This Extension is DISABLED"
+  },
+  "fsbStorageManager_directoryListItem_tooltip_extensionConfigured": {
+    "message": "There is a Configured Extension whose ID is the same as this Directory"
+  },
+  "fsbStorageManager_directoryListItem_tooltip_extensionNotConfigured": {
+    "message": "There is NOT a Configured Extension whose ID is the same as this Directory"
+  },
+  "fsbStorageManager_directoryListItem_tooltip_extensionSpecial": {
+    "message": "This Extesnion is Marked a 'SPECIAL'"
+  },
+  "fsbStorageManager_directoryListItem_tooltip_extensionNotSpecial": {
+    "message": "This Extesnion is NOT Marked a 'SPECIAL'"
+  },
+  "fsbStorageManager_directoryListItem_tooltip_extensionLocked": {
+    "message": "This Extension's Configuration is LOCKED"
+  },
+  "fsbStorageManager_directoryListItem_tooltip_extensionNotLocked": {
+    "message": "This Extension's Configuration is NOT Locked"
+  },
+  "fsbStorageManager_directoryListItem_tooltip_extensionReadOnly": {
+    "message": "This Extension has Read-Only Access"
+  },
+  "fsbStorageManager_directoryListItem_tooltip_extensionNotReadOnly": {
+    "message": "This Extension has Read/Write Access"
+  },
+  "fsbStorageManager_directoryListItem_tooltip_extNotReadOnly_notAccessAllowed": {
+    "message": "This Extension has Not been Granted Access to FileSystemBroker"
+  },
+  "fsbStorageManager_directoryListItem_tooltip_extNotReadOnly_notConfigured": {
+    "message": "There is no Configured Extension with an ID that matches this DIrectory"
+  },
+  "fsbStorageManager_directoryListItem_tooltip_extensionDirProtect": {
+    "message": "The Directory for this Extension is PROTECTED"
+  },
+  "fsbStorageManager_directoryListItem_tooltip_extensionNotDirProtect": {
+    "message": "The Directory for this Extension is NOT Protected"
+  },
+  "fsbStorageManager_directoryListItem_tooltip_extensionAccessAllowed": {
+    "message": "This Extension has been GRANTED Access to use FileSystemBroker"
+  },
+  "fsbStorageManager_directoryListItem_tooltip_extensionNotAccessAllowed": {
+    "message": "This Extension has NOT been Granted Access to use FileSystemBroker"
+  },
+
+  "fsbStorageManager_deleteButton": {
     "message": "Delete"
   },
-  "fsbStatsManager_refreshButton": {
-    "message": "Refresh List"
+  "fsbStorageManager_refreshButton": {
+    "message": "Refresh Data"
   },
-  "fsbStatsManager_error_noDirectoryListElement": {
-    "message": "Internal Error: Failed to get directory List Element #fsbStatsManagerDirectoryList"
+  "fsbStorageManager_error_noDirectoryListElement": {
+    "message": "Internal Error: Failed to get directory List Element #fsbStorageManagerDirectoryList"
   },
-  "fsbStatsManager_error_noDirectories": {
+  "fsbStorageManager_error_noStats": {
+    "message": "Internal Error: Failed to get FileSystem Statistics"
+  },
+  "fsbStorageManager_error_noExtensionsProps": {
+    "message": "Internal Error: Failed to get Extensions Properties"
+  },
+  "fsbStorageManager_error_noExtensionsProps": {
+    "message": "Internal Error: Failed to get Extension Data"
+  },
+  "fsbStorageManager_error_noDirectories": {
     "message": "Internal Error: Failed to get Directories List"
   },
-  "fsbStatsManager_doneButton": {
+  "fsbStorageManager_doneButton": {
     "message": "Done"
   },
-  "fsbStatsManager_message_directoryDeleteCanceled": {
-    "message": "Directory Deletion Canceled."
-  },
-  "fsbStatsManager_message_oneDirectoryDeleted": {
+
+  "fsbStorageManager_message_oneDirectoryDeleted": {
     "message": "1 Directory Deleted."
   },
-  "fsbStatsManager_message_nnDirectoriesDeleted": {
+  "fsbStorageManager_message_nnDirectoriesDeleted": {
     "message": "$NN$ Directories Deleted.",
     "placeholders": {
       "nn": {
@@ -1229,10 +1557,10 @@
       }
     }
   },
-  "fsbStatsManager_error_oneDirectoryDeleteFailed": {
+  "fsbStorageManager_error_oneDirectoryDeleteFailed": {
     "message": "1 Directory Failed to be Deleted."
   },
-  "fsbStatsManager_error_nnDirectoriesDeleteFailed": {
+  "fsbStorageManager_error_nnDirectoriesDeleteFailed": {
     "message": "$NN$ Directories Failed to be Deleted.",
     "placeholders": {
       "nn": {
@@ -1241,10 +1569,10 @@
     }
   },
 
-  "fsbStatsManager_dialog_confirmDeleteDirectory_title": {
+  "fsbStorageManager_dialog_confirmDeleteDirectory_title": {
     "message": "Confirm Directory Deletion"
   },
-  "fsbStatsManager_dialog_confirmDeleteDirectory_dirName": {
+  "fsbStorageManager_dialog_confirmDeleteDirectory_dirName": {
     "message": "Directory \"$DIR_NAME$\" will be deleted.",
     "placeholders": {
       "dir_name": {
@@ -1252,13 +1580,13 @@
       }
     }
   },
-  "fsbStatsManager_dialog_confirmDeleteDirectory_hasNoItems": {
+  "fsbStorageManager_dialog_confirmDeleteDirectory_hasNoItems": {
     "message": "The Directory is empty."
   },
-  "fsbStatsManager_dialog_confirmDeleteDirectory_hasOneItem": {
+  "fsbStorageManager_dialog_confirmDeleteDirectory_hasOneItem": {
     "message": "The Directory contains one item."
   },
-  "fsbStatsManager_dialog_confirmDeleteDirectory_hasNNItems": {
+  "fsbStorageManager_dialog_confirmDeleteDirectory_hasNNItems": {
     "message": "The Directory contains $NN$ items.",
     "placeholders": {
       "nn": {
@@ -1266,56 +1594,106 @@
       }
     }
   },
-  "fsbStatsManager_dialog_confirmDeleteDirectory_extensionInstalled": {
-    "message": "An Extension with an ID that matches this Directory is currently installed,"
+  "fsbStorageManager_dialog_confirmDeleteDirectory_extensionInstalled": {
+    "message": "An Extension with an ID that matches this Directory is currently installed."
   },
-  "fsbStatsManager_dialog_confirmDeleteDirectory_extensionEnabled": {
-    "message": "and the Extension is Enabled."
+  "fsbStorageManager_dialog_confirmDeleteDirectory_extensionEnabled": {
+    "message": "The Extension is Enabled."
   },
-  "fsbStatsManager_dialog_confirmDeleteDirectory_extensionNotEnabled": {
-    "message": "but the Extension is NOT Enabled."
+  "fsbStorageManager_dialog_confirmDeleteDirectory_extensionNotEnabled": {
+    "message": "The Extension is NOT Enabled."
   },
-  "fsbStatsManager_dialog_confirmDeleteDirectory_extensionNotInstalled": {
+  "fsbStorageManager_dialog_confirmDeleteDirectory_extensionNotInstalled": {
     "message": "There is NO Installed Extension with an ID that matches this Directory."
   },
-  "fsbStatsManager_dialog_confirmDeleteDirectory_extensionConfigured": {
-    "message": "An Extension with an ID that matches this Directory has been Configured,"
+  "fsbStorageManager_dialog_confirmDeleteDirectory_extensionConfigured": {
+    "message": "An Extension with an ID that matches this Directory has been Configured."
   },
-  "fsbStatsManager_dialog_confirmDeleteDirectory_extensionGrantedAccess": {
-    "message": "and it has been Granted Access to use FileSystemBroker."
+  "fsbStorageManager_dialog_confirmDeleteDirectory_extensionSpecial": {
+    "message": "It is marked as SPECIAL."
   },
-  "fsbStatsManager_dialog_confirmDeleteDirectory_extensionNotGrantedAccess": {
-    "message": "but it has NOT been Granted Access to use FileSystemBroker."
+  "fsbStorageManager_dialog_confirmDeleteDirectory_extensionNotSpecial": {
+    "message": "It is NOT marked as SPECIAL."
   },
-  "fsbStatsManager_dialog_confirmDeleteDirectory_extensionNotConfigured": {
+  "fsbStorageManager_dialog_confirmDeleteDirectory_extensionLocked": {
+    "message": "It is LOCKED."
+  },
+  "fsbStorageManager_dialog_confirmDeleteDirectory_extensionNotLocked": {
+    "message": "It is NOT Locked."
+  },
+  "fsbStorageManager_dialog_confirmDeleteDirectory_extensionDirProtect": {
+    "message": "The Directory is PROTECTED."
+  },
+  "fsbStorageManager_dialog_confirmDeleteDirectory_extensionNotDirProtect": {
+    "message": "The Directory is NOT Protected."
+  },
+  "fsbStorageManager_dialog_confirmDeleteDirectory_extensionGrantedAccess": {
+    "message": "It has been Granted Access to use FileSystemBroker."
+  },
+  "fsbStorageManager_dialog_confirmDeleteDirectory_extensionNotGrantedAccess": {
+    "message": "It has NOT been Granted Access to use FileSystemBroker."
+  },
+  "fsbStorageManager_dialog_confirmDeleteDirectory_extensionNotConfigured": {
     "message": "NO Extension with an ID that matches this directory has been configured to use FileSystemBroker."
   },
-  "fsbStatsManager_dialog_confirmDeleteDirectory_messageContinue": {
+  "fsbStorageManager_dialog_confirmDeleteDirectory_messageContinue": {
     "message": "Do you wish to continue?"
   },
-  "fsbStatsManager_dialog_confirmDeleteDirectory_button_continue.label": {
+  "fsbStorageManager_dialog_confirmDeleteDirectory_button_continue.label": {
     "message": "Continue"
   },
-  "fsbStatsManager_dialog_confirmDeleteDirectory_button_cancel.label": {
+  "fsbStorageManager_dialog_confirmDeleteDirectory_button_cancel.label": {
     "message": "Cancel"
   },
-  "fsbStatsManager_error_directoryDeleteFailed": {
+
+  "fsbStorageManager_message_deleteDirectory_canceled": {
+    "message": "Directory Deletion Canceled."
+  },
+  "fsbStorageManager_error_deleteDirectory_fileSystemRoot": {
+    "message": "Cannot Delete the FileSystemRoot Directory."
+  },
+  "fsbStorageManager_error_deleteDirectory_special": {
+    "message": "Cannot Delete Directory for an Extension that is marked as 'SPECIAL'."
+  },
+  "fsbStorageManager_error_deleteDirectory_failed": {
     "message": "Directory failed to be deleted."
   },
-  "fsbStatsManager_message_directoryDeleted": {
+  "fsbStorageManager_message_deleteDirectory_success": {
     "message": "Directory deleted."
   },
 
-  "fsbStatsManager_dialog_confirmDeleteDirs_title": {
+  "fsbStorageManager_error_resetExtQuotas_fileSystemRoot": {
+    "message": "Cannot Reset Quotas for the FileSystemRoot Directory."
+  },
+  "fsbStorageManager_error_resetExtQuotas_notConfigured": {
+    "message": "Cannot Reset Quotas for Directory that does not have a Configured Extension."
+  },
+  "fsbStorageManager_error_resetExtQuotas_special": {
+    "message": "Cannot Reset Quotas for an Extension that is marked as 'SPECIAL'."
+  },
+  "fsbStorageManager_error_resetExtQuotas_noQuota": {
+    "message": "Cannot Reset Quotas for an Extension that has Quotas DISABLED."
+  },
+  "fsbStorageManager_error_resetExtQuotas_notOverQuota": {
+    "message": "Cannot Reset Quotas for an Extension that is NOT Over its Quotas."
+  },
+  "fsbStorageManager_error_resetExtQuotas_failed": {
+    "message": "Failed to Reset Quotas"
+  },
+  "fsbStorageManager_error_resetExtQuotas_success": {
+    "message": "Quotas have been reset"
+  },
+
+  "fsbStorageManager_dialog_confirmDeleteDirs_title": {
     "message": "Confirm Directory Deletion"
   },
-  "fsbStatsManager_dialog_confirmDeleteDirs_oneDir_message1": {
+  "fsbStorageManager_dialog_confirmDeleteDirs_oneDir_message1": {
     "message": "One Directory and all its contents will be deleted."
   },
-  "fsbStatsManager_dialog_confirmDeleteDirs_oneDir_message2": {
+  "fsbStorageManager_dialog_confirmDeleteDirs_oneDir_message2": {
     "message": " "
   },
-  "fsbStatsManager_dialog_confirmDeleteDirs_nnDirs_message1": {
+  "fsbStorageManager_dialog_confirmDeleteDirs_nnDirs_message1": {
     "message": "$NN$ Directories and all their contents will be Deleted.",
     "placeholders": {
       "nn": {
@@ -1323,16 +1701,16 @@
       }
     }
   },
-  "fsbStatsManager_dialog_confirmDeleteDirs_nnDirs_message2": {
+  "fsbStorageManager_dialog_confirmDeleteDirs_nnDirs_message2": {
     "message": " "
   },
-  "fsbStatsManager_dialog_confirmDeleteDirs_messageContinue": {
+  "fsbStorageManager_dialog_confirmDeleteDirs_messageContinue": {
     "message": "Do you wish to continue?"
   },
-  "fsbStatsManager_dialog_confirmDeleteDirs_button_continue.label": {
+  "fsbStorageManager_dialog_confirmDeleteDirs_button_continue.label": {
     "message": "Continue"
   },
-  "fsbStatsManager_dialog_confirmDeleteDirs_button_cancel.label": {
+  "fsbStorageManager_dialog_confirmDeleteDirs_button_cancel.label": {
     "message": "Cancel"
   },
 

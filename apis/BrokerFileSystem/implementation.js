@@ -544,7 +544,15 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
 
           debug(`readObjectFromJSONFile -- parsing JSON - filePath="${filePath}"`);
           try {
-            const obj = JSON.parse(json);
+            const obj = JSON.parse( json, (key, value) => {
+                                                            if (value && ((typeof value) === 'object') && Object.hasOwn(value, '$bigint$')) {
+                                                              if ((typeof value.$bigint$) === 'string' && /^-?\d+n$/.test(value.$bigint$)) {
+                                                                return BigInt( value.$bigint$.slice(0, -1) );
+                                                              }
+                                                            }
+                                                            return value;
+                                                          }
+                                  );
             debug(`readObjectFromJSONFile -- parsed JSON - returning obj - filePath="${filePath}" (typeof obj)=${typeof obj}`);
             return obj;
           } catch (error) {
@@ -833,7 +841,7 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
 
           let json;
           try {
-            json = JSON.stringify(object);
+            json = JSON.stringify(object, (key, value) => ((typeof value) === 'bigint') ? { $bigint$: value.toString() } : value);
           } catch (error) {
             caught(error, `writeObjectToJSONFile -- Callilng JSON.stringify() - Converting data object to JSON String for File "${fileName}" at "${filePath}"`);
             throw new ExtensionError(`BrokerFileSystem.writeObjectToJSONFile: Error Converting data object to JSON String for File "${fileName} at "${filePath}""`);
@@ -2076,12 +2084,12 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
             const dirPathNames    = []; // accumulate pathNames for directories for internal use             // MABXXX parameterize this???
             const otherPathNames  = []; // accumulate pathNames for items with type 'other' for internal use // MABXXX parameterize this???
 
-            var   earliestChildCreationTime;     // undefined when no children
-            var   latestChildCreationTime;       // undefined when no children
-            var   earliestChildLastAccessedTime; // undefined when no children
-            var   latestChildLastAccessedTime;   // undefined when no children
-            var   earliestChildLastModifiedTime; // undefined when no children
-            var   latestChildLastModifiedTime;   // undefined when no children
+            var   earliestFileCreationTime;     // undefined when no children
+            var   latestFileCreationTime;       // undefined when no children
+            var   earliestFileLastAccessedTime; // undefined when no children
+            var   latestFileLastAccessedTime;   // undefined when no children
+            var   earliestFileLastModifiedTime; // undefined when no children
+            var   latestFileLastModifiedTime;   // undefined when no children
 
             var   totalSize = 0;
             var   smallestSize;   // undefined when no children with type 'regular'
@@ -2090,18 +2098,21 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
             const statsByDirectoryName = [];
 
             debug(`fsbStats -- calling IOUtils.getChildren - dirPath="${dirPath}"`);
-            var children;
+            var childPathNames;
             try {
-              children = await IOUtils.getChildren(dirPath, {"ignoreAbsent": true}); // returns Promise<sequence<DOMString>> // NOTE: ignoreAbsent=true
+              childPathNames = await IOUtils.getChildren(dirPath, {"ignoreAbsent": true}); // returns Promise<sequence<DOMString>> // NOTE: ignoreAbsent=true
             } catch (error) {
               caught(error, "fsbStats -- FILE SYSTEM ERROR", `Calling IOUtils.getChildren() for Directory "${FSB_DIR_NAME}" at "${dirPath}"`);
               throw new ExtensionError(`BrokerFileSystem.fsbStats -- Error listing files in Directory "${FSB_DIR_NAME}" at "${dirPath}"`);
             }
 
-            if (children) {
-              numChildren = children.length;
+            if (! childPathNames) {
+              childPathNames = [];
+            }
+            childPathNames.unshift(dirPath);
 
-              for (const itemPath of children) {
+            if (childPathNames) {
+              for (const itemPath of childPathNames) {
                 const itemName = PathUtils.filename(itemPath);
 
                 var fileInfo
@@ -2110,86 +2121,53 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
                 } catch (error) { // sometimes stat() throws even though exists() returns true.  I don't know why.  Bugzilla #1962918
                   caught(error, "fsbStats -- FILE SYSTEM ERROR", `Calling stat() for Item "${itemName}" at "${itemPath}"`);
                   if (error.name !== 'NotFoundError') {
-                    throw new ExtensionError(`BrokerFileSystem.fsbStats -- Error listing items "${FSB_DIR_NAME}" at "${dirPath}"`);
+                    throw new ExtensionError(`BrokerFileSystem.fsbStats -- Error listing items "${FSB_DIR_NAME}" at "${itemPath}"`);
                   }
                 }
 
                 if (! fileInfo) {
-                  numError++; // useless because we're going to throw, but whatever... 
                   throw new ExtensionError(`BrokerFileSystem.fsbStats Unable to get item type for Item "${itemName}" at "${itemPath}"`);
 
                 } else {
-
-                  // MABXXX should we do this only for DIRECTORY CHILDREN???
-                  // MABXXX should we do this only for Regular Files???
-                  earliestChildCreationTime     = (earliestChildCreationTime     === undefined) ? fileInfo.creationTime
-                                                                                                : Math.min( fileInfo.creationTime, earliestChildCreationTime     );
-                  latestChildCreationTime       = (latestChildCreationTime       === undefined) ? fileInfo.creationTime
-                                                                                                : Math.max( fileInfo.creationTime, latestChildCreationTime       );
-                  earliestChildLastAccessedTime = (earliestChildLastAccessedTime === undefined) ? fileInfo.lastAccessed
-                                                                                                : Math.min( fileInfo.lastAccessed, earliestChildLastAccessedTime );
-                  latestChildLastAccessedTime   = (latestChildLastAccessedTime   === undefined) ? fileInfo.lastAccessed
-                                                                                                : Math.max( fileInfo.lastAccessed, latestChildLastAccessedTime   );
-                  earliestChildLastModifiedTime = (earliestChildLastModifiedTime === undefined) ? fileInfo.lastModified
-                                                                                                : Math.min( fileInfo.lastModified, earliestChildLastModifiedTime );
-                  latestChildLastModifiedTime   = (latestChildLastModifiedTime   === undefined) ? fileInfo.lastModified
-                                                                                                : Math.max( fileInfo.lastModified, latestChildLastModifiedTime   );
-
                   // fileInfo.type:  enum FileType { "regular", "directory", "other" }
                   switch (fileInfo.type) {
-                    case 'regular': {
-                      numRegularFiles++;
+                    case 'regular':
                       if (regPathNames) regPathNames.push(itemPath);
-                      smallestSize = (smallestSize === undefined) ? fileInfo.size : Math.min( fileInfo.size, smallestSize );
-                      largestSize  = (largestSize  === undefined) ? fileInfo.size : Math.max( fileInfo.size, largestSize  );
-                      totalSize    = totalSize + fileInfo.size;
                       break;
-                    }
-
-                    case 'directory': {
-                      numDirs++;
+                    case 'directory':
                       if (dirPathNames) dirPathNames.push(itemPath);
                       break;
-                    }
-
-                    case 'other': {
-                      numOther++;
+                    case 'other':
                       if (otherPathNames) otherPathNames.push(itemPath);
                       break;
-                    }
-
-                    default: {
-                      numUnknown++;
-                      error(`fsbStats -- Unknown Type for item "${childName}" in Directory "${dirName}" at "${dirPath}": type='${fileInfo.type}'`);
-                    }
+                    default:
+                      error(`fsbStats -- Unknown Type for item "${itemName}" at "${itemPath}": type='${fileInfo.type}'`);
                   }
 
                   if (fileInfo.type === 'directory') {
-                    const dirFileInfo = fileInfo;
-                    const dirPath     = itemPath;
-                    const dirName     = itemName;
-                    const response    = await getStatsForDirFileInfo( context,
-                                                                      'fsbStats',
-                                                                      dirName,
-                                                                      dirPath,
-                                                                      dirFileInfo,
-                                                                      false,           // includeChildInfo=false
-                                                                      undefined,       // types=undefined
-                                                                      regPathNames,
-                                                                      dirPathNames,
-                                                                      otherPathNames
-                                                                    );
+                    const response = await getStatsForDirFileInfo( context,
+                                                                   'fsbStats',
+                                                                   itemName,
+                                                                   itemPath,
+                                                                   fileInfo,
+                                                                   false,           // includeChildInfo=false
+                                                                   undefined,       // types=undefined (irrelevant when includeChildInfo != true)
+                                                                   regPathNames,
+                                                                   dirPathNames,
+                                                                   otherPathNames
+                                                                 );
 
                     var dirStats;
 
-                    if (returnDirStats) dirStats = {
-                                                     'dirName': dirName,
-                                                     'dirPath': dirPath,
-                                                   };
+                    if (returnDirStats) {
+                      // prepare for error response
+                      dirStats = { 'dirName': itemName, 'dirPath': itemPath, };
+                      dirStats['isFileSystemRoot'] = (itemName === FSB_DIR_NAME);
+                    }
 
                     if (! response) {
-                      error(`fsbStats -- Failed to get response from getStatsForDirFileInfo():  "${dirName}"`);
-                      if (returnDirStats) dirStats['error'] = 'Unable to get data';
+                      error(`fsbStats -- Failed to get response from getStatsForDirFileInfo():  "${itemName}"`);
+                      if (returnDirStats) dirStats['error'] = 'Unable to get data - no response';
                     } else if (response.error) {
                       error(`fsbStats -- 'error' response from getStatsForDirFileInfo(): "${response.error}"`);
                       if (returnDirStats) dirStats['error'] = response.error;
@@ -2197,49 +2175,73 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
                       error(`fsbStats -- 'invalid' response from getStatsForDirFileInfo(): "${response.invalid}"`);
                       if (returnDirStats) dirStats['error'] = response.invalid;
                     } else if (! response.stats) {
-                      error(`fsbStats -- No 'stats' response from getStatsForDirFileInfo(): "${dirName}"`);
-                      if (returnDirStats) dirStats['error'] = 'Unable to get data';
+                      error(`fsbStats -- No 'stats' response from getStatsForDirFileInfo(): "${itemName}"`);
+                      if (returnDirStats) dirStats['error'] = 'Unable to get data - no stats';
                     } else {
 
                       dirStats = response.stats;
-                      if (returnDirStats) delete dirStats['includeChildInfo'];
 
-                      numChildren     += dirStats.count_children;
-                      numRegularFiles += dirStats.count_type_regular;
-                      numDirs         += dirStats.count_type_directory;
-                      numOther        += dirStats.count_type_other;
-                      numUnknown      += dirStats.count_type_unknown;
-                      numError        += dirStats.count_type_error;
+                      delete dirStats['includeChildInfo']; // remove unwanted remnant of inut parameter
 
-                      if ( Number.isInteger(dirStats.size_smallest) ) smallestSize = (smallestSize === undefined) ? dirStats.size_smallest
-                                                                                                                  : Math.min( smallestSize, dirStats.size_smallest );
-                      if ( Number.isInteger(dirStats.size_largest)  ) largestSize  = (largestSize  === undefined) ? dirStats.size_largest
-                                                                                                                  : Math.max( largestSize,  dirStats.size_largest  );
-                      if ( Number.isInteger(dirStats.size_total)    ) totalSize    =                                totalSize + dirStats.size_total;
+                      dirStats['isFileSystemRoot'] = (itemName === FSB_DIR_NAME);
 
-                      if ( Number.isInteger(dirStats.time_childCreation_earliest) ) 
-                        earliestChildCreationTime = (earliestChildCreationTime         === undefined) ? dirStats.time_childCreation_earliest
-                                                                                              : Math.min(earliestChildCreationTime, dirStats.time_childCreation_earliest);
-                      if ( Number.isInteger(dirStats.time_childCreation_latest) ) 
-                        latestChildCreationTime   = (latestChildCreationTime           === undefined) ? dirStats.time_childCreation_latest
-                                                                                              : Math.max(latestChildCreationTime, dirStats.time_childCreation_latest);
+//                    const dirChildCount   = Number.isInteger( dirStats.count_children ) ? dirStats.count_children : 0; // should always be integer, but check anyway
+//                    const dirRegularCount = Number.isInteger( dirStats.count_regular  ) ? dirStats.count_regular  : 0; // should always be integer, but check anyway
 
-                      if ( Number.isInteger(dirStats.time_childLastAccessed_earliest) ) 
-                        earliestChildLastAccessedTime = (earliestChildLastAccessedTime === undefined) ? dirStats.time_childLastAccessed_earliest
-                                                                                              : Math.min(earliestChildLastAccessedTime, dirStats.time_childLastAccessed_earliest);
-                      if ( Number.isInteger(dirStats.time_childLastAccessed_latest) ) 
-                        latestChildLastAccessedTime   = (latestChildLastAccessedTime   === undefined) ? dirStats.time_childLastAccessed_latest
-                                                                                              : Math.max(latestChildLastAccessedTime, dirStats.time_childLastAccessed_latest);
+                      if ( Number.isInteger( dirStats.count_children       ) ) numChildren     += dirStats.count_children;       // should always be integer, but check anyway
+                      if ( Number.isInteger( dirStats.count_type_regular   ) ) numRegularFiles += dirStats.count_type_regular;   // should always be integer, but check anyway
+                      if ( Number.isInteger( dirStats.count_type_directory ) ) numDirs         += dirStats.count_type_directory; // should always be integer, but check anyway
+                      if ( Number.isInteger( dirStats.count_type_other     ) ) numOther        += dirStats.count_type_other;     // should always be integer, but check anyway
+                      if ( Number.isInteger( dirStats.count_type_unknown   ) ) numUnknown      += dirStats.count_type_unknown;   // should always be integer, but check anyway
+                      if ( Number.isInteger( dirStats.count_type_error     ) ) numError        += dirStats.count_type_error;     // should always be integer, but check anyway
 
-                      if ( Number.isInteger(dirStats.time_childLastModified_earliest) ) 
-                        earliestChildLastModifiedTime = (earliestChildLastModifiedTime === undefined) ? dirStats.time_childLastModified_earliest
-                                                                                              : Math.min(earliestChildLastModifiedTime, dirStats.time_childLastModified_earliest);
-                      if ( Number.isInteger(dirStats.time_childLastModified_latest) ) 
-                        latestChildLastModifiedTime   = (latestChildLastModifiedTime   === undefined) ? dirStats.time_childLastModified_latest
-                                                                                              : Math.max(latestChildLastModifiedTime, dirStats.time_childLastModified_latest);
+                      if ( Number.isInteger(dirStats.size_smallest) ) {                    // will be undefined when no Regular Files
+                        smallestSize = (smallestSize === undefined) ?
+                                       dirStats.size_smallest
+                                     : Math.min( smallestSize, dirStats.size_smallest );
+                      }
+                      if ( Number.isInteger(dirStats.size_largest) ) {                     // will be undefined when no Regular Files
+                        largestSize  = (largestSize === undefined) ?
+                                       dirStats.size_largest
+                                     : Math.max( largestSize,  dirStats.size_largest  );
+                      }
+                      if ( Number.isInteger(dirStats.size_total) ) {
+                        totalSize    = totalSize + dirStats.size_total;
+                      }
+
+                      if ( Number.isInteger(dirStats.time_fileCreation_earliest) ) {      // will be undefined when no Regular Files
+                        earliestFileCreationTime     = (earliestFileCreationTime === undefined) ?
+                                                       dirStats.time_fileCreation_earliest
+                                                     : Math.min(earliestFileCreationTime, dirStats.time_fileCreation_earliest);
+                      }
+                      if ( Number.isInteger(dirStats.time_fileCreation_latest) ) {        // will be undefined when no Regular Files
+                        latestFileCreationTime       = (latestFileCreationTime === undefined) ?
+                                                       dirStats.time_fileCreation_latest
+                                                     : Math.max(latestFileCreationTime, dirStats.time_fileCreation_latest);
+                      }
+                      if ( Number.isInteger(dirStats.time_fileLastAccessed_earliest) ) {  // will be undefined when no Regular Files
+                        earliestFileLastAccessedTime = (earliestFileLastAccessedTime === undefined) ?
+                                                       dirStats.time_fileLastAccessed_earliest
+                                                     : Math.min(earliestFileLastAccessedTime, dirStats.time_fileLastAccessed_earliest);
+                      }
+                      if ( Number.isInteger(dirStats.time_fileLastAccessed_latest) ) {    // will be undefined when no Regular Files
+                        latestFileLastAccessedTime   = (latestFileLastAccessedTime === undefined) ?
+                                                       dirStats.time_fileLastAccessed_latest
+                                                     : Math.max(latestFileLastAccessedTime, dirStats.time_fileLastAccessed_latest);
+                      }
+                      if ( Number.isInteger(dirStats.time_fileLastModified_earliest) ) {  // will be undefined when no Regular Files
+                        earliestFileLastModifiedTime = (earliestFileLastModifiedTime === undefined) ?
+                                                       dirStats.time_fileLastModified_earliest
+                                                     : Math.min(earliestFileLastModifiedTime, dirStats.time_fileLastModified_earliest);
+                      }
+                      if ( Number.isInteger(dirStats.time_fileLastModified_latest) ) {    // will be undefined when no Regular Files
+                        latestFileLastModifiedTime   = (latestFileLastModifiedTime === undefined) ?
+                                                       dirStats.time_fileLastModified_latest
+                                                     : Math.max(latestFileLastModifiedTime, dirStats.time_fileLastModified_latest);
+                      }
                     }
 
-                    if (returnDirStats) statsByDirectoryName[dirName] = dirStats;
+                    if (returnDirStats) statsByDirectoryName[itemName] = dirStats;
                   }
                 }
               }
@@ -2261,12 +2263,12 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
               'directory_pathNames':             dirPathNames,
               'other_pathNames':                 otherPathNames,
 
-              'time_childCreation_earliest':     earliestChildCreationTime,
-              'time_childCreation_latest':       latestChildCreationTime,
-              'time_childLastAccessed_earliest': earliestChildLastAccessedTime,
-              'time_childLastAccessed_latest':   latestChildLastAccessedTime,
-              'time_childLastModified_earliest': earliestChildLastModifiedTime,
-              'time_childLastModified_latest':   latestChildLastModifiedTime,
+              'time_fileCreation_earliest':      earliestFileCreationTime,
+              'time_fileCreation_latest':        latestFileCreationTime,
+              'time_fileLastAccessed_earliest':  earliestFileLastAccessedTime,
+              'time_fileLastAccessed_latest':    latestFileLastAccessedTime,
+              'time_fileLastModified_earliest':  earliestFileLastModifiedTime,
+              'time_fileLastModified_latest':    latestFileLastModifiedTime,
 
               'size_smallest':                   smallestSize,
               'size_largest':                    largestSize,
@@ -2375,7 +2377,7 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
           }
 
           return false; // MABXXX maybe should throw instead
-        },
+        }, // END fsbDeleteDirectory()
 
       }
     };
@@ -2402,12 +2404,12 @@ var BrokerFileSystem = class extends ExtensionCommon.ExtensionAPI {
 //              'count_type_other':                 integer:          number of child items with type 'other'
 //              'count_type_unknown':               integer:          number of child items with type none of the three above
 //              'count_type_error':                 integer:          number of child items whose types could not be determined
-//              'time_childCreation_earliest':      integer:          earliest Creation Time      of all child items (OS-dependent) in MS
-//              'time_childCreation'_latest:        integer:          latest   Creation Time      of all child items (OS-dependent) in MS
-//              'time_childLastAccessed_earliest':  integer:          earliest Last Accessed Time of all child items (OS-dependent) in MS
-//              'time_childLastAccessed_latest':    integer:          latest   Last Accessed Time of all child items (OS-dependent) in MS
-//              'time_childLastModified_earliest':  integer:          earliest Last Modified Time of all child items (OS-dependent) in MS
-//              'time_childLastModified_latest':    integer:          latest   Last Modified Time of all child items (OS-dependent) in MS
+//              'time_fileCreation_earliest':       integer:          earliest Creation Time      of all Regular File items (OS-dependent) in MS
+//              'time_fileCreation'_latest:         integer:          latest   Creation Time      of all Regular File items (OS-dependent) in MS
+//              'time_fileLastAccessed_earliest':   integer:          earliest Last Accessed Time of all Regular File items (OS-dependent) in MS
+//              'time_fileLastAccessed_latest':     integer:          latest   Last Accessed Time of all Regular File items (OS-dependent) in MS
+//              'time_fileLastModified_earliest':   integer:          earliest Last Modified Time of all Regular File items (OS-dependent) in MS
+//              'time_fileLastModified_latest':     integer:          latest   Last Modified Time of all Regular File items (OS-dependent) in MS
 //              'size_smallest':                    integer:          smallest size (bytes) of all child items with type 'regular' (-1 if none)
 //              'size_largest':                     integer:          largest size (bytes) of all child items with type 'regular' (-1 if none)
 //              'size_total':                       integer:          total of sizes (bytes) of all child items with type 'regular'
@@ -2522,16 +2524,16 @@ async function getStatsForDirFileInfo( context,
   var   numError         = 0;
 
   var   totalSize        = 0;
-  var   smallestSize;    // undefined when no children
-  var   largestSize;     // undefined when no children
+  var   smallestSize;    // undefined when no Regular Files
+  var   largestSize;     // undefined when no Regular Files
 
-  var   earliestChildCreationTime;     // undefined when no children
-  var   latestChildCreationTime;       // undefined when no children
-  var   earliestChildLastAccessedTime; // undefined when no children
-  var   latestChildLastAccessedTime;   // undefined when no children
-  var   earliestChildLastModifiedTime; // undefined when no children
-  var   latestChildLastModifiedTime;   // undefined when no children
-  var   childInfo;                     // undefined when no children
+  var   earliestFileCreationTime;     // undefined when no Regular Files
+  var   latestFileCreationTime;       // undefined when no Regular Files
+  var   earliestFileLastAccessedTime; // undefined when no Regular Files
+  var   latestFileLastAccessedTime;   // undefined when no Regular Files
+  var   earliestFileLastModifiedTime; // undefined when no Regular Files
+  var   latestFileLastModifiedTime;   // undefined when no Regular Files
+  var   childInfo;                    // undefined when no Regular Files
 
   if (children) {
     numChildren = children.length;
@@ -2563,6 +2565,7 @@ async function getStatsForDirFileInfo( context,
         }
 //      throw new ExtensionError(`BrokerFileSystem.${cmdName} Unable to get File Information for item "${childName}" in Directory "${dirName}" at "${dirPath}"`); // MABXXX
       } else {
+
         var info;
         if (includeChildInfo) {
           info = {
@@ -2575,22 +2578,25 @@ async function getStatsForDirFileInfo( context,
           };
         }
 
-        // MABXXX should be do this only for Regular Files???
-        earliestChildCreationTime     = (earliestChildCreationTime     === undefined) ? fileInfo.creationTime : Math.min( fileInfo.creationTime, earliestChildCreationTime     );
-        latestChildCreationTime       = (latestChildCreationTime       === undefined) ? fileInfo.creationTime : Math.max( fileInfo.creationTime, latestChildCreationTime       );
-        earliestChildLastAccessedTime = (earliestChildLastAccessedTime === undefined) ? fileInfo.lastAccessed : Math.min( fileInfo.lastAccessed, earliestChildLastAccessedTime );
-        latestChildLastAccessedTime   = (latestChildLastAccessedTime   === undefined) ? fileInfo.lastAccessed : Math.max( fileInfo.lastAccessed, latestChildLastAccessedTime   );
-        earliestChildLastModifiedTime = (earliestChildLastModifiedTime === undefined) ? fileInfo.lastModified : Math.min( fileInfo.lastModified, earliestChildLastModifiedTime );
-        latestChildLastModifiedTime   = (latestChildLastModifiedTime   === undefined) ? fileInfo.lastModified : Math.max( fileInfo.lastModified, latestChildLastModifiedTime   );
-
         // fileInfo.type:  enum FileType { "regular", "directory", "other" }
         switch (fileInfo.type) {
           case 'regular': {
             numRegularFiles++;
             if (regPathNames) regPathNames.push(childPath);
-            smallestSize = (smallestSize === undefined) ? fileInfo.size : Math.min( fileInfo.size, smallestSize );
-            largestSize  = (largestSize  === undefined) ? fileInfo.size : Math.max( fileInfo.size, largestSize  );
-            totalSize    = totalSize + fileInfo.size;
+
+            smallestSize                 = (smallestSize === undefined) ? fileInfo.size : Math.min( fileInfo.size, smallestSize );
+            largestSize                  = (largestSize  === undefined) ? fileInfo.size : Math.max( fileInfo.size, largestSize  );
+            totalSize                    = totalSize + fileInfo.size;
+
+//debugAlways("\n\n===== BEFORE:\n", `earliestFileCreationTime=${earliestFileCreationTime} fileInfo.creationTime=${fileInfo.creationTime}`, "\n");
+            earliestFileCreationTime     = (earliestFileCreationTime     === undefined) ? fileInfo.creationTime : Math.min( fileInfo.creationTime, earliestFileCreationTime     );
+            latestFileCreationTime       = (latestFileCreationTime       === undefined) ? fileInfo.creationTime : Math.max( fileInfo.creationTime, latestFileCreationTime       );
+            earliestFileLastAccessedTime = (earliestFileLastAccessedTime === undefined) ? fileInfo.lastAccessed : Math.min( fileInfo.lastAccessed, earliestFileLastAccessedTime );
+            latestFileLastAccessedTime   = (latestFileLastAccessedTime   === undefined) ? fileInfo.lastAccessed : Math.max( fileInfo.lastAccessed, latestFileLastAccessedTime   );
+            earliestFileLastModifiedTime = (earliestFileLastModifiedTime === undefined) ? fileInfo.lastModified : Math.min( fileInfo.lastModified, earliestFileLastModifiedTime );
+            latestFileLastModifiedTime   = (latestFileLastModifiedTime   === undefined) ? fileInfo.lastModified : Math.max( fileInfo.lastModified, latestFileLastModifiedTime   );
+//debugAlways("\n===== AFTER:\n", `earliestFileCreationTime=${earliestFileCreationTime} fileInfo.creationTime=${fileInfo.creationTime}`, "\n");
+
             if (includeChildInfo && (! types || types.includes('regular'))) {
               info['size'] = fileInfo.size;
               childInfo.push(info);
@@ -2630,24 +2636,24 @@ async function getStatsForDirFileInfo( context,
   }
 
   const stats = {
-    'includeChildInfo':                   includeChildInfo,
-    'dirPath':                            dirPath,
-    'dirName':                            dirName,
-    'count_children':                     numChildren,
-    'count_type_regular':                 numRegularFiles,
-    'count_type_directory':               numDirs,
-    'count_type_other':                   numOther,
-    'count_type_unknown':                 numUnknown,
-    'count_type_error':                   numError,
-    'time_childCreation_earliest':        earliestChildCreationTime,
-    'time_childCreation_latest':          latestChildCreationTime,
-    'time_childLastAccessed_earliest':    earliestChildLastAccessedTime,
-    'time_childLastAccessedTime_latest':  latestChildLastAccessedTime,
-    'time_childLastModified_earliest':    earliestChildLastModifiedTime,
-    'time_childLastModified_latest':      latestChildLastModifiedTime,
-    'size_smallest':                      smallestSize,
-    'size_largest':                       largestSize,
-    'size_total':                         totalSize,
+    'includeChildInfo':                includeChildInfo,
+    'dirPath':                         dirPath,
+    'dirName':                         dirName,
+    'count_children':                  numChildren,
+    'count_type_regular':              numRegularFiles,
+    'count_type_directory':            numDirs,
+    'count_type_other':                numOther,
+    'count_type_unknown':              numUnknown,
+    'count_type_error':                numError,
+    'time_fileCreation_earliest':      earliestFileCreationTime,
+    'time_fileCreation_latest':        latestFileCreationTime,
+    'time_fileLastAccessed_earliest':  earliestFileLastAccessedTime,
+    'time_fileLastAccessed_latest':    latestFileLastAccessedTime,
+    'time_fileLastModified_earliest':  earliestFileLastModifiedTime,
+    'time_fileLastModified_latest':    latestFileLastModifiedTime,
+    'size_smallest':                   smallestSize,
+    'size_largest':                    largestSize,
+    'size_total':                      totalSize,
   };
   if (includeChildInfo) {
     stats['childInfo'] = childInfo;

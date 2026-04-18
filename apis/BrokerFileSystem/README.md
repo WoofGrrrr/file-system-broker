@@ -411,7 +411,7 @@ __Sub-directories are currently not supported.__
     - fileName:     the fileName
     - path:         the full pathname
     - type:         "regular", "directory", or "other"
-    - size:         for a Regular File, the size in bytes, otherwise -1
+    - size:         for a Regular File, the size in bytes (BigInt,) otherwise -1n
     - creationTime  (Windows and MacOS only): milliseconds since 1970-01-01T00:00:00.000Z
     - lastAccessed: milliseconds since 1970-01-01T00:00:00.000Z
     - lastModified: milliseconds since 1970-01-01T00:00:00.000Z
@@ -482,7 +482,7 @@ __Sub-directories are currently not supported.__
     - fileName:     the fileName
     - path:         the full pathname
     - type:         "regular", "directory", or "other"
-    - size:         for a Regular File, the size in bytes, otherwise -1
+    - size:         for a Regular File, the size in bytes (BigInt,) otherwise -1n
     - creationTime  (Windows and MacOS only): milliseconds since 1970-01-01T00:00:00.000Z
     - lastAccessed: milliseconds since 1970-01-01T00:00:00.000Z
     - lastModified: milliseconds since 1970-01-01T00:00:00.000Z
@@ -538,7 +538,7 @@ __Sub-directories are currently not supported.__
     - fileName:     the fileName
     - path:         the full pathname
     - type:         "regular", "directory", or "other"
-    - size:         for a Regular File, the size in bytes, otherwise -1
+    - size:         for a Regular File, the size in bytes (BigInt,) otherwise -1n
     - creationTime  (Windows and MacOS only): milliseconds since 1970-01-01T00:00:00.000Z
     - lastAccessed: milliseconds since 1970-01-01T00:00:00.000Z
     - lastModified: milliseconds since 1970-01-01T00:00:00.000Z
@@ -646,15 +646,15 @@ __Sub-directories are currently not supported.__
             'count_other':                      integer:          number of child items with type 'other'
             'count_unknown':                    integer:          number of child items whose type is none of the three above
             'count_error':                      integer:          number of child items whose type could not be determined
-            'time_childCreation_earliest':      integer:          earliest Creation Time      of all child items in MS (OS-dependent) in MS (undefined if no children)
-            'time_childCreation_latest':        integer:          latest   Creation Time      of all child items in MS (OS-dependent) in MS (undefined if no children)
-            'time_childLastAccessed_earliest':  integer:          earliest Last Accessed Time of all child items in MS (OS-dependent) in MS (undefined if no children)
-            'time_childLastAccessed_latest':    integer:          latest   Last Accessed Time of all child items in MS (OS-dependent) in MS (undefined if no children)
-            'time_childLastModified_earliest':  integer:          earliest Last Modified Time of all child items in MS (OS-dependent) in MS (undefined if no children)
-            'time_childLastModified_latest':    integer:          latest   Last Modified Time of all child items in MS (OS-dependent) in MS (undefined if no children)
-            'size_smallest':                    integer:          smallest size (bytes) of all child items with type 'regular' (-1 if none)
-            'size_largest':                     integer:          largest size (bytes) of all child items with type 'regular' (-1 if none)
-            'size_total':                       integer:          total of sizes (bytes) of all child items with type 'regular'
+            'time_fileCreation_earliest':       integer:          earliest Creation Time      of all Regular File child items in MS (OS-dependent) in MS (undefined if none)
+            'time_fileCreation_latest':         integer:          latest   Creation Time      of all Regular File child items in MS (OS-dependent) in MS (undefined if none)
+            'time_fileLastAccessed_earliest':   integer:          earliest Last Accessed Time of all Regular File child items in MS (OS-dependent) in MS (undefined if none)
+            'time_fileLastAccessed_latest':     integer:          latest   Last Accessed Time of all Regular File child items in MS (OS-dependent) in MS (undefined if none)
+            'time_fileLastModified_earliest':   integer:          earliest Last Modified Time of all Regular File child items in MS (OS-dependent) in MS (undefined if none)
+            'time_fileLastModified_latest':     integer:          latest   Last Modified Time of all Regular File child items in MS (OS-dependent) in MS (undefined if none)
+            'size_smallest':                    BigInt:           smallest size (bytes) of all child items with type 'regular' (-1n if none)
+            'size_largest':                     BigInt:           largest  size (bytes) of all child items with type 'regular' (-1n if none)
+            'size_total':                       BigInt:           total of sizes (bytes) of all child items with type 'regular'
             [ 'childInfo': ]                    array of object:          (OPTIONAL: only if includeChildInfo is true)
                                                   {
                                                     'name'                string:   item fileName
@@ -663,7 +663,7 @@ __Sub-directories are currently not supported.__
                                                     'creationTime':       integer:  Creation Time in MS      (OS-dependent)
                                                     'lastAccessedTime':   integer:  Last Accessed Time in MS (OS-dependent)
                                                     'lastModifiedTime':   integer:  Last Modified Time in MS (OS-dependent)
-                                                    [ 'size': ]           integer:  file size (bytes)        (OPTIONAL: only for items with type 'regular')
+                                                    [ 'size': ]           BigInt:   file size (bytes)        (OPTIONAL: only for items with type 'regular')
                                                   }
           }
       }
@@ -712,7 +712,7 @@ __Sub-directories are currently not supported.__
     - fileName:     the fileName
     - path:         the full pathname
     - type:         "regular", "directory", or "other"
-    - size:         for a Regular File, the size in bytes, otherwise -1
+    - size:         for a Regular File, the size in bytes (BigInt,) otherwise -1n
     - creationTime  (Windows and MacOS only): milliseconds since 1970-01-01T00:00:00.000Z
     - lastAccessed: milliseconds since 1970-01-01T00:00:00.000Z
     - lastModified: milliseconds since 1970-01-01T00:00:00.000Z
@@ -802,20 +802,21 @@ __Sub-directories are currently not supported.__
                      'count_type_other':                  integer:  number of descendent items with type 'other'
                      'count_type_unknown':                integer:  number of descendent items whose type is none of the three above
                      'count_type_error':                  integer:  number of descendent items whose type could not be determined
-                     'time_childCreation_earliest':       integer:  earliest Creation Time      in MS of all descendent items (OS-dependent) (undefined if no children)
-                     'time_childCreation_latest':         integer:  latest   Creation Time      in MS of all descendent items (OS-dependent) (undefined if no children)
-                     'time_childLastAccessed_earliest':   integer:  earliest Last Accessed Time in MS of all descendent items (OS-dependent) (undefined if no children)
-                     'time_childLastAccessed_latest':     integer:  latest   Last Accessed Time in MS of all descendent items (OS-dependent) (undefined if no children)
-                     'time_childLastModified_earliest':   integer:  earliest Last Modified Time in MS of all descendent items (OS-dependent) (undefined if no children)
-                     'time_childLastModified_latest':     integer:  latest   Last Modified Time in MS of all descendent items (OS-dependent) (undefined if no children)
-                     'size_smallest':                     integer:  smallest size  (bytes) of all descendent items with type 'regular' (undefined if no items with type 'regular')
-                     'size_largest':                      integer:  largest  size  (bytes) of all descendent items with type 'regular' (undefined if no items with type 'regular')
-                     'size_total':                        integer:  total of sizes (bytes) of all descendent items with type 'regular' (undefined if no items with type 'regular')
+                     'time_fileCreation_earliest':        integer:  earliest Creation Time      in MS (OS-dependent) of all Regular File descendent items (undefined if none)
+                     'time_fileCreation_latest':          integer:  latest   Creation Time      in MS (OS-dependent) of all Regular File descendent items (undefined if none)
+                     'time_fileLastAccessed_earliest':    integer:  earliest Last Accessed Time in MS (OS-dependent) of all Regular File descendent items (undefined if none)
+                     'time_fileLastAccessed_latest':      integer:  latest   Last Accessed Time in MS (OS-dependent) of all Regular File descendent items (undefined if none)
+                     'time_fileLastModified_earliest':    integer:  earliest Last Modified Time in MS (OS-dependent) of all Regular File descendent items (undefined if none)
+                     'time_fileLastModified_latest':      integer:  latest   Last Modified Time in MS (OS-dependent) of all Regular File descendent items (undefined if none)
+                     'size_smallest':                     BigInt:   smallest size  (bytes) of all descendent items with type 'regular' (undefined if no items with type 'regular')
+                     'size_largest':                      BigInt:   largest  size  (bytes) of all descendent items with type 'regular' (undefined if no items with type 'regular')
+                     'size_total':                        BigInt:   total of sizes (bytes) of all descendent items with type 'regular' (undefined if no items with type 'regular')
         },
         'dirStats': (OPTIONAL, not included if includeDirStats is false) an array of object, indexed by Directory Name
                        {
                          'dirName':                           string:   directory fileName
                          'dirPath':                           string:   directory full pathName
+                         'isFileSystemRoot':                  boolean:  true if this is the FileSystemBroker Root Directory
                          'error':                             string:   a description if there was an error getting information. None of the data below will be present.
                          'count_children':                    integer:  total number of child items
                          'count_type_regular':                integer:  number of child items with type 'regular'
@@ -823,15 +824,15 @@ __Sub-directories are currently not supported.__
                          'count_type_other':                  integer:  number of child items with type 'other'
                          'count_type_unknown':                integer:  number of child items whose type is none of the three above
                          'count_type_error':                  integer:  number of child items whose type could not be determined
-                         'time_childCreation_earliest':       integer:  earliest Creation Time      in MS of all child items (OS-dependent) (undefined if no children)
-                         'time_childCreation_latest':         integer:  latest   Creation Time      in MS of all child items (OS-dependent) (undefined if no children)
-                         'time_childLastAccessed_earliest':   integer:  earliest Last Accessed Time in MS of all child items (OS-dependent) (undefined if no children)
-                         'time_childLastAccessed_latest':     integer:  latest   Last Accessed Time in MS of all child items (OS-dependent) (undefined if no children)
-                         'time_childLastModified_earliest':   integer:  earliest Last Modified Time in MS of all child items (OS-dependent) (undefined if no children)
-                         'time_childLastModified_latest':     integer:  latest   Last Modified Time in MS of all child items (OS-dependent) (undefined if no children)
-                         'size_smallest':                     integer:  smallest size  (bytes) of all child items with type 'regular' (undefined if no items with type 'regular')
-                         'size_largest':                      integer:  largest  size  (bytes) of all child items with type 'regular' (undefined if no items with type 'regular')
-                         'size_total':                        integer:  total of sizes (bytes) of all child items with type 'regular' (undefined if no items with type 'regular')
+                         'time_fileCreation_earliest':        integer:  earliest Creation Time      in MS (OS-dependent) of all Regular File child items (undefined if none)
+                         'time_fileCreation_latest':          integer:  latest   Creation Time      in MS (OS-dependent) of all Regular File child items (undefined if none)
+                         'time_fileLastAccessed_earliest':    integer:  earliest Last Accessed Time in MS (OS-dependent) of all Regular File child items (undefined if none)
+                         'time_fileLastAccessed_latest':      integer:  latest   Last Accessed Time in MS (OS-dependent) of all Regular File child items (undefined if none)
+                         'time_fileLastModified_earliest':    integer:  earliest Last Modified Time in MS (OS-dependent) of all Regular File child items (undefined if none)
+                         'time_fileLastModified_latest':      integer:  latest   Last Modified Time in MS (OS-dependent) of all Regular File child items (undefined if none)
+                         'size_smallest':                     BigInt:   smallest size  (bytes) of all child items with type 'regular' (undefined if no items with type 'regular')
+                         'size_largest':                      BigInt:   largest  size  (bytes) of all child items with type 'regular' (undefined if no items with type 'regular')
+                         'size_total':                        BigInt:   total of sizes (bytes) of all child items with type 'regular' (undefined if no items with type 'regular')
                        }
         }
       }

@@ -91,6 +91,16 @@ body {
 
 
 input:is([type="checkbox"], [type="radio"]) { /* any checkbox or radio button */
+  &.use-icon {
+    display:                none;
+
+    & + label[for] {
+      background-color:     transparent;
+      background-position:  center;
+      background-repeat:    no-repeat;
+    }
+  }
+
   & + label[for] {
     border:                 1px 1px solid transparent;
     & + label[for] {
@@ -122,7 +132,7 @@ input:is([type="checkbox"], [type="radio"]) { /* any checkbox or radio button */
     }
   }
 
-  &:[disabled] {
+  &[disabled] {
     cursor:                 var(--cursor-disabled);
     & + label[for] {
       cursor:               var(--cursor-disabled);
@@ -188,6 +198,14 @@ input:is([type="text"], [type="number"]) { /* any text or number field */
 }
 
 
+
+.data-loading-message {
+  background-color: #D0D0D0;
+  border:           2px SOLID #00D080;
+  color:            #00D080;
+  font-weight:      BOLD;
+  padding:          5px;
+}
 
 .open-close-widget {
   background-repeat:       no-repeat;
@@ -261,7 +279,7 @@ input:is([type="text"], [type="number"]) { /* any text or number field */
   }
 }
 
-.options-open-close-panel {
+.open-close-panel {
 /*background-color:  var(--panel-background-color);*/
 /*border:            1px solid var(--panel-border-color);*/
 /*border-radius:     5px;*/
@@ -271,34 +289,134 @@ input:is([type="text"], [type="number"]) { /* any text or number field */
 
 
 
-.option-error {
+.errors-panel {
   display: NONE;
+  flex-direction:      row;
+
+  background-color:    var(--message-panel-background-color);
+  border:              var(--message-panel-border);
+  border-radius:       var(--message-panel-border-radius);
+  color:               var(--message-panel-color);
+  flex-direction:      row;
+  font-size:           var(--message-panel-font-size);
+  font-weight:         var(--message-panel-font-weight);
+  line-height:         var(--message-panel-line-height);
+  margin-left:         0.5em;
+  margin-bottom:       0.5em;
+  padding:             0.25em 1.0em;
+  text-align:          left;
+
+  &.errors-panel:has([error="true"]) {
+    display:           BLOCK;
+  }
+
+  & > .error {
+    background-color:    var(--error-text-background-color);
+    border:              var(--error-text-border);
+    display:             flex;
+    flex-direction:      row;
+    gap:                 0.25em;
+
+    & > .error-icon-large {
+      background-color:    transparent;
+      background-image:    url("../images/icons/marker/circle_red_line_red_outline_dark_thin_13x13.png"); /* MABXXX theme.css */
+      background-position: center;
+      background-repeat:   no-repeat;
+      display:             inline-block;
+      height:              16px;
+      max-height:          16px;
+      max-width:           16px;
+      vertical-align:      middle;
+      width:               16px;
+    }
+
+    & > .error-icon {
+      background-color:    transparent;
+      background-image:    url("../images/icons/marker/circle_red_line_red_outline_dark_thin_13x13.png"); /* MABXXX theme.css */
+      background-position: center;
+      background-repeat:   no-repeat;
+      display:             inline-block;
+      height:              8px;
+      max-height:          8px;
+      max-width:           8px;
+      vertical-align:      middle;
+      width:               8px;
+    }
+
+    & > .error-text {
+      color:               var(--error-text-color);
+      font:                var(--error-text-font);
+      font-size:           var(--error-text-font-size);
+      font-weight:         var(--error-text-font-weight);
+      text-shadow:         var(--error-text-text-shadow);
+    }
+  }
 }
 
-.option-error[error="true"] {
-  display:        flex;
-  flex-direction: row;
-}
 
-.option-error-icon-large {
-  height:         16px;
-  max-height:     16px;
-  max-width:      16px;
-  vertical-align: middle;
-  width:          16px;
-}
 
-.option-error-icon {
-  height:         8px;
-  max-height:     8px;
-  max-width:      8px;
-  vertical-align: middle;
-  width:          8px;
-}
+.messages-panel {
+  display: NONE;
+  flex-direction:      row;
 
-.option-error-text {
-  color:       RED !important;
-  margin-left: 0.25em;
+  background-color:    var(--message-panel-background-color);
+  border:              var(--message-panel-border);
+  border-radius:       var(--message-panel-border-radius);
+  color:               var(--message-panel-color);
+  flex-direction:      row;
+  font-size:           var(--message-panel-font-size);
+  font-weight:         var(--message-panel-font-weight);
+  line-height:         var(--message-panel-line-height);
+  margin-left:         0.5em;
+  margin-bottom:       0.5em;
+  padding:             0.25em 1.0em;
+  text-align:          left;
+
+  &:has([message="true"]) {
+    display:           BLOCK;
+  }
+
+  & > .message {
+    background-color:    var(--message-text-background-color);
+    border:              var(--message-text-border);
+    display:             flex;
+    flex-direction:      row;
+    gap:                 0.25em;
+
+    & > .message-icon-large {
+      background-color:    transparent;
+      background-image:    url("../images/icons/marker/green-circle-plus_13x13-4.png"); /* MABXXX theme.css */
+      background-position: center;
+      background-repeat:   no-repeat;
+      display:             inline-block;
+      height:              16px;
+      max-height:          16px;
+      max-width:           16px;
+      vertical-align:      middle;
+      width:               16px;
+    }
+
+    & > .message-icon {
+      background-color:    transparent;
+      background-image:    url("../images/icons/marker/green-circle-plus_13x13-4.png"); /* MABXXX theme.css */
+      background-position: center;
+      background-repeat:   no-repeat;
+      display:             inline-block;
+      height:              8px;
+      max-height:          8px;
+      max-width:           8px;
+      vertical-align:      middle;
+      width:               8px;
+    }
+
+    & > .message-text {
+      color:               var(--message-text-color);
+      font:                var(--message-text-font);
+      font-size:           var(--message-text-font-size);
+      font-weight:         var(--message-text-font-weight);
+      text-shadow:         var(--message-text-text-shadow);
+    }
+  }
 }
 
 
@@ -317,8 +435,9 @@ input:is([type="text"], [type="number"]) { /* any text or number field */
   grid-row-gap:        1em;
   grid-template-areas: "title"
                        "extension-options"
-                       "chooser-options";
-  grid-template-rows:  min-content min-content auto;
+                       "chooser-options"
+                       "controls-panel";
+  grid-template-rows:  min-content min-content auto auto;
 
   #fsbExtensionOptionsTitlePanel {
     grid-area: title;
@@ -329,6 +448,9 @@ input:is([type="text"], [type="number"]) { /* any text or number field */
   }
   #fsbExtensionChooserOptionsWrapper {
     grid-area: chooser-options;
+  }
+  #fsbOptionsControlsPanel {
+    grid-area: controls-panel;
   }
 }
 
@@ -463,7 +585,14 @@ input:is([type="text"], [type="number"]) { /* any text or number field */
   margin-left: -1em;
 }
 
-#fsbExtensionListControlsPanel {
+
+
+#fsbOptionsControlsPanel {
+  &:not(.popup-options) {
+    display: NONE;
+  }
+  &.popup-options {
+  }
 }
 
 #fsbExtensionListControlsTitlePanel {
@@ -576,9 +705,15 @@ input:is([type="text"], [type="number"]) { /* any text or number field */
 
       &.marker-special {
       }
+      &.marker-no-quota {
+      }
       &.marker-locked {
       }
-      &.marker-dir-protected {
+      &.marker-dir-protect {
+      }
+      &.marker-read-only {
+      }
+      &.marker-access-disallowed {
       }
     }
   }
@@ -601,23 +736,63 @@ input:is([type="text"], [type="number"]) { /* any text or number field */
   border-top-right-radius:    5px;
 }
 
-/* colors  and text-decoration for dirProtected extensions */
-.extension-list-item.extension-dir-protected > .extension-list-data {
-/*background-color: var(--extension-dir-protected-background-color); */
-/*border-color:     var(--extension-dir-protected-border-color);     */
-/*color:            var(--extension-dir-protected-color);            */
-/*text-decoration:  var(--extension-dir-protected-text-decoration);  */
-/*text-shadow:      var(--extension-dir-protected-text-shadow);      */
-
+/* QUOTA MARKER for NO QUOTA extensions */
+.extension-list-item.extension-no-quota:not(.extension-special) > .extension-list-data {
   & > .extension-markers { /* <SPAN> */
-    & > .marker-dir-protected { /* <SPAN> */
-      background-image:    url("../images/icons/marker/sun_yellow_outline_dark_16x16.png");
+    & > .marker-no-quota { /* <SPAN> */
+      background-image:    url("../images/icons/marker/no_quota-light-red-outline-black_16x16.png");
       display:             inline-block;
     }
   }
 }
 
-/* colors  and text-decoration for locked extensions */
+/* QUOTA MARKER for QUOTA extensions */
+.extension-list-item:not(.extension-no-quota,.extension-special) > .extension-list-data {
+  & > .extension-markers { /* <SPAN> */
+    & > .marker-no-quota { /* <SPAN> */
+      background-image:    url("../images/icons/marker/quota_16x16.png");
+      display:             inline-block;
+    }
+  }
+}
+
+/* QUOTA MARKER for SPECIAL extensions */
+.extension-list-item.extension-special > .extension-list-data {
+  & > .extension-markers { /* <SPAN> */
+    & > .marker-no-quota { /* <SPAN> */
+      background-image:    url("../images/icons/marker/quota-disabled_16x16.png");
+      display:             inline-block;
+    }
+  }
+}
+
+/* COLORS, TEXT-DECORATION, and MARKER for DIR PROTECTED extensions */
+.extension-list-item.extension-dir-protect > .extension-list-data {
+/*background-color: var(--extension-dir-protect-background-color); */
+/*border-color:     var(--extension-dir-protect-border-color);     */
+/*color:            var(--extension-dir-protect-color);            */
+/*text-decoration:  var(--extension-dir-protect-text-decoration);  */
+/*text-shadow:      var(--extension-dir-protect-text-shadow);      */
+
+  & > .extension-markers { /* <SPAN> */
+    & > .marker-dir-protect { /* <SPAN> */
+      background-image:    url("../images/icons/marker/small-shield-rounded-med-blue-check-black-outline-black_16x16.png");
+      display:             inline-block;
+    }
+  }
+}
+
+/* COLORS, TEXT-DECORATION, and MARKER for DIR PROTECTED extensions */
+.extension-list-item.extension-read-only > .extension-list-data {
+  & > .extension-markers { /* <SPAN> */
+    & > .marker-read-only { /* <SPAN> */
+      background-image:    url("../images/icons/marker/XXXXXX.png");
+      display:             inline-block;
+    }
+  }
+}
+
+/* COLORS, TEXT-DECORATION, and MARKER for LOCKED extensions */
 .extension-list-item.extension-locked > .extension-list-data {
   background-color: var(--extension-locked-background-color);
   border-color:     var(--extension-locked-border-color);
@@ -633,14 +808,24 @@ input:is([type="text"], [type="number"]) { /* any text or number field */
   }
 }
 
-/* colors  and text-decoration for locked extensions */
-.extension-list-item.extension-special > .extension-list-data {
-/*background-color: var(--extension-special-background-color); */
-/*border-color:     var(--extension-special-border-color);     */
-/*color:            var(--extension-special-color);            */
-/*text-decoration:  var(--extension-special-text-decoration);  */
-/*text-shadow:      var(--extension-special-text-shadow);      */
+/* COLORS, TEXT-DECORATION, and MARKER for ACCESS-DISALLOWED extensions */
+.extension-list-item.access-disallowed > .extension-list-data {
+  background-color: var(--extension-access-disallowed-background-color);
+  border-color:     var(--extension-access-disallowed-border-color);
+  color:            var(--extension-access-disallowed-color);
+/*text-decoration:  var(--extension-access-disallowed-text-decoration);  */
+/*text-shadow:      var(--extension-access-disallowed-text-shadow);      */
 
+  & > .extension-markers { /* <SPAN> */
+    & > .marker-access-disallowed { /* <SPAN> */
+      background-image:    url("../images/icons/marker/circle_red_line_red_outline_dark_thin16x16.png");
+      display:             inline-block;
+    }
+  }
+}
+
+/* MARKER for SPECIAL extensions */
+.extension-list-item.extension-special > .extension-list-data {
   & > .extension-markers { /* <SPAN> */
     & > .marker-special { /* <SPAN> */
       background-image:    url("../images/icons/marker/crown_gold_outline_dark_16x16.png");
@@ -649,18 +834,15 @@ input:is([type="text"], [type="number"]) { /* any text or number field */
   }
 }
 
-/* colors for disabled extensions */
+
+
+/* COLORS for DISABLED extensions - MABXXX ??? DO WE NEED THIS??? */
 .extension-list-item.extension-disabled > .extension-list-data {
   background-color: var(--extension-disabled-background-color);
   border-color:     var(--extension-disabled-border-color);
 }
 
-/* colors for access-disallowed extensions */
-.extension-list-item.access-disallowed > .extension-list-data {
-  background-color: var(--extension-access-disallowed-background-color);
-  border-color:     var(--extension-access-disallowed-border-color);
-}
-
+/* BOOLEAN DOTS */
 .data-boolean { /* <TD> */
   text-align:     center;
   vertical-align: middle;
@@ -729,13 +911,12 @@ input:is([type="text"], [type="number"]) { /* any text or number field */
 }
 
 .extension-list-name { /* .extension-list-item > .extension-list-name */
-  width:      50%;
-  text-align: left;
+  width:      100%;
 }
 
 .extension-list-id { /* .extension-list-item > .extension-list-id */
-  width:      50%;
-  text-align: left;
+/*width:      50%;*/
+  width:      auto;
 }
 
 .extension-list-stats-dir-exists {
@@ -759,47 +940,47 @@ input:is([type="text"], [type="number"]) { /* any text or number field */
 #fsbExtensionList:not(.edit-mode) > .extension-list-item:hover > .extension-list-data {
 }
 
-/* hover background-image and border for extensions that are NOT locked */
+/* HOVER BACKGROUND-IMAGE and BORDER for extensions that are NOT LOCKED */
 #fsbExtensionList:not(.edit-mode) > .extension-list-item:not(.extension-locked):hover > .extension-list-data {
   background-image: var(--extension-hover-background-image);
   border-color:     var(--extension-hover-border-color);
   text-shadow:      1px 1px var(--extension-hover-text-shadow-color);
 }
 
-/* hover background-image and border for extensions that ARE locked */
+/* HOVER BACKGROUND-IMAGE and BORDER for extensions that ARE LOCKED */
 #fsbExtensionList:not(.edit-mode) > .extension-list-item.extension-locked:hover > .extension-list-data {
   background-image: var(--extension-locked-hover-background-image);
   border-color:     var(--extension-locked-hover-border-color);
 }
 
-/* hover background-color for selected extensions  that are NOT locked, disabled  or access-disallowed */
-#fsbExtensionList:not(.edit-mode) > .extension-list-item:not(.extension-locked,.access-disallowed ):hover > .extension-list-data {
+/* HOVER BACKGROUND-COLOR for SELECTED extensions that are NOT LOCKED, DISABLED OR ACCESS-DISALLOWED */
+#fsbExtensionList:not(.edit-mode) > .extension-list-item:not(.extension-locked,.extension-disabled,.access-disallowed ):hover > .extension-list-data {
   background-color: var(--extension-hover-background-color);
 }
 
-/* hover color for selected extensions  that are NOT locked, disabled  or access-disallowed */
+/* HOVER COLOR for selected EXTENSIONS that are NOT LOCKED, DISABLED  OR ACCESS-DISALLOWED */
 #fsbExtensionList:not(.edit-mode) > .extension-list-item:not(.extension-locked,.extension-disabled,.access-disallowed):hover > .extension-list-data {
   color:            var(--extension-hover-color);
 }
 
-/* hover background-color, border, and text-shadow for selected extensions that are NOT locked */
+/* BACKGROUND-COLOR, BORDER, and TEXT-SHADOW for SELECTED extensions that are NOT LOCKED */
 #fsbExtensionList:not(.edit-mode) > .extension-list-item.selected:not(.extension-locked) > .extension-list-data { /* and when :hover??? */
   background-color: var(--extension-selected-background-color);
   border-color:     var(--extension-selected-border-color);
   text-shadow:      1px 1px var(--extension-selected-text-shadow-color);
 }
 
-/* color for selected extensions  that are NOT locked, disabled, or access-disallowed */
+/* COLOR for SELECTED extensions that are NOT LOCKED, DISABLED, or ACCESS-DISALLOWED */
 #fsbExtensionList:not(.edit-mode) > .extension-list-item.selected:not(.extension-locked,.extension-disabled,.access-disallowed) > .extension-list-data {
   color:            var(--extension-selected-color);
 }
 
-/* color for disabled extensions that are NOT locked or access-disallowed */
+/* COLOR for DISABLED extensions that are NOT LOCKED or ACCESS-DISALLOWED */
 #fsbExtensionList > .extension-list-item.extension-disabled:not(.extension-locked,.access-disallowed) > .extension-list-data {
   color:            var(--extension-disabled-color);
 }
 
-/* color  and text-decoration for access-disallowed extensions */
+/* COLOR and TEXT-DECORATION for extensions that are ACCESS-DISALLOWED */
 #fsbExtensionList > .extension-list-item.access-disallowed > .extension-list-data {
   color:            var(--extension-access-disallowed-color);
   text-shadow:      var(--extension-access-disallowed-text-shadow);
@@ -808,14 +989,17 @@ input:is([type="text"], [type="number"]) { /* any text or number field */
   }
 }
 
+/* TEXT-DECORATION for extensions that are DISABLED */
 .extension-list-item.extension-disabled:not(.selected) > .extension-list-data {
   text-decoration:  var(--extension-disabled-text-decoration);
 }
 
+/* TEXT-DECORATION for extensions that are SELECTED and NOT DISABLED */
 .extension-list-item.selected:not(.extension-disabled) > .extension-list-data {
   text-decoration:  var(--extension-selected-text-decoration);
 }
 
+/* TEXT-DECORATION for extensions that are SELECTED and DISABLED */
 .extension-list-item.selected.extension-disabled {
   text-decoration:  var(--extension-selected-text-decoration);
   & > .extension-list-data {
@@ -823,6 +1007,7 @@ input:is([type="text"], [type="number"]) { /* any text or number field */
   }
 }
 
+/* HOVER BACKGROUND-COLOR and TEXT-SHADOW for extensions that are ACCESS-DISALLOWED and NOT LOCKED */
 #fsbExtensionList:not(.edit-mode) > .extension-list-item.access-disallowed:not(.extension-locked):hover > .extension-list-data { /* and when selected??? */
   background-color: color-mix(in srgb, var(--extension-access-disallowed-background-color) 90%, #FFFFFF);
 /*border-color:     var(--extension-access-disallowed-border-color); */
@@ -830,6 +1015,9 @@ input:is([type="text"], [type="number"]) { /* any text or number field */
   text-shadow:      1px 1px var(--extension-hover-text-shadow-color);
 }
 
+
+
+/* EXTENSION LIST HEADER */
 .extension-head-controls-right, /* .extension-head-item > .extension-head-controls-right */
 .extension-list-controls-right, /* .extension-list-item > .extension-list-controls-right */
 .extension-edit-controls-right  /* .extension-edit-item > .extension-edit-controls-right */
@@ -924,6 +1112,43 @@ input:is([type="text"], [type="number"]) { /* any text or number field */
           }
         }
 
+        &.no-quota-check {
+          &:not(:disabled) {
+            &:not(:checked,:hover) { /* ENABLED, NOT CHECKED, NOT HOVER */
+              & + .extension-check-label {
+                background-image: url("../images/icons/quota/quotas_24x24.png");
+              }
+            }
+            &:not(:checked):hover { /* ENABLED, NOT CHECKED, HOVER */
+              & + .extension-check-label {
+                background-image: url("../images/icons/quota/quotas-hover_24x24.png");
+              }
+            }
+            &:checked:not(:hover) { /* ENABLED, CHECKED, NOT HOVER */
+              & + .extension-check-label {
+                background-image: url("../images/icons/quota/no_quotas_24x24.png");
+              }
+            }
+            &:checked:hover {
+              & + .extension-check-label { /* ENABLED, CHECKED, NOT HOVER */
+                background-image: url("../images/icons/quota/no_quotas-hover24x24.png");
+              }
+            }
+          }
+          &:disabled {
+            &:not(:checked) {
+              & + .extension-check-label { /* DISABLED, NOT CHECKED */
+                background-image: url("../images/icons/quota/quotas-disabled_24x24.png");
+              }
+            }
+            &:checked {
+              & + .extension-check-label { /* DISABLED, CHECKED */
+                background-image: url("../images/icons/quota/no_quotas-disabled_24x24.png");
+              }
+            }
+          }
+        }
+
         &.dir-protect-check {
           &:not(:disabled) {
             &:not(:checked,:hover) {
@@ -933,7 +1158,7 @@ input:is([type="text"], [type="number"]) { /* any text or number field */
             }
             &:not(:checked):hover {
               & + .extension-check-label {
-                background-image: url("../images/icons/folder-shield/folder-shield-med-gray-outline-black_24x24.png");
+                background-image: url("../images/icons/folder-shield/folder-lighter-yellow-shield-gray-outline-black_24x24.png");
               }
             }
             &:checked:not(:hover) {
@@ -960,14 +1185,54 @@ input:is([type="text"], [type="number"]) { /* any text or number field */
             }
           }
         }
+
+        &.read-only-check {
+          &:not(:disabled) {
+            &:not(:checked) { /* NOT READ-ONLY: PEN */
+              &:not(:hover) {
+                & + .extension-check-label {
+                  background-image: url("../images/icons/folder-access/folder-yellow-pen-green-outline-black_24x24.png");
+                }
+              }
+              &:hover {
+                & + .extension-check-label {
+                  background-image: url("../images/icons/folder-access/folder-light-yellow-pen-green-outline-black_24x24.png");
+                }
+              }
+            }
+            &:checked { /* READ-ONLY: EYE */
+              &:not(:hover) {
+                & + .extension-check-label {
+                  background-image: url("../images/icons/folder-access/folder-yellow-eye-blue-outline-black_24x24.png");
+                }
+              }
+              &:hover {
+                & + .extension-check-label {
+                  background-image: url("../images/icons/folder-access/folder-light-yellow-eye-blue-outline-black_24x24.png");
+                }
+              }
+            }
+          }
+          &:disabled {
+            &:not(:checked) { /* NOT READ-ONLY: PEN */
+              & + .extension-check-label {
+                background-image: url("../images/icons/folder-access/folder-gray-pen-dark-gray-outline-black_24x24.png");
+              }
+            }
+            &:checked { /* READ-ONLY: EYE */
+              & + .extension-check-label {
+                background-image: url("../images/icons/folder-access/folder-eye-med-gray-outline-black_24x24.png");
+              }
+            }
+          }
+        }
       }
     }
   }
 }
 
-
-
-.extension-head-item { /* <THEAD>  Extension List Header Row */
+/* EXTENSION LIST HEADER ITEMS */
+.extension-head-item { /* <TR>  Extension List Header Row */
   background-color: var(--extension-header-background-color);
   border:           none;
   color:            var(--extension-header-color);
@@ -984,18 +1249,21 @@ input:is([type="text"], [type="number"]) { /* any text or number field */
   -moz-appearance:  none;
 }
 
+/* EXTENSION LIST HEADER ITEM DATA */
 .extension-head-data { /* <TD>  Extension List Header Row Data */
   padding:          0 0.5rem;
 }
 
 
 
+/* EXTENSION LIST EDIT ITEMS */
 .extension-edit-title-item, /* <TR>  Extension List Editor Title Row */
 .extension-edit-item,       /* <TR>  Extension List Editor Edit  Row */
 .extension-edit-error-item  /* <TR>  Extension List Editor Error Row */
 {
 }
 
+/* EXTENSION LIST EDIT TITLE ITEM */
 .extension-edit-title-item { /* <TR>  Extension List Editor Title Row */
   background-color: var(--extension-edit-title-item-background-color);
   color:            var(--extension-edit-title-item-color);
@@ -1016,6 +1284,7 @@ input:is([type="text"], [type="number"]) { /* any text or number field */
   padding:          0.1em 0.5em;
 }
 
+/* EXTENSION LIST EDIT ITEMS */
 .extension-edit-item { /* <TR>  Extension List Editor Row */
   background-color: var(--extension-edit-item-background-color);
   color:            var(--extension-edit-item-color);
@@ -1190,6 +1459,14 @@ input.extension-edit-text { /* any input type="text" */
 
 
 
+#fsbExtensionChooserControlsPanel {
+  display:        flex;
+  flex-direction: row;
+  gap:            1.0em;
+}
+
+
+
 /* ICON BUTTONS IN THE EXTENSIONS LIST IN GENERAL */
 #fsbOptionsWrapper button.extension-list-icon-button.icon-only {
   height:     24px;
@@ -1211,15 +1488,15 @@ input.extension-edit-text { /* any input type="text" */
   background-image: url("../images/icons/trashcan/trashcan-gray-24x24.png") !important;
   cursor:           var(--cursor-disabled);
 }
-#fsbOptionsWrapper button#extensionEditCancelButton:disabled {
+#fsbOptionsWrapper button#extension_edit_cancel:disabled {
   background-image: url("../images/icons/cancel/cancel-icon-medium-gray-24x24.png") !important;
   cursor:           var(--cursor-disabled);
 }
-#fsbOptionsWrapper button#extensionEditSaveButton:disabled {
+#fsbOptionsWrapper button#extension_edit_save:disabled {
   background-image: url("../images/icons/edit/save-medium-gray-24px.png") !important;
   cursor:           var(--cursor-disabled);
 }
-#fsbOptionsWrapper button#extensionEditErrorDismissButton:disabled {
+#fsbOptionsWrapper button#extension_edit_error_dismiss:disabled {
   background-image:    url("../images/icons/stop/stop-sign_darker_16x16.png") !important;
 }
 
@@ -1233,14 +1510,14 @@ input.extension-edit-text { /* any input type="text" */
 #fsbOptionsWrapper button.remove-extension:not(:disabled) {
   background-image: url("../images/icons/trashcan/trashcan-deep-red-outline-dark-24x24.png") !important;
 }
-#fsbOptionsWrapper button#extensionEditCancelButton:not(:disabled) {
+#fsbOptionsWrapper button#extension_edit_cancel:not(:disabled) {
   background-image: url("../images/icons/cancel/cancel-deep-red-24x24.png") !important;
 }
-#fsbOptionsWrapper button#extensionEditSaveButton:not(:disabled) {
+#fsbOptionsWrapper button#extension_edit_save:not(:disabled) {
   background-image: url("../images/icons/edit/save-aqua-outline-black-24px.png") !important;
 }
 
-#fsbOptionsWrapper button#extensionEditErrorDismissButton:not(:disabled) {
+#fsbOptionsWrapper button#extension_edit_error_dismiss:not(:disabled) {
   background-image:    url("../images/icons/stop/stop-sign_16x16.png") !important;
   height:              16px;
   max-height:          16px;
@@ -1265,13 +1542,13 @@ input.extension-edit-text { /* any input type="text" */
 #fsbOptionsWrapper button.remove-extension:not(:disabled):hover {
   background-image: url("../images/icons/trashcan/trashcan-red-lighter-24x24.png") !important;
 }
-#fsbOptionsWrapper button#extensionEditCancelButton:not(:disabled):hover {
+#fsbOptionsWrapper button#extension_edit_cancel:not(:disabled):hover {
   background-image: url("../images/icons/cancel/cancel-light-red-outline-gray24x24.png") !important;
 }
-#fsbOptionsWrapper button#extensionEditSaveButton:not(:disabled):hover {
+#fsbOptionsWrapper button#extension_edit_save:not(:disabled):hover {
   background-image: url("../images/icons/edit/save-white-24px.png") !important;
 }
-#fsbOptionsWrapper button#extensionEditErrorDismissButton:not(:disabled):hover {
+#fsbOptionsWrapper button#extension_edit_error_dismiss:not(:disabled):hover {
   background-image:    url("../images/icons/stop/stop-sign_lighter_16x16.png") !important;
 }
 

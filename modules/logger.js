@@ -46,7 +46,13 @@ export class Logger {
 
   
 
-  info(...info) { /* maybe info should ALWAYS get logged */
+  info(...info) { /* eventually there should be an option for this */
+    const context = info.shift();
+    const tag     = this.getTag(context);
+    console.info(tag, ...info);
+  }
+
+  infoAlways(...info) { /* maybe info should ALWAYS get logged */
     const context = info.shift();
     const tag     = this.getTag(context);
     console.info(tag, ...info);

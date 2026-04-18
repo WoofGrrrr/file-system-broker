@@ -414,7 +414,7 @@ class EventLogManager {
 
     const i18nMessage = getI18nMsg("fsbEventLogManager_message_fileNamesLoading", "...");
     const loadingTR = document.createElement("tr");
-    loadingTR.classList.add("identities-loading");
+    loadingTR.classList.add("data-loading-message");
     loadingTR.appendChild( document.createTextNode(i18nMessage) );
     domFileNameList.appendChild(loadingTR);
 
@@ -1026,7 +1026,7 @@ class EventLogManager {
       function windowRemovedListener(windowId) {
         if (windowId == eventLogViewerWindowId) {
 
-          messenger.runtime.onMessage.removeListener(messageListener);
+//////////messenger.runtime.onMessage.removeListener(messageListener);
           messenger.windows.onRemoved.removeListener(windowRemovedListener);
 
           resolve(response);
@@ -1330,7 +1330,7 @@ class EventLogManager {
    *         { "invalid":  string                                                   } If fileName invalid or the full pathName too long. The returned string gives the reason.
    *         { "error":    string                                                   } If there was some error reading the file. The returned string gives the reason.
    */
-  async readEventLog(fileName) {
+  async readEventLog(fileName) { // MABXXX IS THIS EVEN USED???
     try {
       this.debug(`-- Reading log file "${fileName}"`);
       const response = await this.fsBrokerApi.readFile(fileName);
@@ -1345,7 +1345,16 @@ class EventLogManager {
           //this.debug(`-- line: "${line}"`);
           if (line.length >= 1) {
             try {
-              const obj = JSON.parse(line);
+//////////////const obj = JSON.parse(line);
+              const obj = JSON.parse( line, (key, value) => {
+                                                              if (value && ((typeof value) === 'object') && Object.hasOwn(value, '$bigint$')) {
+                                                                if ((typeof value.$bigint$) === 'string' && /^-?\d+n$/.test(value.$bigint$)) {
+                                                                  return BigInt( value.$bigint$.slice(0, -1) );
+                                                                }
+                                                              }
+                                                              return value;
+                                                            }
+                                    );
               lineData.push(obj);
             } catch (error) {
               this.caught(error, `-- Unexpected Error parsing JSON: "${line}"`);

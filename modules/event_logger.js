@@ -64,6 +64,73 @@ export class FsbEventLogger {
 
 
 
+  // Does NOT log SyntaxError, ReferenceError, TypeError
+  async logCaughtError(commandName, parameters, error) {
+    const IGNORE_ERROR_NAMES = [ 'SyntaxError', 'ReferenceError', 'TypeError' ];
+    if (! IGNORE_ERROR_NAMES.includes(error.name)) {
+      const description = `Error: ${error.name} - ${error.message}`;
+      await this.logInternalError(commandName, parameters, description);
+    }
+  }
+
+  async logInternalError(commandName, parameters, description) {
+    const nowMS = Date.now();
+    const logFileName = formatMsToDateForFilename(timeMS) + this.LOG_FILENAME_EXTENSION;
+
+    const logMsg = {
+      "timeMS":  nowMS,
+      "sender":  "INTERNAL",
+      "type":    "internal error", // <---- this is why we don't just call logError()
+      "command": commandName,
+      "status":  "error",
+      "result":  description,
+    };
+
+    if (parameters != null) {
+      if (typeof parameters === 'object') {
+        this.fsbCommandsApi.addCommandToObject(parameters, logMsg);
+      } else if (typeof parameters === 'string') {
+        logMsg.parameters = parameters;
+      }
+    }
+
+    // We cannot use writeObjectToJSONFile because it does not support APPEND modes
+////const json         = JSON.stringify(logMsg) + "\n";
+    const json         = JSON.stringify(logMsg, (key, value) => ((typeof value) === 'bigint') ? { $bigint$: value.toString() } : value) + "\n";
+    const bytesWritten = messenger.BrokerFileSystem.writeFile(this.extId, logFileName, json, "appendOrCreate" );
+  }
+
+
+
+
+  async logError(timeMS, senderId, commandName, parameters, description) {
+    const logFileName = formatMsToDateForFilename(timeMS) + this.LOG_FILENAME_EXTENSION;
+
+    const logMsg = {
+      "timeMS":  timeMS,
+      "sender":  senderId,
+      "type":    "error",
+      "command": commandName,
+      "status":  "error",
+      "result":  description,
+    };
+
+    if (parameters != null) {
+      if (typeof parameters === 'object') {
+        this.fsbCommandsApi.addCommandToObject(parameters, logMsg);
+      } else if (typeof parameters === 'string') {
+        logMsg.parameters = parameters;
+      }
+    }
+
+    // We cannot use writeObjectToJSONFile because it does not support APPEND modes
+////const json         = JSON.stringify(logMsg) + "\n";
+    const json         = JSON.stringify(logMsg, (key, value) => ((typeof value) === 'bigint') ? { $bigint$: value.toString() } : value) + "\n";
+    const bytesWritten = messenger.BrokerFileSystem.writeFile(this.extId, logFileName, json, "appendOrCreate" );
+  }
+
+
+
   async logInternalEvent(eventType, stat, parameters, description) {
     if (await this.fsbOptionsApi.isEnabledInternalEventLogging()) {
       await this.logEvent("INTERNAL", eventType, stat, parameters, description);
@@ -77,13 +144,14 @@ export class FsbEventLogger {
     const logFileName   = formatMsToDateForFilename(timeMS) + this.LOG_FILENAME_EXTENSION;
 
     const logMsg = {
-      "timeMS":     timeMS,
-      "sender":     senderId,
-      "type":       "event",
-      "command":    eventType,
-      "status":     stat,
-      "result":     description
+      "timeMS":  timeMS,
+      "sender":  senderId,
+      "type":    "event",
+      "command": eventType,
+      "status":  stat,
+      "result":  description,
     };
+
     if (parameters != null) {
       if (typeof parameters === 'object') {
         this.fsbCommandsApi.addCommandToObject(parameters, logMsg);
@@ -93,7 +161,8 @@ export class FsbEventLogger {
     }
 
     // We cannot use writeObjectToJSONFile because it does not support APPEND modes
-    const json         = JSON.stringify(logMsg) + "\n";
+////const json         = JSON.stringify(logMsg) + "\n";
+    const json         = JSON.stringify(logMsg, (key, value) => ((typeof value) === 'bigint') ? { $bigint$: value.toString() } : value) + "\n";
     const bytesWritten = messenger.BrokerFileSystem.writeFile(this.extId, logFileName, json, "appendOrCreate" );
   }
 
@@ -111,27 +180,34 @@ export class FsbEventLogger {
     this.fsbCommandsApi.addCommandToObject(command, logMsg);
 
     // We cannot use writeObjectToJSONFile because it does not support APPEND modes
-    const json         = JSON.stringify(logMsg) + "\n";
+////const json         = JSON.stringify(logMsg) + "\n";
+    const json         = JSON.stringify(logMsg, (key, value) => ((typeof value) === 'bigint') ? { $bigint$: value.toString() } : value) + "\n";
     const bytesWritten = messenger.BrokerFileSystem.writeFile(this.extId, logFileName, json, "appendOrCreate" );
   }
 
 
 
-  async logCommandResult(timeMS, senderId, command, result) {
+  async logCommandResult(timeMS, senderId, command, result, stat) {
     const logFileName     = formatMsToDateForFilename(timeMS) + this.LOG_FILENAME_EXTENSION;
-    const formattedResult = (typeof result === 'object') ? this.fsbCommandsApi.formatCommandResult(command, result) : result; // MABXXX handle string vs object inside the function
+    const formattedResult = (typeof result === 'object') ? this.fsbCommandsApi.formatCommandResult(command, result) : result;
+    const _status         = stat && (typeof stat) === 'string' ? stat
+                                                               : (typeof result !== 'object') ? "success"                                    // MABXXX "success" ???
+                                                                                              : result.error ? "error"
+                                                                                                             : result.invalid ? "invalid"
+                                                                                                                              : "success";   // MABXXX "success" ???
 
     const logMsg = {
       "timeMS": timeMS,
       "sender": senderId,
       "type":   "result",
-      "status": result.error ? "error" : result.invalid ? "invalid" : "success"
+      "status": _status,
     };
     this.fsbCommandsApi.addCommandToObject(command, logMsg);
     logMsg["result"] = formattedResult;
 
     // We cannot use writeObjectToJSONFile because it does not support APPEND modes
-    const json         = JSON.stringify(logMsg) + "\n";
+////const json         = JSON.stringify(logMsg) + "\n";
+    const json         = JSON.stringify(logMsg, (key, value) => ((typeof value) === 'bigint') ? { $bigint$: value.toString() } : value) + "\n";
     const bytesWritten = messenger.BrokerFileSystem.writeFile(this.extId, logFileName, json, "appendOrCreate" );
   }
 
@@ -196,7 +272,7 @@ export class FsbEventLogger {
         }
 
         if (this.LOG_DELETE_OLD_EVENT_LOGS) {
-          const data = { 
+          const data = {
             "step":                         "1",
             "numDays":                      numDays,
             "fileName":                     info.fileName,
@@ -213,7 +289,7 @@ export class FsbEventLogger {
           this.debug(`-- Deleting file "${info.fileName}"`);
 
           if (this.LOG_DELETE_OLD_EVENT_LOGS) {
-            const data = { 
+            const data = {
               "step":                         "2",
               "numDays":                      numDays,
               "fileName":                     info.fileName,
@@ -233,7 +309,7 @@ export class FsbEventLogger {
             deletedFileNames.push(info.fileName);
 
             if (this.LOG_DELETE_OLD_EVENT_LOGS) {
-              const data = { 
+              const data = {
                 "step":                         "3",
                 "numDays":                      numDays,
                 "fileName":                     info.fileName,
@@ -248,7 +324,7 @@ export class FsbEventLogger {
           } else {
             // !response || response.error || response.invalid || !response.fileName || !response.deleted
             if (this.LOG_DELETE_OLD_EVENT_LOGS) {
-              const data = { 
+              const data = {
                 "step":                         "4",
                 "numDays":                      numDays,
                 "fileName":                     info.fileName,
@@ -281,7 +357,7 @@ export class FsbEventLogger {
           }
         } else {
           if (this.LOG_DELETE_OLD_EVENT_LOGS) {
-            const data = { 
+            const data = {
               "step":                         "5",
               "numDays":                      numDays,
               "fileName":                     info.fileName,

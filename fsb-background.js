@@ -2,28 +2,18 @@ import { FsbOptions               } from '../modules/options.js';
 import { Logger                   } from '../modules/logger.js';
 import { FsbEventLogger           } from '../modules/event_logger.js';
 import { FileSystemBrokerCommands } from '../modules/commands.js';
-import { logProps,
-         getExtensionId,
-         getExtensionName,
-         getExtensionVersion,
-         getI18nMsg,
-         formatMsToDateForFilename,
-         formatMsToDateTime24HR,
-         getMidnightDelayMS,
-         getNextMidnightDelayMS,
-         getMidnightMS,
-         formatNowToDateTime24HR
-       } from './modules/utilities.js';
+import { QuotaManager             } from '../modules/quotas.js';
+import * as utils from './modules/utilities.js';
 
 
 /********
  * NOTE: The FileSystemBroker API CANNOT be used here.
- * That would result in sending a message to itself, which the Web Extensions API apparently does not allow.
+ * That would result in sending a message to ourself, which the Web Extensions API apparently does not allow.
  */
 class FileSystemBroker {
   #CLASS_NAME                        = this.constructor.name;
-  #EXT_ID                            = getExtensionId();
-  #EXT_NAME                          = getExtensionName();
+  #EXT_ID                            = utils.getExtensionId();
+  #EXT_NAME                          = utils.getExtensionName();
 
   #INFO                              = false;
   #LOG                               = false;
@@ -38,6 +28,8 @@ class FileSystemBroker {
   #fsbOptionsApi                     = new FsbOptions(this.#logger);
   #fsbCommandsApi                    = new FileSystemBrokerCommands(this.#logger, this.#fsbOptionsApi);
   #fsbEventLogger                    = new FsbEventLogger(this.#logger, this.#fsbOptionsApi, this.#fsbCommandsApi);
+  #quotaManager                      = new QuotaManager(this.#logger, this.#fsbOptionsApi, this.#fsbCommandsApi, this.#fsbEventLogger);
+
 
   #midnightTimeout;
   #firstMidnightTimeout              = true;
@@ -48,7 +40,7 @@ class FileSystemBroker {
   constructor() {
     this.#fsbOptionsApi.setEventLogger(this.#fsbEventLogger);
     this.#fsbCommandsApi.setEventLogger(this.#fsbEventLogger);
-    this.#midnightEventDispatcher.addEventListener('midnight', (e) => this.onMidnight(e));
+    this.#midnightEventDispatcher.addEventListener('midnight', (e) => this.#onMidnight(e));
   }
 
 
@@ -123,37 +115,42 @@ class FileSystemBroker {
       }
     }
 
-    messenger.runtime.onMessage.addListener(         async (message)         => this.onMessageReceivedInternal(message)         );
-    messenger.runtime.onMessageExternal.addListener( async (message, sender) => this.onMessageReceivedExternal(message, sender) );
-    messenger.management.onInstalled.addListener(    async (extensionInfo)   => this.onExtensionInstalled(extensionInfo)        );
-    messenger.management.onUninstalled.addListener(  async (extensionInfo)   => this.onExtensionUninstalled(extensionInfo)      );
+    messenger.runtime.onMessage.addListener(         async (message)         => this.#onMessageReceivedInternal(message)         );
+    messenger.runtime.onMessageExternal.addListener( async (message, sender) => this.#onMessageReceivedExternal(message, sender) );
+    messenger.management.onInstalled.addListener(    async (extensionInfo)   => this.#onExtensionInstalled(extensionInfo)        );
+    messenger.management.onUninstalled.addListener(  async (extensionInfo)   => this.#onExtensionUninstalled(extensionInfo)      );
 
-    await this.setupMidnightTimeout();
+    await this.#setupMidnightTimeout();
 
-
+    await this.#quotaManager.runScheduledQuotaChecks(); // MABXXX Do we really need to wait for this???
 
     const showOptionsWindowOnStartupEnabled = await this.#fsbOptionsApi.isEnabledOption("fsbShowOptionsWindowOnStartup", false);
     if (showOptionsWindowOnStartupEnabled) {
-      this.showOptionsWindow();
+      this.#showOptionsWindow();
     }
 
-////await this.showGrantExtensionAccessConfirmDialog("xxx@xxx.com"); // MABXXX  <----------------------------------------------------------------<<<<<
+////await this.#showGrantExtensionAccessConfirmDialog("xxx@xxx.com"); // MABXXX  <----------------------------------------------------------------<<<<<
   }
 
 
 
-  async setupMidnightTimeout() {
+  async #setupMidnightTimeout() {
     const nowMS        = Date.now();
-    const midnightMS   = getMidnightMS(nowMS, 0);
-    const midnightTime = formatMsToDateTime24HR(midnightMS);
+    const midnightMS   = utils.getMidnightMS(nowMS, 0);
+    const midnightTime = utils.formatMsToDateTime24HR(midnightMS);
     const delayMS      = midnightMS - nowMS;
 ////const parameters   = { 'delayMS': delayMS, 'midnightMS': midnightMS, 'midnightTime': midnightTime }; 
     const parameters   = { 'delayMS': delayMS, 'midnightTime': midnightTime }; 
     const result       = `Setting Midnight Timeout: delayMS=${delayMS} midnightMS=${midnightMS} midnightTime="${midnightTime}"`;
 
+    if (! midnightMS) {
+      this.error(`\n\n\n++++++++++ PANIC!!! midnightMS=${midnightMS} ++++++++++\n\n\n`);
+      return;
+    }
+
     this.logAlways(`-- Setting up next Midnight Timeout -- ${result}`);
 
-    this.#midnightTimeout = setTimeout( () => this.midnightTimerTimedOut(delayMS, nowMS), delayMS);
+    this.#midnightTimeout = setTimeout( () => this.#midnightTimerTimedOut(delayMS, nowMS), delayMS);
     if (this.#LOG_MIDNIGHT_EVENTS) await this.#fsbEventLogger.logInternalEvent("setupMidnightTimeout", "success", parameters, "");
 
 //  if (this.#firstMidnightTimeout) {
@@ -163,14 +160,14 @@ class FileSystemBroker {
 //  }
   }
 
-  async midnightTimerTimedOut(delayMS, timerSetAtMS) {
+  async #midnightTimerTimedOut(delayMS, timerSetAtMS) {
     const timer = this.#midnightTimeout;
     this.#midnightTimeout = null;
     if (timer) {
       clearTimeout(timer);
     }
 
-    const timerSetAtTime = formatMsToDateTime24HR(timerSetAtMS);
+    const timerSetAtTime = utils.formatMsToDateTime24HR(timerSetAtMS);
     const result         = `Timed out after ${delayMS} ms -- Set at "${timerSetAtTime}"`;
     this.logAlways(`-- ${result}`);
 
@@ -179,32 +176,33 @@ class FileSystemBroker {
       await this.#fsbEventLogger.logInternalEvent("midnightTimerTimedOut", "success", parameters, result);
     }
 
-    this.dispatchMidnightEvent();
+    this.#dispatchMidnightEvent();
 
-    await this.setupMidnightTimeout();
+    await this.#setupMidnightTimeout();
   }
 
-  dispatchMidnightEvent() {
+  #dispatchMidnightEvent() {
     this.logAlways("-- begin");
     const midnightEvent = new Event('midnight');
     this.#midnightEventDispatcher.dispatchEvent(midnightEvent);
     this.logAlways("-- end");
   }
 
-  async onMidnight(e) {
+  async #onMidnight(e) {
     this.logAlways("-- begin");
-    await this.processMidnightTasks();
+    await this.#processMidnightTasks();
     this.logAlways("-- end");
   }
 
-  async processMidnightTasks() {
+
+  async #processMidnightTasks() {
     this.logAlways("-- begin");
 
     try {
       if (this.#LOG_MIDNIGHT_EVENTS) await this.#fsbEventLogger.logInternalEvent("processMidnightTasks", "request", null, "");
 
-      await this.autoRemoveUninstalledExtensions(); // this event is already logged inside call
-      await this.autoPurgeOldLogFiles(); // this event is already logged inside call
+      await this.#autoRemoveUninstalledExtensions(); // this event is already logged inside call
+      await this.#autoPurgeOldLogFiles(); // this event is already logged inside call
 
       if (this.#LOG_MIDNIGHT_EVENTS) await this.#fsbEventLogger.logInternalEvent("processMidnightTasks", "success", null, "");
     } catch (error) {
@@ -214,7 +212,7 @@ class FileSystemBroker {
     this.logAlways("-- end");
   }
 
-  async autoPurgeOldLogFiles() {
+  async #autoPurgeOldLogFiles() {
     const numDays = await this.#fsbOptionsApi.getAutoLogPurgeDays(14);
     this.debug("-- numDays: ", numDays);
 
@@ -239,7 +237,9 @@ class FileSystemBroker {
     if (this.#LOG_PURGE_OLD_LOG_FILES) await this.#fsbEventLogger.logInternalEvent("autoPurgeOldLogFiles", "success", parameters, result);
   }
 
-  async autoRemoveUninstalledExtensions() {
+
+
+  async #autoRemoveUninstalledExtensions() {
     const numDays                    = await this.#fsbOptionsApi.getAutoRemoveUninstalledExtensionsDays(2);
     const deleteExtensionDirectories = await this.#fsbOptionsApi.isEnabledOnRemoveExtensionDeleteDirectory();
     this.debug(`-- numDays=${ numDays}, deleteExtensionDirectories=${deleteExtensionDirectories}`);
@@ -250,6 +250,7 @@ class FileSystemBroker {
     };
     if (this.#LOG_REMOVE_UNINSTALLED_EXTENSIONS) await this.#fsbEventLogger.logInternalEvent("autoRemoveUninstalledExtensions", "request", parameters, "");
 
+    // this all does NOT remove SPECIAL or LOCKED Extesnions, so no need to check for those here
     const removedExtensionIds = await this.#fsbOptionsApi.autoRemoveUninstalledExtensions(numDays); // this event is already logged inside call
     this.debug(`-- Extensions removed: ${removedExtensionIds ? removedExtensionIds.length : 0}`);
 
@@ -281,7 +282,7 @@ class FileSystemBroker {
 
 
 
-  async showOptionsWindow() { // COPIED FROM OptionsUI in ./optionsUI/optionsUI.js
+  async #showOptionsWindow() { // COPIED FROM OptionsUI in ./optionsUI/optionsUI.js
     let   popupLeft   = 100;
     let   popupTop    = 100;
     let   popupHeight = 900;
@@ -327,25 +328,44 @@ class FileSystemBroker {
     const optionsWindow = await messenger.windows.create({
       url:                 optionsUrl,
       type:                "popup",
-      titlePreface:        getI18nMsg("options_fsbOptionsTitle", "Options") + " - ",
+      titlePreface:        utils.getI18nMsg("options_fsbOptionsTitle", "Options") + " - ",
       top:                 popupTop,
       left:                popupLeft,
       height:              popupHeight,
       width:               popupWidth,
       allowScriptsToClose: true,
     });
+
     this.debug(`-- OptionsUI Popup Window Created -- windowId="${optionsWindow.id}" URL="${optionsUrl}"`);
   }
 
 
 
 
-  async onMessageReceivedInternal(message) {
+  // message: { 'Command': 'command': string (command name), parameters... }
+  //
+  // Very unfortunate naming, but very quickly added the outer Object with
+  // unique 'Command' key to make command messages distinct from messages
+  // from other senders -- mainly internal messages between different pages,
+  // i.e. responses with results back to page opener -- and a royal pain to
+  // change it now
+  //
+  // We receive an event with each and every message sent by anything for
+  // any reason, and we use 'Command' to know it's a Command that's meant
+  // for this code to process. But this is just how events work for the
+  // Web Extensions API.
+  //
+  // There out to be a way to specify from what you want to receive messages,
+  // but the API is what it is, and it's a standard that can't be changed
+  // just for Thunderbird or even Firefox. There's no way to prevent
+  // anything from sending messages.
+  //                 
+  async #onMessageReceivedInternal(message) {
     const nowMS = Date.now();
 
     if (this.DEBUG) {
       this.debugAlways("-- Received Internal Message:");
-      logProps("", "onMessageReceivedInternal.message", message);
+      utils.logProps("", "onMessageReceivedInternal.message", message);
     }
 
     if (! message.hasOwnProperty('Command')) {
@@ -359,190 +379,192 @@ class FileSystemBroker {
     return await this.#fsbCommandsApi.processInternalCommand(nowMS, message.Command, this.#EXT_ID);
   }
 
-  async XXXprocessInternalCommand(timeMS, Command, extensionId) {
-    const formattedParameters = this.#fsbCommandsApi.formatParameters(Command);
 
-    if (await this.#fsbOptionsApi.isEnabledInternalMessageLogging()) {
-      this.logAlways( "-- Processing Internal Command --" // MABXXX do this in logCommand???
-                      + `\n- command="${Command.command}"`
-                      + `\n- parameters: ${formattedParameters}`
+
+
+  // I tried to move all this into the Commands API but I couldn't do it
+  // because of Access Control and the need to open up a window to ask
+  // if the user wants to grant or deny access.
+  //
+  // message: { 'Command': 'command': string (command name), parameters... }
+  //
+  // Very unfortunate naming, but very quickly added the outer Object with
+  // unique 'Command' key to make command messages distinct from messages
+  // from other senders -- mainly internal messages between different pages,
+  // i.e. responses with results back to page opener -- and a royal pain to
+  // change it now
+  //
+  // We receive an event with each and every message sent by anything for
+  // any reason, and we use 'Command' to know it's a Command that's meant
+  // for this code to process. But this is just how events work for the
+  // Web Extensions API.isValidFileName
+  //
+  // There out to be a way to specify from what you want to receive messages,
+  // but the API is what it is, and it's a standard that can't be changed
+  // just for Thunderbird or even Firefox. There's no way to prevent
+  // anything from sending messages.
+  //                 
+  async #onMessageReceivedExternal(message, sender) {
+    const nowMS            = Date.now();
+    const Command          = message?.Command;
+    const commandName      = (Command && Command.command && (typeof Command.command) === 'string') ? Command.command : "NONE";
+    const senderId         = (sender && sender.id && (typeof sender.id) === 'string') ? sender.id : "UNKNOWN";
+    const logCommand       = await this.#fsbOptionsApi.isEnabledExternalMessageLogging();
+    const logResult        = await this.#fsbOptionsApi.isEnabledExternalMessageResultLogging();
+    const accessControl    = await this.#fsbOptionsApi.isEnabledExtensionAccessControl();
+    const logAccessControl = await this.#fsbOptionsApi.isEnabledAccessLogging();
+
+    if (this.#LOG) {
+      const formattedParameters = this.#fsbCommandsApi.formatParameters(Command);
+      this.logAlways( "-- Received External Message --",
+                      `\n- senderId="${senderId}"`,
+                      `\n- commandName="${commandName}"`,
+                      `\n- parameters: ${formattedParameters}`,
+                      "\n- Command: ", Command,
+                      "\n- message: ", message,
+                      "\n- sender: ", sender,
                     );
-      this.#fsbEventLogger.logCommand(timeMS, "INTERNAL", Command);
     }
 
-    try {
-      const result = await this.#fsbCommandsApi.processCommand(Command, extensionId);
+    const cmdIsAccess = (commandName === 'access');
+    if (cmdIsAccess) this.debug("--- Command is 'access'");
 
-      if (! result) {
-        this.error("-- NO COMMAND RESULT", message);
-        return { "error": "Failed to get a Command Result",
-                 "code":  "500"
-               };
+
+    if (logCommand || (cmdIsAccess && logAccessControl)) {
+      this.#fsbEventLogger.logCommand(nowMS, senderId, Command);
+    }
+
+    if (! message || ! Object.hasOwn(message, 'Command')) {
+      this.logAlways( "-- Received Unknown External Message --", message);
+      var error = "Invalid Request: Message has no Command Object - ";
+      if (sender && sender.id && (typeof sender.id) === 'string') {
+        error += `Sender ID: ${senderId}`;
+        this.#fsbEventLogger.logError(nowMS, senderId, "NO COMMAND", null, "error: " + error);
       } else {
-        if (await this.#fsbOptionsApi.isEnabledInternalMessageResultLogging()) {
-          const formattedResult = this.#fsbCommandsApi.formatCommandResult(Command, result);
-          this.logAlways( "-- RESULT"
-                          + "\n- INTERNAL"
-                          + `\n- Command="${Command.command}"`
-                          + `\n- parameters: ${formattedParameters}`
-                          + `\n- result: ${formattedResult}`
-                        );
-          this.#fsbEventLogger.logCommandResult(timeMS, "INTERNAL", Command, result);
-        }
+        error += "NO SENDER ID AVAILABLE";
+        this.#fsbEventLogger.logError(nowMS, "UNKNOWN", "NO COMMAND", null, "error: " + error);
       }
-
-      return result;
-
-    } catch (error) {
-      this.caught(error, "Error Processing Internal Command - Code 500");
-      return { "error": "Internal Error", "code":  "500" };
-    }
-  }
-
-
-
-
-  async onMessageReceivedExternal(message, sender) {
-    const nowMS = Date.now();
-
-    if (this.DEBUG) {
-      this.debugAlways("-- Received External Message:");
-      logProps("", "onMessageReceivedExternal.message", message);
+      this.error(`-- ${error}`);
+      return { "error": error, "code": "400" };
     }
 
-    try {
-      if (! message.hasOwnProperty('Command')) {
-        this.logAlways( "-- Received Unknown External Message --", message);
-        return { "error": "Invalid Request: Message has no Command Object",
-                 "code": "400"
-               };
-      }
+    if (! sender || ! sender.id) {
+      const error = "Message has no Sender ID";
+      this.error(`-- ${error}`);
+      this.#fsbEventLogger.logError(nowMS, "UNKNOWN", commandName, Command, "error: " + error);
+      return { "error": error, "code":  "400" };
+    }
 
-      const formattedParameters = this.#fsbCommandsApi.formatParameters(message.Command);
-      const logCommand          = await this.#fsbOptionsApi.isEnabledExternalMessageLogging();
-      const logResult           = await this.#fsbOptionsApi.isEnabledExternalMessageResultLogging();
+    if ((typeof sender.id) !== 'string') {
+      const error = `Message Sender ID type must be 'string' - type='${typeof sender.id}'`;
+      this.error(`-- ${error}`);
+      this.#fsbEventLogger.logError(nowMS, "UNKNOWN", Command, Command, "error: " + error);
+      return { "error": error, "code":  "400" };
+    }
 
-      if (logCommand) {
-        this.logAlways( "-- Received External Message --"
-                        + `\n- sender.id="${sender.id}"`
-                        + `\n- message.Command.command="${message.Command.command}"`
-////////////////////////+ `\n- message.Command.fileName="${message.Command.fileName}"`
-                        + `\n- parameters: ${formattedParameters}`
-                      );
-        this.#fsbEventLogger.logCommand(nowMS, sender.id, message.Command);
-      }
+    if (! utils.isValidExtensionId(senderId)) {
+      const error = `Message Sender ID is invalid: "${sender.id}"`;
+      this.debug(`-- ${error}"`);
+      this.#fsbEventLogger.logError(nowMS, senderId, Command, Command, "error: " + error);
+      return { "error": error, "code":  "400" };
+    }
 
-      if (! sender || ! sender.id) {
-        const error = "Message has no Sender ID";
-        this.error(`-- ${error}`);
-        if (logResult) {
-          this.#fsbEventLogger.logCommandResult(nowMS, "UNKNOWN", message.Command, "error: " + error);
+
+
+    // Access Control CANNOT be handled by the Command Processor, so do it here
+    if (! accessControl) {
+      this.debug("-- Access Control is NOT enabled");
+
+      const extProps = await this.#fsbOptionsApi.getExtensionPropsById(senderId);
+
+      if (cmdIsAccess) {
+
+        // if Access Control is not enabled then access is ALWAYS granted
+        if (logAccessControl) {
+          const accessGrantedMsg = `Access is Granted: "${senderId}"`;
+          this.#fsbEventLogger.logCommandResult(nowMS, sender.id, Command, accessGrantedMsg, "access granted");
         }
-        return { "error": error, "code":  "400" };
+
+        return { "access": "granted", 'readOnly': (extProps && (typeof extProps.readOnly) === 'boolean') ? extProps.readOnly : false };
       }
 
-      if ((typeof sender.id) !== 'string') {
-        const error = "Message Sender ID type must be 'string'";
-        this.error(`-- ${error}`);
-        if (logResult) {
-          this.#fsbEventLogger.logCommandResult(nowMS, sender.id, message.Command, "error: " + error);
-        }
-        return { "error": error, "code":  "400" };
-      }
+    } else {
+      this.debug("-- ACCESS CONTROL IS ENABLED");
 
-      if (! this.checkValidFileName(sender.id)) { // MABXXX should be checkValidExtensionId
-        const error = `Message Sender ID is invalid: "${sender.id}"`;
-        this.debug(`-- ${error}"`);
-        if (logResult) {
-          this.#fsbEventLogger.logCommandResult(nowMS, sender.id, message.Command, "error: " + error);
-        }
-        return { "error": error, "code":  "400" };
-      }
-
-      const cmdIsAccess = message.Command.command === 'access';
-      if (cmdIsAccess) this.debug("-- command='access'");
-
-      if (! await this.#fsbOptionsApi.isEnabledExtensionAccessControl()) {
-        this.debug("-- Access Control is not enabled");
-
-      } else {
-        this.debug("-- ACCESS CONTROL IS ENABLED");
-
-        // MABXXX Check to see if Extension has NOT been added and is IMPLICITLY denied vs whether it's been EXPLICITITY denied
+      try {
+        // Check to see if Extension has NOT been configured or has been EXPLICITLY denied already
         // If it *HAS* been EXPLICITLY denied, do we really want to do anything???
-        var   accessGranted = false;
-        const extensionProps = await this.#fsbOptionsApi.getExtensionPropsById(sender.id);
-        if (! extensionProps) {
+        var accessDenied = false;
+
+        var extProps = await this.#fsbOptionsApi.getExtensionPropsById(senderId);
+
+        if (! extProps) {
+          // Extension is not configured, so not Explicitly Denied.
+          //
+          // If asking if the user if they want to configure and EXPLICITLY allow/disallow access is configured, then ask.
+          // Otherwise it's just IMPLICITLY denined
           if (await this.#fsbOptionsApi.isEnabledShowGrantExtensionAccessDialog()) {
-            accessGranted = await this.showGrantExtensionAccessConfirmDialog(sender.id);
-          }
-          if (accessGranted) {
-            // MABXXX TELL OptionsUI to add the extension to the List!!!
+            // #showGrantExtensionAccessConfirmDialog() returns true if they say YES, and false if they say NOT or if they CANCEL.
+            // It will actually configure the extension if they say YES or NO, but not if they CANCEL or just CLOSE the dialog.
+            // This is so they will NOT be asked again (EXPLICIT DENIAL) if they say YES no NO.
+            const accessGranted = await this.#showGrantExtensionAccessConfirmDialog(senderId);
+            extProps = await this.#fsbOptionsApi.getExtensionPropsById(senderId);
+
+            if (accessGranted) {
+              // MABXXX TELL OptionsUI to add the extension to the List!!!  Need OptionsUI to listen to changes in options, not implemented yet
+            } else {
+              accessDenied = true;
+            }
           }
         }
 
-        if (! accessGranted && ! await this.#fsbOptionsApi.isAllowAccess(sender.id)) {
-          const accessDeniedMsg = `Access is Denied for: "${sender.id}"`;
+        if (accessDenied || ! extProps || ! extProps.allowAccess) {
+          this.logAlways(`-- ACCESS IS DENIED FOR MESSAGE SENDER ID: "${senderId}"`);
 
-          if (logResult || await this.#fsbOptionsApi.isEnabledAccessDeniedLogging()) {
-            this.logAlways(`-- ACCESS DENIED FOR MESSAGE SENDER ID: "${sender.id}"`);
-            this.#fsbEventLogger.logCommandResult(nowMS, sender.id, message.Command, accessDeniedMsg);
+          const logAccessDenied  = await this.#fsbOptionsApi.isEnabledAccessDeniedLogging();
+          if (logResult || logAccessControl || logAccessDenied) {
+            const accessDeniedMsg = `Access is Denied for: "${senderId}"`;
+            this.#fsbEventLogger.logCommandResult(nowMS, senderId, Command, accessDeniedMsg, "access denied");
           }
 
           if (cmdIsAccess) {
-            this.debug(`-- command='access' -- ACCESS DENIED FOR MESSAGE SENDER ID: "${sender.id}"`);
             return { "access": "denied" };
           } else {
-            return { "error": `Access to ${this.#EXT_NAME} has not been granted`, "code":  "403" };
+            return { "error": `Access to ${this.#EXT_NAME} has not been granted to ${senderId}`, "code":  "403" };
           }
         }
 
-        if (! cmdIsAccess && await this.#fsbOptionsApi.isEnabledAccessLogging()) {
-          this.logAlways(`-- Access Granted for Message Sender ID: "${sender.id}"`);
+        if (cmdIsAccess) {
+          const accessType = (! extProps || (typeof extProps.readOnly) !== 'boolean' || ! extProps.readonly) ? "Read/Write": "Read-Only"
+
+          this.logAlways(`-- commandName='access' - ${accessType} ACCESS GRANTED FOR MESSAGE SENDER ID: "${senderId}"`);
+          if (logResult || logAccessControl) {
+            const accessGrantedMsg = `Access is Granted: "${senderId}"`;
+            this.#fsbEventLogger.logCommandResult(nowMS, sender.id, Command, accessGrantedMsg, "access granted");
+          }
+
+          const response = {
+            'access':   "granted",
+            'readOnly': (extProps && (typeof extProps.readOnly) === 'boolean') ? extProps.readOnly : false,
+          };
+
+          return response;
         }
+
+      } catch (error) {
+        this.caught(error, "Error processing External Message - Code 500");
+        this.#fsbEventLogger.logCaughtError(commandName, Command, error); // Does NOT log Syntax Errors
+        return { "error": "Internal Error", "code":  "500" };
       }
-
-      if (cmdIsAccess) {
-        if (logResult || await this.#fsbOptionsApi.isEnabledAccessLogging()) {
-          const accessGrantedMsg = `Access is Granted: "${sender.id}"`;
-          this.logAlways(`-- command='access' - ACCESS GRANTED FOR MESSAGE SENDER ID: "${sender.id}"`);
-          this.#fsbEventLogger.logCommandResult(nowMS, sender.id, message.Command, accessGrantedMsg);
-        }
-        return { "access": "granted" };
-      }
-
-      const result = await this.#fsbCommandsApi.processCommand(message.Command, sender.id);
-
-      if (! result) {
-        this.error("-- NO COMMAND RESULT");
-        return { "error": "Failed to get a Command Result",
-                 "code":  "500"
-               };
-      } else {
-        if (logResult) {
-          const formattedResult = this.#fsbCommandsApi.formatCommandResult(message.Command, result);
-          this.logAlways( "-- RESULT"
-                          + `\n- From="${sender.id}"`
-                          + `\n- Command="${message.Command.command}"`
-//////////////////////////+ `\n- FileName="${message.Command.fileName}"`
-                          + `\n- parameters: ${formattedParameters}`
-                          + `\n- result: ${formattedResult}`
-                        );
-          this.#fsbEventLogger.logCommandResult(nowMS, sender.id, message.Command, result);
-        }
-      }
-
-      return result;
-
-    } catch (error) {
-      this.caught(error, "Error Receiving External Message - Code 500");
-      return { "error": "Internal Error", "code":  "500" };
     }
+
+
+    return this.#fsbCommandsApi.processExternalCommand(nowMS, Command, senderId);
   }
 
 
 
-  async onExtensionInstalled(extensionInfo) {
+  async #onExtensionInstalled(extensionInfo) {
     if (extensionInfo.type === 'extension') {
       this.debugAlways(`-- Extension has been Installed: id="${extensionInfo.id}"`);
 
@@ -564,7 +586,7 @@ class FileSystemBroker {
     }
   }
 
-  async onExtensionUninstalled(extensionInfo) {
+  async #onExtensionUninstalled(extensionInfo) {
     if (extensionInfo.type === 'extension') {
       this.debugAlways(`-- Extension has been Uninstalled: id="${extensionInfo.id}"`);
 
@@ -598,7 +620,7 @@ class FileSystemBroker {
 
 
 
-  async showGrantExtensionAccessConfirmDialog(extensionId) {
+  async #showGrantExtensionAccessConfirmDialog(extensionId) {
     this.debug("-- begin");
 
     var   popupLeft   = 100;
@@ -660,24 +682,25 @@ class FileSystemBroker {
       ourWindowId = currentTab.windowId;
     }
 
-    const title            = getI18nMsg("fsbConfirmDialogGrantExtensionTitle");
-    const message1         = getI18nMsg("fsbConfirmDialogGrantExtensionMessage1");
-    const message2         = getI18nMsg("fsbConfirmDialogGrantExtensionMessage2");
-    const message3         = getI18nMsg("fsbConfirmDialogGrantExtensionMessage3");
+    const title            = utils.getI18nMsg("fsbConfirmDialogGrantExtensionTitle");
+    const message1         = utils.getI18nMsg("fsbConfirmDialogGrantExtensionMessage1");
+    const message2         = utils.getI18nMsg("fsbConfirmDialogGrantExtensionMessage2");
+    const message3         = utils.getI18nMsg("fsbConfirmDialogGrantExtensionMessage3");
     const button1MsgId     = "fsbConfirmDialog_grantButton.label";
     const button2MsgId     = "fsbConfirmDialog_denyButton.label";
     const button3MsgId     = "fsbConfirmDialog_cancelButton.label";
     const confirmDialogUrl = messenger.runtime.getURL("../dialogs/confirm.html")
-                             + "?buttons_3=true"
-                             + `&title=${encodeURIComponent(title)}`
-                             + `&message1=${encodeURIComponent(message1)}`
-                             + `&message2=${encodeURIComponent(extensionId)}`
-                             + `&message3=${encodeURIComponent(message2)}`
-                             + `&message4=${encodeURIComponent(' ')}` // a blank line
-                             + `&message5=${encodeURIComponent(message3)}`
-                             + `&button1MsgId=${encodeURIComponent(button1MsgId)}`
-                             + `&button2MsgId=${encodeURIComponent(button2MsgId)}`
-                             + `&button3MsgId=${encodeURIComponent(button3MsgId)}`;
+                             + `?t=${encodeURIComponent(title)}`
+                             + "&m=5"
+                             + `&m1=${encodeURIComponent(message1)}`
+                             + `&m2=${encodeURIComponent(extensionId)}`
+                             + `&m3=${encodeURIComponent(message2)}`
+                             + `&m4=${encodeURIComponent(' ')}` // a blank line
+                             + `&m5=${encodeURIComponent(message3)}`
+                             + "&b=3"
+                             + `&bm1=${encodeURIComponent(button1MsgId)}`
+                             + `&bm2=${encodeURIComponent(button2MsgId)}`
+                             + `&bm3=${encodeURIComponent(button3MsgId)}`;
     // MABXXX DAMN!!! THERE'S NO WAY TO MAKE THIS MODAL!!! MUST USE action "default_popup".  But how to get Extension ID, etc?
     // The window.confirm() function doesn't give a way to specify button text.
     // Which is worse? Ugly ugly UGLY!!!
@@ -691,7 +714,7 @@ class FileSystemBroker {
       {
         url:                 confirmDialogUrl,
         type:                "popup",
-        titlePreface:        getI18nMsg("extensionName") + " - ",
+        titlePreface:        utils.getI18nMsg("extensionName") + " - ",
         top:                 popupTop,
         left:                popupLeft,
         height:              popupHeight,
@@ -708,27 +731,27 @@ class FileSystemBroker {
               );
 
     // Re-focus on the confirmDialog window when our window gets focus
-    // MABXXX PERHAPS THIS SHOULD BE DONE INSIDE confirmDialogPrompt() ???
+    // MABXXX PERHAPS THIS SHOULD BE DONE INSIDE #confirmDialogPrompt() ???
 //  const focusListener = async (windowId) => this.windowFocusChanged(windowId, ourTabId, ourWindowId, confirmDialogWindow.id);
     const focusListener = null;
 //  messenger.windows.onFocusChanged.addListener(focusListener); // MABXXX async ???
 
     // ConfirmDialogResponse - expected:
-    // - null     - the user closed the popup window        (set by our own windows.onRemoved listener - the defaultResponse sent to confirmDialogPrompt)
+    // - null     - the user closed the popup window        (set by our own windows.onRemoved listener - the defaultResponse sent to #confirmDialogPrompt)
     // - CLOSED   - the user closed the popup window        (sent by the ConfirmDialog window's window.onRemoved listener -- NOT REALLY - we use our own onRemoved listener)
     // - BUTTON_1 - the user clicked button 1               (sent by the ConfirmDialog window's button listener)
     // - BUTTON_2 - the user clicked button 2               (sent by the ConfirmDialog window's button listener)
     // - BUTTON_3 - the user clicked button 3               (sent by the ConfirmDialog window's button listener)
 
-    const confirmDialogResponse = await this.confirmDialogPrompt(confirmDialogWindow.id, focusListener, null);
-    this.debug(`-- ConfirmDialog confirmDialogResponse="${confirmDialogResponse}"`);
+    const confirmDialogResponse = await this.#confirmDialogPrompt(confirmDialogWindow.id, focusListener, null);
+this.debugAlways(`-- ConfirmDialog confirmDialogResponse="${confirmDialogResponse}"`);
 
     switch (confirmDialogResponse) {
       case 'BUTTON_1': // 'Yes' button
-        await this.grantAccessToExtension(extensionId); // Add NEW Extension and Grant -vs- Grant existing Extension???
+        await this.#grantAccessToExtension(extensionId); // Add NEW Extension and Grant -vs- Grant existing Extension???
         return true;
       case 'BUTTON_2': // 'No' button
-        await this.denyAccessToExtension(extensionId); // Add NEW Extension and Deny -vs- Deny existing Extension???
+        await this.#denyAccessToExtension(extensionId); // Add NEW Extension and Deny -vs- Deny existing Extension???
         return false;
       case 'BUTTON_3': // 'Cancel' button
         this.debug("-- ConfirmDialog canceled");
@@ -740,7 +763,7 @@ class FileSystemBroker {
     }
   }
 
-  async grantAccessToExtension(extensionId) {
+  async #grantAccessToExtension(extensionId) {
     this.debugAlways(`-- begin - extensionId="${extensionId}"`);
 
     const granted = await this.#fsbOptionsApi.allowAccess(extensionId);
@@ -750,7 +773,7 @@ class FileSystemBroker {
     this.debugAlways("-- end");
   }
 
-  async denyAccessToExtension(extensionId) {
+  async #denyAccessToExtension(extensionId) {
     this.debugAlways(`-- begin -- extensionId="${extensionId}"`);
 
     const denied = await this.#fsbOptionsApi.disallowAccess(extensionId);
@@ -760,9 +783,7 @@ class FileSystemBroker {
     this.debugAlways("-- end");
   }
 
-
-
-  async confirmDialogPrompt(confirmDialogWindowId, focusListener, defaultResponse) {
+  async #confirmDialogPrompt(confirmDialogWindowId, focusListener, defaultResponse) {
     try {
       await messenger.windows.get(confirmDialogWindowId);
     } catch (error) {
@@ -774,9 +795,9 @@ class FileSystemBroker {
     return new Promise(resolve => {
       var response = defaultResponse;
 
-      function windowRemovedListener(windowId) {   // MABXXX async ???
+      function windowRemovedListener(windowId) {
         if (windowId == confirmDialogWindowId) {
-          messenger.runtime.onMessage.removeListener(messageListener);
+//////////messenger.runtime.onMessage.removeListener(messageListener);
           messenger.windows.onRemoved.removeListener(windowRemovedListener);
 //////////messenger.windows.onFocusChanged.removeListener(focusListener);
 
@@ -791,81 +812,37 @@ class FileSystemBroker {
        * - BUTTON_3 - the user clicked button 3          (sent by the ConfirmDialog window's button listener)
        * Save this ConfirmDialogResponse into response for resolve()
        */
-      function messageListener(request, sender, sendResponse) {   // MABXXX async ???
+      function messageListener(request, sender) {   // MABXXX async ???
         if (sender.tab && sender.tab.windowId == confirmDialogWindowId && request && request.hasOwnProperty("ConfirmDialogResponse")) {
           response = request.ConfirmDialogResponse;
         }
 
-        return false; // we're not sending any response 
+        return false; // we're not replying
       }
 
-      messenger.runtime.onMessage.addListener(messageListener);         // MABXXX async ???
-      messenger.windows.onRemoved.addListener(windowRemovedListener);   // MABXXX async ???
+      messenger.runtime.onMessage.addListener(messageListener);
+      messenger.windows.onRemoved.addListener(windowRemovedListener);
     });
-  }
-
-
-
-
-
-
-
-
-  /* Must be a String with at least one character.
-   *
-   * ILLEGAL CHARS:
-   *
-   *   < (less-than)
-   *   > (greater-than)
-   *   : "colon)
-   *   " (double-quote)
-   *   / (forward slash(
-   *   \ (backward slash(
-   *   | (vertical bar)
-   *   ? (question mark)
-   *   * (asterisk)
-   *   x00-x1F (control characters)
-   *
-   * RESERVED NAMES:
-   * - con
-   * - prn
-   * - aux
-   * - nul
-   * - com0 - com9
-   * - lpt0 - lpt9
-   *
-   * NO MORE THAN *64* CHARACTERS
-   */
-  checkValidFileName(fileName) {
-    if (typeof fileName !== 'string' || fileName.length < 1 || fileName.length > 64) return false;
-
-    const ILLEGAL_CHARS = /[<>:"/\\|?*\x00-\x1F]/g;
-    if (ILLEGAL_CHARS.test(fileName)) return false;
-
-    const RESERVED_NAMES = /^(con|prn|aux|nul|com[0-9]|lpt[0-9])$/i;
-    if (RESERVED_NAMES.test(fileName)) return false;
-
-    return true;
   }
 }
 
 
 
-messenger.management.onEnabled.addListener( async (extensionInfo) => onExtensionEnabled(extensionInfo) );
-async function onExtensionEnabled(extensionInfo) { // management.ExtensionInfo
-  if (extensionInfo.id === getExtensionId("file-system-broker@localmotive.com")) {
+messenger.management.onEnabled.addListener( async (extensionInfo) => #onExtensionEnabled(extensionInfo) );
+async function #onExtensionEnabled(extensionInfo) { // management.ExtensionInfo
+  if (extensionInfo.id === utils.getExtensionId("file-system-broker@localmotive.com")) {
     console.log(`===== Extension Enabled: id="${extensionInfo.id}" name="${extensionInfo.name}" version="${extensionInfo.version}"`);
   }
 }
 
-messenger.runtime.onInstalled.addListener( async ( { reason, previousVersion } ) => onInstalled(reason, previousVersion) );
-messenger.runtime.onStartup.addListener(   async ()                              => onStartup()                          );
-messenger.runtime.onSuspend.addListener(   async ()                              => onSuspend()                          );
+messenger.runtime.onInstalled.addListener( async ( { reason, previousVersion } ) => #onInstalled(reason, previousVersion) );
+messenger.runtime.onStartup.addListener(   async ()                              => #onStartup()                          );
+messenger.runtime.onSuspend.addListener(   async ()                              => #onSuspend()                          );
 
-async function onInstalled(reason, previousVersion) {
-  const EXT_ID      = getExtensionId("file-system-broker@localmotive.com");
-  const EXT_NAME    = getExtensionName("FileSystemBroker");
-  const EXT_VERSION = getExtensionVersion();
+async function #onInstalled(reason, previousVersion) {
+  const EXT_ID      = utils.getExtensionId("file-system-broker@localmotive.com");
+  const EXT_NAME    = utils.getExtensionName("FileSystemBroker");
+  const EXT_VERSION = utils.getExtensionVersion();
 
 //const options = new FsbOptions();
 //const isSkipOnboarding = await options.isEnabledSkipOnboarding(); // this call just goes to the local storage to get this option, no logging needed
@@ -888,15 +865,15 @@ async function onInstalled(reason, previousVersion) {
 //}
 }
 
-async function onStartup() {
-  const EXT_ID   = getExtensionId("file-system-broker@localmotive.com");
-  const EXT_NAME = getExtensionName("FileSystemBroker");
+async function #onStartup() {
+  const EXT_ID   = utils.getExtensionId("file-system-broker@localmotive.com");
+  const EXT_NAME = utils.getExtensionName("FileSystemBroker");
   console.log(`${EXT_ID} === EXTENSION ${EXT_NAME} STARTED ===`); 
 }
 
-async function onSuspend() {
-  const EXT_ID   = getExtensionId("file-system-broker@localmotive.com");
-  const EXT_NAME = getExtensionName("FileSystemBroker");
+async function #onSuspend() {
+  const EXT_ID   = utils.getExtensionId("file-system-broker@localmotive.com");
+  const EXT_NAME = utils.getExtensionName("FileSystemBroker");
   console.log(`${EXT_ID} === EXTENSION ${EXT_NAME} SUSPENDED ===`); 
 }
 

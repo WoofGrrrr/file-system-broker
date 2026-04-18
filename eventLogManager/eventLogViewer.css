@@ -21,8 +21,82 @@ body {
   height:           100%;
 }
 
-option {
+
+
+input:is([type="checkbox"], [type="radio"]) { /* any checkbox or radio button */
+  &.use-icon {
+    display:                none;
+
+    & + label[for] {
+      background-color:     transparent;
+      background-position:  center;
+      background-repeat:    no-repeat;
+    }
+  }
+
+  & + label[for] {
+    border:                 1px 1px solid transparent;
+    & + label[for] {
+      border:               1px 1px solid transparent;
+    }
+  }
+
+  &:not(:disabled) {
+    cursor:                 pointer;
+    & + label[for] {
+      cursor:               pointer;
+      & + label[for] {
+        cursor:             pointer;
+      }
+    }
+
+    &:hover {
+      color:                var(--button-hover-color);
+      & + label[for] {
+        background-image:   var(--button-hover-background-image);
+        border-color:       var(--button-hover-border-color);
+        color:              var(--button-hover-color);
+        & + label[for] {
+          background-image: var(--button-hover-background-image);
+          border-color:     var(--button-hover-border-color);
+          color:            var(--button-hover-color);
+        }
+      }
+    }
+  }
+
+  &[disabled] {
+    cursor:                 var(--cursor-disabled);
+    & + label[for] {
+      cursor:               var(--cursor-disabled);
+      & + label[for] {
+        cursor:             var(--cursor-disabled);
+      }
+    }
+  }
 }
+
+
+
+.data-loading-message {
+  background-color: #D0D0D0;
+  border:           2px SOLID #00D080;
+  color:            #00D080;
+  font-weight:      BOLD;
+  padding:          5px;
+  text-shadow:      1px 1px BLACK;
+}
+
+.data-loading-error-message {
+  background-color: #D0D0D0;
+  border:           2px SOLID #00D080;
+  color:            RED;
+  font-weight:      BOLD;
+  padding:          5px;
+  text-shadow:      1px 1px BLACK;
+}
+
+
 
 #fsbEventLogViewer {
   height: 100%;
@@ -455,12 +529,6 @@ button#fsbEventLogViewerDeleteButton:not([disabled]):hover {
 }
 
 
-input:is([type="checkbox"], [type="radio"]):not([disabled]) { /* any checkbox */
-  cursor: pointer;
-  & ~ label[for] {
-    cursor: pointer;
-  }
-}
 input:disabled {
   cursor:           var(--cursor-disabled);
 }

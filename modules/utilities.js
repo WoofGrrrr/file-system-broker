@@ -2,6 +2,65 @@ import * as ICAL from  "./ical.js"
 
 
 
+export const TIME_HH_MM_SS_REGEX = /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/;
+export const TIME_HH_MM_REGEX    = /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/;
+
+export const WEEK_MS             = 604800000; // one week   in MS
+export const DAY_MS              = 86400000;  // one day    in MS
+export const HOUR_MS             = 3600000;   // one hour   in MS
+export const MINUTE_MS           = 60000;     // one minute in MS
+export const MIN_MS              = MINUTE_MS;
+export const SECOND_MS           = 1000;      // one second in MS
+export const SEC_MS              = SECOND_MS;
+
+
+export const KB_TO_BYTES = 1000n;               // KiloByte
+export const KB          = KB_TO_BYTES;         // KiloByte
+export const MB_TO_BYTES = KB_TO_BYTES * 1000n; // MegaByte
+export const MB          = MB_TO_BYTES;         // MegaByte
+export const GB_TO_BYTES = MB_TO_BYTES * 1000n; // GigaByte
+export const GB          = GB_TO_BYTES;         // GigaByte
+export const TB_TO_BYTES = GB_TO_BYTES * 1000n; // TeraByte
+export const TB          = TB_TO_BYTES;         // TeraByte
+export const PB_TO_BYTES = TB_TO_BYTES * 1000n; // PetaByte
+export const PB          = PB_TO_BYTES;         // PetaByte
+export const EB_TO_BYTES = PB_TO_BYTES * 1000n; // ExaByte
+export const EB          = EB_TO_BYTES;         // ExaByte, then ZettaByte (ZB,) YottaByte (YB,) RonnaByte (RB,) QuettaByte (QB)
+
+export const KiB_TO_BYTES = 1024n;                // KibiByte
+export const KiB          = KiB_TO_BYTES;         // KibiByte
+export const MiB_TO_BYTES = KiB_TO_BYTES * 1024n; // MebiByte
+export const MiB          = MiB_TO_BYTES;         // MebiByte
+export const GiB_TO_BYTES = MiB_TO_BYTES * 1024n; // GibiByte
+export const GiB          = GiB_TO_BYTES;         // GibiByte
+export const TiB_TO_BYTES = GiB_TO_BYTES * 1024n; // TibiByte
+export const TiB          = TiB_TO_BYTES;         // TibiByte
+export const PiB_TO_BYTES = TiB_TO_BYTES * 1024n; // PibiByte
+export const PiB          = PiB_TO_BYTES;         // PibiByte
+export const EiB_TO_BYTES = PiB_TO_BYTES * 1024n; // ExbiByte
+export const EiB          = EiB_TO_BYTES;         // ExbiByte, then ZebiByte (ZiB,) YobiByte (YiB,) RobiByte (RiB,) QuebiByte (QiB)
+
+export const STORAGE_UNIT_MULTIPLIERS = Object.freeze(
+  {
+    'EB':    EB_TO_BYTES,
+    'PB':    PB_TO_BYTES,
+    'TB':    TB_TO_BYTES,
+    'GB':    GB_TO_BYTES,
+    'MB':    MB_TO_BYTES,
+    'KB':    KB_TO_BYTES,
+    'Bytes': 1,
+    'EiB':   EiB_TO_BYTES,
+    'PiB':   PiB_TO_BYTES,
+    'TiB':   TiB_TO_BYTES,
+    'GiB':   GiB_TO_BYTES,
+    'MiB':   MiB_TO_BYTES,
+    'KiB':   KiB_TO_BYTES,
+  }
+);
+
+
+
+
 function debug(logger, ...info) {
   let msg = info.shift();
 
@@ -388,6 +447,87 @@ export async function getRecipientEmail(composeRecipient, logger) {
 
 
 
+export function timeToMS(time) {
+  if ((typeof time) === 'string') {
+    const hh_mm_ss = time.match(TIME_HH_MM_SS_REGEX);
+    if (hh_mm_ss) {
+      const hour = Number(hh_mm_ss[1]);
+      const min  = Number(hh_mm_ss[2]);
+      const sec  = Number(hh_mm_ss[3]);
+      return (hour * HOUR_MS) + (min * MINUTE_MS) + (sec * SECOND_MS);
+    }
+
+    const hh_mm = time.match(TIME_HH_MM_REGEX);
+    if (hh_mm) {
+      const hour = Number(hh_mm[1]);
+      const min  = Number(hh_mm[2]);
+      return (hour * HOUR_MS) + (min * MINUTE_MS);
+    }
+  }
+
+  return 0;
+}
+
+export function msToObject(ms) {
+  const absMS   = Math.abs(ms);
+  const millis  = absMS % SECOND_MS;                  // MS_IN_SECOND
+  const seconds = Math.floor(absMS / SECOND_MS) % 60; // SECONDS_IN_MINUTE
+  const minutes = Math.floor(absMS / MINUTE_MS) % 60; // MINUTES_IN_HOUR
+  const hours   = Math.floor(absMS / HOUR_MS)   % 24; // HOURS_IN_DAY
+  const days    = Math.floor(absMS / DAY_MS);
+
+  return {
+    'millis':  millis,
+    'seconds': seconds,
+    'minutes': minutes,
+    'hours':   hours,
+    'days':    days,
+  };
+}
+
+export function formatMsToTimePeriod(ms) {
+  const p = msToObject(ms);
+
+  var fmt = '';
+  if (p.days)    fmt += p.days    + "d ";
+  if (p.hours)   fmt += p.hours   + "h ";
+  if (p.minutes) fmt += p.minutes + "m ";
+  if (p.seconds) fmt += p.seconds + "s ";
+  if (p.millis)  fmt += p.millis  + "ms ";
+
+  return fmt ? fmt.trimEnd() : "0ms";
+}
+
+export function formatMsToElapsed(ms) {
+  const p = msToObject(ms);
+
+  var fmt = '';
+  if (p.days)    fmt += p.days + "d ";
+                 fmt += String(p.hours).padStart(2,'0') + ":" + String(p.minutes).padStart(2,'0')
+  if (p.seconds) fmt += ":" + String(p.seconds).padStart(2,'0');
+  if (p.millis)  fmt += " " + p.millis + "ms";
+
+  return fmt ? fmt.trim() : "0ms";
+}
+
+
+
+export function formatNowToTime() {
+  return formatMsToTime(Date.now());
+}
+
+export function formatMsToTime(ms) {
+  const date = new Date(ms);
+
+  const hours   = String(date.getHours()).padStart(   2, '0' );
+  const minutes = String(date.getMinutes()).padStart( 2, '0' );
+  const seconds = String(date.getSeconds()).padStart( 2, '0' );
+
+  return `${hours}:${minutes}:${seconds}`;
+}
+
+
+
 export function formatNowToTimeForFilename() {
   return formatMsToTimeForFilename(Date.now());
 }
@@ -483,7 +623,7 @@ export function formatMsToDateTime12HR(ms) {
   const year    = date.getFullYear();
   const month   = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
   const day     = String(date.getDate()).padStart(2, '0');
-  const hours   = String(hrs).padStart(2, '0');
+  const hours   = String(date.getHours()).padStart(2, '0');
   const minutes = String(date.getMinutes()).padStart(2, '0');
   const seconds = String(date.getSeconds()).padStart(2, '0');
 
@@ -497,32 +637,120 @@ export function getNextMidnightDelayMS() {
   return getMidnightDelayMS(nowMS);
 }
 
-export function getNextMidnightMS(nowMS) {
-  const nextMidnightDate = getNextMidnightDate(nowMS);
+// get the time in MS at the END of the Day
+export function getNextMidnightMS(timeMS) {
+  const nextMidnightDate = getNextMidnightDate(timeMS);
   return nextMidnightDate.getTime();
 }
 
-export function getNextMidnightDate(nowMS) {
-  return getMidnightDate(nowMS, 0);
+// get the Date at the END of the Day
+export function getNextMidnightDate(timeMS) {
+  return getMidnightDate(timeMS, 0);
 }
 
-export function getMidnightDelayMS(nowMS) {
-  const nextMidNightMS = getNextMidnightMS(nowMS);
-  return nextMidNightMS - nowMS;
+export function getMidnightDelayMS(timeMS) {
+  const nextMidNightMS = getNextMidnightMS(timeMS);
+  return nextMidNightMS - timeMS;
 }
 
-export function getMidnightMS(nowMS, numDays) {
-  const midnightDate = getMidnightDate(nowMS, numDays);
+// get the time in MS at the BEGINNING of the Current Day
+export function getCurrentDayMS() {
+  return getMidnightMS(Date.now(), -1);
+}
+
+// get the time in MS at the BEGINNING of the Day (0 for today)
+export function getDayMS(timeMS, numDays) { // NOTE: NOT the same as getMidnightMS()
+  const midnightDate = getMidnightDate(timeMS, numDays - 1);
   return midnightDate.getTime();
 }
 
-export function getMidnightDate(nowMS, numDays) {
-  const nextMidnightDate = new Date(nowMS + ((numDays + 1) * 86400000)); // 86400000 is one day in MS
+// get the time in MS at the END of the Day (-1 for the BEGINNING of the day)
+export function getMidnightMS(timeMS, numDays) {
+  const midnightDate = getMidnightDate(timeMS, numDays);
+  return midnightDate.getTime();
+}
+
+// get the Date at the END of the Day (-1 for the BEGINNING of the day)
+export function getMidnightDate(timeMS, numDays) {
+  const nextMidnightDate = new Date(timeMS + ((numDays + 1) * DAY_MS)); // <------------ adds 1 to numDays to get the midnight at the END of the day
   nextMidnightDate.setMilliseconds(0);
   nextMidnightDate.setSeconds(0);
   nextMidnightDate.setMinutes(0);
   nextMidnightDate.setHours(0);
   return nextMidnightDate;
+}
+
+
+
+
+export function getCurrentHourMS() {
+  return getHourMS(Date.now(), 0);
+}
+
+export function getHourMS(timeMS, numHours) {
+  const hourDate = getHourDate(timeMS, numHours);
+  return hourDate.getTime();
+}
+
+export function getHourDate(timeMS, numHours) {
+  const nextHourDate = new Date(timeMS + (numHours * HOUR_MS));
+  nextHourDate.setMilliseconds(0);
+  nextHourDate.setSeconds(0);
+  nextHourDate.setMinutes(0);
+  return nextHourDate;
+}
+
+
+
+export function getCurrentMinuteMS() {
+  return getMinuteMS(Date.now(), 0);
+}
+
+export function getMinuteMS(timeMS, numMinutes) {
+  const minuteDate = getMinuteDate(timeMS, numMinutes);
+  return minuteDate.getTime();
+}
+
+export function getMinuteDate(timeMS, numMinutes) {
+  const nextMinuteDate = new Date(timeMS + (numMinutes * MINUTE_MS));
+  nextMinuteDate.setMilliseconds(0);
+  nextMinuteDate.setSeconds(0);
+  return nextMinuteDate;
+}
+
+
+
+export function getCurrentSecondMS() {
+  return getSecondMS(Date.now(), 0);
+}
+
+export function getSecondMS(timeMS, numSeconds) {
+  const secondDate = getSecondDate(timeMS, numSeconds);
+  return secondDate.getTime();
+}
+
+export function getSecondDate(timeMS, numSeconds) {
+  const nextSecondDate = new Date(timeMS + (numSeconds * SECOND_MS));
+  nextSecondDate.setMilliseconds(0);
+  return nextSecondDate;
+}
+
+
+
+export function addDays(timeMS, numDays) {
+  return timeNS + (numDays * DAY_MS);
+}
+
+export function addHours(timeMS, numHours) {
+  return timeNS + (numHours * HOUR_MS);
+}
+
+export function addMinutes(timeMS, numMinutes) {
+  return timeNS + (numMinutes * MINUTE_MS);
+}
+
+export function addSeconds(timeMS, numSeconds) {
+  return timeNS + (numSeconds * SECOND_MS);
 }
 
 
@@ -602,4 +830,45 @@ export function isValidExtensionId(extensionId) {
   if ((typeof extensionId !== 'string') || extensionId.length < 1 || extensionId.length > 80) return false;
   const regex = /^(\{[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\}|[a-z0-9]+[a-z0-9-._]*@[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,6})$/i;
   return regex.test(extensionId);
+}
+
+
+
+export function eventHasValidInputEditOrMoveKey(e) {
+  const ALLOWED_CTRL_COMBO_KEYS = [ 'c', 'v', 'a', 'x' ];
+  const OTHER_ALLOWED_KEYS      = [ 'Backspace', 'Insert', 'Delete', 'Tab', 'Escape', 'Enter', // Standard editing keys
+                                    'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',         // Arrow keys - these increment or decrement
+                                    'PageUp', 'PageDown',                                      // PageUp & PageDown keys - these increment or decrement as well (???)
+                                    'Home', 'End',                                             // Navigation keys
+                                  ];
+
+  const hasCtrlOrMetaKey        = e.ctrlKey || e.metaKey;
+
+  const isAllowedSingleKey      = OTHER_ALLOWED_KEYS.includes(e.key);
+
+  const isAllowedKey            = isAllowedSingleKey || ( hasCtrlOrMetaKey && ALLOWED_CTRL_COMBO_KEYS.includes(e.key) );
+
+  return isAllowedKey;
+}
+
+export function eventHasValidNumberInputKey(e) {
+  const DIGIT_ONLY_REGEX = /^[0-9]*$/;
+
+  const hasCtrlOrMetaKey = e.ctrlKey || e.metaKey;
+  
+  const isNumber         = ! hasCtrlOrMetaKey && ! e.shiftKey && DIGIT_ONLY_REGEX.test(e.key);
+
+  const isAllowedKey     = isNumber || eventHasValidInputEditOrMoveKey(e);
+
+  return isAllowedKey;
+}
+
+export function eventHasValidNumberInputPasteData(e, limit) {
+  const DIGIT_ONLY_REGEX = /^[0-9]*$/;
+  const clipboardData    = e.clipboardData || window.clipboardData;
+  const pastedData       = clipboardData.getData('Text');
+
+  if (Number.isInteger(limit) && limit > 0 && pastedData.length > limit) return false;
+
+  return DIGIT_ONLY_REGEX.test(pastedData);
 }
